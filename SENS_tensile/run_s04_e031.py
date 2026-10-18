@@ -147,6 +147,15 @@ def run(lock,grant,out):
             predicted=m.fields(winner,features,p,damage)
         gap=float((actual-predicted).abs().max())
         if gap>1e-10:raise ValueError('actual network forward/linear head mismatch')
+        own_start_gap=None
+        if not accepted:
+            exact_start=torch.as_tensor(frozen['R'].copy(),device=p.xy.device,dtype=torch.float64)
+            own_start_gap=float((actual-exact_start).abs().max())
+            if own_start_gap>1e-10:raise ValueError('unchanged actual network/start mismatch')
+            # The no-correction wrapper returns its exact cached physical start.
+            # Actual unchanged-network forward has still been checked above.
+            actual=exact_start
+        np.savez_compressed(out/'head_endpoint.npz',theta0=theta0.cpu().numpy(),theta=winner.cpu().numpy())
         scored.check_physical(p,actual)
         if not torch.equal(actual[:,2],damage_saved) or not torch.equal(p.previous,lower) or not torch.equal(p.f,fatigue):raise ValueError('damage/history/fatigue changed')
         for name,value in model.state_dict().items():
@@ -164,7 +173,7 @@ def run(lock,grant,out):
         primary=max(uv_ratio,raw_ratio)
         if accepted and primary>=1-1e-8:raise ValueError('actual primary improvement unresolved')
         scores['decision']=dict(primary_max_UV_raw_ratio=primary,UV_global_ratio=uv_ratio,raw_global_ratio=raw_ratio,status='DIRECTIONAL_SIGNAL' if accepted else 'NO_ADMITTED_CORRECTION',accepted_head_updates=int(accepted),scope='one fixed-damage UV head finite correction; all seven actual guard values retained')
-        np.savez_compressed(out/'fields.npz',**pred);dump(out/'scores.json',scores);dump(out/'final_metrics.json',final_metrics);dump(out/'forward_identity.json',dict(actual_network_head_max_abs_gap=gap,physical_damage_bitwise_equal=True,hidden_and_damage_head_unchanged=True,original_head_dimension=theta0.numel()))
+        np.savez_compressed(out/'fields.npz',**pred);dump(out/'scores.json',scores);dump(out/'final_metrics.json',final_metrics);dump(out/'forward_identity.json',dict(actual_network_head_max_abs_gap=gap,unchanged_network_cached_start_max_abs_gap=own_start_gap,no_correction_uses_exact_cached_start=not accepted,physical_damage_bitwise_equal=True,hidden_and_damage_head_unchanged=True,original_head_dimension=theta0.numel()))
         torch.save(dict(model=model.state_dict(),physical_damage=damage,theta0=theta0,theta=winner,protocol=m.PROTOCOL),out/'UVhead.pt')
         with (out/'metrics.csv').open('w') as f:
             writer=csv.DictWriter(f,fieldnames=['state']+list(initial_score),lineterminator='\n');writer.writeheader()

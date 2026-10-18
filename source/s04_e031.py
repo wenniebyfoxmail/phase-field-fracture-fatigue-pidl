@@ -62,8 +62,20 @@ def unit_rows(a):
 def common_descent(gradients):
     """Min-norm convex hull of <=7 unit gradients; nonzero q gives common descent."""
     a, norms = unit_rows(gradients)
-    if not 1 <= len(a) <= 7 or np.any(norms == 0):
-        raise ValueError('common descent requires 1..7 nonzero gradients')
+    if not 1 <= len(a) <= 7:
+        raise ValueError('common descent requires 1..7 gradients')
+    zero = np.flatnonzero(norms == 0)
+    if len(zero):
+        # A finite zero row excludes an all-strict first-order direction.
+        # It is an exact zero-in-hull certificate, not a numerical failure.
+        weights = np.zeros(len(a)); weights[zero[0]] = 1.
+        q = np.zeros(a.shape[1])
+        return q.copy(), q, dict(unit_gradient_margin=0., resolved_strict=False,
+                                reason='finite zero metric gradient; no all-strict direction',
+                                zero_gradient_indices=zero.tolist(), weights=weights.tolist(),
+                                active=[int(zero[0])], normal_norms=norms.tolist(),
+                                simplex_sum=1., min_weight=float(weights.min()),
+                                certificate_min_gap=0., largest_unit_slope=0.)
     candidates = []
     for count in range(1, len(a) + 1):
         for active in combinations(range(len(a)), count):

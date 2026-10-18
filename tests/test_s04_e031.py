@@ -17,6 +17,16 @@ class HeadTests(unittest.TestCase):
         direction,q,info=m.common_descent(np.vstack((np.eye(3),-np.eye(3),[1,1,1])))
         self.assertFalse(info['resolved_strict']);self.assertTrue(np.array_equal(direction,np.zeros(3)))
 
+    def test_zero_metric_gradient_is_normal_zero_correction(self):
+        gradients=np.array([[1.,2.,3.],[0.,0.,0.],[-1.,0.,1.]])
+        direction,q,info=m.common_descent(gradients)
+        self.assertFalse(info['resolved_strict'])
+        self.assertEqual(info['zero_gradient_indices'],[1])
+        self.assertTrue(np.array_equal(direction,np.zeros(3)))
+        self.assertTrue(np.array_equal(q,np.zeros(3)))
+        self.assertTrue(np.array_equal(np.asarray(info['weights'])@m.unit_rows(gradients)[0],q))
+        with self.assertRaises(ValueError):m.common_descent(np.array([[np.nan,0.,0.]]))
+
     def test_original_head_forward_and_frozen_damage(self):
         torch.manual_seed(1);model=old.NeuralNet(2,3,2,4,'TrainableReLU',1.).double()
         xy=torch.tensor([[-.2,-.25],[.2,-.25],[.2,.25],[-.2,.25]],dtype=torch.float64);p=SimpleNamespace(xy=xy)
