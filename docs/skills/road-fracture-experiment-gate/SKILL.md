@@ -58,6 +58,32 @@ broad model sweep. A bounded exploratory diagnostic may proceed under the
 lighter stage contract above; otherwise produce a data/identity audit, export
 request, offline diagnostic, or decision note first.
 
+## Decision Ladder
+
+Turn each active research goal into a short decision ladder before asking an
+agent to advance it. Use three to six numbered `D` steps; a single atomic task
+may use one. Each step records:
+
+```text
+D# | uncertainty or purpose | smallest action and evidence asset |
+   advance condition -> next D# | redirect condition -> named alternative
+```
+
+Each step must answer a research decision, not merely name implementation
+work. Code, plotting, transfer, and review belong in its action field unless
+they independently decide whether the route can continue. Name one active
+step and one next step; do not create a separate Experiment, Run, or ledger
+entry for every `D` step.
+
+For exploration, an observed directional gain, capability proof, or diagnostic
+that selects a repair may advance the ladder. For a formal claim, the frozen
+primary criterion remains the only scientific verdict; the ladder organises
+execution and repair decisions but cannot add gates or rescue that verdict.
+Update future steps when evidence changes the route, but use an amendment or a
+new Experiment if the scientific question, evidence boundary, comparator, or
+primary criterion changes. Record the active `D#` in the concise Obsidian
+milestone when a route or result changes; do not bulk-retrofit historical work.
+
 ## Classify The Claim
 
 Choose the lowest class that answers the question:
@@ -350,6 +376,7 @@ For a formal Experiment, use:
 - Claim class / evidence domain:
 - Unit / origin / horizon / allowed inputs:
 - Question and estimand:
+- Decision ladder / active step:
 - Claim if pass / if fail:
 - Evidence identity and necessary validity gates:
 - Simplest honest comparator:

@@ -22,6 +22,19 @@ scientific_verdict:
 - Claim if primary gate fails:
 - Blocked conclusion regardless of outcome:
 
+## Decision ladder
+
+Use three to six `D` steps for an active multi-step route. Each step must
+remove a research uncertainty; implementation work belongs in the action cell.
+Mark exactly one active step. These steps organise decisions and repairs; they
+do not add scientific acceptance gates or override the frozen primary criterion.
+
+| step | uncertainty / purpose | smallest action and evidence asset | advance condition → next step | redirect condition → alternative |
+|---|---|---|---|---|
+| D1 (active) | | | | |
+| D2 | | | | |
+| D3 | | | | |
+
 ## Reuse decision
 
 - Searched:

@@ -140,6 +140,12 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   the hypothesis, data semantics, holdout, comparator, primary metric, threshold,
   or gate requires a dated amendment and renewed review; do not rewrite a used
   protocol silently.
+- Each active multi-step research goal must keep a three-to-six-step Decision
+  Ladder in its `experiment.md` or task note: purpose/uncertainty, smallest
+  action and evidence asset, advance condition, and redirect condition. Mark
+  one active `D#` and one next step. D steps organise choices; they are not
+  extra scientific gates, Runs, or ledger objects. Add them when work is
+  created or next touched; do not bulk-retrofit historical records.
 - Each actual producer execution has a fresh Run ID and a compact tracked run
   receipt. Seeds, arms, retries, failed launches, and hardware reruns are Runs;
   a changed scientific design is a new Experiment.

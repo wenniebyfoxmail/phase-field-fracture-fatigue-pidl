@@ -72,6 +72,9 @@ Use [`../templates/research_experiment.md`](../templates/research_experiment.md)
 for formal work. A formal Experiment enters `ready` only after its protocol
 revision, validity checks, smallest decisive primary gate, reuse decision, and
 code review are frozen.
+Its compact Decision Ladder names the active research sub-step, the smallest
+evidence asset it needs, and the advance or redirect result; it is not a second
+acceptance system or a replacement for the primary gate.
 Secondary diagnostics do not vote or rescue a failed primary gate. Post-result
 gate relaxation cannot rescue the old verdict.
 

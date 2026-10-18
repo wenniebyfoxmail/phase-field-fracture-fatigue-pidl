@@ -35,6 +35,11 @@ Status: `<ACTIVE | BLOCKED | COMPLETE | QUARANTINED>`
 
 <The one decision that is active now.>
 
+## Active decision step
+
+`<Experiment ID> / D#` — <the uncertainty this step resolves; link to the
+Experiment decision ladder.>
+
 ## Next action
 
 <One bounded next discriminator and its required receipt.>
