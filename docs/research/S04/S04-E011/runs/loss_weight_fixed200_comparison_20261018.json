@@ -1,0 +1,79 @@
+{
+  "endpoints": {
+    "C": {
+      "arm": "C",
+      "updates": 200,
+      "J_field": 0.001404643134956264,
+      "u_RMS_over_Uref": 0.0016185552458057664,
+      "v_RMS_over_Uref": 0.0017520760837476126,
+      "d_RMS": 0.00047914019114821403,
+      "ROI_J_field": 0.0015852367856115696,
+      "nodal_d_min": -0.000163859614985995,
+      "GP_d_min": -0.00015759320870325727,
+      "nodal_retreat_max": 0.0018659234046936035,
+      "GP_retreat_max": 0.0005541627658500747,
+      "GP_negative_area_above_unit_epsilon": 0.9770239014959758,
+      "GP_retreat_positive_initial_area": 0.000340525010850361,
+      "raw_relative_L2": 0.33493621860805767,
+      "active_relative_L2": 0.24617179176121795
+    },
+    "W0": {
+      "arm": "W0",
+      "updates": 200,
+      "J_field": 0.001404643134956264,
+      "u_RMS_over_Uref": 0.0016185552458057664,
+      "v_RMS_over_Uref": 0.0017520760837476126,
+      "d_RMS": 0.00047914019114821403,
+      "ROI_J_field": 0.0015852367856115696,
+      "nodal_d_min": -0.000163859614985995,
+      "GP_d_min": -0.00015759320870325727,
+      "nodal_retreat_max": 0.0018659234046936035,
+      "GP_retreat_max": 0.0005541627658500747,
+      "GP_negative_area_above_unit_epsilon": 0.9770239014959758,
+      "GP_retreat_positive_initial_area": 0.000340525010850361,
+      "raw_relative_L2": 0.33493621860805767,
+      "active_relative_L2": 0.24617179176121795
+    },
+    "W25": {
+      "arm": "W25",
+      "updates": 200,
+      "J_field": 0.0018422874835388938,
+      "u_RMS_over_Uref": 0.0018152371025813138,
+      "v_RMS_over_Uref": 0.00253233088618825,
+      "d_RMS": 0.0006886828444802724,
+      "ROI_J_field": 0.0031756420279259274,
+      "nodal_d_min": -5.5445198086090386e-05,
+      "GP_d_min": -5.253869349037024e-05,
+      "nodal_retreat_max": 0.0030709505081176758,
+      "GP_retreat_max": 0.00010365261349760084,
+      "GP_negative_area_above_unit_epsilon": 0.7418591293831679,
+      "GP_retreat_positive_initial_area": 0.00029312240445303225,
+      "raw_relative_L2": 0.40105520817365,
+      "active_relative_L2": 0.3337495784921184
+    }
+  },
+  "reduction_percent_vs_C": {
+    "W0": {
+      "J_field": 0.0,
+      "u_RMS_over_Uref": 0.0,
+      "v_RMS_over_Uref": 0.0,
+      "d_RMS": 0.0,
+      "raw_relative_L2": 0.0,
+      "active_relative_L2": 0.0
+    },
+    "W25": {
+      "J_field": -31.15697771849051,
+      "u_RMS_over_Uref": -12.151692522403401,
+      "v_RMS_over_Uref": -44.533157531133426,
+      "d_RMS": -43.73305708918078,
+      "raw_relative_L2": -19.74077029960284,
+      "active_relative_L2": -35.57588223424448
+    }
+  },
+  "W25_J_reduction_percent_vs_W0": -31.15697771849051,
+  "reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/c0001_s001_post_commit.mat",
+  "operator": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/analysis/run_multicycle_cross_replay.py",
+  "C_source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_abc_20261018T115520Z/retrieved/readout",
+  "pair_source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_fix_8edc762_20261018T210743Z/retrieved/readout",
+  "scope": "same seen synthetic c1s1; frozen histories/no hard lower-box; no clipping/selection/newFEM; C is historical, W0/W25 is paired gamma-only effect"
+}

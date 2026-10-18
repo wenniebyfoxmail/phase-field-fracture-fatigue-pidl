@@ -1,0 +1,78 @@
+{
+  "verdict": "REVIEW_PASS_CODE_READY_SCOPED_TO_ZERO_STEP_ARITHMETIC_CONTROLS_AND_DIAGNOSTIC_REPAIR",
+  "commit": "8edc762a99bacfa6825ed413a148fbcccd09a921",
+  "base_commit": "19d9ea35debfb8bf17a2a390eb1fbd8bbdd10367",
+  "reviewer": "independent read-only Codex physical_parity_review",
+  "reviewed_utc": "2026-10-18T21:04:02.548084+00:00",
+  "run_id": "pf_s04e011_wgradfix_8edc762_20261018T210153Z",
+  "decisive_blockers": [],
+  "scope": [
+    "tools/loss_weight_diagnostics.py",
+    "tools/probe_weight_gradient_paths.py",
+    "tests/test_loss_weight_diagnostics.py",
+    "docs/research/S04/S04-E011/gradient_fix_card_20261018.json",
+    "fresh diagnostic launch.sh/recipe.json/RUN_PROVENANCE.json/runtime.tar.gz"
+  ],
+  "checks": [
+    "Exact clean commit verified;44 deterministic tests pass independently in.93s, including original4 diagnostics tests, deliberately wrong manual Eh seed causing original guard failure, and independent analytic multi-output VJP fixture.",
+    "Manual expected uses detached analytic scalar seeds(c,c,beta*c,1e-5) with c=1/(ln(10)*S), then one multi-output VJP. It does not obtain seeds from the complete-loss gradient or direct vector.",
+    "Both torch.allclose atol1e-6/rtol1e-4 and componentwise diagnostic limits remain unchanged. Old post-parameter-scaled sum remains reported; returned beta vectors/sign statistics remain direct gradients.",
+    "Training runner, source physics, mapping, histories, initial state and optimizer code are byte-identical to base. No hard constraint or changed loss coefficient is introduced.",
+    "No-step controls load the original bundle/mapper, no re-anchoring. Known bytes and mesh shapes checked; strict module state loading and initial physical d0 equality enforced. Original direct and postscaled vectors must reproduce bitwise and original failure mask must contain9 components.",
+    "Same-graph controls compare direct repeat, independent joint manual VJP, prescaled separate VJPs and old postscaled sum. Direct repeat must be bitwise equal and joint/manual must pass the unchanged pointwise guard for beta1 and25.",
+    "Actual-output-adjoint single-NN VJP is a localization control using the direct output cotangent, not the independent admission oracle. Fixed H3 GEMM float64 converts the same float32 X/component adjoints/coefficient and is explicitly local arithmetic, not full-NN double precision or a reference gradient.",
+    "Network state and mapper buffers must remain unchanged at completion. Diagnostic source contains no optimizer step/backward/history updater; safe import does not load config/main or execute producer main.",
+    "All39 runtime dependency files exactly match git objects at the reviewed SHA. Recipe/provenance commit and GPU5 match. Launcher bash syntax passes; fresh/no-co-tenant GPU5 checks require memory.free>=23552MiB and utilization0 before execution.",
+    "Diagnostic allocator cap22GiB; external TERM175s plus KILL5s bounds diagnostic GPU process to180s; internal165s check exists. Prospective separate pair timeout3300s+5s gives combined3485s below3600; pair is not launched by diagnostic worker."
+  ],
+  "admission_boundary": {
+    "permitted_next_action": "Only the specified fresh zero-step arithmetic diagnostic after its live resource check.",
+    "actual_evidence_required_before_pair": [
+      "original direct/postsum bitwise identity and9 failures reproduced",
+      "same-graph direct-repeat identity",
+      "joint manual VJP passes original tolerance for beta1 and25",
+      "finite completed controls and unchanged network/mapper, zero optimizer/history/FEM",
+      "independent actual-evidence review"
+    ],
+    "active_penalty_boundary": "The no-step source origin has Eh=0. The unchanged production preflight must still validate its reversible active-Eh perturbation and beta25 before any optimizer step.",
+    "not_a_claim": "No cause confirmation, disappearance of9 failures, performance result or scientific interpretation is established by code/tests alone."
+  },
+  "interpretation_risks": [
+    "Do not label the actual-output-adjoint route independent of direct; it is only a localization control.",
+    "Do not label local affine float64 multiplication a full-NN float64 replay/reference or use saved-float32 vector recombination to claim the full root cause.",
+    "If reproduction, repeatability or the unchanged manual/direct guard fails, preserve output and stop; no tolerance widening, silently substituted state, automatic sweep or budget extension.",
+    "The final W0/W25 fresh pair remains conditional on actual diagnostic evidence review. Production loss/backward/optimizer and hard-constraint-off scope must stay unchanged."
+  ],
+  "review_activity": {
+    "optimizer_updates": 0,
+    "producer_GPU_execution": 0,
+    "SSH_operations": 0,
+    "FEM_solves": 0,
+    "code_mutations": 0,
+    "network_activity": "deterministic CPU test fixtures only"
+  },
+  "offline_analysis_review": {
+    "verdict": "REVIEW_PASS_SCOPED_TO_OFFLINE_SCORING_CODE",
+    "comparison_commit": "982a2e4fe1625a482650d86c89a0dfd8eb63efc9",
+    "files": [
+      "tools/compare_C_weight_endpoints.py",
+      "tools/analyze_loss_weight_pair.py"
+    ],
+    "text_only_delta": "Three README/sidecar prefixes in analyze_loss_weight_pair.py changed to Data provenance/How to read/Limitations. Inspected diff contains no numerical or plotting modification.",
+    "checks": [
+      "C/W0/W25 comparison requires completed400-update pair; scores all0/200 nodal endpoints against exact same c1s1 FEM canonical nodes/connectivity/load. Historical C and pair geometry/FEM d0 are checked equal.",
+      "Joint Jfield is the same fixed .12/.12/1 normalized positive-Q4-lumped-mass score; ROI x[0,.08],abs(y)<=.04 unchanged. Raw/active error uses same canonical float64 native GP4/Jacobian operator.",
+      "Negative minima are computed on physical nodal d and Q4-interpolated d; retreat is max(FEM d0-d,0), matching the common own initial lower under the reviewed C/pair protocol. GP area denominators are whole-domain Jacobian weights, with float32 epsilon and hgp>epsilon positive-support definitions identical to the saved-C diagnostic.",
+      "No projection, clipping, mirror average or predicted moving support changes the scored fields. Historical C reduction is labelled descriptive; paired W25-W0 is the gamma-only comparison. Historical replay differences must be reported, not assumed zero.",
+      "FEM/C200/W0200/W25200 primitive maps share row color limits; errors use common symmetric row limits, exact frozen display window and signed candidate-minus-FEM convention.",
+      "Main pair analyzer retains all fixed endpoints, within-arm versus between-arm contrasts, first-step/max physical energy, bounds/healing, gradient activation and same-snapshot versus adjacent-update distinctions. Three text labels do not change any result.",
+      "Both sources parse successfully; no GPU/producer training execution or result plotting was invoked during this code review."
+    ],
+    "limits": [
+      "actual fresh pair output integrity, numbers, initial histories and rendered figures await evidence review",
+      "historical C versus fresh W0 is not a newly randomized gamma effect or guaranteed bitwise replay",
+      "one seen synthetic fixed-history block, no convergence/generalization/teacher/physical-validity claim"
+    ],
+    "GPU_payload_unchanged": true
+  }
+}

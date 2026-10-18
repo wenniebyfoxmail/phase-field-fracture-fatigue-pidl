@@ -1,0 +1,39 @@
+{
+  "verdict": "REVIEW_PASS_SCOPED_ARITHMETIC_EVIDENCE_ORIGINAL_PAIR_MAY_CONTINUE",
+  "commit": "8edc762a99bacfa6825ed413a148fbcccd09a921",
+  "diagnostic_run": "pf_s04e011_wgradfix_8edc762_20261018T210153Z",
+  "prospective_pair_run": "pf_s04e011_wpair_fix_8edc762_20261018T210743Z",
+  "reviewed_utc": "2026-10-18T21:09:34.620869+00:00",
+  "reviewer": "independent read-only Codex physical_parity_review",
+  "decisive_blockers": [],
+  "evidence_scope": "Downloaded complete.json plus exact previously reviewed control source and immutable old CPU violation CSV. Independently checked all9 saved scalar values/indices and tolerance failures; full fresh gradient vectors and GPU computation were not reopened/recomputed locally.",
+  "verified": [
+    "Source commit/GPU5/float32/torch2.7.0+cu126, exact initial C, no TF32 or autocast; completed3.0890295s with0 optimizer updates/history commits/FEM solves and unchanged network/mapper buffers.",
+    "Producer controls require original full direct/postsum bitwise identity; saved raw Eel/Ed/Eh/R component flags all true. Old9 global indices and their post/direct scalar values independently match the old immutable CSV exactly.",
+    "For beta1 and25, direct repeat, independent manual joint VJP and actual-output-adjoint NN VJP report bitwise equality/Linf0/failing0. The independent admission reference is manual analytic seeds, not the direct-derived output-adjoint localization route.",
+    "Old postscaled parameter sum still has9 failures; prescaled separate VJPs have12 failures. Original atol1e-6/rtol1e-4 is unchanged; no old failure or frozen verdict was overwritten.",
+    "Fixed H3 local affine control has4 failures in float32 and0 in local float64, Linf2.06e-13 in local64. Same converted float32 X/component adjoints/coefficient were used; this is not full-NN double precision or an independent complete-gradient oracle.",
+    "Prospective pair and diagnostic runtime.tar.gz are identical SHA256238360cce3218da208aa3d6260c1f6642b14ae4e467beea0bb23a0afe5c54a0a, whose39 files were already verified against exact8ed commit.",
+    "Pair recipe differs from original pf_s04e011_wpair_20261018T121457Z recipe only by new run_id and commit. Immutable physics/history/load/gamma-only betas1/25,200 each, weight decay1e-5 and symmetry/FEM-supervision0 remain.",
+    "Actual fresh pair launcher syntax checked; GPU5 free>=23552MiB/util0/no-co-tenant gate retained. External3300s TERM+5s KILL, diagnostic worst180s gives3485s combined<3600. Fresh roots/provenance/archive receipts retained."
+  ],
+  "allowed_numerical_conclusion": "The reproduced mismatch is tied to separate versus joint reverse-mode float32 arithmetic paths, including scaling/combination placement around shared NN reverse operations. Correct analytic joint cotangents reproduce direct gradient exactly at this snapshot without relaxing tolerance. This resolves the diagnostic admission mismatch at the tested origin; it is not evidence that the training gradient/objective was changed or improved.",
+  "pair_continuation": {
+    "decision": "The arithmetic evidence prerequisite is satisfied; proceed within existing explicit human approval for this exact fresh originalW0/W25 pair.",
+    "mandatory_before_optimizer_steps": [
+      "fresh live resource admission in reviewed launcher",
+      "unchanged pair origin/serialization/gradient equality checks",
+      "reversible active-Eh perturbation with beta25 passing corrected independent manual/direct guard",
+      "same original network/mapping/history, hard lower/box off, no FEM target or trajectory"
+    ],
+    "scope": "W0/W25 only,200 steps each; gamma multiplier only; no extra arm/sweep or tolerance change",
+    "remaining_limit": "The zero-Eh origin cannot establish the active-penalty branch by itself; existing active-Eh preflight remains an automatic stop condition."
+  },
+  "review_activity": {
+    "GPU_execution": 0,
+    "SSH": 0,
+    "optimizer_updates": 0,
+    "FEM_solves": 0,
+    "code_edits": 0
+  }
+}

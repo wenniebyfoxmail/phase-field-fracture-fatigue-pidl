@@ -1,0 +1,168 @@
+{
+  "C_W0_physical_field_bitwise": {
+    "0": {
+      "u": true,
+      "v": true,
+      "d": true
+    },
+    "200": {
+      "u": true,
+      "v": true,
+      "d": true
+    }
+  },
+  "worst_nodal_retreat": {
+    "W0": {
+      "node_index0": 48904,
+      "xy": [
+        -0.2598831025285707,
+        0.001154195500710583
+      ],
+      "initial_d": 0.8883526921272278,
+      "endpoint_d": 0.8864867687225342,
+      "retreat": 0.0018659234046936035
+    },
+    "W25": {
+      "node_index0": 50066,
+      "xy": [
+        0.002487217141929412,
+        0.0002568318837673625
+      ],
+      "initial_d": 0.4139423370361328,
+      "endpoint_d": 0.41087138652801514,
+      "retreat": 0.0030709505081176758
+    }
+  },
+  "gradient_guard_checks": {
+    "W0": {
+      "0": {
+        "manual_direct_Linf": {
+          "1.0": 0.0,
+          "25.0": 0.0
+        },
+        "beta_gradient_signs": {
+          "parameters": 1125211,
+          "opposite_sign_count": 0,
+          "opposite_sign_fraction": 0.0,
+          "any_sign_difference_count": 0,
+          "one_sided_zero_count": 0,
+          "both_zero_count": 181,
+          "nearzero_threshold": 2.436464538574219e-10,
+          "nearzero1_fraction": 0.11134889367416423,
+          "nearzero25_fraction": 0.11134889367416423,
+          "cosine": 1.0,
+          "difference_Linf": 0.0,
+          "bitwise_equal": true
+        },
+        "Ehist": 0.0
+      },
+      "1": {
+        "manual_direct_Linf": {
+          "1.0": 0.0,
+          "25.0": 0.0
+        },
+        "beta_gradient_signs": {
+          "parameters": 1125211,
+          "opposite_sign_count": 126,
+          "opposite_sign_fraction": 0.00011197899771687265,
+          "any_sign_difference_count": 126,
+          "one_sided_zero_count": 0,
+          "both_zero_count": 185,
+          "nearzero_threshold": 1.0399829864501953e-10,
+          "nearzero1_fraction": 0.0003279384933136985,
+          "nearzero25_fraction": 0.00033860315976292444,
+          "cosine": 0.9999999968248359,
+          "difference_Linf": 0.08652496337890625,
+          "bitwise_equal": false
+        },
+        "Ehist": 6.714927673339844
+      },
+      "200": {
+        "manual_direct_Linf": {
+          "1.0": 0.0,
+          "25.0": 0.0
+        },
+        "beta_gradient_signs": {
+          "parameters": 1125211,
+          "opposite_sign_count": 654036,
+          "opposite_sign_fraction": 0.5812563154821629,
+          "any_sign_difference_count": 654036,
+          "one_sided_zero_count": 0,
+          "both_zero_count": 183,
+          "nearzero_threshold": 3.382146835327148e-11,
+          "nearzero1_fraction": 0.11180214199825633,
+          "nearzero25_fraction": 0.11174082016617327,
+          "cosine": -0.6763920698130744,
+          "difference_Linf": 33.984867095947266,
+          "bitwise_equal": false
+        },
+        "Ehist": 6.736183422617614e-06
+      }
+    },
+    "W25": {
+      "0": {
+        "manual_direct_Linf": {
+          "1.0": 0.0,
+          "25.0": 0.0
+        },
+        "beta_gradient_signs": {
+          "parameters": 1125211,
+          "opposite_sign_count": 0,
+          "opposite_sign_fraction": 0.0,
+          "any_sign_difference_count": 0,
+          "one_sided_zero_count": 0,
+          "both_zero_count": 181,
+          "nearzero_threshold": 2.436464538574219e-10,
+          "nearzero1_fraction": 0.11134889367416423,
+          "nearzero25_fraction": 0.11134889367416423,
+          "cosine": 1.0,
+          "difference_Linf": 0.0,
+          "bitwise_equal": true
+        },
+        "Ehist": 0.0
+      },
+      "1": {
+        "manual_direct_Linf": {
+          "1.0": 0.0,
+          "25.0": 0.0
+        },
+        "beta_gradient_signs": {
+          "parameters": 1125211,
+          "opposite_sign_count": 126,
+          "opposite_sign_fraction": 0.00011197899771687265,
+          "any_sign_difference_count": 126,
+          "one_sided_zero_count": 0,
+          "both_zero_count": 185,
+          "nearzero_threshold": 1.0399829864501953e-10,
+          "nearzero1_fraction": 0.0003279384933136985,
+          "nearzero25_fraction": 0.00033860315976292444,
+          "cosine": 0.9999999968248359,
+          "difference_Linf": 0.08652496337890625,
+          "bitwise_equal": false
+        },
+        "Ehist": 6.714927673339844
+      },
+      "200": {
+        "manual_direct_Linf": {
+          "1.0": 0.0,
+          "25.0": 0.0
+        },
+        "beta_gradient_signs": {
+          "parameters": 1125211,
+          "opposite_sign_count": 156962,
+          "opposite_sign_fraction": 0.13949561460028387,
+          "any_sign_difference_count": 156962,
+          "one_sided_zero_count": 0,
+          "both_zero_count": 185,
+          "nearzero_threshold": 3.390267181396484e-11,
+          "nearzero1_fraction": 0.11328808552351514,
+          "nearzero25_fraction": 0.11330585996759719,
+          "cosine": 0.8479142665488582,
+          "difference_Linf": 33.34700012207031,
+          "bitwise_equal": false
+        },
+        "Ehist": 6.481582204287406e-07
+      }
+    }
+  }
+}

@@ -67,3 +67,10 @@ Second-layer cleanup details are in `docs/cleanup_manifest_2026-07-06.md`.
 Every future run must add one row here or in `docs/pidl_experiment_inventory.md`
 with: mechanism question, changed claim, cheaper diagnostic, minimal asset,
 producer machine, commit, runner, output root, verdict, and next action.
+
+
+## 2026-10-18 S04-E011 fixed-state gamma diagnostic
+
+| Case | Status | Bounded conclusion | Asset endpoint |
+|---|---|---|---|
+| Strict gradient path repair + W0/W25 fixed200 | `negative` for gamma25 FEM accuracy; arithmetic repair `diagnostic` | W0 repeats C bitwise; W25 J31.157% higher, allu/v/d worse; GP bounds improve but worst node retreat64.581% higher. Single seen syntheticc1s1, no trajectory/convergence/teacher claim. | [Track](experiments/s04_fem_pidl_field_alignment_track.md); [result](research/S04/S04-E011/runs/loss_weight_fixed200_result_20261018.md); [review](research/S04/S04-E011/runs/loss_weight_fixed200_evidence_review_20261018.json). |

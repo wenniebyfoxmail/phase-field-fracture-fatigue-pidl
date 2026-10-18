@@ -1,0 +1,13 @@
+# Strict gradient arithmetic repair diagnostic
+
+Purpose: reproduce and explain the original nine full-NN gradient comparison violations without relaxing the original atol1e-6/rtol1e-4.
+
+Source: `8edc762a99bacfa6825ed413a148fbcccd09a921`, branch `codex/pidl-weight-gradient-fix-20261018`; GPU5 GPUServer8, PyTorch2.7.0+cu126, float32, TF32/autocast off. Immutable dependency archive SHA256238360cce3218da208aa3d6260c1f6642b14ae4e467beea0bb23a0afe5c54a0a. Remote root and archive use this Run ID under `/mnt/data2/drtao/wennie/` and `/mnt/data2/drtao/pidl_archives/` respectively. Local recipe/provenance/intent/launcher were prepared before launch. Exit0, worker UTC21:05:00–21:05:06; diagnostic elapsed3.089s. Zero optimizer/history/FEM updates; network and mapper unchanged.
+
+Exact original full direct gradient, each raw component gradient, and postscaled parameter sum reproduce bitwise. Old comparison still has9 failing entries, relativeL2=1.0699867e-6, worst tolerance ratio2.531779. Independent analytic scalar cotangents routed through a single joint VJP match full-loss direct bitwise, as do direct-repeat and actual-output-adjoint single-network controls. Pre-scaling then separate reverse passes still yields12 violations. At fixed hidden3 forward X/component adjoints, pre/post GEMM ordering produces4 violations in float32; casting only that same local affine multiplication to float64 reduces relativeL2 from1.25888e-6 to2.13581e-15, with0 violations. This is a local arithmetic control, not a full-NN double reference.
+
+Conclusion: the guard compared mathematically equivalent but numerically different reverse accumulation orders in shared float32 layers. The repair evaluates its independent manual chain rule through the same joint reverse accumulation as production; it does not substitute the direct gradient or change training. Old postscaled discrepancies remain recorded. Original pointwise tolerance is unchanged; deliberately corrupted coefficient/direct-path tests still fail it.
+
+Boundary: origin Eh=0; beta1 and25 both pass here. The original production preflight still must verify reversible active-Eh perturbation and beta25 before any update. No FEM field improvement is established by this diagnostic. Next: independent actual-evidence review, then exactly the authorized original W0/W25 200 each.
+
+Evidence: [compact actual controls](weight_gradient_arithmetic_controls_20261018.json), [code review](weight_gradient_fix_code_review_20261018.json), [arithmetic evidence review](weight_gradient_fix_evidence_review_20261018.json). Local full Run root: `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wgradfix_8edc762_20261018T210153Z/`.

@@ -1,0 +1,206 @@
+{
+  "commit": "8edc762a99bacfa6825ed413a148fbcccd09a921",
+  "GPU": "5",
+  "torch": "2.7.0+cu126",
+  "dtype": "torch.float32",
+  "initial_C_exact": true,
+  "optimizer_updates": 0,
+  "history_commits": 0,
+  "FEM_solves": 0,
+  "finite_guard": "allclose atol1e-6 rtol1e-4 unchanged",
+  "allow_tf32": false,
+  "autocast": false,
+  "source_bundle": "/mnt/data2/drtao/pidl_archives/pf_s04e011_wpair_grad_audit_20261018_v1/readout/initial_bundle.pt",
+  "source_vectors": "/mnt/data2/drtao/pidl_archives/pf_s04e011_wpair_grad_audit_20261018_v1/readout/preflight_origin_gradients.failure.pt",
+  "rows": [
+    {
+      "beta": 1.0,
+      "energy": 0.005659215152263641,
+      "direct_repeat": {
+        "Linf": 0.0,
+        "L2": 0.0,
+        "relative_L2": 0.0,
+        "failing": 0,
+        "max_tolerance_ratio": 0.0,
+        "bitwise_equal": true
+      },
+      "joint_manual_VJP": {
+        "Linf": 0.0,
+        "L2": 0.0,
+        "relative_L2": 0.0,
+        "failing": 0,
+        "max_tolerance_ratio": 0.0,
+        "bitwise_equal": true
+      },
+      "prescaled_separate_VJPs": {
+        "Linf": 0.0001678466796875,
+        "L2": 0.00253949618902045,
+        "relative_L2": 1.0621400017737512e-06,
+        "failing": 12,
+        "max_tolerance_ratio": 1.9286623001098633,
+        "bitwise_equal": false
+      },
+      "postscaled_parameter_sum": {
+        "Linf": 0.0002002716064453125,
+        "L2": 0.0025582571078081886,
+        "relative_L2": 1.0699867244428536e-06,
+        "failing": 9,
+        "max_tolerance_ratio": 2.5317792892456055,
+        "bitwise_equal": false
+      },
+      "single_NN_VJP_from_actual_output_adjoint": {
+        "Linf": 0.0,
+        "L2": 0.0,
+        "relative_L2": 0.0,
+        "failing": 0,
+        "max_tolerance_ratio": 0.0,
+        "bitwise_equal": true
+      },
+      "saved_original_direct": {
+        "Linf": 0.0,
+        "L2": 0.0,
+        "relative_L2": 0.0,
+        "failing": 0,
+        "max_tolerance_ratio": 0.0,
+        "bitwise_equal": true
+      },
+      "saved_original_postsum": {
+        "Linf": 0.0,
+        "L2": 0.0,
+        "relative_L2": 0.0,
+        "failing": 0,
+        "max_tolerance_ratio": 0.0,
+        "bitwise_equal": true
+      },
+      "saved_raw_components_bitwise_equal": {
+        "Eel": true,
+        "Ed": true,
+        "Eh": true,
+        "R": true
+      },
+      "old_failing_indices": [
+        143529,
+        236603,
+        236728,
+        424818,
+        425192,
+        482843,
+        483186,
+        522179,
+        608349
+      ],
+      "old_failing_values": {
+        "post": [
+          0.0038104054983705282,
+          0.002339285099878907,
+          0.002606193535029888,
+          0.010421866551041603,
+          0.0024651321582496166,
+          0.00427267188206315,
+          -0.0014911167090758681,
+          -0.007230848073959351,
+          0.012328393757343292
+        ],
+        "direct": [
+          0.0038088567089289427,
+          0.0023408113047480583,
+          0.0026087011210620403,
+          0.010426046326756477,
+          0.0024631605483591557,
+          0.004274108912795782,
+          -0.001494026742875576,
+          -0.007232578005641699,
+          0.01233135350048542
+        ],
+        "joint": [
+          0.0038088567089289427,
+          0.0023408113047480583,
+          0.0026087011210620403,
+          0.010426046326756477,
+          0.0024631605483591557,
+          0.004274108912795782,
+          -0.001494026742875576,
+          -0.007232578005641699,
+          0.01233135350048542
+        ],
+        "presplit": [
+          0.003808662761002779,
+          0.002339718397706747,
+          0.0026081902906298637,
+          0.010422106832265854,
+          0.0024623749777674675,
+          0.004273373167961836,
+          -0.0014922963455319405,
+          -0.0072320918552577496,
+          0.012332107871770859
+        ]
+      },
+      "fixed_hidden3_GEMM_order_control": {
+        "float32": {
+          "Linf": 0.000110626220703125,
+          "L2": 0.001081692824955895,
+          "relative_L2": 1.2588825211336615e-06,
+          "failing": 4,
+          "max_tolerance_ratio": 2.3049416542053223,
+          "bitwise_equal": false
+        },
+        "float64": {
+          "Linf": 2.0605739337042905e-13,
+          "L2": 1.8351940479821534e-12,
+          "relative_L2": 2.1358143225946963e-15,
+          "failing": 0,
+          "max_tolerance_ratio": 3.4053621228177993e-09,
+          "bitwise_equal": false
+        },
+        "scope": "same saved float32 forward X/component adjoints and coefficient; local affine VJP arithmetic only; not a full-NN float64 reference"
+      }
+    },
+    {
+      "beta": 25.0,
+      "energy": 0.005659215152263641,
+      "direct_repeat": {
+        "Linf": 0.0,
+        "L2": 0.0,
+        "relative_L2": 0.0,
+        "failing": 0,
+        "max_tolerance_ratio": 0.0,
+        "bitwise_equal": true
+      },
+      "joint_manual_VJP": {
+        "Linf": 0.0,
+        "L2": 0.0,
+        "relative_L2": 0.0,
+        "failing": 0,
+        "max_tolerance_ratio": 0.0,
+        "bitwise_equal": true
+      },
+      "prescaled_separate_VJPs": {
+        "Linf": 0.0001678466796875,
+        "L2": 0.00253949618902045,
+        "relative_L2": 1.0621400017737512e-06,
+        "failing": 12,
+        "max_tolerance_ratio": 1.9286623001098633,
+        "bitwise_equal": false
+      },
+      "postscaled_parameter_sum": {
+        "Linf": 0.0002002716064453125,
+        "L2": 0.0025582571078081886,
+        "relative_L2": 1.0699867244428536e-06,
+        "failing": 9,
+        "max_tolerance_ratio": 2.5317792892456055,
+        "bitwise_equal": false
+      },
+      "single_NN_VJP_from_actual_output_adjoint": {
+        "Linf": 0.0,
+        "L2": 0.0,
+        "relative_L2": 0.0,
+        "failing": 0,
+        "max_tolerance_ratio": 0.0,
+        "bitwise_equal": true
+      }
+    }
+  ],
+  "elapsed_seconds": 3.089029498398304,
+  "network_buffers_unchanged": true,
+  "status": "completed_no_step_arithmetic_controls"
+}

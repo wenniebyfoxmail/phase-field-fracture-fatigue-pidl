@@ -1,0 +1,148 @@
+{
+  "status": "completed",
+  "run_id": "pf_s04e011_wpair_fix_8edc762_20261018T210743Z",
+  "commit": "8edc762a99bacfa6825ed413a148fbcccd09a921",
+  "arms": [
+    {
+      "arm": "W0",
+      "beta": 1,
+      "updates": 200,
+      "before": {
+        "arm": "W0",
+        "beta": 1,
+        "updates": 0,
+        "U": 0.02999988,
+        "energies": [
+          0.0006000853609293699,
+          0.005059129558503628,
+          0.0
+        ],
+        "weighted_Ehist": 0.0,
+        "S1": 0.005659215152263641,
+        "Sbeta": 0.005659215152263641,
+        "R": 2672.09130859375,
+        "optimized_loss": -2.220522880554199,
+        "d_min": 0.0,
+        "d_max": 1.0,
+        "healing_max": 0.0,
+        "healing_GP_max": 0.0,
+        "healing_GP_count": 0,
+        "line_min": 1.0,
+        "line_max": 1.0,
+        "free_u_l2": 0.0033020144328475,
+        "Rprop_state": {
+          "state_entries": 0,
+          "fresh": true
+        }
+      },
+      "after": {
+        "arm": "W0",
+        "beta": 1,
+        "updates": 200,
+        "U": 0.02999988,
+        "energies": [
+          0.00045932165812700987,
+          0.005053145810961723,
+          6.736183422617614e-06
+        ],
+        "weighted_Ehist": 6.736183422617614e-06,
+        "S1": 0.005519203841686249,
+        "Sbeta": 0.005519203841686249,
+        "R": 2635.855712890625,
+        "optimized_loss": -2.231765031814575,
+        "d_min": -0.000163859614985995,
+        "d_max": 1.0,
+        "healing_max": 0.0018659234046936035,
+        "healing_GP_max": 0.0005541443824768066,
+        "healing_GP_count": 323960,
+        "line_min": 1.0,
+        "line_max": 1.0,
+        "free_u_l2": 0.003436514176428318,
+        "Rprop_state": {
+          "state_entries": 26,
+          "fresh": false,
+          "step_min": 1.000000013351432e-10,
+          "step_max": 1.5525429248809814,
+          "step_mean": 5.613166670271397e-06,
+          "stored_prev_zero_fraction": 0.17106569345660502
+        }
+      },
+      "seconds": 13.67513833194971
+    },
+    {
+      "arm": "W25",
+      "beta": 25,
+      "updates": 200,
+      "before": {
+        "arm": "W25",
+        "beta": 25,
+        "updates": 0,
+        "U": 0.02999988,
+        "energies": [
+          0.0006000853609293699,
+          0.005059129558503628,
+          0.0
+        ],
+        "weighted_Ehist": 0.0,
+        "S1": 0.005659215152263641,
+        "Sbeta": 0.005659215152263641,
+        "R": 2672.09130859375,
+        "optimized_loss": -2.220522880554199,
+        "d_min": 0.0,
+        "d_max": 1.0,
+        "healing_max": 0.0,
+        "healing_GP_max": 0.0,
+        "healing_GP_count": 0,
+        "line_min": 1.0,
+        "line_max": 1.0,
+        "free_u_l2": 0.0033020144328475,
+        "Rprop_state": {
+          "state_entries": 0,
+          "fresh": true
+        }
+      },
+      "after": {
+        "arm": "W25",
+        "beta": 25,
+        "updates": 200,
+        "U": 0.02999988,
+        "energies": [
+          0.00046673245378769934,
+          0.005064270459115505,
+          6.481582204287406e-07
+        ],
+        "weighted_Ehist": 1.6203955965465866e-05,
+        "S1": 0.005531650967895985,
+        "Sbeta": 0.005547206848859787,
+        "R": 2693.801025390625,
+        "optimized_loss": -2.228987693786621,
+        "d_min": -5.5445198086090386e-05,
+        "d_max": 1.0,
+        "healing_max": 0.0030709505081176758,
+        "healing_GP_max": 0.00010365260823164135,
+        "healing_GP_count": 302193,
+        "line_min": 1.0,
+        "line_max": 1.0,
+        "free_u_l2": 0.004179354291409254,
+        "Rprop_state": {
+          "state_entries": 26,
+          "fresh": false,
+          "step_min": 1.000000013351432e-10,
+          "step_max": 0.03429063782095909,
+          "step_mean": 1.9059166209088951e-06,
+          "stored_prev_zero_fraction": 0.4783325083028872
+        }
+      },
+      "seconds": 13.7242472441867
+    }
+  ],
+  "total_updates": 400,
+  "elapsed_seconds": 31.827594427391887,
+  "history_updates": 0,
+  "FEM_solves": 0,
+  "peak_allocated_bytes": 2848128000,
+  "symmetry_weight": 0,
+  "initial_gradient_equality": true,
+  "first_update_parameters_bitwise_equal": true,
+  "preflight_passed": true
+}

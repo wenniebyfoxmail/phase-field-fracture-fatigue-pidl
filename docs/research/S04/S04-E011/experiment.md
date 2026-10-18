@@ -183,3 +183,35 @@ H3[1,386] is2.53178 times its original allowance; maximum absolute difference
 The magnitude/location question is resolved; numerical guard still fails,
 root cause remains unconfirmed. No tolerance change, beta25/perturbation
 qualification, W0/W25 training, retry or new producer computation follows.
+
+
+### 2026-10-18 strict gradient arithmetic repair and completed original pair
+
+The latest explicit user instruction authorized diagnosing/fixing the9 components
+without tolerance widening and, after review, the original W0/W25 gamma-only
+200each. [Repair card](gradient_fix_card_20261018.json) retained original
+tolerances, physics, optimizer, initial package and no-trajectory/no-FEM boundary.
+Code8edc762 changes only the expected diagnostic reconstruction: detached
+independent analytic chain cotangents pass jointly through shared NN reverse
+operations. Actual zero-step GPU controls reproduce old9 discrepancies bitwise;
+manual joint VJP/direct are bitwise equal at original tolerances. Old parameter
+postscaled differences remain recorded. Actual evidence review passed before pair.
+
+Run `pf_s04e011_wpair_fix_8edc762_20261018T210743Z` completed400 updates in
+31.827594s onGPU5, peakallocated2.65253GiB, exit0. Original active-Eh/reload/
+restoration preflight passed before optimizer; all per-arm k0/1/200 manual/direct
+checks Linf0. No histories/FEM/trajectory or hard lower-box enabled; original C
+hard251 line remains, symmetry0. Actual diagnostic+pair elapsed34.916624s;
+external combined watchdog bound3485s<3600. Both0/200 physicalfield arrays ofW0
+reproduce historicalC bitwise. W25 J=.001842287484 versusC/W0 .001404643135,
+31.157% worse; allu/v/d and raw/active errors worsen. GP negative amplitude and
+retreat improve, but maximum nodal retreat increases64.581%. Gamma25 field
+agreement result is negative in this bounded development setting; keepgamma1.
+
+[Full fixed200 result](runs/loss_weight_fixed200_result_20261018.md),
+[independent actual-result review](runs/loss_weight_fixed200_evidence_review_20261018.json),
+and [stable track/continued D1–D4](../../../experiments/s04_fem_pidl_field_alignment_track.md).
+D4 is complete. Next recommendation only: reuse existing hardmap feasibility
+checks and inspect offline clipping extent/saturated-released gradient fractions
+on savedW0; no additional training or projected-field-as-training-benefit claim.
+Earlier failures, A/B/C results and original E011 qualifications remain unchanged.
