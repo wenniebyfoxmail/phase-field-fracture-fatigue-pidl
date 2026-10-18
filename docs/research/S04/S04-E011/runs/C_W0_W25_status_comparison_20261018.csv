@@ -1,0 +1,4 @@
+arm,gamma,updates,status,J_field,u_RMS_over_Uref,v_RMS_over_Uref,d_RMS,raw_relative_L2,active_relative_L2,nodal_d_min,GP_d_min,nodal_retreat_max,GP_retreat_max
+C,16875,200,completed,0.001404643134956264,0.0016185552458057664,0.0017520760837476126,0.00047914019114821403,0.33493621860805767,0.24617179176121792,-0.000163859614985995,-0.00015759320870325727,0.0018659234046936035,0.0005541627658500747
+W0,16875,0,stopped_before_optimization,,,,,,,,,,
+W25,421875,0,stopped_before_optimization,,,,,,,,,,
