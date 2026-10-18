@@ -26,7 +26,7 @@
 - 86756节点/86408Q4；B和C的251线节点均严格为1。C的初始输出与hist_alpha对FEM float32场L∞=0。
 - 原FEM float64转float32的最大差2.97e-8；不同于“数值误差绝对为0”的物理/跨精度宣称。
 - 线梯度0；自由节点初态梯度.25且可下移；默认u/v/d输出不变；错序/子集/任意探针/错误目标/错误映射被拒绝；锚定buffer独立复制并可序列化。
-- 已运行33项确定性检查，无优化器循环。原PIDL零载hist与CPU重放输出差约6.88e-6，原值保留，不静默改写baseline。
+- 已运行38项确定性检查，无优化器循环。原PIDL零载hist与CPU重放输出差约6.88e-6，原值保留，不静默改写baseline。
 
 [静态收据](runs/precrack_alignment_static_20261018.json)。静态图是按构造匹配初值的证明，不是加载后训练收益。
 
@@ -75,3 +75,15 @@ m是原生Q4正的lumped节点质量，Uref=.12、damage尺度1、三通道等�
 ## 复审与当前边界
 
 Pro只审提交的设计文本，独立Codex只审精确补丁、测试和静态数据。复审可以确认准备内容是否自洽，不能证明加载后一定更接近FEM；本卡没有执行授权。结果位置和复审收据随后附入同一准备目录。
+
+## Pro首轮意见后的明确补充（r2）
+
+旧映射完整定义：r<-2时s=.001(r+2)，-2≤r≤2时s=r/4+.5，r>2时s=1+.001(r-2)。中心导数.25，尾部.001；r=±2在实际代码中归中心分支，autograd取.25，两侧导数不同。FEM d0必须有限且在[0,1]，不适用则停止而非clip；所以a0=4d0-2在中心分支，s(a0)=d0的实数恒等成立，数值仅有普通浮点舍入，中心差值保持初态精确。已补d0=0/1折点双侧响应、实际8x400网络代表性自由节点对output bias的逐节点梯度测试，而非仅看全域总梯度。
+
+A/B/C物理梯度一律沿既有native-Q4 compute_energy路径：d_gp=N*d_nodes，grad_d=B*d_nodes；冻结d0/rR只是不对它们求参数梯度，空间梯度不能丢掉这两张节点场。小Q4单元测试验证raw恒定但映射d0非均匀时，实际grad_d仍非零且等于d0的Q4梯度。
+
+原raw网络输入仅XY，Williams/enrichment/symmetry-prior/local-patch均关闭；加载量只在u/v物理边界映射。CPU静态检查改为捕获实际完整node batch的FieldComputation前向，不混用1024小批raw参考；非零U=.02999988下验证A/C的u/v逐位相同，C的damage与FEM float32 d0逐位一致。未来producer须在immutable θR、真实device/dtype/full-forward方式下首次生成并验证锚点，然后保存；恢复已训练checkpoint只恢复buffer，不在当前θ上重新锚定。CPU结果不是GPU同位证明。
+
+三臂共同保留原零载hist_fat=0、psi_plus_prev=0、H=0、f=1；仅hist_alpha随三臂定义而异。固定history不固定当前g(d)，当前g和空间梯度仍随当前mapped d变化。原物理E=1,nu=.3,Gc=.01,ell=.01,w1=1,AT1,Amor split,eta=0,alpha_T=.5,p=2全部固定。完整损失为log10(Eel+Ed+Ehist)+1e-5*sum(weight²)，Ehist内含gamma16875；log内没有epsilon，非正能量停止。
+
+评分固定Q4面积lumped节点权、物理u/v变换、既定窗口/剖面；raw/active按原定义用GP4/Jacobian权。若FEM参考范数为0，相对误差未定义并另报绝对误差，不暗加epsilon。所有输出不clip、不裁剪尾部、不按预测裂尖移动窗口。未来D必须与C从同一theta_R/anchor/history/fresh optimizer独立启动，不能从C终点追加训练后称D−C。

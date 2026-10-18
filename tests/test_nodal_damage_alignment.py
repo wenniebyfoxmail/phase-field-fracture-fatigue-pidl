@@ -98,3 +98,43 @@ def test_direct_network_probe_symmetry_cannot_bypass_mesh_lock():
     aligned=field(net,a)
     with pytest.raises(ValueError,match='identical ordered native nodes'):
         physical_symmetry_terms(aligned,XY[3:4],torch.ones(1),.12)
+
+
+def test_zero_one_free_kinks_and_both_one_sided_responses():
+    d=D.clone();d[3]=1.;d[4]=0.
+    a=NodalDamageAlignment(XY,mode='fem_initial',initial_damage=d,raw_reference=R)
+    r=R.clone().requires_grad_(True);g=torch.autograd.grad(a(XY,r,S).sum(),r)[0]
+    assert torch.equal(g[3:],torch.full((2,),.25))  # Declared breakpoint convention.
+    h=1e-3
+    for i,inside_sign in [(3,-1),(4,1)]:
+        for sign,slope in [(inside_sign,.25),(-inside_sign,.001)]:
+            rr=R.clone();rr[i]+=sign*h
+            got=float((a(XY,rr,S)[i]-d[i])/(sign*h))
+            assert abs(got-slope)<1e-4
+
+
+def test_mapped_initial_spatial_gradient_uses_native_q4_not_raw_network():
+    from q4_quadrature import q4_shape_data,q4_gradient
+    xy=torch.tensor([[-.5,-.5],[.5,-.5],[-.5,0.],[.5,0.],[-.5,.5],[.5,.5]])
+    cells=torch.tensor([[0,1,3,2],[2,3,5,4]])
+    raw=torch.zeros(6,requires_grad=True);d0=torch.tensor([0.,.1,1.,.3,0.,.2])
+    a=NodalDamageAlignment(xy,mode='fem_initial',initial_damage=d0,raw_reference=raw.detach())
+    _,B,w=q4_shape_data(xy,cells)
+    mapped=a(xy,raw,S);gd=q4_gradient(mapped,cells,B)
+    assert torch.equal(mapped,d0) and torch.equal(gd,q4_gradient(d0,cells,B))
+    assert torch.count_nonzero(gd)>0 and torch.count_nonzero(q4_gradient(raw,cells,B))==0
+    grad=torch.autograd.grad((w*(gd.square().sum(-1))).sum(),raw)[0]
+    assert grad[2]==0 and bool(torch.isfinite(grad).all()) and bool(grad.abs().max()>0)
+
+
+@pytest.mark.parametrize('value',[0.,.4,1.])
+def test_representative_free_nodes_connect_to_actual_network_parameter(value):
+    from network import NeuralNet
+    torch.manual_seed(1)
+    net=NeuralNet(2,3,8,400,'TrainableReLU',1.)
+    raw=net(XY)[:,2];d0=D.clone();d0[3:]=value
+    a=NodalDamageAlignment(XY,mode='fem_initial',initial_damage=d0,raw_reference=raw.detach())
+    dd=a(XY,raw,S)
+    for i in [3,4]:
+        g=torch.autograd.grad(dd[i],net.output_layer.bias,retain_graph=True)[0]
+        assert torch.equal(g,torch.tensor([0.,0.,.25]))

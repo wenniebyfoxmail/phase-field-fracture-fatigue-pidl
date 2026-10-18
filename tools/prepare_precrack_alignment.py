@@ -3,12 +3,12 @@
 No optimizer, fitting, recovery solve, target loading or history commit exists
 in this program. Saved models are evaluated once in bounded CPU chunks.
 """
-import argparse,json,sys
+import argparse,json,sys,math
 from pathlib import Path
 import numpy as np,h5py,torch
 ROOT=Path(__file__).resolve().parents[1];sys.path[:0]=[str(ROOT/'source'),str(ROOT/'SENS_tensile'),str(ROOT/'tools')]
 from network import NeuralNet
-from field_computation import NonsmoothSigmoid
+from field_computation import NonsmoothSigmoid,FieldComputation
 from nodal_damage_alignment import NodalDamageAlignment
 from audit_saved_physical_parity import Probe
 
@@ -36,12 +36,27 @@ def main(a):
     xy=torch.tensor(canonical,dtype=torch.float32);d0=torch.tensor(d64,dtype=torch.float32)
     fixed=torch.ones(len(xy),dtype=torch.bool);fixed[free]=False;assert fixed.sum()==251
     net=NeuralNet(2,3,8,400,'TrainableReLU',1.);net.load_state_dict(state);net.eval()
-    with torch.inference_mode():raw=torch.cat([net(q)[:,2] for q in xy.split(1024)]).clone()
+    domain=xy.new_tensor([[-.5,.5],[-.5,.5]])
+    load=xy.new_tensor([.02999988]);angle=xy.new_tensor([math.pi/2])
+    base=FieldComputation(net,domain,load,angle)
+    capture=[]
+    handle=net.register_forward_hook(lambda module,inputs,output:capture.append(output[:,2].detach().clone()))
+    # Capture the actual complete forward path, not a differently batched
+    # surrogate. Fresh producer anchoring must repeat this at frozen theta_R
+    # on its actual device/dtype; never re-anchor a resumed trained model.
+    with torch.no_grad():base_fields=base.fieldCalculation(xy)
+    handle.remove();assert len(capture)==1;raw=capture[0]
     s=NonsmoothSigmoid(2.,1e-3);legacy=s(raw)
     hist=ck['hist_alpha'].detach().clone()
     assert hist.shape==legacy.shape and float((hist-legacy).abs().max())<1e-5
     b=NodalDamageAlignment(xy,mode='hard_line',expected_crack_mask=fixed)
     c=NodalDamageAlignment(xy,mode='fem_initial',initial_damage=d0,raw_reference=raw,expected_crack_mask=fixed)
+    inverse_roundoff=float((s(c.anchor_raw)-d0).abs().max())
+    assert inverse_roundoff <= torch.finfo(d0.dtype).eps
+    aligned=FieldComputation(net,domain,load,angle,nodal_damage_alignment=c)
+    with torch.no_grad():aligned_fields=aligned.fieldCalculation(xy)
+    assert torch.equal(base_fields[0],aligned_fields[0]) and torch.equal(base_fields[1],aligned_fields[1])
+    assert torch.equal(aligned_fields[2],d0), 'raw origin is not reproducible in actual forward'
     fields={'A_legacy':legacy,'B_hard_line':b(xy,raw,s),'C_FEM_initial':c(xy,raw,s)}
     histories={'A_legacy':hist,'B_hard_line':b.initial_history(hist),'C_FEM_initial':c.initial_history(hist)}
     assert torch.equal(fields['C_FEM_initial'],d0) and torch.equal(histories['C_FEM_initial'],d0)
@@ -67,10 +82,14 @@ def main(a):
     np.savez_compressed(a.out/'initial_fields.npz',**{k:v.detach().numpy() for k,v in fields.items()})
     result=dict(status='STATIC_ALIGNMENT_VERIFIED_NOT_TRAINED',origin=str(a.origin),FEM_initial=str(a.fem_initial),
        original_FEM_state0=str(a.fem_state0),common_vs_original_state0_max=state0_error,
-       execution='CPU saved-network inference and elementwise mapping only',optimizer_updates=0,FEM_solves=0,history_commits=0,
+       execution='CPU saved-network full-native-node inference and elementwise mapping only',optimizer_updates=0,FEM_solves=0,history_commits=0,
+       actual_fieldCalculation_target_load=float(load),actual_UV_bitwise_unchanged=True,actual_C_initial_bitwise_equal=True,
+       forward_policy='eval mode, float32, full ordered node batch, no autocast, no coordinate/history/load features in raw network',
+       producer_anchor_rule='fresh immutable theta_R at actual producer device/dtype/forward; verify update0; checkpoint resume restores buffers without re-anchoring',
        crack_line_nodes=int(fixed.sum()),nodes=len(xy),cells=len(cells),
        original_history_vs_CPU_output_max=float((hist-legacy).abs().max()),
        FEM_float64_to_float32_max=float(abs(d0.numpy().astype(float)-d64).max()),
+       central_inverse_roundoff_max=inverse_roundoff,
        initial_free_raw_derivative_min=float(g[~fixed].min()),initial_free_raw_derivative_max=float(g[~fixed].max()),
        line_raw_derivative_max=float(g[fixed].abs().max()),
        caveat='C changes initial spatial representation and its tangent, not only optimizer initialization; soft tails and free-node healing remain',arms=rows)

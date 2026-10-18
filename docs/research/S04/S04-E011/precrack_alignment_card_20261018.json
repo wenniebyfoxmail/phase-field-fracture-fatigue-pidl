@@ -1,6 +1,6 @@
 {
   "status": "PREPARATION_ONLY_NO_EXECUTION_AUTHORIZATION",
-  "revision": "precrack-initial-alignment-r1-20261018",
+  "revision": "precrack-initial-alignment-r2-20261018",
   "owner": "S04-E011 early-state method diagnostic, dated prospective amendment; old result/verdict unchanged",
   "primary_goal": "reduce joint u/v/d disagreement to existing same-state FEM numerical comparator; symmetry diagnostic only",
   "changes": [
@@ -23,20 +23,30 @@
     "u_v": "identical original physical mapping and common NN parameters",
     "domain": "identical ordered canonical nodes only; all energy/grad(d)/readout via native Q4 mapped nodal field",
     "frozen_buffers": "coordinate order, FEM d0, raw theta_R, line mask; must save mapping state with NN state",
-    "not_claimed": "pure optimizer initialization effect or hard box/hard irreversibility; C changes representation/tangent/history package"
+    "not_claimed": "pure optimizer initialization effect or hard box/hard irreversibility; C changes representation/tangent/history package",
+    "legacy_map_piecewise": "r<-2: .001*(r+2); -2<=r<=2: r/4+.5; r>2: 1+.001*(r-2)",
+    "legacy_map_derivative": "tail .001; central .25; actual autograd choice at r=+-2 is .25, with unequal one-sided slopes",
+    "initial_anchor_admission": "FEM d0 finite in[0,1], line exactly1; s(4*d0-2)-d0 limited to declared float roundoff; reject without clipping",
+    "raw_input": "XY only, no load/time/history features; Williams/enrichment/symmetry-prior/local-patch off",
+    "forward_policy": "same complete node batch, eval mode, float32, no autocast; actual nonzero Utarget UV/C initialization verified on CPU",
+    "producer_origin_anchor": "compute once at immutable original theta_R on actual producer device/dtype/forward and verify update0 BEFORE any optimizer step; never recompute at trained/restored parameters",
+    "gradient_source": "all A/B/C use the existing compute_energy native-Q4 nodal interpolation/Jacobian grad; no coordinate autodiff of raw network"
   },
   "static_checks": {
     "optimizer_steps": 0,
     "FEM_solves": 0,
     "history_commits": 0,
-    "receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018/static_v2/static_receipt.json",
+    "receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018/static_v3/static_receipt.json",
     "minimum": [
       "exact float32 initial C field and history equals FEM d0",
       "251 line nodes remain1 after raw perturbations; line gradients zero",
       "free initial nodes differentiable and can move below d0; no hidden floor",
       "default outputs/UV unchanged",
       "wrong node order/queries rejected",
-      "state buffers copied and serialized; direct-NN parity rejects mesh-locked field"
+      "state buffers copied and serialized; direct-NN parity rejects mesh-locked field",
+      "representative actual 8x400 NN output-bias gradients per free node at d0=0/interior/1",
+      "one-sided kink responses and native-Q4 spatial gradient contains frozen initial field",
+      "nonzero Utarget actual full fieldCalculation: UV unchanged and C d0 exact"
     ]
   },
   "proposed_only_single_block": {
@@ -97,7 +107,9 @@
     "required_secondary": "native GP4 raw/active FEM relative L2, damage profiles x=-.25,0,.01,.02, physical energy/free-u residual/bounds/healing, initialization match and timings",
     "minimum_visual": "same-state FEM/A/B/C primitive fields and signed errors with shared scales; exact scored outputs; static initial-check figure not a trained accuracy result",
     "target_use": "existing c1s1 FEM fields scoring-only, never initial buffers, losses, gradients or checkpoint selection",
-    "stage": "seen synthetic development diagnostic, directional effect, no pass threshold/generalization claim"
+    "stage": "seen synthetic development diagnostic, directional effect, no pass threshold/generalization claim",
+    "zero_reference_norm": "relative raw/active L2 undefined if reference norm zero; report absolute norm, never substitute epsilon silently",
+    "no_postprocess": "no clipping, tail cropping or prediction-dependent windows/masks"
   },
   "loss_weights": {
     "frozen_this_round": {
@@ -117,7 +129,41 @@
     ],
     "physical_change": "Eel/Ed relative coefficients change equivalent Gc/toughness (with E/ell held); not neutral loss balancing",
     "not_added": "persistent initial-FEM fitting loss during loaded steps; would discourage valid damage evolution",
-    "residual_difference": "FEM gamma421875/hard conditions and trial-fatigue differ; aligned initial conditions alone do not make both algorithms the same problem"
+    "residual_difference": "FEM gamma421875/hard conditions and trial-fatigue differ; aligned initial conditions alone do not make both algorithms the same problem",
+    "complete_objective": "log10(Eel + Ed + Ehist) + 1e-5*sum(named weight**2); Ehist=.5*w1*16875*sum_q(w_q*ReLU(hist_q-d_q)**2); no epsilon inside log; nonpositive energy stops"
   },
-  "review_scope": "design plus opt-in map/static prep code only; no runtime/accuracy verdict or producer permission"
+  "review_scope": "design plus opt-in map/static prep code only; no runtime/accuracy verdict or producer permission",
+  "physical_parameters": {
+    "E": 1.0,
+    "nu": 0.3,
+    "Gc": 0.01,
+    "ell": 0.01,
+    "w1": 1.0,
+    "AT": "AT1",
+    "split": "volumetric/Amor",
+    "eta": 0.0,
+    "alpha_T": 0.5,
+    "Carrara_p": 2.0,
+    "domain": [
+      [
+        -0.5,
+        0.5
+      ],
+      [
+        -0.5,
+        0.5
+      ]
+    ],
+    "theta": "pi/2 vertical",
+    "network": "8x400 TrainableReLU, seed1, float32 original saved state"
+  },
+  "common_frozen_state": {
+    "hist_alpha": "own arm physical nodal initial damage reference, never committed in block",
+    "hist_fat": "all arms preserve verified original [86408,4] zeros",
+    "psi_plus_prev": "all arms verified zeros",
+    "psi_history_elem/H": "zeros",
+    "f_committed": 1.0,
+    "current_g": "recomputed from current mapped damage; not frozen",
+    "lagged_stiffness": false
+  }
 }

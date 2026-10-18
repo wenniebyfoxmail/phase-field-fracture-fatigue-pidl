@@ -4,10 +4,15 @@
   "FEM_initial": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/common_common_initial.mat",
   "original_FEM_state0": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4/retrieved/inputs/465148b6ffd9d95c_state0_analysis.mat",
   "common_vs_original_state0_max": 2.7755575615628914e-16,
-  "execution": "CPU saved-network inference and elementwise mapping only",
+  "execution": "CPU saved-network full-native-node inference and elementwise mapping only",
   "optimizer_updates": 0,
   "FEM_solves": 0,
   "history_commits": 0,
+  "actual_fieldCalculation_target_load": 0.029999880120158195,
+  "actual_UV_bitwise_unchanged": true,
+  "actual_C_initial_bitwise_equal": true,
+  "forward_policy": "eval mode, float32, full ordered node batch, no autocast, no coordinate/history/load features in raw network",
+  "producer_anchor_rule": "fresh immutable theta_R at actual producer device/dtype/forward; verify update0; checkpoint resume restores buffers without re-anchoring",
   "crack_line_nodes": 251,
   "nodes": 86756,
   "cells": 86408,
@@ -45,5 +50,6 @@
       "full_max": 1.0,
       "history_initial_Linf_to_FEM_float32": 0.0
     }
-  ]
+  ],
+  "central_inverse_roundoff_max": 1.4901161193847656e-08
 }
