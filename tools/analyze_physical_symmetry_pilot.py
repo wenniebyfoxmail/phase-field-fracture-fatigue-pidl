@@ -57,6 +57,18 @@ def main(a):
     x=np.linspace(-.04,.08,241);y=np.linspace(-.04,.04,161);X,Y=np.meshgrid(x,y)
     probe=Probe(points,cells,np.column_stack((X.ravel(),Y.ravel())))
     maps={name:probe.fields(q['u'],q['v'],q['d'],.05999988) for name,q in fields.items()}
+    parity=[]
+    for name in fields:
+        for key in ['u','v_correction','d','active']:
+            scale=.12 if key in ['u','v_correction'] else 1
+            value=maps[name][key].reshape(Y.shape)/scale
+            error=value-maps['FEM'][key].reshape(Y.shape)/scale
+            sign=-1 if key=='v_correction' else 1
+            violating=.5*(error-sign*error[::-1]);den=float(np.sum(error**2))
+            parity.append(dict(arm=name,field=key,mirror_RMS=float(np.sqrt(np.mean((value-sign*value[::-1])**2))),
+                error_parity_violating_squared_fraction=float(np.sum(violating**2)/den) if den else None,
+                support='paired uniform Q4 reconstruction probes x[-.04,.08],y[-.04,.04],241x161; diagnostic only'))
+    (a.out/'parity.json').write_text(json.dumps(parity,indent=2)+'\n')
     fig,axes=plt.subplots(5,5,figsize=(15,12),layout='constrained')
     for i,key in enumerate(['u','v_correction','d','raw','active']):
         scale=.12 if key in ['u','v_correction'] else 1
