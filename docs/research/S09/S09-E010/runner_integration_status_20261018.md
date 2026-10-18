@@ -2,7 +2,7 @@
 
 ## Current state
 
-`RUNNER_INTEGRATION_CANDIDATE__AWAITING_FOCUSED_REREVIEW`
+`RUNNER_INTEGRATION_READY_PASS`
 
 The reviewed E010 support/amplitude core is now connected to the frozen E008
 runtime, three isolated arm states, the 500-update schedule and a fail-closed
@@ -42,15 +42,22 @@ and explicit `0 -> 0`, `0 -> 1`, `63 -> 64`, `500 -> 500` and rejected
 `0 -> 500` cases are covered. The no-training frozen-packet receipt was
 regenerated after this repair with the same 48/48 exact matches.
 
+Focused round-2 review independently exercised 13 scalar-validator cases and
+returned `RUNNER_INTEGRATION_READY_PASS`, bound to exact commit
+`51835e1626e536b2079adb4e1b878da7256a46c0`. The original `0 -> 500`
+counterexample is rejected, the intended boundary cases remain valid, and no
+new blocker was found in the narrow diff.
+
 The no-training receipt records the exact packet identity, config identity,
 schedule hash, isolated initial-state hashes, per-arm first-cycle direction
 hashes and all 48 runner-versus-core hashes.
 
 ## Boundary and next gate
 
-This is an integration candidate, not Run Ready and not a scientific result.
-The narrow validator repair must receive focused exact-commit rereview. Only
-after that review may producer-loop/config-resolution/evaluator-writer code and
-an exact run card be prepared. This stage does not launch training, access a
-new holdout or alter the frozen E009 result.
+The no-training runner/config/evidence layer is now independently reviewed.
+The next permitted scope is producer-loop/config-resolution/evaluator-writer
+implementation, continued no-training verification and preparation of a later
+exact run card. This is not Run Ready or a scientific result; it does not
+authorise training, an optimizer step, holdout access or producer launch, and
+it does not alter the frozen E009 result.
 
