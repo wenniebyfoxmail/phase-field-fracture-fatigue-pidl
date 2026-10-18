@@ -1,0 +1,151 @@
+{
+  "run_id": "pf_s04e032_jointUV_v1_20261018T224109Z",
+  "runtime": {
+    "protocol": "S04-E032/v1-fixed-damage-joint-head-plane-20261018",
+    "commit": "54570b0117ea008b12bd7fae9df6c9ac3b9833e6",
+    "execution": "completed_pending_retrieval_review",
+    "host": "GPUServer8",
+    "pid": 3912280,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "cuda_visible_devices": "5",
+    "command": [
+      "/mnt/data2/drtao/wennie/pf_s04e032_jointUV_v1_20261018T224109Z/code/SENS_tensile/run_s04_e032.py",
+      "--execute",
+      "--grant",
+      "/mnt/data2/drtao/wennie/pf_s04e032_jointUV_v1_20261018T224109Z/grant.json",
+      "--out",
+      "/mnt/data2/drtao/pidl_archives/pf_s04e032_jointUV_v1_20261018T224109Z/output"
+    ],
+    "optimizer_steps": 0,
+    "accepted_head_updates": 1,
+    "head_candidate_evals": 2,
+    "metric_gradient_evals": 7,
+    "history_commits": 0,
+    "retry": false,
+    "source_dirty": false,
+    "cuda_cap_bytes": 23762501632,
+    "frozen_plane_dimension": 7,
+    "joint_solve_calls": 1,
+    "coefficient_proxy_iterations": 13,
+    "elapsed_seconds": 42.64832891058177,
+    "peak_cuda_allocated_bytes": 1492754432,
+    "peak_cuda_reserved_bytes": 1793064960,
+    "max_rss_bytes": 2811809792
+  },
+  "retrieval": {
+    "status": "ALL_FILES_SIZE_SHA256_AND_ARCHIVE_VERIFIED",
+    "file_count": 24,
+    "total_bytes": 28622131,
+    "source_commit": "54570b0117ea008b12bd7fae9df6c9ac3b9833e6",
+    "source_dirty": false,
+    "worker_exited": true,
+    "archive_sha256": "78f9d312e92527531641dc5fe175df629a8ab978665dfed0f8ba2592082d3c17"
+  },
+  "review": {
+    "commit": "54570b0117ea008b12bd7fae9df6c9ac3b9833e6",
+    "reviewer": "/root/e027_independent_review",
+    "status": "PASS",
+    "inherited_body_review": "b0039a05 E031 physical/helper checks",
+    "delta": [
+      "frozen seven-gradient plane",
+      "current projected gradients and exact UV quadratics",
+      "one constrained joint proxy then actual finite admission",
+      "raw .1percent primary separate from accepted component"
+    ],
+    "fixture_count": 4,
+    "remaining_blockers": []
+  },
+  "evidence_review": {
+    "status": "PASS_AFTER_LOCAL_SIDECAR_PROTOCOL_CORRECTION",
+    "reviewer": "/root/e027_independent_review",
+    "runtime_commit": "54570b0117ea008b12bd7fae9df6c9ac3b9833e6",
+    "scientific_primary": "negative_raw_amplitude_target",
+    "primary_raw_ratio": 0.9995399532271053,
+    "target": 0.999,
+    "component_gain_retained": true,
+    "all_seven_metrics_recomputed": true,
+    "damage_and_old_controls_bitwise_equal": true,
+    "sole_proposal_half_endpoint_verified": true,
+    "first_candidate_strict_rejection_preserved": true,
+    "full_candidate_raw_gain_percent": 0.09206926427882678,
+    "KKT_relative_stationarity": 1.1103092041771954e-08,
+    "file_count": 24,
+    "total_bytes": 28622131,
+    "visual_figures": 5,
+    "final_metrics_rows": 11,
+    "global_u_error_increase_percent": 15.245722755058267,
+    "Z_u_error_increase_percent": 8.302534800010575,
+    "reaction_absolute_error_before": 0.00238248209057891,
+    "reaction_absolute_error_after": 0.00112250851988614,
+    "reaction_overshoots": true,
+    "scope": "Raw amplitude goal negative; genuine protected seven-metric component gain, unguarded u regression retained. Proxy KKT is not nonlinear/full-head capacity proof.",
+    "archive_correction": "Independent reviewer requested two analysis sidecar protocol names corrected; parent verified actual joint-head-plane string in both notes and generator. No raw/code/re-run/threshold change.",
+    "no_PT": true,
+    "no_model": true,
+    "no_GPU": true,
+    "no_SSH": true,
+    "no_training": true,
+    "no_new_data": true
+  },
+  "human_authorization": "Verified direct human HQ userMessage01a15126-2cc8-7f22-a54b-4054bb54aa65 night continuing supervision and earlier minimal-experiment scope; HQ D7 delegation",
+  "decision": {
+    "primary_raw_RMSE_ratio": 0.9995399532271053,
+    "target_raw_ratio": 0.999,
+    "primary_met": false,
+    "protected_UV_raw_max_ratio": 0.9995399532271053,
+    "UV_global_ratio": 0.9555448663561892,
+    "raw_global_ratio": 0.9995399532271053,
+    "status": "COMPONENT_GAIN_BELOW_RAW_TARGET",
+    "accepted_head_updates": 1,
+    "scope": "one fixed-damage frozen-plane joint coefficient correction; all seven actual guard values retained"
+  },
+  "verdict": "negative for preregistered raw .1percent amplitude; protected seven-metric component gain retained with u-channel regression",
+  "previous_runs_frozen": true,
+  "local_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E032/runs/pf_s04e032_jointUV_v1_20261018T224109Z",
+  "producer_archive": "/mnt/data2/drtao/pidl_archives/pf_s04e032_jointUV_v1_20261018T224109Z",
+  "total_route_GPU_hours_receipt_wall": 1.0917761951371787,
+  "component_changes": {
+    "global_uv_RMS_Us": {
+      "before": 0.015460202322109122,
+      "after": 0.014772916961719406,
+      "ratio": 0.9555448663561892
+    },
+    "zone_uv_RMS_Us": {
+      "before": 0.007241890934432285,
+      "after": 0.007086534561808167,
+      "ratio": 0.9785475404102731
+    },
+    "global_raw_RMSE": {
+      "before": 49.07200765657422,
+      "after": 49.049432237812354,
+      "ratio": 0.9995399532271053
+    },
+    "zone_raw_RMSE": {
+      "before": 9.869111040756783,
+      "after": 9.844809732333538,
+      "ratio": 0.9975376395783888
+    },
+    "global_active_RMSE": {
+      "before": 0.08025916234339693,
+      "after": 0.0802060367482632,
+      "ratio": 0.9993380743882371
+    },
+    "zone_active_RMSE": {
+      "before": 0.01558655329429912,
+      "after": 0.015510155135349236,
+      "ratio": 0.9950984571439648
+    },
+    "free_force": {
+      "before": 0.024987697551350718,
+      "after": 0.024553292849729725,
+      "ratio": 0.9826152569388086
+    }
+  },
+  "supplementary_costs": {
+    "global_u_increase_percent": 15.245722755058267,
+    "Z_u_increase_percent": 8.302534800010575,
+    "reaction_overshoot": 0.00112250851988614
+  },
+  "no_PT_or_model_load_on_Mac": true
+}

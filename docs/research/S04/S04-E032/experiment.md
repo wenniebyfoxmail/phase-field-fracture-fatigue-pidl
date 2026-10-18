@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E032
 protocol_revision: v1-fixed-damage-joint-head-plane-20261018
-status: preparation
+status: completed
 ---
 # E032：保留E031终态，在冻结七梯度空间内联合选择一次UV头增量
 
@@ -52,3 +52,7 @@ E031唯一已访问步，raw-global平方指标实际相对变化−.00018731174
 HQ直接人方夜间继续托管userMessage01a15126-2cc8-7f22-a54b-4054bb54aa65已现场核读，原最小有判别力试验连续到真实场/数值授权及本次D7具体派发有效。旧五Run receipt共1.07992943710646GPU小时；本次一次最多.5，最坏1.57992944<原2GPU小时总限。单GPU实际UUID，启动空闲>=20GiB/SM0/无计算进程，allocator<=free−1GiB、余量>=1GiB，RSS32GiB、输出2GiB。预计与E031梯度/评估/图约34秒同量级外加7方向UV及小空间系数求解；保守<=1800s，外层1790s TERM+5s KILL。缓存/tmp/output均fresh /mnt/data2路径，独立clean exact Git snapshot。
 
 Mac仅保存数组诊断与synthetic轻量fixture；真实模型/当前梯度/头校正仅producer。必要独立焦点review绑定精确源码后才启动。输入/来源/主机/GPU/零步身份不符、非有限、联合求解数值失败、物理d/历史/非UV参数变化、界/预裂纹>1e−10、前向不符、时间/内存/输出超限均首停不重试；不换权重、不接触封存、新状态或别人的进程。
+
+## 2026-10-18实际结案
+
+54570b01精确源码单次运行，SLSQP13次proxy迭代、两有限候选，half被接受；42.648329秒，24项输出大小/SHA、保存数组与独立五图/数值核验完成。raw .0460047%<事前.1%，幅度主标准negative，保留七指标共降组件收益；u全域/Z误差回退15.25%/8.30%、反力过冲与旧global active代价单列。旧标准不改、没有新增候选/重试。详见[result](result_20261018.md)及[仅准备的下一选择](next_decision.md)。

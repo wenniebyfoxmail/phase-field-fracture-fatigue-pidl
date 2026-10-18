@@ -1,0 +1,67 @@
+{
+  "status": "SAVED_PROPOSAL_LIMITS_DIAGNOSED",
+  "proxy_ball_norm": 0.13338424002945962,
+  "proxy_ball_slack": 0.9822086445117635,
+  "proxy_UV_global": 0.8829836436537176,
+  "proxy_UV_Z": 1.0000000000000016,
+  "proxy_raw_squared": 0.9981610251735364,
+  "primary_raw_squared_target": 0.998001,
+  "raw_target_gap_proxy": 0.00016002517353641554,
+  "constraints": {
+    "UV_Z": 1.5543122344752192e-15,
+    "UV_global_cone": -0.004026582010733428,
+    "UV_Z_cone": 3.0357660829594124e-17,
+    "raw_global_cone": -0.01021945155527226,
+    "raw_Z_cone": -0.016296180668296578,
+    "active_global_cone": 2.42861286636753e-17,
+    "active_Z_cone": 1.8214596497756474e-17,
+    "force_squared_cone": -0.02833355525856879
+  },
+  "active_constraint_names": [
+    "UV_Z",
+    "UV_Z_cone",
+    "active_global_cone",
+    "active_Z_cone"
+  ],
+  "active_multipliers": [
+    0.01083158992450161,
+    0.33503278076863524,
+    0.12404393622321477,
+    0.11955997249496471
+  ],
+  "relative_stationarity_residual": 1.1103092041771954e-08,
+  "complementary_products": [
+    1.6835672738471366e-17,
+    1.0170811525369994e-17,
+    3.012546995065727e-18,
+    2.1777366562786446e-18
+  ],
+  "visited_candidate_decomposition": [
+    {
+      "candidate": 1,
+      "fraction": 1.0,
+      "raw_squared_linear_relative": -0.0018389748264635304,
+      "raw_squared_actual_relative": -0.0018405376106340437,
+      "raw_RMSE_reduction_percent": 0.09206926427882678,
+      "remainder_over_abs_linear": -0.0008498127043525799,
+      "admitted": false,
+      "reasons": [
+        "UV_Z"
+      ]
+    },
+    {
+      "candidate": 2,
+      "fraction": 0.5,
+      "raw_squared_linear_relative": -0.0009194874132317652,
+      "raw_squared_actual_relative": -0.0009198819027559196,
+      "raw_RMSE_reduction_percent": 0.04600467728945734,
+      "remainder_over_abs_linear": -0.0004290320003053139,
+      "admitted": true,
+      "reasons": []
+    }
+  ],
+  "claim_boundary": "Approximate convex-proxy KKT at the already saved 7D proposal only. Not nonlinear finite optimality or 802D head capacity. The first candidate UV_Z excess is rounding-scale, remains rejected under frozen strict guard. Full candidate raw gain also misses .1percent.",
+  "new_coefficient_solve": false,
+  "new_field_candidate": false,
+  "NN_or_PT_load": false
+}
