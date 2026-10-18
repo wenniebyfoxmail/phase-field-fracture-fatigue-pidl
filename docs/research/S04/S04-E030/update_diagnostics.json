@@ -1,0 +1,25 @@
+{
+  "status": "EXPLICIT_PRE_POST_TIMING_MATCHES_NEXT_PRE_AND_MILESTONES",
+  "steps": 200,
+  "post_worse_than_zero_count": 137,
+  "post_min": 0.5588311603380892,
+  "post_median": 1.0858747128407362,
+  "post_max": 6.797845868979214,
+  "first_pre": 0.7727268883300547,
+  "first_post": 0.7542432347108452,
+  "last_pre": 0.5706360273005627,
+  "last_post": 0.7387549969660933,
+  "actual_parameter_step_L2": {
+    "first": 0.07481449842287895,
+    "min": 0.004936945436954505,
+    "median": 0.00836641933116535,
+    "max": 0.07481449842287895,
+    "last": 0.006408859789255598
+  },
+  "relative_parameter_step_L2": {
+    "min": 0.0001067149086580188,
+    "median": 0.00018091419802250913,
+    "max": 0.0016180837988680526
+  },
+  "scope": "Observed actual parameter displacement, no clipping. Old E029 did not save analogous norms; not a causal cross-run comparison of Adam step magnitudes."
+}

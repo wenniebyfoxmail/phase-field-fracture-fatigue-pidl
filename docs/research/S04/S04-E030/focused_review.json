@@ -1,0 +1,9 @@
+{
+  "status": "PASS_NO_NEW_BLOCKER",
+  "commit": "6f3d9abe024f17ba64e401aea9d71163c7207e68",
+  "reviewer": "/root/e027_independent_review",
+  "scope": "4fixture checks independently passed; fixed physical UV/map/objective/identity/resource/newpost-timing audit; E029200-state timing independently reproduced",
+  "external_timeout": "1790s TERM+5s KILL",
+  "no_GPU": true,
+  "no_PT": true
+}

@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E030
 protocol_revision: v1-fixed-physical-UV0-damage-isolation-20261018
-status: preparation
+status: completed_directional_component
 ---
 # E030：固定自身零步物理UV，隔离damage学习
 
@@ -43,3 +43,8 @@ E029第k行LA是更新前；完整原生GP/Z active项不随采样变化，所�
 精确模型/数据/旧输出/clean source/host/UUID/零步复放不符、UV改变或raw变化>1e-12、物理界/预裂纹>1e-10、非有限值/梯度/参数、全部变量真实damage导数数值归零、时间/显存/RSS/存储触限，整次立即停止。新Run失败不重试、不恢复、不替代权重或扩预算；固定200步，不挑低loss中间态救主判据。
 
 若主读数改善且damage代价可解释，保留组件进展、由HQ选择联合更新的下一必要设计；若未改善，冻结结果并区分damage拟合能力与固定UV参照局限，不再把同一联合/固定设置重复计算。
+
+
+## 2026-10-18 fixed outcome
+
+200步完成并取回，主比值.956036354方向收益成立；Z/global/growth-domain damage改善，global active/force仍有代价。原方案和单一主判据未变，见[result_20261018.md](result_20261018.md)。独立产物复核通过，主读数及代价均保留。
