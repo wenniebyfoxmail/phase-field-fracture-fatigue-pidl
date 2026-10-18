@@ -42,6 +42,8 @@ def cone_projection(g, normals):
     _, active, p, lam = min(candidates, key=lambda r: r[0])
     pn = float(np.linalg.norm(p))
     direction = p / pn if pn / ng > 1e-8 else np.zeros_like(p)
+    if np.max(a @ direction) > 1e-8:
+        raise ValueError('normalized cone direction unresolved')
     stationarity = p + g + np.einsum('i,ij->j', lam, a)
     info = dict(active=list(active), projected_norm=pn, objective_gradient_norm=float(ng),
                 retained_descent_fraction=pn / ng, resolved_nonzero=bool(pn / ng > 1e-8),
@@ -82,8 +84,11 @@ def common_descent(gradients):
         raise ValueError('convex hull certificate not resolved')
     q2, q, weights, active, gaps = min(candidates, key=lambda r: r[0])
     margin = float(np.sqrt(q2))
-    direction = -q / margin if margin > 1e-8 else np.zeros_like(q)
-    return direction, q, dict(unit_gradient_margin=margin, resolved_strict=bool(margin > 1e-8),
+    proposed = -q / margin if margin > 1e-8 else np.zeros_like(q)
+    # A tiny q amplifies hull certificate roundoff: verify every actual slope.
+    resolved = bool(margin > 1e-8 and np.max(a @ proposed) <= -.5 * margin)
+    direction = proposed if resolved else np.zeros_like(q)
+    return direction, q, dict(unit_gradient_margin=margin, resolved_strict=resolved,
                              weights=weights.tolist(), active=list(active), normal_norms=norms.tolist(),
                              simplex_sum=float(weights.sum()), min_weight=float(weights.min()),
                              certificate_min_gap=float(gaps.min()),
