@@ -1,0 +1,77 @@
+{
+  "checkpoints": {
+    "A25_exact_e009_replay": {
+      "path": "local_archive/experiments/S09-E010/runs/S09-E010-R001-support-amplitude-three-arm/remote_run/A25_exact_e009_replay/checkpoint_update500.pt",
+      "sha256": "2fcca75a523e41adf592ae6b6f89a43f0f975d8583f77726aa944ca103aa1116",
+      "update": 500
+    },
+    "B0_support_amplitude_beta0": {
+      "path": "local_archive/experiments/S09-E010/runs/S09-E010-R001-support-amplitude-three-arm/remote_run/B0_support_amplitude_beta0/checkpoint_update500.pt",
+      "sha256": "78701f92226801225bb129b2d567f6b448309a9a630fb2b99fd30957710eaf15",
+      "update": 500
+    },
+    "B25_support_amplitude_beta0p25": {
+      "path": "local_archive/experiments/S09-E010/runs/S09-E010-R001-support-amplitude-three-arm/remote_run/B25_support_amplitude_beta0p25/checkpoint_update500.pt",
+      "sha256": "24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05",
+      "update": 500
+    }
+  },
+  "cycles": [
+    1,
+    2,
+    3,
+    4,
+    21,
+    29,
+    41,
+    46,
+    48,
+    58,
+    60,
+    69,
+    70,
+    71,
+    72,
+    73
+  ],
+  "intermediate_load_states_available": false,
+  "maximum_update500_amplitude_replay_abs_difference": 4.0657581468206416e-20,
+  "operator_output_state": "s04 peak only",
+  "optimizer_steps_performed": 0,
+  "outputs": {
+    "S09-E010-R001-all-selected-cycles-fields.gif": {
+      "bytes": 1568234,
+      "sha256": "2dc84584db604bcf64651f0e25f8731b9cbe27eca69f6540a6434d156d97d1ba"
+    },
+    "S09-E010-R001-cycle69-three-arm-increments.pdf": {
+      "bytes": 49541,
+      "sha256": "e3b88dceef7929b3cd74f98703ea71859f5dc3281288d167a0ff2f21359f1109"
+    },
+    "S09-E010-R001-cycle69-three-arm-increments.png": {
+      "bytes": 233362,
+      "sha256": "3630ccb1313d642560e803bddf1c2ef2fd2327c300047eec8250599f0ba4b3dc"
+    },
+    "S09-E010-R001-cycle73-final-fields.pdf": {
+      "bytes": 49132,
+      "sha256": "88aa2fef4bf8307944ac385e36948b508c575874a57792b07f7496cbb48190d4"
+    },
+    "S09-E010-R001-cycle73-final-fields.png": {
+      "bytes": 272353,
+      "sha256": "8a88a22cf659a5f4b2a16af695044a7c1342d1929404852c8c8f45e186dea346"
+    }
+  },
+  "packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+  "packet_path": "local_archive/experiments/S09-E008/runs/S09-E008-P1-R001-stage0a-memorisation/packet",
+  "purpose": "read-only update-500 damage-field reconstruction for visualisation",
+  "rasterisation": {
+    "crack_band_y_limits": [
+      -0.055,
+      0.055
+    ],
+    "method": "nearest native node for display pixels only",
+    "source_fields_unchanged": true
+  },
+  "replay_tolerance": 1e-12,
+  "run_id": "S09-E010-R001-support-amplitude-three-arm",
+  "schema_version": "s09-e010-field-visualisation-v1"
+}

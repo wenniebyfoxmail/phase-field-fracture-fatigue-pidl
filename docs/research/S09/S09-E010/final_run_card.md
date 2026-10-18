@@ -88,4 +88,18 @@ Launch detached with a task-specific PID and log. Record hostname, commit, clean
 
 The primary B25-versus-A25 criterion is an integer AUC pair-score gain of at least 4, equivalent to `Delta_AUC >= 0.08`. A balanced local repair additionally requires B25/A25 protected ratios `G<=1.05`, `F<=1.05`, `L_P<=1.10`, and `L_judge<=1.05`. B25-versus-B0 is conditional physics attribution only and cannot rescue the primary comparison.
 
+## Execution record — 2026-10-19 Taobo local time
+
+The single approved run was executed once from reviewed commit
+`010281be8045301f7e56b938de82969982c89bc9` on `GPUServer8`, physical GPU UUID
+`GPU-ea68e432-5acb-5488-5be1-4ba9a2053beb`. All three arms completed 500
+updates. Exact A25 replay and shared identity passed; all outputs were finite
+and all hard-constraint counts were zero. The completion receipt SHA256 is
+`a5e104e0ec401a8fcbd3d1416f1ab86a85353957ed8e4bd47d90143b458d9be4`.
+
+The frozen outcome is `NO_TARGETED_RANKING_SIGNAL`: `A25` and `B25` both had
+AUC 0.68 and pair score 34, giving delta 0 rather than the required 4. All
+protected ratios passed. No retry was launched. Full interpretation and field
+evidence are in `run_analysis_20261019.md` and `results/`.
+
 Any positive result supports only a next bounded development test. It does not establish rollout, generalisation, FEM truth, full fracture-evolution PINO performance, or real-road validity.
