@@ -28,6 +28,8 @@ complete logs and checkpoints remain in the local run archive.
    frozen damage, regime-ranking, physics and judgement axes.
 3. Use the completion receipt and decision JSON for predicate traces,
    cross-arm eligibility, replay status and exact precision.
+4. Read `field_visualisation/README_analysis.md` with the field figures to distinguish
+   persistent peak damage from newly predicted damage increments.
 
 ## What the figure shows
 
@@ -45,6 +47,14 @@ this frozen development screen, but it does not satisfy the complete
 relative-repair or confirmatory-nomination criteria. The target-support
 diagnostic in the parent experiment folder motivates a new support-aware test;
 it does not prove why E009 behaved this way.
+
+The update-500 field reconstruction gives the same interpretation in physical
+space. Peak fields are visually dominated by the inherited crack, while the
+increment fields show that the strongest FEM event is highly localised. `R/S`
+approximately match its global mean by spatial smearing; `A25` suppresses that
+broad background and shifts the shape toward the crack tip, but substantially
+underpredicts the local amplitude. On the final nearly stagnant transition,
+`A25` still overpredicts the mean increment by about 11.6 times.
 
 ## Allowed conclusion
 

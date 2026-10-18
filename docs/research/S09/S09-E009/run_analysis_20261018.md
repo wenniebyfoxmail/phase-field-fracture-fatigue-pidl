@@ -107,6 +107,34 @@ read-only measurements from the same frozen development packet, recorded in
 `post_run_support_diagnostic_20261018.json`; they do not access a holdout or
 change the E009 result.
 
+## Field visualisation
+
+The frozen update-500 checkpoints were replayed on the same 16-cycle packet to
+reconstruct native-node damage fields. No optimiser step was performed. The
+recomputed per-cycle weighted amplitudes agree with the archived scalar logs
+to a maximum absolute difference of `1.0842021724855044e-19`. Exact checkpoint,
+packet and output identities are in
+`results/field_visualisation/field_reconstruction_receipt.json`.
+
+The strongest target event, cycle 69, shows why the aggregate result is mixed.
+FEM concentrates new damage at the crack tip. `R` and `S` are close to the
+correct weighted mean increment but spread it over a broad smooth region;
+their spatial correlations are only 0.050 and 0.053. `A25` produces a more
+right-tip-biased shape and suppresses the broad background, but its weighted
+mean increment is `1.276e-5` versus `2.564e-4` for FEM, and its local maximum is
+`1.27e-4` versus `8.63e-1`. At the final listed transition, cycle 73, FEM is
+nearly stagnant (`1.096e-6`) while A25 still predicts `1.275e-5`, about 11.6
+times larger, with spatial correlation 0.065.
+
+The total `d_peak` fields look visually close because they are dominated by the
+inherited `d_pre` crack. Crack-development capability must therefore be judged
+from `delta d = d_peak - d_pre`, its support, amplitude and spatial alignment.
+The [field visualisation guide](results/field_visualisation/README_analysis.md) links the
+final field, four-arm increment comparison, selected-cycle contact sheet and
+16-cycle GIF. These are independent `s00 -> s04` mappings. Intermediate
+within-cycle loading-state predictions were not stored and are not implied by
+the animation.
+
 ## Selected next gate
 
 The next repair should target damage support and amplitude explicitly while

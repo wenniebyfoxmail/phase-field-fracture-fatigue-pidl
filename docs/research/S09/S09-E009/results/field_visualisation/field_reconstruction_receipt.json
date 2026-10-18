@@ -1,0 +1,90 @@
+{
+  "checkpoints": {
+    "A0_damage_anchor_beta0": {
+      "path": "local_archive/experiments/S09-E009/runs/S09-E009-R001-four-arm-damage-separation/retrieval/extracted/mnt/data2/drtao/wennie/S09-E009-R001-four-arm-damage-separation/A0_damage_anchor_beta0/checkpoint_update500.pt",
+      "sha256": "b36abc0dd03e6dd3a6265cd13aa0211677355a67f02062d77748d52e431483c2",
+      "update": 500
+    },
+    "A25_damage_anchor_beta0p25": {
+      "path": "local_archive/experiments/S09-E009/runs/S09-E009-R001-four-arm-damage-separation/retrieval/extracted/mnt/data2/drtao/wennie/S09-E009-R001-four-arm-damage-separation/A25_damage_anchor_beta0p25/checkpoint_update500.pt",
+      "sha256": "c325c9bf24e5c88b301507a36270f37484938591ea18248cbe4e119b12e32d1a",
+      "update": 500
+    },
+    "R_current_pino_replay": {
+      "path": "local_archive/experiments/S09-E009/runs/S09-E009-R001-four-arm-damage-separation/retrieval/extracted/mnt/data2/drtao/wennie/S09-E009-R001-four-arm-damage-separation/R_current_pino_replay/checkpoint_update500.pt",
+      "sha256": "fc30c31c8b2e7f72c0137778248a6462a77137d4183ee4e95622a9e47706d4e5",
+      "update": 500
+    },
+    "S_data_only_scalar": {
+      "path": "local_archive/experiments/S09-E009/runs/S09-E009-R001-four-arm-damage-separation/retrieval/extracted/mnt/data2/drtao/wennie/S09-E009-R001-four-arm-damage-separation/S_data_only_scalar/checkpoint_update500.pt",
+      "sha256": "519ef376240392ae38439f4c771169ec4107ce3fd15fa3418fdcb386e8219405",
+      "update": 500
+    }
+  },
+  "cycles": [
+    1,
+    2,
+    3,
+    4,
+    21,
+    29,
+    41,
+    46,
+    48,
+    58,
+    60,
+    69,
+    70,
+    71,
+    72,
+    73
+  ],
+  "intermediate_load_states_available": false,
+  "maximum_update500_amplitude_replay_abs_difference": 1.0842021724855044e-19,
+  "operator_output_state": "s04 peak only",
+  "optimizer_steps_performed": 0,
+  "outputs": {
+    "S09-E009-R001-A25-all-selected-cycles.gif": {
+      "bytes": 960036,
+      "sha256": "5e2e770546cbddeb3708b01e80cc8f0232cc2def465148d9235ddf6f8934a61e"
+    },
+    "S09-E009-R001-A25-cycle73-final-fields.pdf": {
+      "bytes": 43359,
+      "sha256": "90e8f4cee89a5d9efb5cdf410cc46c48cf7fd9c0bfe824b5c40faffe3e3452f6"
+    },
+    "S09-E009-R001-A25-cycle73-final-fields.png": {
+      "bytes": 221908,
+      "sha256": "84e386912d55e83635dc63743789ce8c3780accb74b7e802bb5ad530abada35c"
+    },
+    "S09-E009-R001-A25-selected-cycle-peak-fields.pdf": {
+      "bytes": 112115,
+      "sha256": "96c8977cf8ad83e23395b3ad50ee118522c9c46ee690467c0bf2a97423bffaae"
+    },
+    "S09-E009-R001-A25-selected-cycle-peak-fields.png": {
+      "bytes": 308601,
+      "sha256": "e34953bbfc821ec18263edb83dd5eb93b2df4244d3ec80faf752378c36e885a7"
+    },
+    "S09-E009-R001-cycle69-four-arm-increments.pdf": {
+      "bytes": 66102,
+      "sha256": "ca574b033e9d61aad640cac36856cfa0af01f4ae66fb11c6f6d22574ea050421"
+    },
+    "S09-E009-R001-cycle69-four-arm-increments.png": {
+      "bytes": 278090,
+      "sha256": "7662a4b4a1e96c4afcd09411995c4b12d49a815f8c10a21a999652ef611f6195"
+    }
+  },
+  "packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+  "packet_path": "local_archive/experiments/S09-E008/runs/S09-E008-P1-R001-stage0a-memorisation/packet",
+  "purpose": "read-only update-500 damage-field reconstruction for visualisation",
+  "rasterisation": {
+    "crack_band_y_limits": [
+      -0.055,
+      0.055
+    ],
+    "method": "nearest native node for display pixels only",
+    "source_fields_unchanged": true
+  },
+  "replay_tolerance": 1e-12,
+  "run_id": "S09-E009-R001-four-arm-damage-separation",
+  "schema_version": "s09-e009-field-visualisation-v1"
+}
