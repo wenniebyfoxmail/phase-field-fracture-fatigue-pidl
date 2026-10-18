@@ -775,3 +775,17 @@
   and synthetic input reads separately approved. Parallel literature task
   copied4identity-checked PDFs to the existing Obsidian library and amended
   the inverse-review note, not an experiment or new data/threshold permission.
+
+- **2026-10-18 — F01 D2 isolated SVG code and40unit packet statically ready.**
+  Added standalone aa2024_saved_svg.py and test_aa2024_saved_svg.py atsource
+  65141603; original7sources byte-identical to22cb6179, no G01/numeric/plotter
+  edits. Independent PASS_STATIC_SVG_CODE atcleane06a90ea, no mandatory fix
+  or definite fixture conflict. See S03-E019/font_svg_code_review.md,
+  font_svg_test_design.md and font_svg_execution_package.md. A requests40
+  in-memory artificial units only, actualQR/SVD0/no file load/no SVG files;
+  B is separate future saved-synthetic display, fixed B003 six-member input,
+  SVG-only with incomplete/unaccepted provenance. No Matplotlib/SciPy/legacy
+  imports; source/input identity and G01/factor guards plus whole60s soft
+  clocks prepared. No Python/import/AST/discovery/test/array read or figure
+  run this turn. Static ready is not tested or visually/numerically accepted.
+  Await user approval forA once; no automaticB, B003 rescue, real/held orC/D.
