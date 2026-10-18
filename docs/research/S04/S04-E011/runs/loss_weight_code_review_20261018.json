@@ -4,6 +4,12 @@
   "verdict": "REVIEW_PASS_SCOPED_TO_PREPARATION_AND_STATIC_AUDIT",
   "reviewed_code_commit": "2d89a7f78b345e533ec822dee64ed8523a65d83a",
   "reviewed_document_commit": "8656ec7b93dfc3cade2893be26afe09788dff061",
+  "focused_final_document_review": {
+    "commit": "6e192bdbdd78b0cdaf9895d4d96249b298834f34",
+    "verdict": "REVIEW_PASS_SCOPED_TO_DOCUMENT_CLARIFICATIONS",
+    "checks": "C kink/no-reanchor/serialization; reversible actual output bias perturbation; fullNN initial gradients/signs; exact RPROP identity; missing200/no-substitution; compositeJ/per-channel boundary; no arm/factor/budget/source/static-result changes",
+    "new_execution": "none; CPU audit not repeated"
+  },
   "scope": "four added preparation files plus actual compute_energy/Q4/fit/material/gamma/C mapping/BC implementations; no production runner",
   "independent_checks": [
     "CPU audit rerun once, resulting JSON exactly equals tracked static receipt",
