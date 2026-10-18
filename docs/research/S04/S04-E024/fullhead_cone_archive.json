@@ -1,0 +1,10 @@
+{
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fullhead_feasible_v1",
+  "manifest_sha256": "576982e0eb2f1b4e7457c617ca119af23f9ab1f15e3febb5430dcd4c7331a824",
+  "file_count": 40,
+  "total_bytes": 790246,
+  "source_commit": "a7186d4f1b519652c638e872cb2fcec9b4cf5a08",
+  "results": "results/",
+  "figures": "figures/",
+  "independent_review": "review/"
+}

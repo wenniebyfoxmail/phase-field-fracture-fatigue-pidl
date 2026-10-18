@@ -1,0 +1,29 @@
+# D009 bounded independent evidence review
+
+**PASS within the declared first-order scope**, source `a7186d4f1b519652c638e872cb2fcec9b4cf5a08`. No finite correction, fit, SLSQP search, training or producer action was performed by this reviewer. Final prose/figure QA remains a separate final addendum.
+
+Independent recomputation used the actual checkpoint's eight layers (last-layer LeakyReLU .01), 511-node chunks, original head D and bias, independently expanded physical BC/window, explicit 2×2 Q4 geometry and normalized lumped mass, component AMOR stresses and engineering-shear adjoints, and SciPy BLAS dgemm. All **27 full head gradients** matched saved gradients (maximum relative difference **4.313e-14**). Verified all **33 original file hashes**, three D007 NPZ/basis hashes, original coefficient identity, basis orthonormality through preserved inputs, and zero physical feature support outside the window. No history channel is created or changed.
+
+The source's old-plane `old_v @ bb` warning was checked through explicit `np.einsum` using the saved basis and projected 2D direction. Maximum discrepancy was **1.735e-18** (c60/c83 exactly zero). Thus these returned directions are numerically corroborated, but the NumPy warning backend cause remains unidentified; no warning was suppressed or declared repaired. The independent calculation emitted no warnings.
+
+For c60, the original 2D projection is unresolved numerical zero (retained ratio 1.7435e-14 relative to its in-plane UV gradient), while the full-head cone retains **0.9586729** of the global UV gradient norm. Three-gradient strict common margin is **0.5981176**; with the two instantaneous background-driver error gradients it remains **0.3128287**. Independently recomputed hull vectors, simplex weights, KKT inequalities and all actual unit-gradient witness slopes agree. Therefore c60's previously identified local first-order conflict is a restriction of the saved plane, not a demonstrated full-head conflict. This is local geometry at the original E023 endpoint.
+
+Both c20/c83 also have strict common witnesses; three-gradient margins are .8318614/.7001964, five-gradient margins .2973113/.5906743. Cone retained fractions are 1/.9998108. Old-plane retained fractions in the original table use their own in-plane denominator, so they must not be read as fractions of full-head opportunity. The companion `global_normalization.json` gives the common-denominator comparison.
+
+All 324 saved derivative rows were checked for complete schema; all **108 smallest-epsilon derivative checks pass**. Origin exact-zero trace count is zero in every state; the largest plus/minus probe branch-change fractions are .00020253/.00021121 and are explicitly retained rather than claiming a fixed branch at every tested finite epsilon. The adjoints were independently verified in full coordinate arrays, not solely from those saved finite differences.
+
+Half-normalized squared error gradients have fractional relative RMS derivatives at the origin. Weak uses the free-force mass-dual norm and its own force²; elastic driver uses its own error², not a nearly zero FEM reference scale. The latter remains instantaneous 2(1-d)psi+, not net fracture/history/fatigue evolution. Physical derivative and surrogate head-coordinate claims are kept separate.
+
+These witnesses establish possible strict infinitesimal joint descent in the specified functionals. They do not establish a usable finite 2% step, a background pointwise guarantee, full-field damage improvement, physical equilibrium accuracy, evolution benefit, generalization, or any application acceptance threshold. A minimal future direction enrichment is defensible; any actual correction still requires the declared nonlinear-force/UV/background checks. The legacy .001 value does not become a physical acceptance rule.
+
+## Existing-witness enrichment and figure QA
+
+The proposed third basis vector is only the normalized orthogonal remainder of the already saved strict-five witness; no new geometry search was needed. Independent dot-product checks confirm remainder norms .9547804/.9497992/.8069081, orthogonality and witness reconstruction. Thus adding this single dimension suffices to contain the witnessed local direction. It is a defensible minimal future repair experiment in this coordinate setting; no finite correction or training is implied. Critically, strict-five protects only its listed functionals: c20/c83 **full and damage-region instantaneous driver-error slopes remain positive**, despite negative background-driver slopes. It must not be called joint improvement of every physical metric.
+
+Both PNGs were visually inspected. Labels clearly specify first-order only and unit-gradient sensitivity, correct shared-global normalization, and distinguish primary-three from secondary-five goals. Heatmap signs agree with the saved gradient alignments. No measured-error improvement is inferred from projection ratios or angular margins. Figure SHA bindings appear in the companion verdict.
+
+## Final prose and provenance addendum
+
+Read the final `fullhead_cone_decision.md` and case README, and bound their final SHA-256 values and both figures/PDFs/sidecars in the verdict JSON. No blocking interpretation or plotting issue remains. In particular, 95.8673% denotes retained gradient descent capacity, not achieved error reduction; all 108 smallest-epsilon checks and residual branch changes are stated correctly; c20/c83 full/damage elastic-driver tradeoffs remain visible. The single third-direction proposal contains the saved strict-five witness but is explicitly unimplemented and conditional on later nonlinear finite-field tests. It does not justify a full 2% step, history evolution, application acceptance, or an additional training run.
+
+No further numerical stage or candidate was executed for this final wording/hash review.

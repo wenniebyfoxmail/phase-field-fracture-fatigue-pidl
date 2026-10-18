@@ -1,0 +1,336 @@
+[
+  {
+    "state": "c20s4",
+    "head_shape": [
+      284,
+      2
+    ],
+    "parameter_dimension": 568,
+    "radius": 0.001743214045824267,
+    "radius_fraction": 0.02,
+    "affine_max_abs": 1.3877787807814457e-16,
+    "trace_zero_gp": 0,
+    "min_abs_trace": 2.778034489600567e-08,
+    "driver_normal_singular_values": [
+      1.7669900227355881,
+      1.2833166035871686,
+      0.4519772763810614,
+      0.16297627578408425,
+      0.00017227039127909927
+    ],
+    "gradient_span_rank": 5,
+    "old_plane": {
+      "active": [],
+      "projected_norm": 0.17630251861896998,
+      "objective_gradient_norm": 0.17630251861896998,
+      "retained_descent_fraction": 1.0,
+      "resolved_nonzero": true,
+      "multipliers_unit_normals": [
+        0.0,
+        0.0
+      ],
+      "normal_norms": [
+        0.9375978637391699,
+        0.8808432280534001
+      ],
+      "projected_guard_max_relative": -0.9999470536497133,
+      "kkt_stationarity_relative": 0.0,
+      "complementarity_relative": 0.0,
+      "moreau_relative": 1.1162030845655044e-16
+    },
+    "full_projected": {
+      "active": [],
+      "projected_norm": 0.4471537991937014,
+      "objective_gradient_norm": 0.4471537991937014,
+      "retained_descent_fraction": 1.0,
+      "resolved_nonzero": true,
+      "multipliers_unit_normals": [
+        0.0,
+        0.0
+      ],
+      "normal_norms": [
+        0.937597863739169,
+        2.24316795364872
+      ],
+      "projected_guard_max_relative": -0.39425625894703564,
+      "kkt_stationarity_relative": 0.0,
+      "complementarity_relative": 0.0,
+      "moreau_relative": 0.0
+    },
+    "full_common": {
+      "unit_gradient_margin": 0.8318613875441768,
+      "resolved_strict": true,
+      "weights": [
+        0.24347547539934022,
+        0.49221177430694846,
+        0.26431275029371126
+      ],
+      "active": [
+        0,
+        1,
+        2
+      ],
+      "normal_norms": [
+        0.4471537991937014,
+        0.937597863739169,
+        2.24316795364872
+      ],
+      "simplex_sum": 1.0,
+      "min_weight": 0.24347547539934022,
+      "certificate_min_gap": -2.220446049250313e-16,
+      "largest_unit_slope": -0.8318613875441766
+    },
+    "full_common_driver": {
+      "unit_gradient_margin": 0.29731126677316766,
+      "resolved_strict": true,
+      "weights": [
+        0.0,
+        0.4923065548019636,
+        0.011448237460740716,
+        0.0,
+        0.49624520773729563
+      ],
+      "active": [
+        1,
+        2,
+        4
+      ],
+      "normal_norms": [
+        0.4471537991937014,
+        0.937597863739169,
+        2.24316795364872,
+        1.6158456143638225,
+        2.7248401175524446
+      ],
+      "simplex_sum": 1.0,
+      "min_weight": 0.0,
+      "certificate_min_gap": -2.636779683484747e-16,
+      "largest_unit_slope": -0.2973112667731669
+    }
+  },
+  {
+    "state": "c60s4",
+    "head_shape": [
+      284,
+      2
+    ],
+    "parameter_dimension": 568,
+    "radius": 0.0017705456513495562,
+    "radius_fraction": 0.02,
+    "affine_max_abs": 8.604228440844963e-16,
+    "trace_zero_gp": 0,
+    "min_abs_trace": 2.3112388030906497e-07,
+    "driver_normal_singular_values": [
+      1.5634481389976158,
+      1.4309927884612637,
+      0.6875446484978367,
+      0.18754176098146977,
+      1.5706816872541687e-05
+    ],
+    "gradient_span_rank": 5,
+    "old_plane": {
+      "active": [
+        0,
+        1
+      ],
+      "projected_norm": 2.3258676577471557e-15,
+      "objective_gradient_norm": 0.13340273375278333,
+      "retained_descent_fraction": 1.743493249589144e-14,
+      "resolved_nonzero": false,
+      "multipliers_unit_normals": [
+        3.7393230695704025,
+        3.605951623648969
+      ],
+      "normal_norms": [
+        1.0191619411760942,
+        0.7008316160455919
+      ],
+      "projected_guard_max_relative": 1.2919700106132851e-14,
+      "kkt_stationarity_relative": 0.0,
+      "complementarity_relative": 3.6214349811092815e-13,
+      "moreau_relative": 1.3165755988361957e-14
+    },
+    "full_projected": {
+      "active": [
+        0
+      ],
+      "projected_norm": 0.44940561748533486,
+      "objective_gradient_norm": 0.4687788917206592,
+      "retained_descent_fraction": 0.958672895521779,
+      "resolved_nonzero": true,
+      "multipliers_unit_normals": [
+        0.13337256200386352,
+        0.0
+      ],
+      "normal_norms": [
+        1.0191619411760942,
+        3.115339679875167
+      ],
+      "projected_guard_max_relative": -1.4352506534444388e-16,
+      "kkt_stationarity_relative": 4.848531882800584e-17,
+      "complementarity_relative": 4.083440192133719e-17,
+      "moreau_relative": 1.2630313854243216e-16
+    },
+    "full_common": {
+      "unit_gradient_margin": 0.5981176321287165,
+      "resolved_strict": true,
+      "weights": [
+        0.5000000000000003,
+        0.49999999999999967,
+        0.0
+      ],
+      "active": [
+        0,
+        1
+      ],
+      "normal_norms": [
+        0.4687788917206592,
+        1.0191619411760942,
+        3.115339679875167
+      ],
+      "simplex_sum": 1.0,
+      "min_weight": 0.0,
+      "certificate_min_gap": -6.106226635438361e-16,
+      "largest_unit_slope": -0.5981176321287162
+    },
+    "full_common_driver": {
+      "unit_gradient_margin": 0.3128286964603758,
+      "resolved_strict": true,
+      "weights": [
+        0.2835389192936788,
+        0.3630175060939875,
+        0.0,
+        0.3534435746123337,
+        0.0
+      ],
+      "active": [
+        0,
+        1,
+        3
+      ],
+      "normal_norms": [
+        0.4687788917206592,
+        1.0191619411760942,
+        3.115339679875167,
+        2.1123771352135625,
+        3.691742320591311
+      ],
+      "simplex_sum": 1.0,
+      "min_weight": 0.0,
+      "certificate_min_gap": -1.8041124150158794e-16,
+      "largest_unit_slope": -0.31282869646037537
+    }
+  },
+  {
+    "state": "c83s4",
+    "head_shape": [
+      284,
+      2
+    ],
+    "parameter_dimension": 568,
+    "radius": 0.0014171275903012346,
+    "radius_fraction": 0.02,
+    "affine_max_abs": 9.020562075079397e-17,
+    "trace_zero_gp": 0,
+    "min_abs_trace": 2.902172336867806e-09,
+    "driver_normal_singular_values": [
+      1.6483142550593606,
+      1.3610948661921722,
+      0.6525731672023289,
+      0.06803760195099139,
+      0.00016721751198409292
+    ],
+    "gradient_span_rank": 5,
+    "old_plane": {
+      "active": [
+        0
+      ],
+      "projected_norm": 0.0004931589172833528,
+      "objective_gradient_norm": 0.0023391595834192066,
+      "retained_descent_fraction": 0.21082739321380137,
+      "resolved_nonzero": true,
+      "multipliers_unit_normals": [
+        0.002286583005054886,
+        0.0
+      ],
+      "normal_norms": [
+        0.8725065499055548,
+        0.32225713735517686
+      ],
+      "projected_guard_max_relative": -5.429385982434757e-16,
+      "kkt_stationarity_relative": 5.069539224949502e-18,
+      "complementarity_relative": 5.307351325372855e-16,
+      "moreau_relative": 5.321368167955162e-16
+    },
+    "full_projected": {
+      "active": [
+        0
+      ],
+      "projected_norm": 0.11754045710012537,
+      "objective_gradient_norm": 0.11756269611209764,
+      "retained_descent_fraction": 0.9998108327496074,
+      "resolved_nonzero": true,
+      "multipliers_unit_normals": [
+        0.0022865830050548823,
+        0.0
+      ],
+      "normal_norms": [
+        0.8725065499055542,
+        3.56508448403248
+      ],
+      "projected_guard_max_relative": 2.0289129616368667e-17,
+      "kkt_stationarity_relative": 4.077394749742121e-17,
+      "complementarity_relative": 3.9462159768697483e-19,
+      "moreau_relative": 2.510274282246217e-16
+    },
+    "full_common": {
+      "unit_gradient_margin": 0.700196435745538,
+      "resolved_strict": true,
+      "weights": [
+        0.5,
+        0.49999999999999994,
+        0.0
+      ],
+      "active": [
+        0,
+        1
+      ],
+      "normal_norms": [
+        0.11756269611209763,
+        0.8725065499055542,
+        3.56508448403248
+      ],
+      "simplex_sum": 1.0,
+      "min_weight": 0.0,
+      "certificate_min_gap": 0.0,
+      "largest_unit_slope": -0.7001964357455378
+    },
+    "full_common_driver": {
+      "unit_gradient_margin": 0.5906742700718596,
+      "resolved_strict": true,
+      "weights": [
+        0.4805108333565299,
+        0.07869577748568461,
+        0.0,
+        0.0,
+        0.44079338915778554
+      ],
+      "active": [
+        0,
+        1,
+        4
+      ],
+      "normal_norms": [
+        0.11756269611209763,
+        0.8725065499055542,
+        3.56508448403248,
+        2.2376330884077418,
+        2.7216469949531454
+      ],
+      "simplex_sum": 1.0,
+      "min_weight": 0.0,
+      "certificate_min_gap": -1.1102230246251565e-16,
+      "largest_unit_slope": -0.5906742700718592
+    }
+  }
+]

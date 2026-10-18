@@ -1,0 +1,94 @@
+{
+  "verdict": "BOUNDED_INDEPENDENT_EVIDENCE_REVIEW_PASS",
+  "source_commit": "a7186d4f1b519652c638e872cb2fcec9b4cf5a08",
+  "blockers": [],
+  "independent_gradient_max_relative": 4.3128849956011135e-14,
+  "gradients_checked": 27,
+  "original_files_checked": 33,
+  "basis_hashes_checked": 3,
+  "old_mapping_einsum_max_abs": 1.734723475976807e-18,
+  "first_order_only": true,
+  "accepted_corrections": 0,
+  "next_proposal_status": "Final proposal reviewed: add orthogonal remainder of existing strict-five witness, 2D to 3D, same radius/freezes; not implemented. No blocking prose/figure issue.",
+  "evidence_sha256": {
+    "results/baseline.csv": "57ec9adc29343ec053422e51c0fe80eeb8f302ee69307b13170d0fd3d3cf4ff8",
+    "results/c20s4_first_order.npz": "7be85d0f6acc1420933d4b52be00a665dc31dc3edefade73625d03e31388acba",
+    "results/c60s4_first_order.npz": "185b0d4b99a6d17d57e520615c0053fdfe8ff49494871434891c80e95159ce02",
+    "results/c83s4_first_order.npz": "3bededbc30417b0b59e45e58a410c27b344ae6274fb510ce795136abf0906dae",
+    "results/comparison.csv": "966e50363c68f13259cba5ec20791866b88f0cb109ef761c513c507ac1529748",
+    "results/cone_geometry.csv": "6b89b014b00fc31e7b7452abceb602659225dc3a073c66af2cc4594e9efcf204",
+    "results/directional_slopes.csv": "4fb9bbdfca0c7bbe2f8a140303d6762695d59ced64c04c655afd32089d45e93b",
+    "results/finite_differences.csv": "40533d7b59b0431fcd3d0924b8ad1d89e9eed2e6ff7a52ef7ccda1be0f8fc7d6",
+    "results/gradients.csv": "46d1fa7f32d2ddaacf770659359554603697373ab621a42aec9fb6ee328784d3",
+    "results/minimal_repair_geometry.json": "37e8639871f2e97a6ff928a1a9fb090717b07fc9752a607a17c8681938793395",
+    "results/numerics.json": "b04deccb979f44811babb6f1fd004e92b130442e0dbb903f6388343875600a90",
+    "results/receipt.json": "8ac73a7470f0b918a9523f3266e170087cbe1d54af5290950e03a51f1da20d7c"
+  },
+  "global_normalization": [
+    {
+      "state": "c20s4",
+      "old_projection_over_global_UV_norm": 0.39427713448230806,
+      "full_projection_over_global_UV_norm": 1.0
+    },
+    {
+      "state": "c60s4",
+      "old_projection_over_global_UV_norm": 4.9615451950279316e-15,
+      "full_projection_over_global_UV_norm": 0.958672895521779
+    },
+    {
+      "state": "c83s4",
+      "old_projection_over_global_UV_norm": 0.004194858859081618,
+      "full_projection_over_global_UV_norm": 0.9998108327496074
+    }
+  ],
+  "minimal_proposal_check": [
+    {
+      "state": "c20s4",
+      "outside_norm": 0.9547803866613317,
+      "driver_relative_RMS_slopes": {
+        "full": 0.01683717169276164,
+        "damage": 0.018655399244528238,
+        "background": -0.4810827970926863,
+        "inside_background": -0.810125667103867
+      }
+    },
+    {
+      "state": "c60s4",
+      "outside_norm": 0.9497991571454366,
+      "driver_relative_RMS_slopes": {
+        "full": -0.08824320837852515,
+        "damage": -0.08766491190043538,
+        "background": -0.6608121856415626,
+        "inside_background": -1.1549286805090202
+      }
+    },
+    {
+      "state": "c83s4",
+      "outside_norm": 0.8069081151002205,
+      "driver_relative_RMS_slopes": {
+        "full": 0.021409062081364477,
+        "damage": 0.02141486574250132,
+        "background": -1.3223257706903548,
+        "inside_background": -1.6076068521372184
+      }
+    }
+  ],
+  "figures_sha256": {
+    "figures/background_driver_sensitivity.md": "f35c2a7f77635c8d018b71089d3379d0b9c4fafd8babd624ab2896dc4673251b",
+    "figures/background_driver_sensitivity.pdf": "64a9f08739b1310334b90839be7665913c3f8bea887e7ff7eea23dd51fca1a0d",
+    "figures/background_driver_sensitivity.png": "681cf073529ce7131722f52f0b231f3452bd8b1d69cf8c31d8da4e4ca5a8131f",
+    "figures/fullhead_feasibility.md": "947d8a8f4093fd0988bc5159c850ab6c68f75ed9fbb7ea74606712ccda645a33",
+    "figures/fullhead_feasibility.png": "172002736d260882b25dd6a5375f445e5eb7e0ae4caa16ad792bb2c960944131",
+    "figures/fullhead_feasibility.pdf": "922f0b2104310624e9f5c82bbb92f027dfb8e7b3e5130dc500d7393d1998cbb8"
+  },
+  "final_prose_sha256": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/fullhead_cone_decision.md": "8f01d5e17bd3645b82b3dc89f87eb3879bda07a5c135bf83feb06f5c6166a883",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fullhead_feasible_v1/README_analysis.md": "525648d8274dece4212d1a7f17484aec21f5326c3636f8beb2885893304a2fd1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fullhead_feasible_v1/figures/background_driver_sensitivity.md": "f35c2a7f77635c8d018b71089d3379d0b9c4fafd8babd624ab2896dc4673251b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fullhead_feasible_v1/figures/background_driver_sensitivity.pdf": "64a9f08739b1310334b90839be7665913c3f8bea887e7ff7eea23dd51fca1a0d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fullhead_feasible_v1/figures/background_driver_sensitivity.png": "681cf073529ce7131722f52f0b231f3452bd8b1d69cf8c31d8da4e4ca5a8131f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fullhead_feasible_v1/figures/fullhead_feasibility.md": "947d8a8f4093fd0988bc5159c850ab6c68f75ed9fbb7ea74606712ccda645a33",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fullhead_feasible_v1/figures/fullhead_feasibility.pdf": "922f0b2104310624e9f5c82bbb92f027dfb8e7b3e5130dc500d7393d1998cbb8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fullhead_feasible_v1/figures/fullhead_feasibility.png": "172002736d260882b25dd6a5375f445e5eb7e0ae4caa16ad792bb2c960944131"
+  }
+}
