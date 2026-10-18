@@ -1,0 +1,43 @@
+{
+  "run_id": "pf_s04e011_wpair_grad_audit_20261018_v1",
+  "source_commit": "99cad0b32eb88fcae496785f8090286e8bdfe5ea",
+  "status": "focused_launcher_review_pass_pending_live_admission",
+  "authorization": "Direct user2026-10-18: execute this<=60s no-update diagnostic, retain original tolerance, identify mismatch magnitude/location, no two-arm training",
+  "GPU_seconds_cap": 60,
+  "watchdog": "timeout TERM55s + KILL5s",
+  "GPU": "5",
+  "memory_cap_GiB": 22,
+  "producer": "Taobo GPUServer8",
+  "root": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_grad_audit_20261018_v1",
+  "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_wpair_grad_audit_20261018_v1",
+  "local_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_grad_audit_20261018_v1",
+  "inputs_from_previous_verified_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_20261018T121457Z",
+  "remote_inputs_from": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs",
+  "training_updates": 0,
+  "history_commits": 0,
+  "FEM_solves": 0,
+  "worker_arguments": [
+    "tools/run_loss_weight_pair.py",
+    "--recipe",
+    "/mnt/data2/drtao/wennie/pf_s04e011_wpair_grad_audit_20261018_v1/recipe.json",
+    "--out",
+    "/mnt/data2/drtao/pidl_archives/pf_s04e011_wpair_grad_audit_20261018_v1/readout",
+    "--preflight-only"
+  ],
+  "guard": "allclose atol1e-6 rtol1e-4 unchanged, abort after saving diagnostics",
+  "attempts": 1,
+  "review": {
+    "reviewer": "/root/loss_weight_readonly_review",
+    "verdict": "REVIEW_PASS_SCOPED_TO_NO_STEP_LAUNCHER",
+    "source_commit": "99cad0b32eb88fcae496785f8090286e8bdfe5ea",
+    "scope": "exact launch.sh/recipe.json/RUN_PROVENANCE.json/execution.json; prior code/control-flow review reused",
+    "checks": [
+      "preflight-only mandatory, success/failure both zero updates",
+      "TERM55s+KILL5s worker cap60",
+      "allclose1e-6/1e-4 retained and abort after diagnostic save",
+      "GPU5 no co-tenant/util0/free>=23552MiB and22GiB allocator",
+      "fresh Run and verified same input identities; no source modification"
+    ],
+    "not_certified": "live resource admission, actual discrepancy result or weight effect"
+  }
+}
