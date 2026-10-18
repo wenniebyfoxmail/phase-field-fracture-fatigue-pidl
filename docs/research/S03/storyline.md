@@ -633,3 +633,16 @@
   A001/B001 failures preserved. Next minimal check is separately authorized
   B002 full-size synthetic resource test, not launched. Quota before/after
   normalwindowused16%=remaining84%; no thresholds or stoprules changed.
+
+- **2026-10-18 — B002 final synthetic resource packet prepared, not executed.**
+  A002's five source SHA256 match sourceab6f123a; clean preparation HEAD77385406
+  has docs-only successors. Reused original static review plus fixture-focused
+  re-review; no unchanged-algorithm review or tests repeated. Exact single-CPU
+  synthetic command in S03-E019/underflow_b002_execution_package.md; one gesvd
+  SVD/two thin QR, original tolerances/stops. The 60s soft-completion timer starts
+  after imports/initial identity/output metadata, includes numerical/figure/
+  receipt work, and is not a hard process kill. No font-warning exemption.
+  Metadata-only check: fresh absent B002 output, no symlink ancestors, volume
+  about494GiB free. No archive numerical content, real/held arrays, tests,
+  imports, factors, plots or B002/C/D run. Packet awaits exact user approval;
+  independent numerical/visual acceptance is not bundled into producer scope.
