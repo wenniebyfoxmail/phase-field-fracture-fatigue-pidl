@@ -26,6 +26,7 @@ INPUTS = BASE/'pidl_block_preparation_20261017_v1/inputs_manifest.json'
 METHODS = ['FEM', 'original_UV_FEMd', 'PBD_full_U_energy', 'UVHEAD_r1', 'Newton_head']
 LABELS = ['conditional FEM', 'original UV + FEM d', 'PBD full-network U', 'UVHEAD-r1 fixed head', 'Newton fixed head']
 FOUR = ['E_el', 'free_u_l2', 'uv_mass_rel_L2', 'uv_H1_rel']
+ACTIVE_LOG_FLOOR = 1e-12  # Display only; common to both states, no metric clipping.
 BOUNDARY = ('Independent conditional accepted FEM c1s4/c20s4 peaks, fixed exact FEM damage, '
             'native Q4/2x2 Gauss points, eta=0. Original UV, full-network U energy and both head '
             'candidates are frozen-damage mechanical blocks, not new jointly solved PIDL trajectories. '
@@ -173,7 +174,9 @@ def save_figure(fig,path,caption,provenance):
         'Missing/partial panels are labelled explicitly.\n\n'
         '## Limitation\n\n'+BOUNDARY+' '
         'All accepted endpoints and missing/partial statuses are named in summary.json; missing candidates are not zero or theta0. '
-        'Linear colour scales without clipping; comparisons share limits within each quantity row, not across quantities or states. '
+        'Displacement and signed UV-error colour scales are linear. Mechanical-field active panels show '
+        'log10(max(GP-weighted active cell mean, 1e-12)), with the same display floor in both states and no upper clipping. '
+        'Comparisons share limits within each quantity row, not across quantities or states. '
         'GP/Jacobian-weighted Q4 cell means are rendered; full GP metrics, nodal mass-L2 and full gradient-H1 are in metrics.csv. '
         'Reduced-coordinate gradient is distinct from global nodal force; a flat loss is not stationarity. '
         'Images require visual inspection before adoption into the report.\n')
@@ -183,8 +186,10 @@ def state_maps(out,state,inp,geo,op,physical,gp,provenance):
     cycle=state['cycle'];N,_,w,_=geo;c=inp['cells'];poly=inp['nodes'][c]
     mean=lambda x:np.sum(w*x,axis=1)/w.sum(1)
     fig,axs=plt.subplots(3,5,figsize=(18,10),layout='constrained',squeeze=False)
-    for row,(key,label) in enumerate([('u','horizontal displacement u'),('v','vertical displacement v'),('active','active tensile energy')]):
+    for row,(key,label) in enumerate([('u','horizontal displacement u'),('v','vertical displacement v'),('active','log10(active cell mean)')]):
         vals={name:mean(gp[name]['active'] if key=='active' else op.interp(f[key],c,N)) for name,f in physical.items()}
+        if key=='active':
+            vals={name:np.log10(np.maximum(value,ACTIVE_LOG_FLOOR)) for name,value in vals.items()}
         lo,hi=finite_range(list(vals.values()));pcs=[]
         for j,(name,title) in enumerate(zip(METHODS,LABELS)):
             ax=axs[row,j]
@@ -194,12 +199,16 @@ def state_maps(out,state,inp,geo,op,physical,gp,provenance):
             pcs.append(panel(ax,poly,vals[name],title if row==0 else label,lo,hi))
         if pcs:
             cb=fig.colorbar(pcs[0],ax=axs[row,:].tolist(),shrink=.75,pad=.01)
-            cb.set_ticks(np.linspace(lo,hi,5));cb.ax.yaxis.set_major_formatter(FormatStrFormatter('%.2e'));cb.set_label(label)
-    fig.suptitle(f'c{cycle}s4 | FEM-first mechanical fields, exact fixed FEM d | linear scales shared per row',fontsize=11)
+            cb.set_ticks(np.linspace(lo,hi,5))
+            cb.ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f' if key=='active' else '%.2e'))
+            cb.set_label(label+'; display floor=1e-12' if key=='active' else label)
+    fig.suptitle(f'c{cycle}s4 | FEM-first mechanical fields, exact fixed FEM d | u/v linear; active log10 cell mean',fontsize=11)
     save_figure(fig,out/f'c{cycle}_mechanical_fields.png',
                 f'Conditional FEM and four explicitly named PIDL U candidates at c{cycle}s4. '
-                'Rows u/v/active; fixed exact FEM damage in every method. FEM is the first column. '
-                'One common linear scale per quantity across all available methods; no row-to-row colour comparison. '
+                'Rows u/v/log10(active cell mean); fixed exact FEM damage in every method. FEM is the first column. '
+                'The u/v rows use linear colour scales. Active is first averaged over the Q4 cell with GP/Jacobian weights, '
+                'then displayed as log10(max(cell mean, 1e-12)); both states use the same fixed display floor and no upper clipping. '
+                'Full-GP energy/field metrics remain untransformed. Each row shares limits across all methods; no row-to-row colour comparison. '
                 'Blank Newton or old-head panels mean endpoint missing/partial, not a candidate.',provenance)
     fig,axs=plt.subplots(2,4,figsize=(15,7),layout='constrained',squeeze=False)
     for row,key in enumerate(['u','v']):
@@ -335,7 +344,9 @@ def analyze(run,out,inputs_manifest=INPUTS,pbd=PBD,head=HEAD,render=True):
         'Both prescribed states and five named methods are included. Inputs are checked against the preparation manifest SHA and size. '
         'FEM damage equality is exact. Eel/global force/mass-L2/H1 are independently recomputed and the actual worker four metrics checked. '
         'Missing or partial worker endpoints are retained as statuses; their theta0 fallback fields are excluded.\n\n'
-        'Read summary.json and metrics.csv first. Each mechanical_fields figure is FEM-first u/v/active on shared linear scales; '
+        'Read summary.json and metrics.csv first. Each mechanical_fields figure is FEM-first u/v on shared linear colour scales '
+        'and log10(max(GP-weighted active cell mean, 1e-12)) on a shared active-row scale. '
+        'The fixed active display floor is common to both states; there is no upper clipping and full-GP metrics remain unchanged. '
         'uv_errors contains signed candidate-minus-FEM displacement errors, Newton at right, with five numeric ticks per colourbar. '
         'Decision and stationarity plots separate energy, global force, actual reduced stationarity and conditioned-coordinate behavior. '
         'A completed run is not necessarily a converged head. Only actual reduced infinity-gradient closure can qualify the retained-span endpoint; '
