@@ -111,8 +111,8 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   outputs. It must show the method against the simplest comparator and make the
   primary criterion visible. Missing visualization means the evidence package
   is incomplete; it does not change the frozen scientific gate. Follow the
-  `Minimum Decision Visualization` section of the road-fracture experiment
-  gate.
+  `Show And Explain The Evidence` section of `research-decision-core` and
+  the relevant domain adapter.
 - Every claim-bearing figure set must have one `README_analysis.md` that states
   the scientific question, evidence source, intended reading order, what each
   figure shows, the cross-figure interpretation, the allowed conclusion, the
@@ -264,6 +264,11 @@ do not invent a conclusion when there is only preparation or visibility.
 
 ## Project-Local Skills
 
+- **Research workflow in any field:** read
+  `docs/skills/research-decision-core/SKILL.md` when choosing or advancing a
+  research route. It owns local reuse, the Decision Ladder, stage-appropriate
+  criteria, visual explanations, progress summaries and milestone records.
+  Add only the domain requirements below; run the shared workflow once.
 - **Independent review routing:** when a research HQ arranges or interprets a
   design, Code Ready, or evidence review, read
   `docs/skills/research-review-channels/SKILL.md`. Present the channel choices
@@ -278,8 +283,8 @@ do not invent a conclusion when there is only preparation or visibility.
   `docs/skills/pidl-experiment-gate/SKILL.md`. Literature-only review and routine
   non-claim-changing edits do not invoke the experiment gate.
 - `docs/skills/road-fracture-experiment-gate/SKILL.md` — project-wide gate for
-  claim-changing observation, measurement/inverse, prediction, decision, and
-  physics/surrogate experiments. Route by claim rather than model family.
+  road-fracture observation, measurement/inverse, prediction, decision, and
+  physics/surrogate domain requirements on top of the shared research core.
 - `docs/skills/research-review-channels/SKILL.md` — select a capable independent
   design, code, or evidence reviewer without changing the scientific gate.
 - `docs/skills/pidl-experiment-gate/SKILL.md` — compatibility entry for

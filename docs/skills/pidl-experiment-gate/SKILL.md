@@ -8,7 +8,8 @@ description: Apply the project experiment gate specifically to PIDL, FEM, teache
 This is the physics-route compatibility entry, not the project-wide research
 gate.
 
-First read the shared core:
+First read the road adapter, which loads `research-decision-core`, then the
+physics reference (read each source once):
 
 - [`../road-fracture-experiment-gate/SKILL.md`](../road-fracture-experiment-gate/SKILL.md)
 - [`../road-fracture-experiment-gate/references/physics_surrogate.md`](../road-fracture-experiment-gate/references/physics_surrogate.md)

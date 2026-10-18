@@ -24,6 +24,9 @@ scientific_verdict:
 
 ## Decision ladder
 
+Shared workflow: [research-decision-core](../skills/research-decision-core/SKILL.md).
+Domain requirements: [road-fracture adapter](../skills/road-fracture-experiment-gate/SKILL.md).
+
 Use three to six `D` steps for an active multi-step route. Each step must
 remove a research uncertainty; implementation work belongs in the action cell.
 Mark exactly one active step. These steps organise decisions and repairs; they
