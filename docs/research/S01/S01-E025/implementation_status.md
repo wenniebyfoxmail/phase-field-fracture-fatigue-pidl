@@ -1,0 +1,7 @@
+# S01-E025 implementation status
+
+2026-10-18. Design REVIEW_PASS at299b1723 by independent gpt-6.1-sol/Medium. Implemented fixed29761-parameter regional encoder-decoder,train6-only deterministic foreground buckets,6never-deployed controls,3independent deploy fits,all9statefreeze before control/qualification metrics; unchanged E024 role/detection contract thereafter. Prior frozen sources untouched. New source scope scripts/pavetrack_controlled_localizer and tests/pavetrack_controlled_localizer; exact manifest239bindings.
+
+18focused tests passed8.66s with-Werror. Native gradient/2-step synthetic CPU checks only; no real image/model training. ToyBackend whole-flow all/partial/none branches completed with actual PixelGate under local_archive/experiments/S01-E025/implementation_QA:14source+6case reads; all9synthetic models,18steps,12control predictions. All-admitted synthetic old14/14/net+6;partial old14/14/net+3;none all detector metrics null and0role/OOF comparisons. Toy color oracle is not the native model learning and is not real-road benefit. F00 controls/qualification image opened locally; full bound regression and independent exact code/actual figure review pending.
+
+0SSH,source/private transfer,public push,producer training or R001 execution this task. No fresh/sealed access. GPU1/CPU1/3600s/RSS4GiB/CUDA4GiB hard caps remain; actual Windows feasibility unknown. Local checkpoint/arrays/figures remain private archives. Normal inference accepts RGB only; controls never deploy. Only design and implementation readiness can be claimed here.
