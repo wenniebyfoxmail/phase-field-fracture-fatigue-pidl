@@ -1,4 +1,5 @@
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -62,6 +63,11 @@ def test_support_and_amplitude_losses_match_direct_per_cycle_calculation():
     assert record["predicted_amplitude"] == pytest.approx(expected[2])
     assert record["target_amplitude"] == pytest.approx(expected[3])
     assert record["support_node_count"] == 1
+    amplitude_gradient = torch.autograd.grad(
+        losses["L_A"], predicted, retain_graph=True
+    )[0]
+    assert torch.isfinite(amplitude_gradient).all()
+    assert torch.count_nonzero(amplitude_gradient) > 0
     total = losses["L_S"] + losses["L_A"]
     gradient = torch.autograd.grad(total, predicted)[0]
     assert torch.isfinite(gradient).all()
@@ -273,6 +279,30 @@ def test_classifier_cumulative_local_relative_and_nomination_levels():
         )["status"]
         == "NOMINATE_CONFIRMATORY_P1"
     )
+
+
+def test_classifier_canonicalises_auc_float_to_validated_pair_counts():
+    a25 = score(0.5, auc(18))
+    replay = score(1.0, auc(10))
+    statuses = []
+    replay_auc_values = []
+    for supplied_value in (0.8, math.nextafter(0.8, 0.0)):
+        candidate = score(
+            0.5,
+            {"value": supplied_value, "wins": 20, "ties": 0, "losses": 5},
+        )
+        candidate["G"] = 0.0004
+        result = classify_e010(
+            b25=candidate,
+            a25=a25,
+            replay=replay,
+            validity_status="VALID",
+        )
+        statuses.append(result["status"])
+        replay_auc_values.append(result["replay_relative"]["status"])
+
+    assert statuses == ["NOMINATE_CONFIRMATORY_P1"] * 2
+    assert replay_auc_values == ["NOMINATE_CONFIRMATORY_P1"] * 2
 
 
 def test_classifier_rejects_auc_value_count_drift_and_serialises_strictly():

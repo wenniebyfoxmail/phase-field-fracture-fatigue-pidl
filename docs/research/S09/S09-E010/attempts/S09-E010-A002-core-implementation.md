@@ -49,6 +49,10 @@ This is the smallest reviewable layer and keeps Code Ready, Run Ready and scient
 - add: `scripts/s09_e010_no_step_preflight.py` - Add read-only frozen-packet implementation preflight with no optimizer path
 - add: `docs/research/S09/S09-E010/no_step_preflight_20261018.json` - Record 16-cycle frozen-packet no-step evidence and exact identities
 - add: `docs/research/S09/S09-E010/implementation_status_20261018.md` - Separate core candidate evidence from Code Ready and execution
+- modify: `source/s09_e010_support_amplitude.py` - Canonicalise validated AUC from integer pair counts before inherited classification
+- modify: `tests/test_s09_e010_support_amplitude.py` - Add canonical AUC boundary regression and standalone nonzero L_A gradient assertion
+- modify: `scripts/s09_e010_no_step_preflight.py` - Add independent frozen-cycle NumPy L_S and L_A reference checks
+- modify: `docs/research/S09/S09-E010/no_step_preflight_20261018.json` - Refresh no-step receipt with independent reference differences
 
 ## Input Assets
 - `docs/research/S09/S09-E010/experiment.md` (frozen protocol; exists)
@@ -63,6 +67,8 @@ This is the smallest reviewable layer and keeps Code Ready, Run Ready and scient
 - pass: selected core and inherited regressions - 61 passed; direct loss formulas, zero-gradient handling, exact A25 direction, same-state physics decomposition, single clip, validity ordering and cumulative classifier all pass.
 - pass: frozen 16-cycle no-step preflight - NO_STEP_PREFLIGHT_PASS; A25 exact direction max difference 0; B25-B0 physics residual 1.3704315460216776e-16; model hash unchanged; optimizer steps 0.
 - pass: static checks - New module, preflight and tests pass Ruff; syntax and whitespace checks pass.
+- pass: focused blocker regression and inherited suite - 62 passed; canonical pair-count AUC boundary and standalone nonzero L_A gradient regression pass.
+- pass: revised frozen 16-cycle no-step preflight - NO_STEP_PREFLIGHT_PASS; independent max abs differences L_S=2.842170943040401e-14 and L_A=3.469446951953614e-17 under 1e-12; model hash unchanged; optimizer steps 0.
 
 ## Result Interpretation
 Not recorded.

@@ -24,6 +24,7 @@ from s09_e009_four_arm import (  # noqa: E402
 )
 from s09_e010_support_amplitude import (  # noqa: E402
     BALANCED_OBJECTIVE_ORDER,
+    DAMAGE_SCALE,
     SUPPORT_THRESHOLD,
     balanced_direction,
     balanced_direction_components,
@@ -48,6 +49,9 @@ EXPECTED_CYCLES = (1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73)
 EXPECTED_PACKET_SHA256 = (
     "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6"
 )
+EXPECTED_DAMAGE_SCALE = 0.006896013386826084
+EXPECTED_SUPPORT_THRESHOLD = 1e-15
+REFERENCE_ABS_TOLERANCE = 1e-12
 
 
 def tensor_sha256(value: torch.Tensor) -> str:
@@ -70,6 +74,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    if DAMAGE_SCALE != EXPECTED_DAMAGE_SCALE:
+        raise ValueError("frozen damage scale drift")
+    if SUPPORT_THRESHOLD != EXPECTED_SUPPORT_THRESHOLD:
+        raise ValueError("frozen support threshold drift")
     packet_identity = json.loads((args.packet / "packet_identity.json").read_text())
     if packet_identity["manifest_sha256"] != EXPECTED_PACKET_SHA256:
         raise ValueError("packet identity drift")
@@ -87,6 +95,8 @@ def main() -> None:
     records = []
     maximum_a25_direction_difference = 0.0
     maximum_physics_decomposition_difference = 0.0
+    maximum_support_loss_reference_difference = 0.0
+    maximum_amplitude_loss_reference_difference = 0.0
 
     for index, cycle in enumerate(cycles):
         # One forward/backward graph verifies the balanced additions and both B arms.
@@ -139,9 +149,62 @@ def main() -> None:
         target_increment = np.asarray(runtime.arrays["d_peak"][index]) - np.asarray(
             runtime.arrays["d_pre"][index]
         )
+        predicted_peak = context["output"]["d_peak"].detach().cpu().numpy()
+        target_peak = context["target"]["d_peak"].detach().cpu().numpy()
+        damage_pre = context["d_pre"].detach().cpu().numpy()
+        nodal_weight = context["output"]["nodal_weight"].detach().cpu().numpy()
+        reference_target_increment = target_peak - damage_pre
+        reference_predicted_increment = predicted_peak - damage_pre
+        reference_support = (
+            reference_target_increment > EXPECTED_SUPPORT_THRESHOLD
+        )
+        reference_support_weight = nodal_weight * reference_support
+        reference_support_weight_sum = np.sum(reference_support_weight)
+        reference_total_weight = np.sum(nodal_weight)
+        reference_l_s = float(
+            np.sum(
+                reference_support_weight
+                * np.square(
+                    (
+                        reference_predicted_increment
+                        - reference_target_increment
+                    )
+                    / EXPECTED_DAMAGE_SCALE
+                )
+            )
+            / reference_support_weight_sum
+        )
+        reference_predicted_amplitude = float(
+            np.sum(nodal_weight * np.abs(reference_predicted_increment))
+            / reference_total_weight
+        )
+        reference_target_amplitude = float(
+            np.sum(nodal_weight * np.abs(reference_target_increment))
+            / reference_total_weight
+        )
+        reference_l_a = float(
+            np.square(
+                (reference_predicted_amplitude - reference_target_amplitude)
+                / EXPECTED_DAMAGE_SCALE
+            )
+        )
+        observed_l_s = float(additions["L_S"].detach().cpu())
+        observed_l_a = float(additions["L_A"].detach().cpu())
+        support_loss_reference_difference = abs(observed_l_s - reference_l_s)
+        amplitude_loss_reference_difference = abs(observed_l_a - reference_l_a)
+        maximum_support_loss_reference_difference = max(
+            maximum_support_loss_reference_difference,
+            support_loss_reference_difference,
+        )
+        maximum_amplitude_loss_reference_difference = max(
+            maximum_amplitude_loss_reference_difference,
+            amplitude_loss_reference_difference,
+        )
         threshold_counts = {
             "strict_positive": int(np.count_nonzero(target_increment > 0)),
-            "tau_1e-15": int(np.count_nonzero(target_increment > SUPPORT_THRESHOLD)),
+            "tau_1e-15": int(
+                np.count_nonzero(target_increment > EXPECTED_SUPPORT_THRESHOLD)
+            ),
             "tau_1e-14": int(np.count_nonzero(target_increment > 1e-14)),
         }
         if len(set(threshold_counts.values())) != 1:
@@ -152,6 +215,10 @@ def main() -> None:
             raise ValueError(f"A25 exact replay direction mismatch at cycle {cycle}")
         if decomposition_difference > 1e-12:
             raise ValueError(f"B25/B0 physics decomposition mismatch at cycle {cycle}")
+        if support_loss_reference_difference > REFERENCE_ABS_TOLERANCE:
+            raise ValueError(f"L_S reference mismatch at cycle {cycle}")
+        if amplitude_loss_reference_difference > REFERENCE_ABS_TOLERANCE:
+            raise ValueError(f"L_A reference mismatch at cycle {cycle}")
         if any(
             record["clip_count_for_complete_direction"] != 1
             for record in (b0_record, b25_record, observed_record)
@@ -167,8 +234,15 @@ def main() -> None:
             {
                 "cycle": cycle,
                 "support_counts": threshold_counts,
-                "L_S": float(additions["L_S"].detach().cpu()),
-                "L_A": float(additions["L_A"].detach().cpu()),
+                "L_S": observed_l_s,
+                "L_A": observed_l_a,
+                "independent_reference": {
+                    "L_S": reference_l_s,
+                    "L_A": reference_l_a,
+                    "L_S_abs_difference": support_loss_reference_difference,
+                    "L_A_abs_difference": amplitude_loss_reference_difference,
+                    "abs_tolerance": REFERENCE_ABS_TOLERANCE,
+                },
                 "target_amplitude": loss_record["target_amplitude"],
                 "predicted_amplitude": loss_record["predicted_amplitude"],
                 "gradient_norms": {
@@ -203,7 +277,7 @@ def main() -> None:
     if final_model_hash != initial_model_hash:
         raise RuntimeError("model state changed during no-step preflight")
     receipt = {
-        "schema_version": "s09-e010-no-step-preflight-v1",
+        "schema_version": "s09-e010-no-step-preflight-v2",
         "experiment_id": "S09-E010",
         "verdict": "NO_STEP_PREFLIGHT_PASS",
         "packet_manifest_sha256": EXPECTED_PACKET_SHA256,
@@ -227,6 +301,13 @@ def main() -> None:
         "maximum_B25_minus_B0_preclip_physics_abs_difference": (
             maximum_physics_decomposition_difference
         ),
+        "maximum_L_S_independent_reference_abs_difference": (
+            maximum_support_loss_reference_difference
+        ),
+        "maximum_L_A_independent_reference_abs_difference": (
+            maximum_amplitude_loss_reference_difference
+        ),
+        "independent_reference_abs_tolerance": REFERENCE_ABS_TOLERANCE,
         "all_support_masks_nonempty": all(
             row["support_counts"]["tau_1e-15"] > 0 for row in records
         ),
@@ -254,6 +335,12 @@ def main() -> None:
                 ),
                 "maximum_B25_minus_B0_preclip_physics_abs_difference": (
                     maximum_physics_decomposition_difference
+                ),
+                "maximum_L_S_independent_reference_abs_difference": (
+                    maximum_support_loss_reference_difference
+                ),
+                "maximum_L_A_independent_reference_abs_difference": (
+                    maximum_amplitude_loss_reference_difference
                 ),
                 "output": str(args.output),
             },

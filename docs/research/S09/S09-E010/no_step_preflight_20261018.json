@@ -4,7 +4,7 @@
   "base_config_path": "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json",
   "base_config_sha256": "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b",
   "claim_boundary": "Read-only implementation evidence on the exposed development packet; not Code Ready, training evidence, holdout evidence or a scientific result.",
-  "core_module_sha256": "8f75aaea3e0106847cf72adc4e4ffb0e1f7220c0af119f2d83d00393ec54aedd",
+  "core_module_sha256": "60bc3ecbb7a3b37b19aa229cef57e974097baab71b2ce49a57b6a7adc5a5369c",
   "cycles": [
     1,
     2,
@@ -24,8 +24,11 @@
     73
   ],
   "experiment_id": "S09-E010",
+  "independent_reference_abs_tolerance": 1e-12,
   "maximum_A25_exact_replay_direction_abs_difference": 0.0,
   "maximum_B25_minus_B0_preclip_physics_abs_difference": 1.3704315460216776e-16,
+  "maximum_L_A_independent_reference_abs_difference": 3.469446951953614e-17,
+  "maximum_L_S_independent_reference_abs_difference": 2.842170943040401e-14,
   "model_hash_after": "c537d658000b77f4949236d5cd4ae087d198ce78a306e060982a5557fafc4f73",
   "model_hash_before": "c537d658000b77f4949236d5cd4ae087d198ce78a306e060982a5557fafc4f73",
   "optimizer_constructed": false,
@@ -103,6 +106,13 @@
           "gp_decoder.2.weight",
           "gp_decoder.2.bias"
         ]
+      },
+      "independent_reference": {
+        "L_A": 0.04958082617051611,
+        "L_A_abs_difference": 3.469446951953614e-17,
+        "L_S": 178.065994376549,
+        "L_S_abs_difference": 0.0,
+        "abs_tolerance": 1e-12
       },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
@@ -189,6 +199,13 @@
           "gp_decoder.2.bias"
         ]
       },
+      "independent_reference": {
+        "L_A": 2.7697814605879466e-06,
+        "L_A_abs_difference": 4.235164736271502e-22,
+        "L_S": 0.06271570108272286,
+        "L_S_abs_difference": 0.0,
+        "abs_tolerance": 1e-12
+      },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
         "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
@@ -273,6 +290,13 @@
           "gp_decoder.2.weight",
           "gp_decoder.2.bias"
         ]
+      },
+      "independent_reference": {
+        "L_A": 5.540717139635514e-07,
+        "L_A_abs_difference": 0.0,
+        "L_S": 0.030257257444293383,
+        "L_S_abs_difference": 0.0,
+        "abs_tolerance": 1e-12
       },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
@@ -359,6 +383,13 @@
           "gp_decoder.2.bias"
         ]
       },
+      "independent_reference": {
+        "L_A": 3.831168400902897e-07,
+        "L_A_abs_difference": 1.0587911840678754e-22,
+        "L_S": 0.06088290539555891,
+        "L_S_abs_difference": 0.0,
+        "abs_tolerance": 1e-12
+      },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
         "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
@@ -443,6 +474,13 @@
           "gp_decoder.2.weight",
           "gp_decoder.2.bias"
         ]
+      },
+      "independent_reference": {
+        "L_A": 0.00032032595331310586,
+        "L_A_abs_difference": 0.0,
+        "L_S": 43.186121609267325,
+        "L_S_abs_difference": 7.105427357601002e-15,
+        "abs_tolerance": 1e-12
       },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
@@ -529,6 +567,13 @@
           "gp_decoder.2.bias"
         ]
       },
+      "independent_reference": {
+        "L_A": 2.7353824387953458e-05,
+        "L_A_abs_difference": 1.0164395367051604e-20,
+        "L_S": 1.8592749040353693,
+        "L_S_abs_difference": 2.220446049250313e-16,
+        "abs_tolerance": 1e-12
+      },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
         "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
@@ -613,6 +658,13 @@
           "gp_decoder.2.weight",
           "gp_decoder.2.bias"
         ]
+      },
+      "independent_reference": {
+        "L_A": 5.265378447269527e-05,
+        "L_A_abs_difference": 1.3552527156068805e-20,
+        "L_S": 2.5546326117545695,
+        "L_S_abs_difference": 4.440892098500626e-16,
+        "abs_tolerance": 1e-12
       },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
@@ -699,6 +751,13 @@
           "gp_decoder.2.bias"
         ]
       },
+      "independent_reference": {
+        "L_A": 0.0005423721572882248,
+        "L_A_abs_difference": 3.2526065174565133e-19,
+        "L_S": 37.012268474064435,
+        "L_S_abs_difference": 7.105427357601002e-15,
+        "abs_tolerance": 1e-12
+      },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
         "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
@@ -783,6 +842,13 @@
           "gp_decoder.2.weight",
           "gp_decoder.2.bias"
         ]
+      },
+      "independent_reference": {
+        "L_A": 0.000545288847795009,
+        "L_A_abs_difference": 3.2526065174565133e-19,
+        "L_S": 38.649112343995164,
+        "L_S_abs_difference": 7.105427357601002e-15,
+        "abs_tolerance": 1e-12
       },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
@@ -869,6 +935,13 @@
           "gp_decoder.2.bias"
         ]
       },
+      "independent_reference": {
+        "L_A": 0.0009093769498664013,
+        "L_A_abs_difference": 2.168404344971009e-19,
+        "L_S": 54.85000602117064,
+        "L_S_abs_difference": 7.105427357601002e-15,
+        "abs_tolerance": 1e-12
+      },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
         "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
@@ -953,6 +1026,13 @@
           "gp_decoder.2.weight",
           "gp_decoder.2.bias"
         ]
+      },
+      "independent_reference": {
+        "L_A": 0.0007158435008864375,
+        "L_A_abs_difference": 3.2526065174565133e-19,
+        "L_S": 39.836998288785914,
+        "L_S_abs_difference": 0.0,
+        "abs_tolerance": 1e-12
       },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
@@ -1039,6 +1119,13 @@
           "gp_decoder.2.bias"
         ]
       },
+      "independent_reference": {
+        "L_A": 0.0013825814757179144,
+        "L_A_abs_difference": 4.336808689942018e-19,
+        "L_S": 62.28005575932823,
+        "L_S_abs_difference": 1.4210854715202004e-14,
+        "abs_tolerance": 1e-12
+      },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
         "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
@@ -1123,6 +1210,13 @@
           "gp_decoder.2.weight",
           "gp_decoder.2.bias"
         ]
+      },
+      "independent_reference": {
+        "L_A": 0.002211337606779022,
+        "L_A_abs_difference": 0.0,
+        "L_S": 125.47201615199795,
+        "L_S_abs_difference": 2.842170943040401e-14,
+        "abs_tolerance": 1e-12
       },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
@@ -1209,6 +1303,13 @@
           "gp_decoder.2.bias"
         ]
       },
+      "independent_reference": {
+        "L_A": 1.844690154840721e-07,
+        "L_A_abs_difference": 0.0,
+        "L_S": 0.03432590994665153,
+        "L_S_abs_difference": 0.0,
+        "abs_tolerance": 1e-12
+      },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
         "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
@@ -1293,6 +1394,13 @@
           "gp_decoder.2.weight",
           "gp_decoder.2.bias"
         ]
+      },
+      "independent_reference": {
+        "L_A": 2.7283809115454403e-09,
+        "L_A_abs_difference": 0.0,
+        "L_S": 0.0004341731887489125,
+        "L_S_abs_difference": 1.6263032587282567e-19,
+        "abs_tolerance": 1e-12
       },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
@@ -1379,6 +1487,13 @@
           "gp_decoder.2.bias"
         ]
       },
+      "independent_reference": {
+        "L_A": 2.5255693824682927e-08,
+        "L_A_abs_difference": 9.926167350636332e-24,
+        "L_S": 0.003183340726098121,
+        "L_S_abs_difference": 0.0,
+        "abs_tolerance": 1e-12
+      },
       "predicted_amplitude": 0.0,
       "projected_zero_reasons": {
         "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
@@ -1395,6 +1510,6 @@
       "target_amplitude": 1.095917212099676e-06
     }
   ],
-  "schema_version": "s09-e010-no-step-preflight-v1",
+  "schema_version": "s09-e010-no-step-preflight-v2",
   "verdict": "NO_STEP_PREFLIGHT_PASS"
 }

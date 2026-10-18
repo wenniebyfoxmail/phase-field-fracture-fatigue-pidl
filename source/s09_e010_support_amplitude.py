@@ -292,7 +292,11 @@ def _validated_auc(record: Mapping[str, Any]) -> dict[str, int | float]:
         math.isfinite(value) and abs(value - expected) <= 1e-15,
         "AUC value/count inconsistency",
     )
-    return {"value": value, "wins": wins, "ties": ties, "losses": losses}
+    # Counts are the frozen identity of the 25 pairwise comparisons.  The
+    # supplied float is permitted a tiny serialisation tolerance above, but it
+    # must not re-enter threshold logic: e.g. 20 wins can arrive as either 0.8
+    # or nextafter(0.8, 0) and must classify identically.
+    return {"value": expected, "wins": wins, "ties": ties, "losses": losses}
 
 
 def classify_e010(

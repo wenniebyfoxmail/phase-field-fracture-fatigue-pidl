@@ -2,12 +2,18 @@
 
 ## Current state
 
-`CORE_IMPLEMENTATION_CANDIDATE__AWAITING_EXACT_COMMIT_REVIEW`
+`CORE_IMPLEMENTATION_REVISION__AWAITING_EXACT_COMMIT_REREVIEW`
 
 The design-reviewed per-cycle support loss, amplitude loss, B0/B25 projected
 gradient rule, exact E009 A25 control and cumulative result classifier are now
 implemented in `source/s09_e010_support_amplitude.py`. The module has no
 optimizer step, schedule, checkpoint writer, producer resolver or launch path.
+
+The first exact-commit review returned `REVISE_AND_REREVIEW` for two narrow
+issues: accepted AUC floats were not canonicalised from their validated pair
+counts before the inherited E009 threshold, and the frozen-packet preflight
+did not independently recompute `L_S/L_A`. Both are repaired locally and the
+candidate now awaits review of a new exact commit.
 
 ## Implemented contract
 
@@ -26,11 +32,16 @@ optimizer step, schedule, checkpoint writer, producer resolver or launch path.
 
 ## Deterministic checks
 
-The selected new and inherited suite passes 61 tests. It covers direct
+The selected new and inherited suite passes 62 tests. It covers direct
 NumPy/Torch loss agreement, empty/invalid support, finite gradients, parameter
 reach, zero-gradient handling, same-state physics decomposition, exact A25
 direction replay, single clipping, strict JSON output, pair-count boundaries,
 protected-ratio trade-offs and cumulative result levels.
+
+The added classifier regression proves that `0.8` and
+`math.nextafter(0.8, 0.0)` classify identically when both encode the same
+`20/0/5` pair counts. The nonzero-increment fixture now differentiates `L_A`
+alone and verifies a finite nonzero gradient.
 
 The read-only preflight then evaluated all 16 cycles of the frozen 86,756-node
 development packet on CPU. It performed no optimizer construction or step and
@@ -39,14 +50,19 @@ strict-positive, `1e-15` and `1e-14` masks had identical counts. The maximum
 A25 direction difference from the E009 implementation was exactly zero. The
 largest numerical residual in the same-state
 `B25_preclip-B0_preclip=0.25*q_P` check was `1.3704315460216776e-16`.
+An independent NumPy float64 expression now recomputes both new losses on
+every frozen cycle. The maximum absolute differences were
+`2.842170943040401e-14` for `L_S` and `3.469446951953614e-17` for `L_A`, below
+the fixed `1e-12` acceptance tolerance.
 
 One implementation property must remain visible in review and future logs. At
 the exact initial model, predicted damage increment is zero. PyTorch therefore
 uses the zero subgradient of `abs(p)` in `L_A`, so `g_A` is zero for all 16
 initial cycle states and is logged as
 `AUXILIARY_NORM_AT_OR_BELOW_EPSILON`. `L_S`, `L_D`, `L_U`, `L_H` and `L_P`
-all have nonzero initial gradients. The direct differentiability test confirms
-that `L_A` has a finite nonzero gradient away from zero increment. This
+all have nonzero initial gradients. The direct differentiability test now
+differentiates `L_A` alone and confirms a finite nonzero gradient away from
+zero increment. This
 behaviour is permitted by the frozen protocol; it means the first balanced
 update receives the new intervention through `L_S`, while `L_A` can become
 active only after the prediction leaves zero.
@@ -60,7 +76,8 @@ active only after the prediction leaves zero.
 
 ## Boundary and next gate
 
-This establishes a reviewable local core candidate. It is not Code Ready, Run
-Ready or scientific evidence. The exact commit must receive independent code
-review before runner/config/evidence integration. A producer run requires a
-separate reviewed run card and direct authorisation for that E010 execution.
+This establishes a revised local core candidate. It is not Code Ready, Run
+Ready or scientific evidence. The new exact commit must receive independent
+focused rereview before runner/config/evidence integration. A producer run
+requires a separate reviewed run card and direct authorisation for that E010
+execution.
