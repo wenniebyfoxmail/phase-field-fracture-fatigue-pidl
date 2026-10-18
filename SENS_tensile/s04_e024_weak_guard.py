@@ -15,7 +15,7 @@ class Mechanics:
             g=(1-np.einsum('en,n->e',damage[conn],n))**2
             np.add.at(mass,conn.ravel(),(det[:,None]*n).ravel())
             self.geo.append((grad,det,g))
-        self.mass=mass/mass.sum();self.free=~(np.isclose(xy[:,1],-.5,rtol=0,atol=1e-12)|np.isclose(xy[:,1],.5,rtol=0,atol=1e-12))
+        self.mass=mass/mass.sum();self.free=~((xy[:,1]==xy[:,1].min())|(xy[:,1]==xy[:,1].max()))
         self.branches=self.strains(origin)[...,:2].sum(2)>=0
     def strains(self,uv):
         ans=[]

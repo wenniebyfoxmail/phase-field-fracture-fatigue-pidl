@@ -29,13 +29,14 @@ def run(a):
         phi=[]
         with torch.no_grad():
             for k in range(0,len(origin),1024):phi.append((physical_features(model,torch.tensor(data['xy'][k:k+1024]))*model.head_scale).numpy())
-        phi=np.concatenate(phi);mechanics=Mechanics(data['xy'],data['conn'],data['damage'],origin);force0=mechanics.force(origin);dual0=mechanics.dual(force0);f2=float(np.sum(dual0**2))
+        phi=np.concatenate(phi);mechanics=Mechanics(data['xy'],data['conn'],data['damage'],origin);force0=mechanics.force(origin);dual0=mechanics.dual(force0);f2=float(np.sum(dual0**2));assert np.isfinite(f2) and f2>0
         adj=np.zeros_like(origin);adj[mechanics.free]=force0[mechanics.free]/mechanics.mass[mechanics.free,None]
-        grad=abs(US)*product(phi,mechanics.force(adj,tangent=True),True);gn=np.linalg.norm(grad);orth=-grad+np.sum(grad*e1)*e1;on=np.linalg.norm(orth)
+        grad=abs(US)*product(phi,mechanics.force(adj,tangent=True),True);gn=np.linalg.norm(grad);assert np.isfinite(gn) and gn>0;orth=-grad+np.sum(grad*e1)*e1;on=np.linalg.norm(orth)
         dim=2 if on>1e-12*gn else 1;e2=orth/on if dim==2 else np.zeros_like(e1);basis=np.stack([e1,e2]);assert abs(np.sum(e1*e2))<1e-12
         increments=np.stack([radius*product(phi,e) for e in basis]);w=data['mass']/data['mass'].sum();error=(origin-data['equilibrated_uv'])/abs(US)
         q=np.einsum('n,ind,jnd->ij',w,increments,increments);g=np.einsum('n,nd,ind->i',w,error,increments);obj0=float(np.sum(w[:,None]*error**2))
         columns=np.stack([mechanics.dual(mechanics.force(abs(US)*d,tangent=True)) for d in increments]);t=np.einsum('ind,jnd->ij',columns,columns)/f2;h=np.einsum('nd,ind->i',dual0,columns)/f2
+        assert all(np.isfinite(v).all() for v in [q,g,h,t,basis]) and np.isfinite(obj0) and obj0>0
         z,solve=two_coordinate(q/obj0,g/obj0,h,t);accepted=False;factor=0.;chosen=theta.copy();uv=origin.copy()
         if solve['success'] and solve['feasible']:
             for backtrack in range(9):
