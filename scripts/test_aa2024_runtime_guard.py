@@ -127,6 +127,7 @@ def child(case, root):
         worker.start(); worker.join(1)
     elif case in ('thread_exception', 'thread_systemexit', 'thread_pythonwarning'):
         def fail():
+            (root/'triggered').write_text(case)
             if case == 'thread_pythonwarning':
                 warnings.warn('artificial thread warning', UserWarning)
             if case == 'thread_systemexit':
@@ -151,11 +152,15 @@ def child(case, root):
         ready.set(); worker.join(1)
     elif case == 'write_failure':
         def broken_write(fd, payload):
+            (root/'write_called').write_text('failure')
             raise OSError('artificial evidence failure')
         guard._write = broken_write
         logging.warning('artificial failed evidence')
     elif case == 'short_write':
-        guard._write = lambda fd, payload: 0
+        def short_write(fd, payload):
+            (root/'write_called').write_text('short')
+            return 0
+        guard._write = short_write
         logging.warning('artificial short evidence')
     elif case == 'hostile_message':
         class Hostile:
@@ -190,11 +195,14 @@ def child(case, root):
     elif case == 'simultaneous':
         barrier = threading.Barrier(3)
 
-        def race():
+        def race(index):
+            barrier.wait(1)
+            (root/('ready'+str(index))).write_text('ready to inject logging')
             barrier.wait(1)
             logging.warning('artificial concurrent fatal')
-        first, second = threading.Thread(target=race), threading.Thread(target=race)
+        first, second = threading.Thread(target=race, args=(1,)), threading.Thread(target=race, args=(2,))
         first.start(); second.start(); barrier.wait(1)
+        barrier.wait(1)
         first.join(1); second.join(1)
     guard.check()
     guard.receipt_state()
@@ -280,6 +288,26 @@ def main():
                 demand(event.read_bytes() == b'', case+' clean events')
             if case in ('early_import_warning', 'unsupported_factory', 'unsupported_hook', 'import_only'):
                 demand(not event.exists(), case+' must not bind unknown output')
+            evidence = (event.read_text() if event.exists() else '')+run.stderr
+            if case in ('thread_exception', 'thread_systemexit', 'thread_pythonwarning'):
+                kind = {'thread_exception': 'RuntimeError', 'thread_systemexit': 'SystemExit',
+                        'thread_pythonwarning': 'UserWarning'}[case]
+                demand((root/'triggered').read_text() == case and
+                       'G01 fatal thread_exception ' in evidence and evidence.rstrip().endswith(kind),
+                       case+' intended exception kind, not setup failure')
+            elif case in ('factory_lost', 'hook_lost', 'inactive_guard', 'exit_rebound'):
+                demand('G01 fatal guard_identity_lost ' in evidence, case+' guard loss evidence')
+            elif case in ('unsupported_factory', 'unsupported_hook'):
+                demand('G01 fatal unsupported_initial_hooks ' in evidence, case+' installation evidence')
+            elif expected == 70 and case not in ('write_failure', 'short_write', 'blocked_evidence', 'simultaneous'):
+                demand('G01 fatal logging ' in evidence, case+' logging failure category')
+            if case in ('write_failure', 'short_write'):
+                demand((root/'write_called').exists(), case+' writer injection reached')
+            if case == 'simultaneous':
+                demand((root/'ready1').exists() and (root/'ready2').exists(), 'both concurrent injections ready')
+                # Contending fatal may exit before the first raw write. Empty
+                # evidence is allowed here only; a recorded setup error is not.
+                demand(not evidence or 'G01 fatal logging ' in evidence, 'no barrier/setup exception accepted')
             outcomes.append(dict(case=case, exit_code=run.returncode, expected=expected,
                                  stderr=run.stderr, event_text=event.read_text() if event.exists() else None))
             guard.check()

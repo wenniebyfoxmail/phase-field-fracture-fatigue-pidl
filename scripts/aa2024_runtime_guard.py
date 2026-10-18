@@ -51,7 +51,11 @@ class CliGuard:
         def thread_hook(args):
             try:
                 self._fatal_seen = True
-                self.fatal('thread_exception', args.exc_value)
+                # Never format the exception object. Native class names let
+                # artificial controls distinguish intended from setup errors.
+                cls = args.exc_type
+                label = cls.__name__ if type(cls) is type else '<exception-class>'
+                self.fatal('thread_exception', label)
             finally:
                 force_exit()
 
