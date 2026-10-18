@@ -789,3 +789,15 @@
   clocks prepared. No Python/import/AST/discovery/test/array read or figure
   run this turn. Static ready is not tested or visually/numerically accepted.
   Await user approval forA once; no automaticB, B003 rescue, real/held orC/D.
+
+- **2026-10-18 — F01-A001 artificial memory tests passed once.**
+  Approved exactA; runtimeclean8920759f/source65141603, external3SHA/HEAD
+  unchanged. chunkc0f38f exit0;40/40 allok, no skip/unexpected warning/retry.
+  unittest0.012s/scriptpreprint0.16507720801746473s/final60s check passed;
+  separate toolwall0.090743417s, clocks not conflated. Controlled actualSVD/
+  QR0/0; FakeNPZ/in-memoryXML only, no SVG files, font initialization/cache,
+  B003 content/hash, real/held read or frozen/source changes. See
+  S03-E019/font_svg_a_results.md for full terminal/receipt. D2 artificial
+  interface evidence only, not file-display/visual/numerical acceptance.
+  B003 remains incomplete. Next possible step: separately prepare finalB
+  packet; no B/independent acceptance/C/D or new input access triggered.
