@@ -1,0 +1,39 @@
+# D008 independent bounded Evidence review
+
+**PASS**, source `a105bbbd1b63ea8357dab7b094a479f1ca9a7194`, bounded returned-solution/actualguard/map-definition evidence. No scientific/numerical blocking finding. Final display-only margin/annotation polish is completed and bound in the closingSHA addendum. The former80% stopping rule was explicitly revoked; it was not applied.
+
+## Independent reproduction and identities
+
+Reused original raw E023 checkpoints, manual509-node eight-layer encoder, actualD/bias/BC/window, explicit2×2 nativeQ4 geometry/componentAMOR force assembly and original normalized lumped mass. No rootweak_form/Mechanics/q4_strain import. Verified exactD007 savedbasis reuse, originaltheta, shared Frobenius geometry, theta+R*acceptedfraction*z·basis,33 originalfile hashes and3D007 inputNPZ hashes. No newSLSQP/search/correction candidate, SVD/fullheadfit, training or remote action was performed.
+
+For c20/c83, independent actual layer-orderUV reproduction differs<=1.39e-17. c60's savedUV andcoeff are **exactly ownE023**, withdelta0 andrho identical; originalsavedUV vsCPUredecodedtheta0 differs8.60e-16, a prior portability-scale effect, not a correction. Verified24 ownE023/newUV regionalRMS,72GP physical errors and6rho rows; exactoutsideUV tobaseline/backbone. Actualforce² ratios .999074479632476/1/.9996047779234444 match rootwithin1.6e-15. Branchcount proportions match exactly. Globalbackground and window-interior-background conditionalMSE do not increase in the returned fields. Parameter ratios .020000000000002165/0/.007752277945773691 meet the registered numerical budget tolerance, with no scientific budget change.
+
+## Results and acceptance interpretation
+
+c20 keeps essentially D007's smallfull/damage/weak gains, withnodebackground/interiorUV also improved. c60 returns the original field exactly: no newbenefit or degradation. c83 halfstep gives tiny full/damageUV gains (about.017492/.017253%), background/interiorUV improvements(.029547/.149536%) andrho improvement(.019763%), with.775228% original-head increment. Thus the implemented returned-output backgroundguard works in this exact three-state comparison, but it does not imply pointwise dominance or a backgroundphysics guarantee.
+
+c20/c83 backgroundstrain and instantaneouselastic driver errors still rise; c60 is unchanged. rho remainsabout47/58/52 versus the same conditionalFEM field near5e-11. StaticUV/weak non-degradation is a component outcome, not equilibriumqualification or damage/crack/fatigue success. NodeUV masks and GPphysical masks remain distinct; near-zero backgroundenergy references require absolute errors and denominators alongside relativevalues. Original historical results, strictMacLR/mass/D/rho exceptions and warning-root-cause uncertainty remain unchanged; .001 is historical only, application tolerances undefined.
+
+c60SLSQP returnedz=0 inoneiteration. Re-decoding that same coefficient then produced only~1e-15 relativeUV/background changes, causing strictnonincrease rejection of all9identicalzero trials before exactsaved-original fallback. This is not macroscopic physical deterioration. c83fullstep hadtrueweakforce improvement but background/interiorMSE only1.6e-14/8.2e-14 aboveorigin; rejection is numerical strictness, not evidence of meaningful backgrounddamage. Halfstep hasnonzero margins and was the prescribed firstacceptedcandidate. No threshold was relaxed.
+
+## c60 proxy-gradient explanation, beyond solver status
+
+Independently reconstructed the normalized2D origin terms, without anothercandidate or optimizer: UVobjective f=g·z+.5zTQz has g=[−.0030655341384,.133367506812]; weakproxy c_w=2h·z+zTTz<=0 has h=[.00174568326124,−1.01916044612]; backgroundproxy c_b=2b·z+zTQ_Bz<=0 has b=[−.000649027841712,.700831315519]. h andb are **half** of the origin constraint gradients, normalized respectively byoriginforce² andbackgroundMSE;g is the derivative ofhalf the normalizedUV MSE, so the signs/positivefactors are consistent.
+
+Analytic2×2 gradient representation gives −g=3.6690175707h+5.1452467912b, relative residual1.04e-15 andmatrixcondition2722. Both coefficients are positive. StandardconstraintKKT multipliers are half these coefficients, since gradients are2h/2b. Q,T,Q_B are positive-semidefiniteGram forms by construction. Therefore originstationarity is consistent with the convexquadratic proxy optimum: any first-orderdirection satisfying bothproxy guards has g·d>=0, and PSDcurvature cannot supply a hiddenproxy objective decrease. This gives a bounded numericalKKT explanation for the zero proxy solution, not merely an SLSQP-success assertion. It **does not** prove no nonzero feasiblepoints, no improvement under actualbranch-changing nonlinearforce, no fullhead feasible direction, or insufficient networkcapacity. Re-decoding-roundoff rejection is a separate mechanism.
+
+## Map audit and visual meaning
+
+Verified17map sourceinput hashes; damage/background/free/inside masks; normalizedmass(sum1); cacheUVerrors; E023/D008 force arrays against independent force caches;9NNarm contribution sums and signed differences. Thecorrectdefinition is s_i=C²||F_i||²/m_i onfree,0Dirichlet, withm_i **normalized** nativeQ4mass andC=absUs/energy_scale=1/(area absUs). Sum_i s_i=rho²; signedDelta s sums the change inrho². Earlier prose callingm_i rawwas corrected; computeddata['mass'] was already normalized. With rawmass one would need Cmap=C*sqrt(area), so the distinction must not be hidden byarea≈1.
+
+NNmap sums match scoredrho² toabout6.13e-16relative. Near-zeroFEMcross-assembly differences are separately retained (maxrelative1.12e-6, absolute squaredgap2.76e-27); not a bitexactteacher/strictMacqualification. c60D008 UV/s arrays areexactly original, supporting the zerochange panels. OutsideUV invariance does not imply outsideweakforcecontribution invariance becauseQ4elements couple nodes. These are assembledweakforce-norm contributions, **not strongPDE pointresiduals or causal damage-region force partitions**.
+
+Allthreeatlas panels and the quantitativecompanion were visually inspected. They show exactzero fallback, spatially mixedUV/weak changes, damage>.1 contour/hatching and supportoutline, per-state/per-quantity sharedsignedlimits acrossD007/D008, displayfloors andverticalstretch/crop. Scalar scores remain fullmesh and no red/bluearea counting can substitute for signednodal sums. Gouraudtriangle interpolation is displayonly. Rightcolorbarlabel margin and companionannotation spacing were the only finalvisualpolish requests; data/definitions were correct.
+
+## Decision and nextproposal
+
+Reviewed current `background_guard_decision.md` and `README_analysis.md`: numericaltradeoffs, c60boundedproxyKKT, tinyc83strictrejection, missinghistory, backgroundphysicalcosts and remainingequilibriumgap are accurately bounded. A full-output-head **first-order feasible-direction/KKT diagnostic** is a reasonable unexecuted nextdiscriminator of2Drestriction versusbroaderhead tradeoff. Suchlocalgradient evidence would not prove finite-step/nonlinear feasibility or applicationvalidity; no newheadcorrection, training, radius expansion orcoupledsolve is performed or authorized bythisreview. The presenttask can close with retained mixedcomponent evidence.
+
+## Final figure/prose binding
+
+Final atlas rerender preserves numerical caches and definitions, expands PNGbounds to include rightmostcolorbar exponent labels and offsets companion annotations. Updatedc20atlas and summary were visually rechecked; allthree prioratlas states, masks andzero labels had already been inspected. Figures are readable with no remaining blocking layout issue. Final decision/README retain the normalizedmass definition, c60boundedproxyKKT/roundoff distinction, c83numericalfullstep rejection, backgroundphysical costs and unexecutedfullhead first-order proposal. No newcandidate, solver, fieldmetric or scoring step was run for this closing review.

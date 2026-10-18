@@ -1,0 +1,11 @@
+{
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/background_guard_v1",
+  "manifest_sha256": "74369ad4e70a2cf62f168f950ab15e3905fb844e35fab5637ab2af2d5d0eabe0",
+  "file_count": 55,
+  "total_bytes": 78230168,
+  "raw_results": "results/",
+  "field_cache": "maps/",
+  "figures": "figures/",
+  "independent_review": "review/",
+  "source": "a105bbbd1b63ea8357dab7b094a479f1ca9a7194"
+}

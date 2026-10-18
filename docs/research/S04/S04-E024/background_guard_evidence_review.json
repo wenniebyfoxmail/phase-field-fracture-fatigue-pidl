@@ -1,0 +1,53 @@
+{
+  "verdict": "PASS",
+  "scope": "bounded actualguard/result/map/2Dgradient evidence review",
+  "source": "a105bbbd1b63ea8357dab7b094a479f1ca9a7194",
+  "blocking_findings": [],
+  "display_polish_pending": false,
+  "old_80_percent_rule_revoked": true,
+  "original_hashes": 33,
+  "D007_input_hashes": 3,
+  "UV_values": 24,
+  "physical_values": 72,
+  "rho_rows": 6,
+  "actual_weak_and_background_guards_pass": true,
+  "c60_exact_original_fallback": true,
+  "c60_proxy_KKT_gradient_relative_residual": 1.0402976895513123e-15,
+  "c60_actual_or_fullhead_infeasibility_proven": false,
+  "map_NN_sums": 9,
+  "map_source_hashes": 17,
+  "normalized_mass": true,
+  "map_not_strong_residual": true,
+  "background_physical_errors_preserved": false,
+  "application_acceptance": null,
+  "main_decision_reviewed": true,
+  "independent_SLSQP_or_search": false,
+  "neural_updates": 0,
+  "extra_candidates": 0,
+  "source_sha256": {
+    "review/independent_guard.py": "39b46bf210b6eadeda5a3719c1a4ea66b1294c1a31d8297a2a0e3ff64c16084f",
+    "review/check_maps.py": "0deac920f388caccfa9204c0b6ffc3ce4f0f60ba45ba0f688a7687b367bb1c89",
+    "review/c60_gradient_geometry.py": "ebbc011fcfd32db9f72e16256b9b8ae8b274bd20d3154c02b9b89db84ebefea7",
+    "results/receipt.json": "aed7c552e76a90640634293db12db44fd261da085ca72dd7d20951bf81b7ff2f",
+    "analysis_source/plot_fields.py": "ead9d4d52c720fa5ba0c82e007be9ae6f192f9dc7fc7da3752cecf9f0bf0f79b"
+  },
+  "prose_sha256": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/background_guard_decision.md": "dfae0fbd482cbdf864f4d9a47409b54f7180fd9a7e3f616ca1c46608a24ffd9e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/background_guard_v1/README_analysis.md": "9c90f4de9ff7afac94a8fd013f1d8921f905114c4040171b4483be1852f61a21"
+  },
+  "final_visual_QA": "PASS",
+  "final_artifact_sha256": {
+    "README_analysis.md": "9c90f4de9ff7afac94a8fd013f1d8921f905114c4040171b4483be1852f61a21",
+    "analysis_source/plot_fields.py": "ead9d4d52c720fa5ba0c82e007be9ae6f192f9dc7fc7da3752cecf9f0bf0f79b",
+    "maps/source_manifest.json": "ef70ae26df7f5061e1a86bad2062dbe5e68faef128a7f07a655d52d19786308e",
+    "figures/c83s4_partition_fields.png": "fdacc5fd727175968ab305591a79bdc56ef985ce18e359eb3f8d1b13e743f7ba",
+    "figures/c60s4_partition_fields.png": "3eab44e2b03e609b942aa4f2bcd7b4adeefcc6f066c8601500dd1ecfea762327",
+    "figures/c20s4_partition_fields.png": "1839c3a8fb7ec250a3db53218923abb013b38eb8f1e466228892b285791214ea",
+    "figures/c60s4_partition_fields.md": "06c84dfbe4d710942c31b311f0a3be0d4adca73b36b879801f195aa918cb1e35",
+    "figures/c20s4_partition_fields.md": "b2768ad38094e91c31f9e20d7b0c804a3f5b40efe78d79d2387c1740ebc79555",
+    "figures/c83s4_partition_fields.md": "06d7ca68c3b735fd074ddd3678bd61f1c9ffaf892496eb124ba3e6bd7c18b544",
+    "figures/background_guard_summary.png": "c4558fbdbb68fe7eb36e464d0c86976a409759d03fb66c3e154b212695e6f4a4",
+    "figures/background_guard_summary.md": "53d18a4fe0f442790d91dda09391634f7bd3cdeca1775742956748b1d142b013"
+  },
+  "map_manifest_current_script_hash_equal": true
+}

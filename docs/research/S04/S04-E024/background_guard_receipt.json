@@ -1,0 +1,169 @@
+{
+  "source_commit": "a105bbbd1b63ea8357dab7b094a479f1ca9a7194",
+  "states": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "assets": [
+    {
+      "run_id": "S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7",
+      "checkpoint_sha256": "5431e187503a118b92a8649cac209da5e2b9c52643f73875535e208d92b9e5ae",
+      "prediction_sha256": "496461dfa163bfbf43db347b747e9df150c4afeff1dd73b963b0539a19513234",
+      "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+      "head_scale_sha256": "b60a964d51bdf60b10fbf79e5f4deedd133039bdb3b53fb499c388302a1ca297",
+      "map": {
+        "rule": "core-damage-residual-moments-3std-cap4-v1",
+        "local_center": [
+          -0.27136719568117984,
+          7.373416534261071e-07
+        ],
+        "local_scale": [
+          0.07533454080374988,
+          0.008880630597600072
+        ],
+        "residual_std": [
+          0.017978575034481498,
+          0.000252019720593122
+        ],
+        "original_scale": [
+          0.3013381632149995,
+          0.03552252239040029
+        ],
+        "core_damage_error_energy_fraction": 1.0,
+        "coordinate_zoom": [
+          4.0,
+          4.0
+        ],
+        "teacher_target_used": true
+      },
+      "behavior": "E023 fixed producerD plus E022leak",
+      "initial_calibration_bit_exact": false,
+      "scope": "Supplementary actual-saved-model diagnostic; strict Mac LR/mass/D/rho failures retained",
+      "original_file_hashes": {
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/metrics.json": "adcde68b8ad51db98576c85f9774a31b316505808de408552791ff4b07dd9453",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/head_scale.json": "b60a964d51bdf60b10fbf79e5f4deedd133039bdb3b53fb499c388302a1ca297",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/coordinate_map.json": "eeacdeb733e3721f555ae868bf12bf107c2f756054421ee9d74b6bddcb10fd9a",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/prediction.npz": "496461dfa163bfbf43db347b747e9df150c4afeff1dd73b963b0539a19513234",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/final_step_10000.pt": "5431e187503a118b92a8649cac209da5e2b9c52643f73875535e208d92b9e5ae",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/expected_learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/head_gradient_preflight.json": "58c430dbd39782a7d0d3530d24cb983dcda8ec85a652fa1b6f23d0ae74c7c636",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/monitoring.json": "563bb8ef9d3aa3abcb554355f26290bfeadeec339aca14185f1e4fbf4dd84e9c",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/RUN_RECEIPT.json": "09805269227e9346efeb552dc7b3f6cabb00728622ff9336a3cf3f249c8484e8",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R001-c20s4-localized-s7/PRE_UPDATE.json": "744f802742298a3147f0414fd3c1b67ef1f34b62d4d8caac3e617a23058155b6"
+      },
+      "direction_input_sha256": "45699493c33c57d4390428e43e4d6c68cf817a9a82b6466ba47fd2e7e8b02c55",
+      "model_digest": "ab6558a973f3be9e3f0edf76e8c11eff94a900fdacbacb67d61fd3e4091ad9fb"
+    },
+    {
+      "run_id": "S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7",
+      "checkpoint_sha256": "28c3182bc1721d4b692acbe6f622dff08a771f199b019d1985ccd66616ce9045",
+      "prediction_sha256": "9d0219157edfa6b130101542c3e4010793f6e7b35bf04f62be32802996ac4f96",
+      "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+      "head_scale_sha256": "75b8e0610f24288830b0c39824f4afe750f0fb70ac9c10731624b9936a812476",
+      "map": {
+        "rule": "core-damage-residual-moments-3std-cap4-v1",
+        "local_center": [
+          -0.27567388345977195,
+          -2.864087291267624e-06
+        ],
+        "local_scale": [
+          0.10406365392137235,
+          0.009019511414592925
+        ],
+        "residual_std": [
+          0.03171309181309453,
+          0.00027538364832431034
+        ],
+        "original_scale": [
+          0.4162546156854894,
+          0.0360780456583717
+        ],
+        "core_damage_error_energy_fraction": 0.9999730015729535,
+        "coordinate_zoom": [
+          4.0,
+          4.0
+        ],
+        "teacher_target_used": true
+      },
+      "behavior": "E023 fixed producerD plus E022leak",
+      "initial_calibration_bit_exact": false,
+      "scope": "Supplementary actual-saved-model diagnostic; strict Mac LR/mass/D/rho failures retained",
+      "original_file_hashes": {
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/metrics.json": "c362e3dd39d0b6ae1009b8a4e745b025ce567e58dab00115516927a5d6b63bf0",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/head_scale.json": "75b8e0610f24288830b0c39824f4afe750f0fb70ac9c10731624b9936a812476",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/coordinate_map.json": "47097563c9ad034c67ebf6f050f0d1fee3a84559c0d591709ddc463bb3f367e6",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/prediction.npz": "9d0219157edfa6b130101542c3e4010793f6e7b35bf04f62be32802996ac4f96",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/final_step_10000.pt": "28c3182bc1721d4b692acbe6f622dff08a771f199b019d1985ccd66616ce9045",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/expected_learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/head_gradient_preflight.json": "73136bf70077d87b419bf880cace30c334f7363298196809f9f82975871e0be8",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/monitoring.json": "370c6f9aa9063bb4939b858e759e8b9a7983be9bf9ec075b8cef48fae7a546e9",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/RUN_RECEIPT.json": "2bf840d1b147e93db9d4aebc4ecdcd85b665c2221029c0fc925385270e0c192c",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R002-c60s4-localized-s7/PRE_UPDATE.json": "688de2a32ffd6be09871d4239332923f87a774074ddbde2e9b68a7e0b2de5e79"
+      },
+      "direction_input_sha256": "241e8ae5db6c8d9b88fd6ab95ec78b75370c5ab2ea318dfdf73bab0e51aa36db",
+      "model_digest": "da63edd83f299a82c2db8f9c6a862553f90d133305adc38b118377d293608e28"
+    },
+    {
+      "run_id": "S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7",
+      "checkpoint_sha256": "07aa0a0edd28b15a8183961daa89aa2f8d8b703f6503c3a9b94231b05181c751",
+      "prediction_sha256": "947a2ef173a3c83c5af31b4c5f0ea4cde7893c3e7b30933f44d11fea4232e281",
+      "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+      "head_scale_sha256": "0aa1201a449514a47871390ff2d8f4ce935c43a2990f03e9633bb10fd09457ea",
+      "map": {
+        "rule": "core-damage-residual-moments-3std-cap4-v1",
+        "local_center": [
+          -0.26875652503833797,
+          -2.226469685763796e-05
+        ],
+        "local_scale": [
+          0.203810862835555,
+          0.009019511414592925
+        ],
+        "residual_std": [
+          0.06793695427851833,
+          0.00033207301198686783
+        ],
+        "original_scale": [
+          0.52,
+          0.0360780456583717
+        ],
+        "core_damage_error_energy_fraction": 0.9999999981215774,
+        "coordinate_zoom": [
+          2.551385106590528,
+          4.0
+        ],
+        "teacher_target_used": true
+      },
+      "behavior": "E023 fixed producerD plus E022leak",
+      "initial_calibration_bit_exact": false,
+      "scope": "Supplementary actual-saved-model diagnostic; strict Mac LR/mass/D/rho failures retained",
+      "original_file_hashes": {
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/metrics.json": "12254992e470c6d6572dc998a966df5956eb7602dcf578d3d8f96840332c07c9",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/head_scale.json": "0aa1201a449514a47871390ff2d8f4ce935c43a2990f03e9633bb10fd09457ea",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/coordinate_map.json": "834d7c3fef08ad04410bff822446f2c0d4da95d4dc7e2fd8a55c47ce8dcf5bc2",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/prediction.npz": "947a2ef173a3c83c5af31b4c5f0ea4cde7893c3e7b30933f44d11fea4232e281",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/final_step_10000.pt": "07aa0a0edd28b15a8183961daa89aa2f8d8b703f6503c3a9b94231b05181c751",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/expected_learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/head_gradient_preflight.json": "009f3a27a09979c3f1fd5b0d1d818208e1a239d3a97144864205bc92279a54a5",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/monitoring.json": "5baaea953917e2f89bbf80b5cdf613817974191884ad0754c4e578a1b2ac9bf1",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/RUN_RECEIPT.json": "e22aecbef7718c6d9d7cc0588d2d6058a39f32704943aa1f87472f6b12bb3df6",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_execution_v1/raw/runs/S04-E023-head-rms-c4ceb5d-20261016-v1-R003-c83s4-localized-s7/PRE_UPDATE.json": "a2a0700d6fcc485b066a58235b02c57bab9f0ead44fe099836dadd77a3caff4b"
+      },
+      "direction_input_sha256": "3095295fbb48249f8d43d6629d398cfdab208a58f8f440be343040bfcfc6c821",
+      "model_digest": "e9edf5fad8357b58150b96a41a33a2ab64871aaa7d817a5734df8e5a6bafa30d"
+    }
+  ],
+  "parameter_radius_fraction": 0.02,
+  "wall_seconds": 23.16286649997346,
+  "peak_rss_bytes": 925220864,
+  "offline_two_variable_solves": 3,
+  "neural_optimizer_steps": 0,
+  "history_fatigue_damage_updates": 0,
+  "original_checkpoint_writes": 0,
+  "remote_actions": 0,
+  "scope": "same frozen D007 plane; actual native-force/fullUV/backgroundUV guards; no fullhead or evolution qualification"
+}

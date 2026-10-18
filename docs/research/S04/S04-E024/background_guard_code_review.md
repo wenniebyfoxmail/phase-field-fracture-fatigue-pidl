@@ -1,0 +1,11 @@
+# D008 focused differential pre-use review
+
+PASS, sourcea105bbbd1b63ea8357dab7b094a479f1ca9a7194. No new code/mathematical blocker found. User explicitly revoked the old80% usage stopping rule; it is not applied to this task.
+
+ExactD007 savedbasis is read under pinnedreceipt/NPZ identities and originaltheta; no new gradient/subspace. Shared2%-head radius/UVbias norm and old ball/weakproxy remain. Added nodalbackground damage<=.1 conditionalMSE uses fixedweight/mask and correct2g_B·z+zTQ_Bz<=0, originMSE normalization and derivative. No factor1/2 confusion with UVobjective. Pure basis UVincrements are obtained from actual fixedencoder/head with zerobase and Rbasis coefficients, avoiding origin cancellation while retaining D/bias/BC/window.
+
+SLSQP has explicitfinite/ball/weak/bg checks. Actual networkfield/force recomputation must independently meet fullUV/background/interiorbackground and nonlinearweakforce non-degradation plusradius; fixed initial+8half steps or zero are retained. ExactoutsideUV vsorigin/base and affine-realization checks support the theoretical globalBG→interiorBG implication. These are relativeownE023 numerical safeguards, not application thresholds or nonlinear/fullhead optimality. Zero fallback is numerical returnedoutcome, not infeasibility proof. BackgroundGP strain/energy is only reported and is not protected by nodalUVguard.
+
+Map definition s_i=C²||F_i||²/m_i onfree,0Dirichlet sums torho²; it must be named assembledweakforce-norm contribution, not strongPDE residual. ExactoutsideUV does not ensure outsideweakforce contribution unchanged because elementassembly couples neighbors. Damage contour/hatching/window overlay is descriptive, not attribution of residual causality. Figure generation/actualsum identities are pending the bounded results review.
+
+Parent reports new three-constraint/nonfinite sanity checks; no redundant old fullsuite or independentoptimization rerun was performed in this difference gate. Original asset/model hash/grad protections, frozenchannels/nohistory qualification and actualexternal arrays scope remain. No neuraltraining/checkpointwrite/remoteaction/newcandidate by this reviewer. Source readiness is not scientific success.

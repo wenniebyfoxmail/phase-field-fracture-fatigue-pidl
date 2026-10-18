@@ -1,0 +1,23 @@
+{
+  "state": "c60s4",
+  "UV_objective_linear_g": [
+    -0.0030655341384054863,
+    0.13336750681167406
+  ],
+  "weak_constraint_half_gradient_h": [
+    0.0017456832612441871,
+    -1.0191604461181694
+  ],
+  "background_constraint_half_gradient": [
+    -0.0006490278417124509,
+    0.7008313155188852
+  ],
+  "dual_representation_of_minus_g": [
+    3.6690175707069153,
+    5.1452467912276365
+  ],
+  "representation_residual_norm": 1.3877855570284802e-16,
+  "relative_residual": 1.0402976895513123e-15,
+  "gradient_matrix_condition": 2722.3280988702336,
+  "meaning": "At z0, feasibility requires h.d<=0 and bg_g.d<=0. If -g is nonnegative combination of h/bg_g then objective cannot decrease at first order in that cone. Algebra only, no new candidate or optimizer solve; not physical/full-head infeasibility proof."
+}

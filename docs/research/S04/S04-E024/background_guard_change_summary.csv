@@ -1,0 +1,37 @@
+state,arm,quantity,change_percent
+c20s4,D007,Full-field UV,-0.18499174312629485
+c60s4,D007,Full-field UV,-0.09729368181512488
+c83s4,D007,Full-field UV,-0.03689537055707737
+c20s4,background_guard,Full-field UV,-0.18499174312629485
+c60s4,background_guard,Full-field UV,0.0
+c83s4,background_guard,Full-field UV,-0.017491955836757
+c20s4,D007,Damage UV,-0.20194119077144856
+c60s4,D007,Damage UV,-0.14007274518663682
+c83s4,D007,Damage UV,-0.03911201137246634
+c20s4,background_guard,Damage UV,-0.20194119077144856
+c60s4,background_guard,Damage UV,0.0
+c83s4,background_guard,Damage UV,-0.017252552268509636
+c20s4,D007,Background UV,-0.05009373057974775
+c60s4,D007,Background UV,0.3471959160505911
+c83s4,D007,Background UV,0.07464989283210155
+c20s4,background_guard,Background UV,-0.05009373057974775
+c60s4,background_guard,Background UV,0.0
+c83s4,background_guard,Background UV,-0.029546760660525972
+c20s4,D007,Inside-window background UV,-0.4852070905053574
+c60s4,D007,Inside-window background UV,2.7482768201238184
+c83s4,D007,Inside-window background UV,0.3770072114942513
+c20s4,background_guard,Inside-window background UV,-0.4852070905053907
+c60s4,background_guard,Inside-window background UV,0.0
+c83s4,background_guard,Inside-window background UV,-0.14953637011637655
+c20s4,D007,Actual weak residual rho_u,-0.04628673068344247
+c60s4,D007,Actual weak residual rho_u,-0.0018670113120844434
+c83s4,D007,Actual weak residual rho_u,-0.004001479770399108
+c20s4,background_guard,Actual weak residual rho_u,-0.04628673068346467
+c60s4,background_guard,Actual weak residual rho_u,0.0
+c83s4,background_guard,Actual weak residual rho_u,-0.019763056719834804
+c20s4,D007,Inside-window elastic-driver error,0.34762973697373134
+c60s4,D007,Inside-window elastic-driver error,0.38394861865216345
+c83s4,D007,Inside-window elastic-driver error,0.8702665289229694
+c20s4,background_guard,Inside-window elastic-driver error,0.3476297369736203
+c60s4,background_guard,Inside-window elastic-driver error,0.0
+c83s4,background_guard,Inside-window elastic-driver error,0.23005599035572644

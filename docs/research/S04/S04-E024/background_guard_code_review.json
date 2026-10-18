@@ -1,0 +1,17 @@
+{
+  "verdict": "PASS",
+  "scope": "D008 focused differential pre-use review",
+  "source": "a105bbbd1b63ea8357dab7b094a479f1ca9a7194",
+  "blocking_findings": [],
+  "fixed_D007_basis": true,
+  "exact_background_quadratic": true,
+  "actual_inside_and_global_background_checks": true,
+  "old_80_percent_rule_revoked": true,
+  "independent_optimization_rerun": false,
+  "real_results_reviewed": false,
+  "source_sha256": {
+    "SENS_tensile/s04_e024_background_guard.py": "0d3b9e5414c8aab28fda4c8c679d45d2d233a02e1b504f6e76ec592518b78d72",
+    "SENS_tensile/diagnose_s04_e023_background_guard.py": "55fb88b8f549fa290372abb99642d1054456d43ef170b65d5b1ad4d2d26dd1d9",
+    "docs/research/S04/S04-E024/background_guard_protocol.md": "88219c947ed35463a7069c9f8c1c7b11f53b562c2a91a1076af88bea52e4e1d0"
+  }
+}
