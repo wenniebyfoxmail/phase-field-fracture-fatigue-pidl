@@ -1,6 +1,6 @@
 {
   "owner": "S04-E011 prospective loss-weight diagnostic preparation",
-  "revision": "loss-weight-gamma-r1-20261018",
+  "revision": "loss-weight-gamma-r2-20261018",
   "status": "PREPARATION_ONLY_NOT_PRODUCER_READY",
   "source_base_commit": "6274a696b0bef8b72a169c803ad06d311822e16a",
   "question": "At fixed C initialization and fixed200 updates, does stronger irreversibility penalty reduce same-state FEM joint u/v/d disagreement?",
@@ -17,7 +17,8 @@
   "only_changed_factor": "hist_loss_weight; do not also change model_tol_ir",
   "fixed": {
     "initialization": "C: immutable original post-U0 theta_R; hard251-line; FEM U0 d0 and hist_alpha; anchored map and fixed buffers",
-    "anchor": "actual device/dtype complete-node forward at immutable theta_R once; no resume re-anchor",
+    "anchor": "actual device/dtype complete-node forward at immutable theta_R once; no resume re-anchor; serialize/reload identity",
+    "legacy_map": "r<-2:.001(r+2); -2<=r<=2:r/4+.5; r>2:1+.001(r-2); autograd at+-2 central.25; hardline derivative0",
     "network": "8x400 TrainableReLU seed1 float32 eval no-autocast, original UV boundary mapping, all enrichments/prior/patches off",
     "mesh": "86756 ordered nodes/86408 nativeQ4/GP4",
     "physical": {"E": 1, "nu": 0.3, "Gc": 0.01, "ell": 0.01, "w1": 1, "AT": "AT1", "split": "Amor", "eta": 0, "alpha_T": 0.5, "p": 2},
@@ -49,8 +50,8 @@
     "J": "sqrt(sum(m*((du/.12)^2+(dv/.12)^2+dd^2))/(3*sum(m)))",
     "weights": "positive nativeQ4 lumped nodal mass, fixed scales .12/.12/1",
     "endpoint_policy": "update0 and update200, fixed200, no best checkpoint or early stop",
-    "missing_or_cap_before_200": "endpoint comparison inconclusive; preserve valid prefix; no top-up",
-    "interpretation": "directional development effect only; no formal pass threshold or significance claim",
+    "missing_or_cap_before_200": "endpoint comparison inconclusive; preserve valid prefix; no top-up; no last/best/posthoc earlier-common-step substitution",
+    "interpretation": "directional development total beta effect through penalty/log/regularization/RPROP, no formal pass threshold/significance; J improvement does not imply every channel improves",
     "secondary": "UVd contributions, free/line damage, fixed-front ROI/profiles, GP4 raw/active, free-u residual, nodal/GP healing and box, resource use",
     "no_rescue": "symmetry, lower training loss or penalty cannot replace FEM distance",
     "minimum_visual": "FEM/W0/W25 same-state primitive fields and signed errors with shared scales plus score table/README_analysis"
@@ -60,7 +61,9 @@
   "pre_execution_requirements": [
     "independent exact runner/config/protocol/input review",
     "new version-specific budget and execution authorization",
-    "actual device C update0 equality and fixed buffer serialization",
+    "actual device C update0 equality, zeroEh/fullNN parameter gradients and actual signs identical, fresh optimizer states identical; serialize/reload fixed buffers; no preflight optimizer step",
+    "producer torch.optim.Rprop exact PyTorch version/implementation/sign-flip handling frozen, within separately authorized new budget",
+    "future no-step reversible NN perturbation output_layer.bias[2]-=1e-3; anchor/history unchanged; same perturbed-state fullNN gradient decomposition at beta1/25; require Eh response not sign flip; restore full network/buffers exactly; not yet executed",
     "beta25 vs tol.001 equivalence without double scaling",
     "same-snapshot fullNN gradients for both beta at k0/1/200 independently on each arm; nearzero=1e-12*max(1,maxabs(g1),maxabs(g25)); exact sign/zero counts; zero-norm cosines undefined; never threshold RPROP gradients; step state diagnostics",
     "same-state FEM reference/mesh/readout contract and offline scorer identity"

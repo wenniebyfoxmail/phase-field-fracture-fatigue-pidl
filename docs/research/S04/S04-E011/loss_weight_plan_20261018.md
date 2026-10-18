@@ -1,6 +1,6 @@
 # 单因素 loss 权重准备：不可逆罚 ×25（2026-10-18）
 
-状态：准备与审查，训练预算 **0**；无 producer 命令、训练 runner 或新增 FEM。
+状态：设计及静态准备复审完成，训练预算 **0**；无 producer 命令、训练 runner 或新增 FEM。
 本任务独立于主对话正在执行的 A/B/C，各 200 更新、总计≤1 GPU小时的授权。
 不修改、占用或复制该预算，不修改主对话工作树。
 
@@ -84,6 +84,9 @@ FEM 角色是已有同状态数值比较对象，原 E011 的资格限制继续�
 固定 E=1、nu=.3、Gc=.01、ell=.01、w1=1、AT1/Amor、eta=0、alpha_T=.5、p=2。
 同一原 u/v 边界映射，关闭所有额外 enrichments/priors/patches。
 空间梯度与能量来自映射后的 Q4 节点，不能对 raw NN 坐标导数替代。
+完整继承s：r<-2为.001(r+2)，-2≤r≤2为r/4+.5，r>2为1+.001(r−2)。
+实际代码在±2取中心分支，autograd导数.25，两侧斜率不同；自由d0=0/1
+的折点行为也继承C，不改成smooth/clip。硬线输出对raw梯度0。
 FEM 的 trial-f/staggered 与 PIDL committed-f/joint、可行域差异仍存在；
 gamma 数值相等不意味着两算法/完整方程一致。
 
@@ -100,7 +103,10 @@ fresh optimizer、状态和端点读出完全相同，才能提出复用 W0 的�
 1. 未来 runner 独立审查绑定精确 commit、输入与本卡版本；复用已审主对话
    实现需要声明依赖、检查差异，不能从活动工作树随手拷贝。这里不实现 runner。
 2. 在真实 device/dtype/full forward 的 theta_R 建一次 anchor，验证 W0/W25
-   的 update0 输出、hist和buffer相同且 C=d0；全量导出初态后才可更新。
+   的 update0 输出、hist和buffer相同且 C=d0；完整NN参数梯度逐项及其实际
+   sign必须一致，fresh optimizer状态一致；不一致先查证，不执行optimizer step
+   来“试试看”。预期首次更新相同是理论一致性诊断，不作为已完成结果。
+   保存/重载映射后重复静态一致性检查，禁止重锚；全量导出初态后才可更新。
 3. 原生小Q4非零回退测试验证 beta25 与 tol=.001 单独改动等价、无双重×25；
    验证不回退时 Eh及梯度均0，零点使用实际 ReLU平方导数。
 4. NN 参数梯度诊断不得用下表的 nodal 梯度冒充：同一个参数快照上算两种 beta
@@ -111,6 +117,14 @@ fresh optimizer、状态和端点读出完全相同，才能提出复用 W0 的�
    nearzero采用预定阈值 `1e-12*max(1,maxabs(g1),maxabs(g25))`，
    只作诊断，不修改传给RPROP的梯度；余弦在任一范数为0时标未定义。
    未实现/未审不得称 producer-ready。
+5. 预先指定可恢复NN参数扰动：只将 `net.output_layer.bias[2]` 减1e-3，
+   anchor/history全部不动，分别求同一扰动状态下beta1/25的完整NN参数梯度、
+   Eh非零响应与分解；不要求sign必翻转，不调扰动幅度追求翻转。
+   完整恢复网络与buffer、验证逐位相同，且不调用optimizer/history更新。
+   该检查列入未来新GPU预算，本轮未执行，不用静态物理节点扰动冒充已完成。
+6. 执行卡冻结 `torch.optim.Rprop` 的实际producer PyTorch版本、实现和符号翻转
+   分支，不能仅录超参数。将同快照两beta间sign差与相邻更新sign翻转分开记，
+   raw能量分项梯度与已除ln(10)S/加权的分项各自标清。
 
 ## 已完成的零训练检查及边界
 
@@ -155,6 +169,9 @@ m为正Q4 lumped节点质量；固定三通道尺度与等权。主要读数
 端点缺失、预算未跑满200、有效性破坏则此端点对照 inconclusive/inadmissible，
 保留实际更新数/有效前缀，不加步数补齐。若确定性重复性底噪尚未知，不宣称小差
 足以选择更好模型，不临时加seed。
+只有两臂都完成200且端点有效封存，才计算原主比较DeltaJ200；不以末点、
+best点或事后挑共同更早步数替代。J下降仅说明复合指标改善；若说u/v/d全部
+改善，必须逐通道都有支持。
 
 必要解释包括各u/v/d贡献、自由/硬线damage、固定前区x[0,.08],|y|≤.04、
 x=-.25/0/.01/.02剖面、GP4 raw/active相对L2（零参考范数改报绝对值并标未定义）、
@@ -177,4 +194,16 @@ max物理能量、每步耗时和更新数。两臂优化loss不是同一目标�
 | 几乎无回退、两臂等同 | 该块缺少gamma作用支持 | 停此杆；若有依据另卡测正则，不自动开跑 |
 | 变差/抖动或cap前停止 | 保留结果/预算受限，不称收敛 | 不续跑；审查优化与物理场分项 |
 
-审查收据后附；设计可审不等于 Code Ready、Run Ready 或执行授权。
+## 已完成的复审与采纳
+
+- [Pro原文](https://chatgpt.com/c/6ad4b3e9-4ae8-832b-a4cd-34432eb7e997)：
+  `REVIEW_PASS_SCOPED_TO_DESIGN`；只审实际提交文字，未访问/复算本地代码数据。
+  无需扩臂或改主指标。采纳完整NN初态/可恢复参数扰动、RPROP实现身份、同快照
+  梯度口径和两臂200完成条款；不把总效应单归因于约束。均为未来执行前要求，
+  未伪写成已经完成。详见 `runs/loss_weight_design_review_20261018.json`。
+- 独立Codex审code2d89a7f7、doc8656ec7b，实际CPU复跑与JSON逐项完全相同：
+  `REVIEW_PASS_SCOPED_TO_PREPARATION_AND_STATIC_AUDIT`；
+  见 `runs/loss_weight_code_review_20261018.json`。本次只补Pro要求的前置契约，
+  未改受审脚本或production source。
+
+没有训练收益结论。设计与静态复审不等于 Code Ready、Run Ready 或执行授权。
