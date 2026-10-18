@@ -1,0 +1,20 @@
+{
+  "channel": "independent read-only Codex",
+  "reviewer": "/root/loss_weight_readonly_review",
+  "verdict": "REVIEW_PASS_SCOPED_TO_PREPARATION_AND_STATIC_AUDIT",
+  "reviewed_code_commit": "2d89a7f78b345e533ec822dee64ed8523a65d83a",
+  "reviewed_document_commit": "8656ec7b93dfc3cade2893be26afe09788dff061",
+  "scope": "four added preparation files plus actual compute_energy/Q4/fit/material/gamma/C mapping/BC implementations; no production runner",
+  "independent_checks": [
+    "CPU audit rerun once, resulting JSON exactly equals tracked static receipt",
+    "loss definitions, normalized units, log chain derivative and RPROP semantics match source",
+    "C fixed, only hist_loss_weight1to25; model tol stays.005; no double multiplication",
+    "initialization/hard-line/representation/history/optimizer separated from weight effect",
+    "beta25 vs tol.001 energy difference0; prescribed healing nodal gradient Linf difference1.4551915228366852e-11",
+    "loaded FEM target not read; optimizer updates/history commits/FEM solves/GPU usage0"
+  ],
+  "raw_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/loss_weight_preparation_20261018/reviewer_static/audit.json",
+  "substantive_blockers_in_preparation_scope": [],
+  "not_certified": ["producer readiness", "Run Ready", "fullNN physical parameter gradient conflicts", "training accuracy gain", "execution authorization"],
+  "before_any_execution": "actual-device initialization identity; fullNN/RPROP diagnostics; exact runner/offline scorer review; new version-specific budget and execution approval"
+}
