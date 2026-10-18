@@ -1,3 +1,5 @@
+> 2026-10-18更新：本精确版已按核验的总部原始人方授权完成私有部署、唯一R001及接收核验，无公开push；公开分支并非本次执行依赖。下文为原准备历史，当前见execution_status.md与runs/S01-E024-R001/result.md。
+
 # S01-E024-R001 执行准备（尚未传送、推送或执行）
 
 精确CodeReady源码5a931ac0faef7d48e49d096d81d042440f080880，设计c36add67，指定6.1sol-Medium独立双审通过。229绑定/230源码成员，manifestSHAd21b99072c6e363c46ff20e95e43ba9a2f09fa400715ea349bb072acf1d5feda；configSHA9d4060e6afa1938f2529448382fa15e4adb553c11420cdb5dce16aaef37a0cfe，lockSHA292c05a8441c02c40c592f11d4817b60226bf07f85cef1becb980c2bc6e0171b。执行包逐项字节核验一致，任何修改需新绑定和针对性复审。

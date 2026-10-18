@@ -1,0 +1,9 @@
+# S01-E024-R001 independent evidence / actual-figure review
+
+Actual user-specified gpt-6.1-sol / Medium,e024_independent_review,read-only.Evidence PASS and actualF00/F02/README readability PASS,no necessary corrections.Bind exactsource5a931ac0faef7d48e49d096d81d042440f080880,uniqueR001,immutablev1ZIP1141163186bytes/60members/SHA5bcce94f568e86a10f7afcc3e56a480bbc5f8283393bf70365b1831779a8dac0.
+
+Independently checkedCRC,55outputreceipt hashes,19input andprivate-label hashes,all model/qualification freezes,FITindices/scope,6049finiteparameters/statedigest,resources and0connectioncounts.Recomputed EVERY qualificationcontext metric from saved masks/maps,then image→siteequalaggregation,andtrain6 hierarchicalprevalenceconstants.Allmatch:Brier[.029538528848,.048355461761,.050465863973],constant[.028667446141,.046640409691,.047937585601],foregroundDice[0,0,0],allqualificationnegative.Mapmax[.000873255369,.000738856092,.002208046149],fixed.5foregroundcells0.
+
+Executioncompleted736.5s/RSS3823435776bytes/GPUallocated39927296/reserved65011712bytes,withinbudget.StageAnegative,admitted[].StageBuncomputed/inconclusive,0rolefits/fullbankmaps/pooled-or-helddetectioncomparisons;primary/retention/new/lost/net/macroallnull.Cannotreportnet0orRun-specific684/684retention.StopfixedCNNasfrozen,retainE003baselinewithoutnewrescore.No thresholds,modelchoicesorretriesadded.
+
+ActuallyopenedF00/F02andREADME:qualificationbaselineandsitevariationclear;F02explicitownqualification excludedfromCNNfit,duplicateimagesunderdifferentfoldnot6independentunits/notOOFadditions.NoF01isexpected.NoE003load,newCNNinference/training,newsourceimages,SSHorsealeddataaccess.Immutablearchive/outputsunchanged.Reviewconfirmsintegrityandinterpretation,notlocalisation/detectionbenefit.
