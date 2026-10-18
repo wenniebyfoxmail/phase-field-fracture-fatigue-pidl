@@ -47,6 +47,7 @@ verdicts nor authorises deletion of local evidence.
 | 7 | Governance and skills | shared rule/skill copies | authoritative branch is `codex/exploratory-formal-gate-20261017` (`322a40c0`); fourteen byte-identical copies were reconciled, while divergent legacy entrypoints remain held | none | pushed and enabled locally |
 | 7a | July future-plan record | early PIDL/FEM and road-DT decision sequence | preserved at `codex/legacy-future-plan-recovery-20261018` (`fe07efbc`) on top of the later calibrated-criteria branch | none | historical only; its former producer-routing text is not current policy |
 | 7b | Historical cleanup records | July and August checkout inventories, bundles, and archive recommendations | preserved at `codex/historical-cleanup-records-recovery-20261018` (`3eef9de5`) | raw archives remain untouched | provenance only; this current manifest supersedes their execution guidance |
+| 8 | Current integration-held surface | cross-cutting rules, Windows handovers, frontier/inventory/index/storylines, S09, AA2024 review, project skills, `local_archive/`, and `outputs/` | do not recover as a miscellaneous package; retain each current owner and reconcile only in a dedicated integration task | local payloads remain local | remaining mixed-checkout items are intentionally held; no safe standalone archival unit remains |
 
 ## Completion Rule Per Row
 
