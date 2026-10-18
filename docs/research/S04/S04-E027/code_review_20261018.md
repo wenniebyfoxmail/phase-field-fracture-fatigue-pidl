@@ -77,3 +77,17 @@
 `data_lock.json`只补initializer的自身bytes/SHA、本地路径、producer hostname和核验状态；四MAT身份、protocol、producer路径/commit以及代码完全不改。此前“本地未发现/未知哈希”的状态由此次真实收据更新，先前过程记录保留。15项测试和91537ce2源码独审是历史有效验证，不重复整套测试，也不把旧审查冒充新data-lock快照审核。
 
 初始化**字节身份和本地可用性已齐**。未反序列化模型，因此实际state_dict键/shape/dtype尚未检查；此前c20s3/裸state_dict语义仍明确是原源码/记录推导。未加载科学状态数组或留出，未改变初始化设计/参数，未启动GPU资源探测、计算图、训练或FEM。下一步只将更新后的lock交总部结合既有代码审查统一决定；本次单文件授权不包含资源预检或执行授权。
+
+## 2026-10-18 最终运行卡（本地静态准备，执行仍暂停）
+
+最终卡与**唯一命令**保存在`run_card.json`，直接绑定已取回原trained98的4510197 bytes/SHA e0acd981…edd69f，以及91537ce2已审三臂目标。draft grant明确`execution_authorized=false`、人工许可/批准commit/复核字段null；尚无可执行许可。当前准备层面的等待项是解除原对话“不启动资源预检或训练”的明确暂停，**不是计算预算不足**；解除后仍须当次真实设备/路径/计算图准入，不能将旧硬件快照当当前空闲证明。
+
+静态差异检查发现一项真实交付错误：旧入口要求free>=24GiB，但既有Taobo记录RTX4090总可见24564MiB，小于24576MiB，无法满足。未更改科学目标/总更新数/2h预算；在87a9359b仅调整专用runner的运行准备：至少20GiB空闲才能进入未来三图检验，按实际free减1GiB设CUDA allocator上限、持续检查reserved峰值/设备余量，不符合则停，不宣称图已适配。
+
+首个受限payload步骤已前移到正式Run内部：确切权重size/SHA→CPU `weights_only=True`读取→裸26键/全部shape/float32或64/finite检查→写initializer_compatibility.json；在此之前不读FEM状态、不建模型/optimizer/计算图。本轮没有调用该函数、没有反序列化权重。正式Run后续才读原四MAT、建float64共同模型并严格装载原参数；无包装猜测、随机回退或其它初始化。
+
+共享起点以initial_state.pt/initial_identity.json保存common网络、P/S空Adam与seed1采样流。共享监督1000步后prefix1000.pt保存完整参数/Adam/RNG，fork_identity.json逐项核对S/C相等及对象/张量存储独立，C不另跑前缀。P1500+prefix1000+S500+C500仍为3500唯一更新；0/1000/1500指标、四段计时/峰值、终态预测与四图/sidecar/README沿用原实现。
+
+唯一命令使用外层timeout：7190秒TERM、5秒后KILL，少于7200秒，计入导入、CPU身份与四文件检查、P/S/C各100次no-step图测、优化、评估、保存/渲染；runner原7200秒联合计时和预估式仍保留。SIGTERM转为失败收据，SIGKILL可能留部分数据，绝不判成功/自动重试。32GiB RSS和2GiB输出是操作边界采样检查，并非OS硬配额；GPU allocator另设上限。所有运行量仍未知。
+
+候选为已有授权producer GPUServer8、GPU0/UUID GPU-980d2e42-c060-c272-b10b-8fbc204fef7f（仅来源于本地既有记录；未重探测/占卡/改服务）。root/archive/data等完整路径、四MAT锁、唯一命令、输出名及一次性停止规则均在run_card。正式grant只能在暂停解除且设备准入后填具体许可、clean HEAD、同一GPU index/UUID；先前91537ce2源码审查与15测试保留，未重复全套。此次只跑语法/AST/JSON/静态差异检查，无科学数组、权重反序列化、远程、资源检验或训练。运行准备补丁须作聚焦静态复核，不再新增通用审核材料。

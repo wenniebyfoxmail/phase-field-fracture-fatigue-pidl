@@ -1,0 +1,187 @@
+{
+  "experiment": "S04-E027",
+  "protocol": "S04-E027/v1-source-faithful-P-20261018",
+  "status": "PREPARED_PAUSED_BY_DIRECT_USER_NO_RESOURCE_PREFLIGHT_OR_TRAINING",
+  "reviewed_algorithm_commit": "91537ce240d892fc71f714cceedc1cea92c32b1b",
+  "delivery_guard_commit": "87a9359be202ba6f9a76bfa170c05bf010833fe4",
+  "source_binding": "future grant.approved_commit must equal exact clean deployed Git HEAD; these records do not authorize execution",
+  "run_id": "pf_s04e027_three_arm_v1_20261018",
+  "producer": "GPUServer8 / drtao@172.16.100.2",
+  "run_root": "/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018",
+  "candidate_device": {
+    "cuda_visible_devices": "0",
+    "uuid": "GPU-980d2e42-c060-c272-b10b-8fbc204fef7f",
+    "historical_total_mib": 24564,
+    "available_now": "not probed; unknown",
+    "historical_record": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/uv_head_c1_preparation_20261018/resource_inspection_gpu037.json",
+    "boundary": "candidate only; no occupancy/service mutation; select/confirm one granted device only after user lifts pause; no automatic GPU fallback"
+  },
+  "initializer": {
+    "producer_path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_98.pt",
+    "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027/initializer_retrieval_20261018T121735823711Z/trained_1NN_98.pt",
+    "bytes": 4510197,
+    "sha256": "e0acd981b8c6d69be9b88d676088b8a026448ee24f28ec231ecdd5c266edd69f",
+    "identity_receipt": "initializer_retrieval_20261018.json"
+  },
+  "staging_before_future_launch": {
+    "code": "/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/code",
+    "grant": "/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/grant.json",
+    "data_root": "/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/data",
+    "payloads": {
+      "mesh": {
+        "relative": "inputs/common_common_initial.mat",
+        "bytes": 32927359,
+        "sha256": "59a0f81368d0c46a698f94fdfcb32158e96361714d7547f00deed996d4a7c181"
+      },
+      "predecessor": {
+        "relative": "inputs/c0020_s003_post_commit.mat",
+        "bytes": 32000094,
+        "sha256": "c242202960ae1da66d234d8646b12f69e6bab3bd4a119daa1811391e2efc5683"
+      },
+      "case": {
+        "relative": "output/mcs/c20_s4/case.mat",
+        "bytes": 107596994,
+        "sha256": "315e2dc00cd57668bc287af6619b33846dc5273f21c124b6d6f84aa10ed62c48"
+      },
+      "reference": {
+        "relative": "output/mcs/c20_s4/outer_18.mat",
+        "bytes": 24195415,
+        "sha256": "31ab8a56c6485da0ead9b28abcb3f6e6f8973e7eadcd12b6acaed6ade5479483"
+      }
+    },
+    "cache_dirs": [
+      "/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/tmp",
+      "/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/cache"
+    ],
+    "output_must_not_exist": true,
+    "staged_now": false,
+    "note": "deploy exact clean Git snapshot and only four locked FEM files after pause lifted; initial weight is read from existing original archive; no remote change this turn"
+  },
+  "grant_draft": {
+    "execution_authorized": false,
+    "human_approval_reference": null,
+    "approved_commit": null,
+    "review_reference": null,
+    "protocol": "S04-E027/v1-source-faithful-P-20261018",
+    "initializer_sha256": "e0acd981b8c6d69be9b88d676088b8a026448ee24f28ec231ecdd5c266edd69f",
+    "hostname": "GPUServer8",
+    "cuda_visible_devices": "0",
+    "gpu_uuid": "GPU-980d2e42-c060-c272-b10b-8fbc204fef7f",
+    "data_root": "/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/data",
+    "output": "/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018/output",
+    "gpu_hours_cap": 2,
+    "ram_gib_cap": 32,
+    "output_gib_cap": 2
+  },
+  "unique_command": "nohup setsid timeout --signal=TERM --kill-after=5s 7190s env CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 TMPDIR=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/tmp XDG_CACHE_HOME=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/cache MPLCONFIGDIR=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/cache/matplotlib PIDL_ARCHIVE_DIR=/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018 nice -n 10 /usr/bin/python3 -u /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/code/SENS_tensile/run_s04_e027.py --execute --grant /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/grant.json --initializer /mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_98.pt --out /mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018/output > /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/worker.log 2>&1 < /dev/null &",
+  "command_status": "NOT_EXECUTED; grant intentionally false and identity/approval fields null",
+  "future_phase_order": [
+    "human pause lifted for preflight and training; prepare final grant with exact commit/review/human reference",
+    "live same-host/single-GPU index+UUID/source/approval/fresh-output admission; no fallback",
+    "first payload operation: exact initializer size/SHA; CPU weights_only load; exact26 bare keys, shapes, float32/64, finite; record initializer_compatibility.json; no model or FEM read before this",
+    "only four FEM files: identity, causal predecessor/trial history and reference replay",
+    "construct exact8x400 model; strict original weights load, float64; common force normalizer; no optimizer update",
+    "P/S/C actual forward/backward100 each, no optimizer updates; moment-buffer reserve and CUDA cap; time estimate admission",
+    "common start saved once; P1500, shared S1000, copy full S state to C, S500 then C500",
+    "fixed milestone scoring, final fields, figures and provenance; independent result review remains after actual outputs"
+  ],
+  "objective_updates": {
+    "P": 1500,
+    "shared_supervised_prefix": 1000,
+    "S_tail": 500,
+    "C_tail": 500,
+    "unique_total": 3500,
+    "arm_endpoint_updates": 1500,
+    "scientific_design_unchanged": true
+  },
+  "checkpoints": {
+    "initial": [
+      "initial_state.pt",
+      "initial_identity.json",
+      "initial.json"
+    ],
+    "fork": [
+      "prefix1000.pt",
+      "prefix1000.json",
+      "fork_identity.json"
+    ],
+    "final": [
+      "P_1500.pt",
+      "S_1500.pt",
+      "C_1500.pt"
+    ],
+    "semantics": "initial_state stores identical common network, two empty Adam states and seed1 RNGs; prefix stores all S model/Adam/RNG; fork JSON asserts equal states and independent storage; no resume API"
+  },
+  "cost": {
+    "total_wall_seconds_cap": 7200,
+    "one_gpu_only": true,
+    "outer_TERM_seconds": 7190,
+    "outer_KILL_grace_seconds": 5,
+    "includes": "Python/import, exact initializer check, four-file/reference replay, 300 no-step probes,3500 updates, scheduled diagnostics, evaluation, save/render",
+    "estimate": "elapsed_preflight + 1.25*(1500*tP+1500*tSup+500*tC) + 600 <= 7200",
+    "gpu_initial_free_min_gib": 20,
+    "initial_free_minus_headroom_gib": 1,
+    "cuda_bound": "allocator process fraction = (initial free bytes - 1GiB)/device total; abort on peak reserved over bound or current device free below1GiB",
+    "host_rss_gib": 32,
+    "output_gib": 2,
+    "limitation": "RSS/output checks are sampled at operation boundaries, not OS hard quotas; external timeout bounds process wall time including Python startup; SIGKILL may leave partial receipt, never label partial as completion",
+    "actual_costs": "resources.json four disjoint segments and conceptual arm totals, receipt total elapsed; shared prefix counted once for actual execution"
+  },
+  "stop": {
+    "single_attempt": true,
+    "no_retry": true,
+    "no_resume": true,
+    "no_gpu_or_initializer_fallback": true,
+    "no_budget_extension": true,
+    "criteria": [
+      "identity/container/key/shape/dtype/finite mismatch",
+      "unavailable approved device or memory cap/OOM",
+      "reference replay inconsistency",
+      "2h estimate/deadline,32GiB RSS,2GiB output",
+      "mechanical denominator unavailable",
+      "P nonpositive energy"
+    ],
+    "diagnostic_boundary": "S/C auxiliary L_P nonpositive -> NA, not new S/C rejection"
+  },
+  "outputs": [
+    "data_lock.json",
+    "initializer_compatibility.json",
+    "preflight.json",
+    "initial_state.pt",
+    "initial_identity.json",
+    "prefix1000.pt",
+    "fork_identity.json",
+    "milestones.json",
+    "loss_trace.jsonl",
+    "loss_trace.json",
+    "scores.json",
+    "resources.json",
+    "receipt.json",
+    "predictions.npz",
+    "fields.png",
+    "profiles.png",
+    "loss.png",
+    "metrics.png",
+    "fields.md",
+    "profiles.md",
+    "loss.md",
+    "metrics.md",
+    "README_analysis.md"
+  ],
+  "claim_boundary": "one exposed synthetic c20s4/horizon0; primary final active_error(C)/active_error(S), original NA/tie rules; no generalization or autonomous history claim",
+  "preparation": {
+    "no_checkpoint_deserialization": true,
+    "no_scientific_array_reads": true,
+    "no_remote_access": true,
+    "no_resource_preflight": true,
+    "no_training": true,
+    "old15_tests_not_repeated": true,
+    "checks": [
+      "py_compile runner",
+      "git diff --check",
+      "AST/static source and card/lock consistency",
+      "bash -n unique command only"
+    ]
+  }
+}
