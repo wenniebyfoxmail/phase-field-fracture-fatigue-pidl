@@ -1,0 +1,57 @@
+{
+  "status": "passed",
+  "scope": "Independent offline saved-tensor/budget and manual NumPy Amor energy/stress-force/mass/H1/active readout. No Mac network forward/gradient/training or SSH.",
+  "independent_metrics": {
+    "FEM": {
+      "E_el": 0.004320576024533599,
+      "free_u_l2": 3.775945107306163e-15,
+      "uv_mass_rel_L2": 0.0,
+      "uv_H1_rel": 0.0,
+      "active_vs_FEM_relative_L2": 0.0
+    },
+    "original_theta0": {
+      "E_el": 0.011216514978623433,
+      "free_u_l2": 0.019601199803933128,
+      "uv_mass_rel_L2": 0.03739388021947007,
+      "uv_H1_rel": 1.1198184913885147,
+      "active_vs_FEM_relative_L2": 51.78070816764711
+    },
+    "PBD_full_network": {
+      "E_el": 0.00540156567903897,
+      "free_u_l2": 0.015995833518180787,
+      "uv_mass_rel_L2": 0.06262684393394058,
+      "uv_H1_rel": 0.5913469685524375,
+      "active_vs_FEM_relative_L2": 6.3348792476318945
+    },
+    "fixed_feature_Newton": {
+      "E_el": 0.006024051980505792,
+      "free_u_l2": 0.02097605107759165,
+      "uv_mass_rel_L2": 0.1382966348797156,
+      "uv_H1_rel": 0.8080740284353384,
+      "active_vs_FEM_relative_L2": 3.8007234134576904
+    },
+    "hidden_Newton": {
+      "E_el": 0.005683523868066848,
+      "free_u_l2": 0.01564329012543216,
+      "uv_mass_rel_L2": 0.1094041663883071,
+      "uv_H1_rel": 0.7176680484662843,
+      "active_vs_FEM_relative_L2": 5.348757368514493
+    }
+  },
+  "hidden_tensors_changed": 24,
+  "hidden_parameter_maxabs": 0.00015275642118209244,
+  "damage_head_exact": true,
+  "raw_span_outside_l2": 4.230380317675419e-12,
+  "boundary_maxabs": 7.347873447003325e-18,
+  "evaluations": 311,
+  "hidden_block_calls": [
+    40,
+    39,
+    39,
+    40
+  ],
+  "dense_assemblies": 15,
+  "explicit_tangent_products": 47,
+  "actual_current_head_gradient_inf": 7.136373100530974e-11,
+  "hidden_rawE_gradient_inf": 0.8765507369339015
+}

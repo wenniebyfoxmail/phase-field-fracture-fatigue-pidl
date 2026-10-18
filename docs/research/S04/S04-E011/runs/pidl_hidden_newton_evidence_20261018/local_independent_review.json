@@ -1,0 +1,52 @@
+{
+  "status": "passed",
+  "review_kind": "independent_Code_Ready_narrow_difference_review",
+  "reviewer": "b0_route_inventory",
+  "reviewed_utc": "2026-10-18T12:11:33.924478+00:00",
+  "worker_blob": "0548e482585dc56e8ad1a555197e2301514413d7",
+  "tests_blob": "2a7fd60875034ad9811b996029f4680d1be2ab1f",
+  "launcher_sha256": "9dfb15e61fa827717e6b563608ee2864a09a8784e90f3298e647c6730b8f3aae",
+  "protocol_sha256": "8732a9a05fbd3ac80a77b71c7f2945d33270e3727625da92f1eba5c6a01a977d",
+  "reviewed_base_commit": "10577ed3dcc1f7c4e60623925d2736e8a04a1e06",
+  "commit_binding": "Verified clean unchanged source ccc011f0 and new GPU5 package/phase contracts20261018T121350Z, exact reviewed launcher. Earlier GPU0 preflight/package receipts retained separately; no GPU0 launch.",
+  "checks": {
+    "independent_tests": "14 passed: five new hidden/span/gradient/rollback fixtures plus five reviewed Newton fixtures and four original head fixtures. Compile worker/tests/launcher passed. No full-network Mac training.",
+    "physics": "Same reviewed native-Q4 Amor elastic Eel, fixed conditional FEMc20s4 damage/BC, eta0. Scaling Eel/Eel(original theta0) only for hidden optimization; all reported parameter gradients rawEel.",
+    "warm_start": "Uses actual prior c20 Newton accepted network, hidden and damage row verified exact original; old-basis actual projected head gradient must still pass1e-10. Original theta0/PBD/fixed-Newton common raw-gradient baseline readouts do not train these comparators.",
+    "same_span": "Normalizes columns of original401x387 transform to original orthonormal raw-head spanS. Current-hidden mass reconditioning uses ALL387 directions,774coordinates, explicit rank-loss stop, no ridge/additional rank deletion. Increment origin is current head, not a projection/reconstruction. Hidden movement changes physical span; rawS remains fixed.",
+    "hidden_only": "UV weights/bias fixed exactly during every hidden-only LBFGS block; includes trainable hidden activation parameters. New history5 per block; strongWolfe closures independently counted under40 cap including endpoint verification. Does not trust LBFGS.step returned original loss.",
+    "rollback": "Only completed optimizer steps with counted actual energy readout survive. Interrupted trials restore last complete snapshot; whole-stage rank/actual-energy rejection records rollback. Hard hidden energy failure and hard head singular/linear-residual/non-descent/Armijo failure propagate to outer stop, preserve last verified state, no automatic retry.",
+    "head_solver": "Periodic same-energy consistent tangent Newton/Cholesky uses reviewed trace branches and source/AD/FD contracts. At most10 Newton steps per stage. Candidate raw head installed then actual network energy and projected gradient read independently; unverified conditioned accepted points are labelled nonactual.",
+    "budget": "Single global400 energy/gradient calls including3baseline raw-gradient readouts/source/native contracts/hidden trials/AD-FD/head/final. Final actual graph reserved; no new evaluation/matrix/solve after600s including preparation. Max4hiddenblocks40calls,50denseassemblies,1000explicitproducts; assemblywork recorded separately.",
+    "gradient_semantics": "One rawEel autograd graph returns original-architecture hidden and rawUV parameter derivatives plus nodal force. Fixed rawS and current conditioned Phi projections reported separately. None is a substitute for the others, and gradient-group norms are not causal contributions.",
+    "frozen": "Mechanical objective and fields use exact FEMdamage; no damage minimization/history refresh/commit/rollout. Damage output row and SmoothB0anchor parameters exact; shared hidden changes may alter unused NNdamage field, explicitly not claimed frozen.",
+    "probe": "Actual hidden-parameter/nodal backward plus full cached gradient-basis tangent assembly,AD-FD and linear solve, parameter0updates and>=3GiB free. Probe result finite assertions and frozenchecks must pass before production.",
+    "launcher": "Exact clean git archive/bundle/phasecontract bindings; workerblob/launcherSHA/protocolSHA checked atlaunch. Fixed warmstart/basis/original/input/3baseline staging SHA checks. Fresh isolated roots/environment/GPU0receipt, duplicate scan and post-staging GPUprocesspreflight. Production admission requires exited probe, nofailure, real hidden backward+tangent/solve,zero updates,free>=3GiB."
+  },
+  "primary": "Actual Eel decrease >1e-10 absolute vs accepted fixed-feature c20Newton with verified hidden change; accessible bounded hidden-feature improvement only. Differentwarmstart/workpreclude equal-budget ranking againstPBD. Actual reduced head1e-10stationarity target separate.",
+  "claim_boundary": "Not variable projection, whole-network capacity, full joint PIDL, new FEM trajectory, or physical-teacher qualification. LowerEel need not improve every field/residual; unresolved hidden/global/head gradients preserve optimization uncertainty.",
+  "blockers": [],
+  "remaining_before_launch": [
+    "Parent clean commit/push exact reviewed source and add exactcommit binding.",
+    "Fresh shared-GPU availability and attributable zero-update full hidden-backward+tangent memory probe; launch only after pass."
+  ],
+  "not_performed": [
+    "No SSH",
+    "No remote transfer",
+    "No producer launch/optimization",
+    "No source edits"
+  ],
+  "commit": "ccc011f02a9f697eb30315dacd0e13598b45cf6c",
+  "commit_addendum_utc": "2026-10-18T12:12:13.953355+00:00",
+  "placement_addendum": {
+    "reviewed_utc": "2026-10-18T12:13:57.429252+00:00",
+    "previous_GPU": 0,
+    "GPU": 5,
+    "reason": "GPU0 conservative preflight blocked before launch/root creation; service uptime whitelist not relaxed.",
+    "difference_check": "Inverse targeted GPU5->0 replacements reproduce exact previously reviewed launcher SHA; no scientific/worker/protocol changes. No GPU0 placement remnants in GPU selection/env/receipt/common labels.",
+    "status": "passed_placement_Code_Ready_only",
+    "fresh_preflight_required": true,
+    "new_manifest_bound_utc": "2026-10-18T12:14:09.237377+00:00"
+  },
+  "package_manifest_sha256": "94f0c7ae636f18d35c3646ce9af2ebeac0d782ab4b53561a7cd01bb1fe0155a8"
+}

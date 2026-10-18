@@ -1,0 +1,51 @@
+{
+  "status": "passed",
+  "reviewer": "root independent of analyzer author markdown_subjects",
+  "kind": "offline analysis code review, not completed new evidence",
+  "analyzer_blob": "6b72f7dfe22c52e7ed272d6ecf93fa31cf6be570",
+  "reviewed_utc": "2026-10-18T12:09:50.248732+00:00",
+  "checks": {
+    "old_c20_four_independent_replay": {
+      "E_el": {
+        "producer": 0.006024051980505792,
+        "independent": 0.006024051980505792,
+        "absolute_difference": 0.0,
+        "tolerance": 7.024051980505792e-12,
+        "passed": true
+      },
+      "free_u_l2": {
+        "producer": 0.02097605107759165,
+        "independent": 0.02097605107759165,
+        "absolute_difference": 0.0,
+        "tolerance": 2.197605107759165e-11,
+        "passed": true
+      },
+      "uv_mass_rel_L2": {
+        "producer": 0.1382966348797156,
+        "independent": 0.1382966348797156,
+        "absolute_difference": 0.0,
+        "tolerance": 1.392966348797156e-10,
+        "passed": true
+      },
+      "uv_H1_rel": {
+        "producer": 0.8080740284353386,
+        "independent": 0.8080740284353384,
+        "absolute_difference": 2.220446049250313e-16,
+        "tolerance": 8.090740284353386e-10,
+        "passed": true
+      }
+    },
+    "boundary": {
+      "top_bottom_nodes": 298,
+      "FEM_boundary_maxabs": 7.347873447003325e-18,
+      "tolerance": 1e-12,
+      "passed": true
+    },
+    "frozen_damage_exact": true,
+    "new_endpoint": "requires completed actual fields, explicit frozen target/anchor/dhead/BC, span387/no ridge, real hidden change evidence; partial excluded",
+    "gradients": "mandatory raw Eel hidden/UV/spangrad and samefield four checks, baseline-only auxiliary conditioned optional with explicit reason",
+    "primary": "actual E improvement >1e-10 vs fixedNewton and verified hidden change; no fullnetwork capacity/coupled trajectory promotion",
+    "figures": "4 figures with sidecars/README; actual new render review pending"
+  },
+  "blockers": []
+}

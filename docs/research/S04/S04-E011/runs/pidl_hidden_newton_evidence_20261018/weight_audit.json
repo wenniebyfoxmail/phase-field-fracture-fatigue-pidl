@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "kind": "independent saved-tensor identity audit; no Mac model evaluation/training",
+  "hidden_change": {
+    "before_sha256": "d3d577d7e795eb9b54afcb7bf93fbcaed32015184da4dd74dd536c7b2f66e536",
+    "after_sha256": "7a564b8a04e13b0cd685cc33c47583ee428ec74cdd949092a742d92012d0c8f7",
+    "maxabs": 0.00015275642118209244,
+    "changed": true,
+    "changed_tensors": 24,
+    "total_hidden_tensors": 24
+  },
+  "damage_output_row_exact": true,
+  "all_saved_parameters_finite": true,
+  "UV_head_increment_outside_original_raw_span_l2": 4.230380317675419e-12,
+  "floating_point_identity_bound": 4.0784716704021097e-10,
+  "raw_span_rank": 387,
+  "history_commits": 0,
+  "rollout_steps": 0
+}

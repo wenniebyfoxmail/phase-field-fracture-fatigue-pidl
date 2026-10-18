@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "report_review": "passed",
+  "review_kind": "independent final evidence review",
+  "reviewer": "b0_route_inventory",
+  "reviewed_utc": "2026-10-18T12:33:43.307991+00:00",
+  "producer_commit": "ccc011f02a9f697eb30315dacd0e13598b45cf6c",
+  "run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_hiddennewton_ccc011f_20261018T121350Z_production",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_hiddennewton_ccc011f_20261018T121350Z_production/analysis_hidden_newton",
+  "summary_sha256": "d6cce3f2a9ed8968717c48225bee0a8354f28f626c70ddaa78b861042318814b",
+  "report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_newton_result_20261018.md",
+  "report_sha256": "98c9edee932bf1fed8f9bfbfe486083740b9c29cbd6fffe94ec6430f3741bfa4",
+  "obsidian_own_section_sha256": "543580f672bf23ec1dcb344846d3df5d3831238c3920c5901745365739a082d4",
+  "numerical_checks_sha256": "5b2b4f6913ef122eb15c19898a41ff9934bc4b9b4bea68ed33ac75ae8c3912dc",
+  "stage_script_git_blob": "62c14f93ae3e71081ac77c433d6e63595574222a",
+  "stage_csv_sha256": "212d013003fd2132cfc7a54669027d482ebbc6982206a5fff4cf4d6d5e25bf9d",
+  "retrieval_scope": "76files144716430bytes verified by remote-generated count/per-file-size; not remote per-fileSHA verification",
+  "checks": {
+    "producer": "Normal completed single c20s4 run onGPU5 PID2828295, clean producer sourceccc011f0, nofailure receipt, history0/rollout0. EarlierGPU0preflight block was0launch/nonnumerical, retained.",
+    "finite_budget": "311completed energy/gradient calls with all start<600s,152.82s total;4blocks40/39/39/40calls,15dense assemblies/15solves/47explicitproducts. Fourheadstages have no rollback/hardfailure and actualendpointretained. Cholesky residual max1.4321e-15.",
+    "probe": "32calls, real hidden backward plus tangent/AD-FD/solve,0optimizer/modelupdates, peak5652556800bytes/free15776546816bytes; complete successful admission. No new run or remote action by reviewer.",
+    "frozen": "Independent saved-tensor comparison:24hidden tensors changed max1.5275642e-4; damage output row tensor-exact; mechanical d field identical FEM; boundary max7.35e-18. Same raw387span increment residual4.23038e-12 independently reproduced using finite einsum. No NNdamage-field frozen claim.",
+    "numeric": "Independent manually written NumPy strain/Amor energy/stress-force/mass/H1/active replays five methods xfive metrics match summary. Earlierfourmetricdefinitions consistent; no partial/missing candidate scored.",
+    "gradients": "Final actual current projected headinf7.1363731e-11 passes1e-10; rawhiddeninf.8765507 remains nonzero. PBD restrictedspan rank386/387 auxiliaryconditionedg explicitly unavailable, rawgradients andfields retained. Oldfixedpoint oldbasis3.3461e-11 preserved; newcoordinate1.000635e-10 not used to rejudge oldqualification.",
+    "claims": "Accessible hidden-feature benefit supported: actual E decrease3.405281e-4>predeclared1e-10, with actual hidden movement and no expanded rawheadspan. Activeerror rises40.73% despiteE/Ru/UV gainsvsfixedhead. No all-field win, equal-budget ranking, whole-network convergence/capacity, physicalteacher or coupledtrajectory claim.",
+    "posthoc": "Read new70-line stage script and all9acceptedcheckpoint CSV. All9included, exact FEMd/boundary and samefourmetric audits; all4headcorrection Edecreases/activeerrorincreases. This is a retrospective conditional description, not new primary criterion, fatigue evolution, energy-operator contradiction or causalpercentage.",
+    "visual": "Actually viewed all5PNGs: decision/raw-parameter+conditioned+nodalgradient/c20fields/signederrors/stageE-active. FEM-first/sharedrowcolor/units andactivefloor explicit. Fullrange activeerror toofaint forlocalclosureclaims; report avoids them.5sidecars validated. Three initial embedded figures byteidentical to inspected originals; Obsidian adds working-language See/Therefore blocks.",
+    "next": "PBD-current-feature headNewton is an unexecuted recommendation requiring its own qualified numericalspace/budget. No extra producer, capgrowth or training included in this closure."
+  },
+  "blockers": [],
+  "administrative_note": "Final pending-to-passed report wording independently verified as the only tracked-result change; final report/Obsidian own-section hashes bound. Scientific metrics/claims unchanged.",
+  "not_performed": [
+    "No SSH or remote transfer",
+    "No producer or optimizer evaluation",
+    "No source/report edits"
+  ],
+  "status_wording_addendum_utc": "2026-10-18T12:35:22.782730+00:00"
+}
