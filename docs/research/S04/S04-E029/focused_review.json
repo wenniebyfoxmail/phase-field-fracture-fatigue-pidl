@@ -1,0 +1,9 @@
+{
+  "status": "PASS_NO_NEW_BLOCKER",
+  "commit": "7c72db1795e2982a25de68a37dceb0baffb18f8a",
+  "reviewer": "/root/e027_independent_review",
+  "scope": "mapping fixture8 + final runner identity/replay/device/budget/frozen buffers and endpoint semantics",
+  "external_timeout": "1790s TERM+5s KILL",
+  "no_gpu": true,
+  "no_PT": true
+}

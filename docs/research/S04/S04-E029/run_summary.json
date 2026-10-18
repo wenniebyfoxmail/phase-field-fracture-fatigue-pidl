@@ -1,0 +1,131 @@
+{
+  "run_id": "pf_s04e029_increment_v1_20261018T2115Z",
+  "runtime": {
+    "protocol": "S04-E029/v1-smooth-current-lower-increment-20261018",
+    "commit": "7c72db1795e2982a25de68a37dceb0baffb18f8a",
+    "execution": "completed_pending_retrieval_review",
+    "host": "GPUServer8",
+    "pid": 3744112,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "cuda_visible_devices": "5",
+    "command": [
+      "/mnt/data2/drtao/wennie/pf_s04e029_increment_v1_20261018T2115Z/code/SENS_tensile/run_s04_e029.py",
+      "--execute",
+      "--grant",
+      "/mnt/data2/drtao/wennie/pf_s04e029_increment_v1_20261018T2115Z/grant.json",
+      "--out",
+      "/mnt/data2/drtao/pidl_archives/pf_s04e029_increment_v1_20261018T2115Z/output"
+    ],
+    "optimizer_steps": 200,
+    "optimizer_step_calls": 200,
+    "history_commits": 0,
+    "retry": false,
+    "source_dirty": false,
+    "cuda_cap_bytes": 23762501632,
+    "initial_free_cuda_bytes": 24836243456,
+    "optimizer_attempt": "completed_finite",
+    "elapsed_seconds": 363.49812566209584,
+    "peak_cuda_allocated_bytes": 9237505536,
+    "peak_cuda_reserved_bytes": 9330229248,
+    "max_rss_bytes": 4092649472
+  },
+  "retrieval": {
+    "status": "ALL_FILES_SIZE_SHA256_AND_ARCHIVE_VERIFIED",
+    "file_count": 24,
+    "total_bytes": 70975347,
+    "source_commit": "7c72db1795e2982a25de68a37dceb0baffb18f8a",
+    "source_dirty": false,
+    "worker_exited": true,
+    "archive_sha256": "af8d8f158079572dbacfb8ac7a173d3d94dec769018489e33714e19d19113933"
+  },
+  "code_review": {
+    "status": "PASS_NO_NEW_BLOCKER",
+    "commit": "7c72db1795e2982a25de68a37dceb0baffb18f8a",
+    "reviewer": "/root/e027_independent_review",
+    "scope": "mapping fixture8 + final runner identity/replay/device/budget/frozen buffers and endpoint semantics",
+    "external_timeout": "1790s TERM+5s KILL",
+    "no_gpu": true,
+    "no_PT": true
+  },
+  "human_authorization": {
+    "source": "Direct human message verified via read_thread, not inferred from automated review",
+    "thread_id": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+    "message_id": "01a150dc-9907-77b3-a78a-bea34b512a63",
+    "text": "继续托管，FEM 新表示有 GPU 就直接做最小试验，S09 部署好就跑。W0/W25 核验完把和 C 的场图、数值对比给我，重点看是否更接近 FEM。",
+    "scope": "FEM new representation minimum discriminating actual trial; frozen parent remains; no retry or sweep"
+  },
+  "decision": {
+    "R200_over_own_smooth0": 3.522967762270237,
+    "status": "NO_DIRECTIONAL_SIGNAL",
+    "R200_over_frozen_E028_R": 0.7089612571654388,
+    "scope": "single exposed-state representation repair; inspect damage growth and all costs"
+  },
+  "verdict": "negative for active-fit repair; true gradient capability restored",
+  "damage_learning": {
+    "smooth0": {
+      "target_growth_nodes": 4115,
+      "growth_support_damage_RMS": 0.012007646399039928,
+      "positive_change_from_smooth0_nodes": 0,
+      "negative_change_from_smooth0_nodes": 0,
+      "growth_support_positive_change_nodes": 0,
+      "max_change_from_smooth0": 0.0,
+      "min_change_from_smooth0": 0.0,
+      "growth_support_change_RMS": 0.0,
+      "equal_lower_nodes": 291,
+      "max_increment_from_lower": 0.6358648385506043
+    },
+    "E028_R": {
+      "target_growth_nodes": 4115,
+      "growth_support_damage_RMS": 0.052720425598619655,
+      "positive_change_from_smooth0_nodes": 0,
+      "negative_change_from_smooth0_nodes": 86465,
+      "growth_support_positive_change_nodes": 0,
+      "max_change_from_smooth0": 0.0,
+      "min_change_from_smooth0": -0.6358648385506043,
+      "growth_support_change_RMS": 0.04599811517824346,
+      "equal_lower_nodes": 86756,
+      "max_increment_from_lower": 0.0
+    },
+    "R": {
+      "target_growth_nodes": 4115,
+      "growth_support_damage_RMS": 0.013957360413465595,
+      "positive_change_from_smooth0_nodes": 75404,
+      "negative_change_from_smooth0_nodes": 11057,
+      "growth_support_positive_change_nodes": 4099,
+      "max_change_from_smooth0": 0.14983652108314705,
+      "min_change_from_smooth0": -0.047477082910855395,
+      "growth_support_change_RMS": 0.013467400866013253,
+      "equal_lower_nodes": 291,
+      "max_increment_from_lower": 0.5926645085217055
+    }
+  },
+  "local_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E029/runs/pf_s04e029_increment_v1_20261018T2115Z",
+  "producer_archive": "/mnt/data2/drtao/pidl_archives/pf_s04e029_increment_v1_20261018T2115Z",
+  "evidence_review": {
+    "status": "PASS_NO_EVIDENCE_INTEGRITY_BLOCKER",
+    "verdict": "negative_primary",
+    "reviewer": "/root/e027_independent_review",
+    "runtime_commit": "7c72db1795e2982a25de68a37dceb0baffb18f8a",
+    "scope": [
+      "independent native GP/Z active recomputation",
+      "independent mass-weighted4115-node growth-domain damage RMS",
+      "saved0/50/200 true derivatives and constraints",
+      "200trace rows/gradient cap/milestones",
+      "five actual PNGs and sidecars visually reviewed"
+    ],
+    "active_before": 0.7727268883300541,
+    "active_after": 2.722291916626175,
+    "primary_ratio": 3.5229677622702384,
+    "growth_d_RMS_before": 0.012007646399039928,
+    "growth_d_RMS_after": 0.013957360413465595,
+    "trace_timing": "loss_trace k before update k; milestone k after update k; last pre-update LA=.7485759 vs post-update LA=7.4108733 are different states",
+    "no_PT": true,
+    "no_model": true,
+    "no_SSH": true,
+    "no_GPU": true,
+    "no_training": true,
+    "no_new_data": true
+  },
+  "model_load_on_Mac": false
+}

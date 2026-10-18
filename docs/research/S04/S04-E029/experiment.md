@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E029
 protocol_revision: v1-smooth-current-lower-increment-20261018
-status: preparation
+status: completed_negative_primary
 ---
 # E029：只修E028的damage局部零梯度表示
 
@@ -51,3 +51,8 @@ synthetic已暴露单状态c20s4/horizon0/seed1，限定C2近似状态拟合；�
 数据/模型SHA、GPU、source/dirty、原S及新0步复放、当前lower任一不合，非有限值/梯度/参数、全变量数值零导数、物理界/预裂纹误差>1e-10，或时间/存储/RSS/显存触限，整次首停，不换映射、不扩预算、不重试。一般性能波动由预先固定200步判读，不临时改门槛/学习率。
 
 结果图/数值实证后再判断：active与damage增量拟合是否保住或超过新0步，哪些UV/force代价仍在；无自主演化、FEM全教师、跨状态/真实道路或泛化结论。若仍无收益，保存该单因素结果，再由HQ选择下一有证据的行动，不盲扫。
+
+
+## 2026-10-18 outcome (frozen protocol unchanged)
+
+200步完成并取回，主比值3.52296776未改善；局部零梯度已解除但完整active拟合未修复。实际结果及全部分量见[result_20261018.md](result_20261018.md)。独立产物复核通过，未改变科学判据。

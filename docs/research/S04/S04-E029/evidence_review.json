@@ -1,0 +1,25 @@
+{
+  "status": "PASS_NO_EVIDENCE_INTEGRITY_BLOCKER",
+  "verdict": "negative_primary",
+  "reviewer": "/root/e027_independent_review",
+  "runtime_commit": "7c72db1795e2982a25de68a37dceb0baffb18f8a",
+  "scope": [
+    "independent native GP/Z active recomputation",
+    "independent mass-weighted4115-node growth-domain damage RMS",
+    "saved0/50/200 true derivatives and constraints",
+    "200trace rows/gradient cap/milestones",
+    "five actual PNGs and sidecars visually reviewed"
+  ],
+  "active_before": 0.7727268883300541,
+  "active_after": 2.722291916626175,
+  "primary_ratio": 3.5229677622702384,
+  "growth_d_RMS_before": 0.012007646399039928,
+  "growth_d_RMS_after": 0.013957360413465595,
+  "trace_timing": "loss_trace k before update k; milestone k after update k; last pre-update LA=.7485759 vs post-update LA=7.4108733 are different states",
+  "no_PT": true,
+  "no_model": true,
+  "no_SSH": true,
+  "no_GPU": true,
+  "no_training": true,
+  "no_new_data": true
+}

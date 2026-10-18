@@ -53,4 +53,4 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 - 暂停新的 PIDL loss/architecture sweep、Freeze-Then-Select 阈值调节、未合格 FEM corpus 和单轨迹 foundation-model 宣称。
 
 
-**2026-10-18 S04-E027限定合成组件结果**：单次3500更新/.675GPU小时完成并独立复核；C/S active误差=.952342，但C损伤几乎清零，不能作完整修复。科学处置及是否另立尺度/可行性判别待HQ，未安排续跑。事实源与下一步见[canonical track](experiments/fem_synthetic_supervision_track.md)。
+**2026-10-18 FEM合成状态修复**：E029表示修复已完成实际200步与场图/数值取回，硬界和damage梯度恢复，但active相对自身零步变为3.52297倍，完整拟合修复未成功。Z d局部收益与增长域/UV代价分别保留；旧E027/E028冻结，下一步由HQ按UV/d离线归因选择，未续跑。事实源见[canonical track](experiments/fem_synthetic_supervision_track.md)。
