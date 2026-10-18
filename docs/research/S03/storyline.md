@@ -760,3 +760,18 @@
   output not accepted, B002 quarantine unchanged. D2 not entered; proposed
   redirectR1 is font-initialization diagnosis and numeric/plot separation
   planning without repeatSVD/QR, subject to new scope approval.
+
+- **2026-10-18 — F01 static font localisation and SVG separation plan ready.**
+  D1 source-only mapping supports FontManager cold-initialization Timer path,
+  not a damaged-font/permissions/scan-cost root cause. Plan atcleanb5b13940,
+  SHA f360232e, independently PASS_STATIC_PLAN; see
+  S03-E019/font_plot_separation_plan.md and font_plot_separation_review.md.
+  Proposed D2 is a separate synthetic-only SVG renderer from existing
+  unaccepted B003 values, no Matplotlib/cache warmup, factorisation or old
+  receipt backfill. Viewer font/layout equivalence remains unverified. No
+  implementation/import/test/font scan/archive-content/real/held read or
+  acceptance performed. B003 remains incomplete, B002 quarantined. Await
+  user direction before code/test-design/command preparation; all execution
+  and synthetic input reads separately approved. Parallel literature task
+  copied4identity-checked PDFs to the existing Obsidian library and amended
+  the inverse-review note, not an experiment or new data/threshold permission.
