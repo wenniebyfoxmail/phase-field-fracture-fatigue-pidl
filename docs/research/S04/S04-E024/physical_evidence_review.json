@@ -1,0 +1,76 @@
+{
+  "verdict": "PASS_WITH_PRESERVED_SCOPE_AND_NUMERICAL_LIMITATIONS",
+  "scope": "nativeQ4 static physical observables of E023/D005 saved fields",
+  "source": "273e413737dd24a9994cbacce3de86c6a60cc887",
+  "blocking_findings": [],
+  "initial_v1": "schema failure before scores preserved",
+  "independent_method": "explicit Jacobian2x2 inverse; component AMOR; nodal force add.at",
+  "weak_form_imported": false,
+  "q4_strain_imported": false,
+  "physical_array_count": 36,
+  "relative_region_rows": 96,
+  "absolute_region_rows": 96,
+  "weak_rows": 6,
+  "original_files_rehashed": 33,
+  "reference_hashes": 3,
+  "UV_hashes": 3,
+  "optional_channels": [
+    {
+      "state": "c20s4",
+      "present": [],
+      "absent": [
+        "fatigue",
+        "prior_damage"
+      ],
+      "max_history_present": false
+    },
+    {
+      "state": "c60s4",
+      "present": [
+        "fatigue",
+        "prior_damage"
+      ],
+      "absent": [],
+      "max_history_present": false
+    },
+    {
+      "state": "c83s4",
+      "present": [],
+      "absent": [
+        "fatigue",
+        "prior_damage"
+      ],
+      "max_history_present": false
+    }
+  ],
+  "max_relative_metric_difference": 1.5165824152063578e-10,
+  "max_rho_difference": 6.394884621840902e-14,
+  "weak_equilibrium_improved": false,
+  "net_damage_history_evolution_assessed": false,
+  "application_acceptance": null,
+  "strict_Mac_admission": false,
+  "original_warnings": "PRESERVED_ROOT_CAUSE_UNIDENTIFIED",
+  "comparison_scope": "supplemental scale-aware, no original threshold change",
+  "main_decision_reviewed": true,
+  "normal_usage_remaining_before": 84,
+  "normal_usage_remaining_after": 83,
+  "training_updates": 0,
+  "damage_history_fatigue_updates": 0,
+  "source_sha256": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/SENS_tensile/diagnose_s04_e023_physical.py": "c0d4c931a53ab0e06fa74edd1fe793d0bcd5a2fe8a6ca9c37e70123a4c3c3249",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/physical_protocol.md": "2d30fcad57bf4a5dd3bd2cbec9b871b0fd3d66bc670883e5d978c644ab3ac3a5",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_observables_v2/review/independent_physics.py": "3e5ab966051321d351ad7a61af1fb78bd8d1928c9f38f9fad41232b3a7be5235",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_observables_v2/review/check_absolute_identity.py": "bc76983b3cf93d6aa0468f2a674d8ae727479077ddf8b1d32af721992f806504",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_observables_v2/results/receipt.json": "1163fed5645e358238f4dc4c8a594bc14ac7ccd7d16ef935b1814bce11b129b8"
+  },
+  "final_prose_blocking_findings": [],
+  "resolved_prose_issue": "Fixed-feature linear-head UV increment is also .2 of D004 UV increment; not .2 of total UV/error",
+  "final_prose_sha256": {
+    ".codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/physical_decision.md": "a6abe7b6954fb34abe364232566ee23f61515fb3791a0c7625b1e85e6051bc13",
+    "local_archive/experiments/S04-E024/physical_observables_v2/figures/physical_comparison.png": "bd6724cc274cd739eab0255dc755f87fb55800e30a4c181cf3d060bdef3520ee",
+    "local_archive/experiments/S04-E024/physical_observables_v2/figures/physical_comparison.md": "8cba5a6156e6e203d8a74381dd828ea37468b1ea929bcb2a469464b6959cb556",
+    "local_archive/experiments/S04-E024/physical_observables_v2/figures/driver_local_fields.png": "2301ff625e206e48338e629421fe095419914ac78517105b81747c0d4609de61",
+    "local_archive/experiments/S04-E024/physical_observables_v2/figures/driver_local_fields.md": "1c9daa3c4bd389f1d1272b4cb11eae2fc6c505f691a095f518185f71941be875",
+    "local_archive/experiments/S04-E024/physical_observables_v2/analysis_source/plot_physical.py": "45b9fdc9982abb525067a16b03d8248ce7e272c768815ef0a9abe9662f5d590d"
+  }
+}
