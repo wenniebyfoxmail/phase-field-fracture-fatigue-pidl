@@ -258,8 +258,8 @@
   },
   "localizer": {
     "architecture": "multiscale_encoder_decoder_v1",
-    "activation": "ReLU after first4conv; final logits; sigmoid only prediction",
-    "parameters": null,
+    "activation": "ReLU after all ten hidden convolutions; final1x1 logits; sigmoid only prediction",
+    "parameters": 29761,
     "seed": 25000,
     "steps_per_fold": 1024,
     "batch_size": 8,
@@ -271,7 +271,7 @@
     "initial_bias": "zero; no prevalence bias",
     "sampling": "site uniform; image uniform among train6; alternate foreground-present/background-only context bucket if both exist within that image, fallback only existing bucket; then uniform context",
     "input": "same union+25%context,RGB PIL bilinear128,CHW float32/255; no normalisation fit",
-    "target": "same original-size polygon raster,32x32 floor-centered binary samples; only own train6 or qualification2 references",
+    "target": "unchanged native32x32 region-envelope targets, train6-only control selection and training; qualification2 solely final qualification",
     "qual_locations": [
       [
         "1638",
@@ -333,7 +333,7 @@
       "margin": 1e-06,
       "Brier": "qual context32x32 MSE, equal context/image then images/site then2sites; beat min(owntrain6 hierarchical prevalence constant,all0,all1)",
       "foreground_Dice": "fixed P>=.5; reference-foreground contexts only, equal contexts/image then nonempty images/site then2sites; beat max(owntrain6 prevalence>=.5 constant,all0,all1)",
-      "rule": "per-fold both differences exceed1e-6 and both own qualification sites have foreground support; all3qualification decisions freeze before ANY role fit; only qualified fold connects,unqualified fold fixed abstain/E003; no qualified folds -> StageB uncomputed/inconclusive",
+      "rule": "all3 decisions freeze before ANY role fit; per-fold requires both train-only control seeds and unchanged qualification conjunction; rejected folds fixed E003/abstain; zero admitted folds => StageB null/uncomputed",
       "missing": "missing foreground site or single-class own training -> inconclusive, no connection",
       "no_selection": "one architecture/seed/last step; qualification admits frozen models only; no checkpoint/threshold/model search"
     },
@@ -353,10 +353,10 @@
   },
   "resource_notes": "GPU1/CPU1/3600s/RSS4GiB/GPU4GiB/temp12GiB/archive3GiB unchanged;9small models,3840trainingsteps,batch8;RGB/mask/mappayload same E024. No real execution in this task.",
   "budget_definitions": {
-    "model_fits": "only role heads,3 per admittedfold; localizer_models separately3",
+    "model_fits": "role heads only,3 per admitted fold; localizer_models separately9 including6 never-deployed controls",
     "gradient_steps": "6*128 control +3*1024 deploy =3840; all9 final states before metrics",
     "parameter_gradient_steps": "3840 optimizer steps, E003 zero",
-    "backbone_backward_rows": "E003 backbone only,zero; newCNN localizer_backward_rows12288",
+    "backbone_backward_rows": "E003 only zero; localizer_backward_rows30720 includes6144control and24576formal",
     "max_semantic_batches": "inference only: E024 max3688 plus6 control batches =3694, cap4000",
     "stageB_exact": "if admissions A, maps31156*len(A); rolefits/linear3*len(A); rolemodelsets len(A); roletraining sum([11588,13422,13758][k] for k in A); roleprediction19384*len(A); context2*len(A); calibration5*len(A); pooled1/held3 iff A nonempty,else0; outerpixel sum(held candidate rows[k] for k in A)",
     "held_candidate_rows": [

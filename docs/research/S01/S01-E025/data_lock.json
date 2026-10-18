@@ -108,7 +108,7 @@
   "E003_checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt",
   "permitted_semantic_extraction": {
     "E003": "unchanged deployed comparator; no load/rescore/update",
-    "localizer": "only independent6049RGB CNN owntrain6 gradients; ownqual2 admission per fold; currentouter4 excluded from CNN/qualification/rolefit; rejectedfold E003 fixed abstention"
+    "localizer": "29761-parameter multiscale RGB spatial model;6train6-only positive controls plus3train6 deploy fits;ownqual2 admission;outer4 excluded; controls never deploy;E003/abstain rejectedfold"
   },
   "annotation_workbook": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/pavetrack_pd_v3_manifest_20260805/Dataset_PDdescription.xlsx",
   "annotation_workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",

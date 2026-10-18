@@ -24,7 +24,7 @@ E023使用冻结分类特征和41系数像素ridge，Brier .171709差于常数 .
 
 ## 冻结模型与学习规则
 
-RGB128/context、32x32格中心参考和几何坐标完全沿用E024。网络先area-average RGB到32格，再encoder双3x3 ReLU(8通道)、maxpool2、双conv16、maxpool2、双conv32，decoder bilinear align_corners=False上采样拼接对应skip，双conv16、再上采样拼接/双conv8，1x1输出logits；各conv含bias，无BN/dropout/预训练。此网络让输出利用更广上下文并保留浅层位置；输出还是区域而非物理像素测量。参数总数由精确结构计算后填入config，在实现之前补充固定结构的算术计数不算架构选择。
+RGB128/context、32x32格中心参考和几何坐标完全沿用E024。网络先area-average RGB到32格，再encoder双3x3 ReLU(8通道)、maxpool2、双conv16、maxpool2、双conv32，decoder bilinear align_corners=False上采样拼接对应skip，双conv16、再上采样拼接/双conv8，1x1输出logits；各conv含bias，无BN/dropout/预训练。此网络让输出利用更广上下文并保留浅层位置；输出还是区域而非物理像素测量。参数总数29761，由固定卷积结构直接算术求和；不是数据驱动架构选择。
 
 所有训练从头，AdamW lr .001/wd .0001、batch8。per-context loss = BCEWithLogits像素均值 + (1−(2sum(PY)+1)/(sum(P)+sum(Y)+1))，批均值。末层bias0，不用稀疏前景率初始化。正式模型seed25000+k，1024步，只用最终步。抽样固定seed，先地点均匀→该地点图均匀→第j行轮流选择该图的有前景/全背景context桶→桶内均匀；一桶缺失使用存在桶。不GT裁新框、不增强、不调loss/epoch/seed/阈值。平衡训练不改变自然分布上的评价或基线；可能损害概率校准，Brier基线照常否决。
 
