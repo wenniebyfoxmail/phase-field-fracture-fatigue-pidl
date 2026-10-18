@@ -116,10 +116,11 @@ def main(a):
         assert torch.equal(hist,hist_frozen)
         for k,v in frozen_history.items():assert torch.equal(ck[k],v)
         for k,v in field.nodal_damage_alignment.named_buffers():assert torch.equal(v,frozen_buffers[k])
-    def probe(field,path):
-        budget();*_,ee=evaluate(field)
+    def probe(field,path,arm_start=None):
+        budget(arm_start);*_,ee=evaluate(field)
         info,vectors=gradient_probe(ee,regularizer(field),list(field.net.parameters()))
         dump(path,info)
+        budget(arm_start)
         return info,vectors
     # No optimizer step is called until ALL admission checks have passed.
     check=make_field(state,device,adapter)
@@ -184,12 +185,12 @@ def main(a):
             torch.save({'network':field.net.state_dict(),'mapper':field.nodal_damage_alignment.state_dict(),
                 'hist_alpha':hist,'hist_fat':ck['hist_fat'],'psi_plus_prev':ck['psi_plus_prev'],
                 'psi_history_elem':ck['psi_history_elem'],'optimizer':opt.state_dict(),'updates':k},dest/'checkpoint.pt')
-            dump(dest/'result.json',meta);invariant(field);return meta
+            dump(dest/'result.json',meta);invariant(field);budget(t0);return meta
         with torch.no_grad():
             initial=make_field(state,device,field.nodal_damage_alignment,load=0).fieldCalculation(x)
             np.savez_compressed(folder/'U0_initial.npz',u=initial[0].cpu().numpy(),v=initial[1].cpu().numpy(),d=initial[2].cpu().numpy())
         before=readout(0)
-        info,gg=probe(field,folder/'gradients_update000.json')
+        info,gg=probe(field,folder/'gradients_update000.json',t0)
         assert info['same_snapshot_beta_signs']['bitwise_equal']
         if initial_gradient is None:initial_gradient=gg[1.].cpu().clone()
         else:assert torch.equal(initial_gradient,gg[1.].cpu())
@@ -211,15 +212,16 @@ def main(a):
                     S1=float(s1.detach()),Sbeta=float(sb.detach()),weighted_Ehist=float((beta*ee[2]).detach()),
                     R=float(reg.detach()),objective=float(loss.detach()),
                     adjacent_update_gradient_signs=flips,elapsed_seconds=time.monotonic()-t0))
-                opt.step();invariant(field)
+                budget(t0);opt.step();invariant(field)
                 if k==0:
                     now=torch.cat([p.detach().reshape(-1) for p in params]).cpu()
                     if first_parameters is None:first_parameters=now.clone()
                     else:assert torch.equal(first_parameters,now)
-                    readout(1);probe(field,folder/'gradients_update001.json')
+                    readout(1);probe(field,folder/'gradients_update001.json',t0)
                 if (k+1)%20==0:print(json.dumps(dict(arm=arm,updates=k+1,seconds=time.monotonic()-started)),flush=True)
-            after=readout(200);probe(field,folder/'gradients_update200.json')
+            after=readout(200);probe(field,folder/'gradients_update200.json',t0)
         finally:dump(folder/'trace.json',trace)
+        budget(t0)
         summary.append(dict(arm=arm,beta=beta,updates=200,before=before,after=after,seconds=time.monotonic()-t0))
         del field,opt,params,previous_gradient,initial
     budget()
