@@ -1,0 +1,14 @@
+{
+  "status": "full_raw_transport_timeout_not_compute_failure",
+  "timeout_seconds": 600,
+  "raw_capture_remote_files": 53,
+  "raw_capture_remote_bytes": 1400670192,
+  "local_complete_raw_files_SHA_verified": 32,
+  "full_raw_mirror_verified": false,
+  "local_run_root_files_from_partial": 4,
+  "decision_files_SHA_verified": 19,
+  "decision_bytes": 2580245,
+  "raw_archive_worker_completed": true,
+  "parameter_updates": 0,
+  "history_commits": 0
+}

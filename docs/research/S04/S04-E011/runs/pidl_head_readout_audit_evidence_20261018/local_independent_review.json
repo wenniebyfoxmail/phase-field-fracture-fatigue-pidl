@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "review_type": "independent_focused_Code_Ready_only",
+  "reviewer": "b0_route_inventory",
+  "reviewed_utc": "2026-10-18T20:37:13.634672+00:00",
+  "worker_blob": "d23875bcdb17ce85142ffe660993408521c8daa9",
+  "tests_blob": "c34702baeae58b1f222cf62d8b61785b41b9c2c3",
+  "launcher_sha256": "58ba6b361356e4f19069f2032711541b9604eca3ea14f6f6f08ab9c415448999",
+  "monitor_retrieve_sha256": "08737c3174b1d11a0f38c1c4c54865c24d814ea9674daab5abfd63318c532a10",
+  "protocol_sha256": "206f6115ce24de355ce059571ee93a0ba5732b075ef85bf35e7ae84f0c10ecb4",
+  "checks": {
+    "tiny_fixtures": "12 passed (5 new readout-audit + 7 affected prior learned-hidden admission/rollback fixtures), Python 3.12 miniconda pytest, 0.73 seconds",
+    "compile": "worker/new tests/launcher/monitor py_compile all passed",
+    "source_identity": "unique prior learned-head accepted model/fields/401x386 transform, five input SHAs verified by staging; source transform initial_head is intentionally not compared to accepted final head",
+    "observation_axes": "3 full network raw Eel/parameter/2x401 head-gradient/nodal force readouts; 5 fixed cached nodal-leaf force readouts; same cached features/mass0 across saved-transform Phi and exactly 3 fresh full401 SVD builds; all 8x4 projections retained before threshold labels; fixed-force/fixed-Phi five repeats and 3 GPU mass repeats remain separate axes",
+    "persistence": "force fields, full forces/raw-head gradients and actual Phi/T are saved; source errors are saved before identity assertion; nonfinite attempt NPZ retained with finite flags; GTOL 1e-10 is a label only, no stationarity admission assert",
+    "zero_updates": "no optimizer, Newton, tangent solve, parameter/state/history/rollout/FEM update path; parameter snapshots, B0 anchor and fixed FEM damage/own history/f frozen identities asserted",
+    "budget": "at most32 energy/gradient calls, planned3+5+2=10; 600 state seconds begins before all run_state loads/hash/geometry/readouts/SVD/I/O; imports, CLI/receipt/staging/retrieval explicitly excluded; no-new-work deadline checked and in-flight operation may finish",
+    "launcher": "clean exact HEAD, reviewed worker/blob+launcher/protocol and archive/contract binding, fresh owned data2 roots/caches/env, GPU5 >=12GiB free/util<10 and no compute app before/after staging, >=32GiB RAM/10GiB disk and same-family worker cmdline duplicate guard; no extra standalone probe in this approved same-architecture zero-update audit",
+    "retrieval": "single streaming tar with600sec timeout, safe relative regular-file extraction, remote inventory/per-file size verification; no claim of independent remote per-file content hash from size-only inventory",
+    "interpretation": "coordinate infinity norms across bases are distinct from physical basis-image differences; NumPy postprocessing not a new execution; old initial failure and old source qualification retained; no hidden optimisation efficacy or capacity conclusion"
+  },
+  "blockers": [],
+  "limitations": [
+    "Code Ready only: no SSH, launch, real network computation, or scientific outcome was produced by this reviewer."
+  ],
+  "commit": "a698ec7b3c4ff98c1df50dacf7fc5adbdf8faa94",
+  "package_manifest_sha256": "16801753333a558d5eb1b3dc67e7b4e4b77a54000a9d80381df8d86a3d2d01d8",
+  "contract_sha256": "595c7eda3f6f28e3ff46f6b42c4e1c9cea3ff3d9f9840c3547b1793250165d18",
+  "code_bundle_sha256": "bf96b97b1e73dbffa7597e4f377139ce855549517f53d00d72f571770aab91d9",
+  "run_id": "pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "exact_binding_utc": "2026-10-18T20:39:33.896315+00:00",
+  "exact_binding_checks": "clean HEAD, same reviewed worker/tests/launcher/protocol; manifest/archive/contract SHA and archive worker bytes checked; unique accepted model/fields/source-basis local SHA matches staged contract. No SSH/launch."
+}

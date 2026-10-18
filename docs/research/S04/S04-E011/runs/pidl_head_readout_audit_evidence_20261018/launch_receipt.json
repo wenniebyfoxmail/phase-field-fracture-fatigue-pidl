@@ -1,0 +1,28 @@
+{
+  "run_id": "pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "commit": "a698ec7b3c4ff98c1df50dacf7fc5adbdf8faa94",
+  "branch": "codex/hard5-q4-t3-2x2-20261005",
+  "dirty": false,
+  "pid": 3703382,
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "/usr/bin/python3",
+    "-u",
+    "/mnt/data2/drtao/wennie/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/code/tools/s04_e011_analysis/run_pidl_head_readout_audit.py",
+    "--contract",
+    "/mnt/data2/drtao/wennie/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/contract.json",
+    "--out",
+    "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/output"
+  ],
+  "root": "/mnt/data2/drtao/wennie/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "log": "/mnt/data2/drtao/wennie/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/worker.log",
+  "GPU": 5,
+  "GPU_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+  "started_utc": "2026-10-18T20:54:46.195380+00:00",
+  "optimizer_updates": 0,
+  "history_commits": 0,
+  "resumed_staging_only": true
+}

@@ -1,0 +1,70 @@
+{
+  "status": "passed",
+  "report_review": "passed",
+  "reviewer": "b0_route_inventory",
+  "reviewed_utc": "2026-10-18T21:11:59.560995+00:00",
+  "review_scope": "Final focused narrative/plot/payload audit; prior independent saved-state/full32-projection audit reused, not recomputed.",
+  "run_id": "pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "producer_commit": "a698ec7b3c4ff98c1df50dacf7fc5adbdf8faa94",
+  "scientific_scope": "verified frozen numerical readout diagnosis, no optimization efficacy claim",
+  "checks": {
+    "primary": "At identical saved u/v/d/R, saved-T reconstructed Phi yields3.3665696099e-11 while three identical fresh Phi yield1.1159427375e-10. Same cached-SVD repetition is not random variation. Independent NumPy same force and Q4 force preserve labels.",
+    "auxiliary": "Raw UV-head gradient transformed through T is distinct computational path, about2.054e-10; does not substitute actual Phi transpose R. Raw hidden versus raw UV versus retained coordinates explicitly separated.",
+    "source_scope": "Source column reconstructs Phi using current cached design and old saved T; old run complete Phi and failed run exact g/Phi remain unrecorded and are never backfilled.",
+    "physical_scope": "q basis-image change is coordinate/numerical diagnostic, not u/v/d/error improvement; no physical teacher, capacity or evolution claim; own FEM damage frozen and original UV boundary distinguished from B0 damage parameterization.",
+    "unchanged": "Independent remote audit previously confirmed26 source/before/after tensors exact,8 identical force/field arrays,4 finite actual Phi/T,32 full projections;10completed Egrad/24.77167297state seconds/0updates.",
+    "storage": "Remote53files1400670192bytes exact SHA manifest; local36 partial complete members (32raw+4run) independently SHA checked; original19decision files2580245bytes now independently SHA verified in downloaded_decision_original. Full raw mirror remains false. 600second failure is transport only, not producer failure.",
+    "posthoc": "Four markdown presentation revisions explicit old/current SHA checked; all non-MD original delivered summary/CSV/arrays/PNG remain exact. New renderer reads summary only; no operator, network, SVD, solve or threshold change.",
+    "figure": "Actually viewed readout_decision.png; three principal paths, auxiliary crosses, zero-based linear axis, exact target and PASS/MISS labels legible. Four figure sidecars validator passed. Obsidian embedded PNG byte-identical.",
+    "report_corrections": "B0 wording and posthoc README preservation issues resolved; no remaining substantive blocker.",
+    "roadmap": "Exactly one2026-10-18 E011 line with current bounded result; own Obsidian bounded section and top state agree."
+  },
+  "bindings": {
+    "canonical_report_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_head_readout_audit_result_20261018.md",
+    "canonical_report_sha256": "131ffa746fc214cb729cbba1cc3c18f841cac811bfe87584d4db65c08cd3c3f2",
+    "obsidian_own_section_sha256": "0af3a949e862baa1c70156217ab3e363d57acedc0f02e43684e9ec45e4614f77",
+    "obsidian_top_line": "> \u6700\u65b0\u72b6\u6001\uff082026-10-18\uff0cPIDL c20\uff09\uff1a\u51bb\u7ed3\u7aef\u70b9\u96f6\u66f4\u65b0\u8bca\u65ad\u5b8c\u6210\u30028\u4efd\u529b\u4e0e\u5b57\u6bb5\u5b8c\u5168\u76f8\u540c\uff0c\u65e7T\u91cd\u5efaPhi\u4e0bg\u221e=3.37e-11\uff0c\u65b0\u5efaPhi\u4e0b=1.116e-10\uff1b\u4e3b\u5224\u636e\u53ef\u56e0\u6570\u503c\u57fa\u5e95\u5207\u6362\u8d8a\u7ebf\uff0c\u8f85\u52a9\u68af\u5ea6\u53d8\u6362\u8def\u5f84\u4e5f\u654f\u611f\u3002\u9608\u503c\u4ecd\u4e3a1e-10\uff0c\u672a\u7ee7\u7eed\u4f18\u5316\uff1b\u65e7\u5931\u8d25\u5177\u4f53\u503c\u4ecd\u672a\u77e5\uff0c\u8be6\u89c1\u6587\u672b\u3002",
+    "roadmap_line": "2026-10-18 E011\uff1a[[mesh\u5bf9\u9f50]] c20\u96f6\u66f4\u65b0\u5224\u522b\u5b8c\u6210\uff1a8\u4efdPIDL\u529b\uff0f\u573a\u4e0d\u53d8\uff0c\u4fdd\u5b58T\u91cd\u5efaPhi\u7684g\u221e3.37e-11\u2192\u65b0Phi1.116e-10\uff0c\u9608\u503c\u4ecd1e-10\uff1b3\u6b21\u65b0Phi\u76f8\u540c\uff0c\u68af\u5ea6\u53d8\u6362\u8def\u5f84\u53e6\u6709\u7ea62e-10\u654f\u611f\u6027\u30020\u4f18\u5316\uff0f\u5386\u53f2\uff0fFEM\u66f4\u65b0\uff1b\u4e0b\u4e00\u6b65\u6301\u4e45\u5316\u5e76\u590d\u7528\u5b9e\u9645Phi\uff0c\u65e7\u5931\u8d25\u503c\u4e0d\u56de\u586b\u3002",
+    "roadmap_line_sha256": "337fabf7c6fdbddce826062ecd9ca1fb906282e95b9d2c904a863ded424a20e3",
+    "plot_helper_blob": "5975749fbb4039a6d8543c71f0599e4422ba70da",
+    "main_png_sha256": "4729cbda397709a7a3e843b73f038d18cc4a4d8f757835492eeda6dae129c49d",
+    "main_sidecar_sha256": "3699f96045209cb2b4467f879b3bfdedd363df028a68c1b6f78ce939a8b1267f",
+    "summary_sha256": "353ec7e2245b2fa8d9fa4582b6d8ceb16cc96937de13b51241ab42563be36b2e",
+    "posthoc_display_revisions_sha256": "90a02607840d44be5c8ff1e40d4a7e732f43c4097efeb2f051526c424c72c148",
+    "raw_capture_manifest_sha256": "174059c9f31445a324692eb4e7d79169f0caf7815649aaf3688a66e6fd5ee118",
+    "independent_saved_state_review_sha256": "5cf45c8bf456a664ac0580619378bf379bbfe1ddce83488ba046c44dff3e6e48",
+    "evidence_files": {
+      "download_status.json": "f5c384c71152379d5432f255fa27a770d6816ddc496e6ba36c1865eda1c2cc59",
+      "physical_arrays_remote_record.json": "ff1e0372be0a5b2af946d9ddba132911ed115efa62e77fac9f34444baae62469",
+      "fixed_force_basis_image.csv": "c32131a230e3fb6728b2f3a7558dc2c27520b9ce88e9d6d94ce7d42c9ab6bc77",
+      "fixed_basis_force_spread.csv": "d1799976f0c080cb020e16c3f783c4460ed5421c3b0c85a87758e97f0ad0f375",
+      "independent_saved_state_review.json": "5cf45c8bf456a664ac0580619378bf379bbfe1ddce83488ba046c44dff3e6e48",
+      "compact_result.json": "94469fcf609027a8a5d5c04686365dca969c906d042f8e577ed0cb31bf94669b",
+      "force_replay.csv": "93c0ce41eaeabc1cea240a827cbc016b47147cab2d1b53ce602e9f6cf01e6759",
+      "projection_order.csv": "0d03cd001fd02bd512d81119dcc140fd6ae1933616988a13bbb29d57c52a254a",
+      "resume_review.json": "07da2ad43730813b9c926ced0ee0796041d0a9aac8f5e3c498524a08695d5858",
+      "cross_gradients.csv": "94463f6582a3dd3c63ea00d4c31d6989001d7df4e45ea3a9f1233a2d398703ae",
+      "posthoc_display_revisions.json": "90a02607840d44be5c8ff1e40d4a7e732f43c4097efeb2f051526c424c72c148",
+      "figure_visual_review.json": "0c4dcb2cfdffd5e150b8193b83aad402928ece41c5cbc53e7e3ff8548f48fa3e",
+      "analysis_review.json": "d306113d36cba815e2d375ba877e417e0343d5ce20b0a06f157a65ff0e096fd6",
+      "partial_download_verification.json": "62a94ad1ef06a44d42a48165b1c2d85f979f82db8b05b5455c7df59f3078d1f4",
+      "raw_capture_manifest.json": "174059c9f31445a324692eb4e7d79169f0caf7815649aaf3688a66e6fd5ee118",
+      "launch_receipt.json": "b9f4c7b62f3dac7eab4582c5cab0b4b7c49bde40c07145d4ffdff73f79902302",
+      "local_storage_status.json": "54b0f333c8e5a38161d335f3d458de56de3ceb64ee04c7b8656766553a538b0a",
+      "local_independent_review.json": "76a8bb3b4799c15d3c857f0f8f3ae64c0310c530b121f3f524833773850aaf60"
+    }
+  },
+  "blockers": [],
+  "remaining_limits": [
+    "Full large Phi/features and physical_arrays local mirror incomplete; complete remote arrays audited in place, and their per-file hashes preserved.",
+    "No claim of unique historical failure attribution or general cross-restart determinism; no hidden optimization resumed."
+  ],
+  "final_source_identity_wording_addendum": {
+    "status": "passed",
+    "reviewed_utc": "2026-10-18T21:12:52.081459+00:00",
+    "change": "Explicit unique prior learned-head accepted_network.pt and float64 source; source and dtype match bound contract/saved tensor audit.",
+    "no_numerical_change": true,
+    "proof": "Reversing exactly this source-label phrase reproduces both previously reviewed canonical-report SHA and Obsidian-own-section SHA.",
+    "scope": "Only own block/top/unique Roadmap line/attachment bound, not whole shared MD."
+  }
+}

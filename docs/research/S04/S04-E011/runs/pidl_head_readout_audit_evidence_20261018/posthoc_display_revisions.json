@@ -1,0 +1,38 @@
+{
+  "original_files_SHA_verified": 19,
+  "original_files_directory": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/downloaded_decision_original",
+  "numeric_summary_arrays_CSV_unchanged": true,
+  "changed": [
+    {
+      "path": "readout_cross_projection.md",
+      "original_sha256": "8e7283dc55b5aeb8bc0760b505a2060670de32be60470e93dba6071d362e00b5",
+      "current_sha256": "a1c081cd7d8aa1efc7ee1a0cdd58e4e02f91d6c00dadc40a1891a1640cc39f82",
+      "reason": "posthoc display/terminology clarification only"
+    },
+    {
+      "path": "readout_attribution.md",
+      "original_sha256": "4bd8b4c8ffb65d1b1ef0a20a6c34b2cb246ff5feb9402d653e64c26a5e2bf34a",
+      "current_sha256": "3608013867ce8719d514d7dd6b25dfefd5bb82f03cf026c73b2b360094d76252",
+      "reason": "posthoc display/terminology clarification only"
+    },
+    {
+      "path": "readout_force_differences.md",
+      "original_sha256": "319a1f3f0c44c0ce7fe18ceb204b54c54ab32f7f5a7446ec0a37d40388d8a389",
+      "current_sha256": "39fa18f3c1cc18bff8f72a4b0bd3d70a54c3bbe95ee9a3199453d816dbb5a83e",
+      "reason": "posthoc display/terminology clarification only"
+    },
+    {
+      "path": "README_analysis.md",
+      "original_sha256": "4e0ab9e3539b1fddea226d498a650f4601e2a0176b4bb8003638a9d7ad924a00",
+      "current_sha256": "19e234d503fc0b8b4c35ebff3c6dd4a5c123bfcb16d918185dd023d45e559529",
+      "reason": "posthoc display/terminology clarification only"
+    }
+  ],
+  "additional_local_assets": [
+    "readout_decision.png",
+    "readout_decision.md",
+    "figure_visual_review.json",
+    "compact_result.json",
+    "decision.md"
+  ]
+}

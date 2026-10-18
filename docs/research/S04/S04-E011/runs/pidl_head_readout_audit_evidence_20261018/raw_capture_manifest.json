@@ -1,0 +1,1026 @@
+{
+  "status": "remote_capture_manifest_verified",
+  "run_id": "pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "remote_root": "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/output",
+  "relative_path_base": "archive/output",
+  "captured_utc": "2026-10-18T21:00:36.453334+00:00",
+  "files": 53,
+  "bytes": 1400670192,
+  "entries": [
+    {
+      "path": "c20_s4/bases/fresh0/metadata.json",
+      "bytes": 11714,
+      "sha256": "11ced01b74f4c82a88be4ed7eac69a019b6dc1840dc10de9791d05f9ea2585d3"
+    },
+    {
+      "path": "c20_s4/bases/fresh0/phi.npy",
+      "bytes": 267902656,
+      "sha256": "6f4bd8264a322ee09ae6fc2cf9bb7a9bd446b4ef28a6c451984edead1e3fa089",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756,
+            386
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/bases/fresh0/transform.npy",
+      "bytes": 1238416,
+      "sha256": "d76638dd2742324ae038f5af6ffbacaea775437fc9b38bb6a6b9186d310cc422",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            401,
+            386
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/bases/fresh1/metadata.json",
+      "bytes": 11714,
+      "sha256": "11ced01b74f4c82a88be4ed7eac69a019b6dc1840dc10de9791d05f9ea2585d3"
+    },
+    {
+      "path": "c20_s4/bases/fresh1/phi.npy",
+      "bytes": 267902656,
+      "sha256": "6f4bd8264a322ee09ae6fc2cf9bb7a9bd446b4ef28a6c451984edead1e3fa089",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756,
+            386
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/bases/fresh1/transform.npy",
+      "bytes": 1238416,
+      "sha256": "d76638dd2742324ae038f5af6ffbacaea775437fc9b38bb6a6b9186d310cc422",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            401,
+            386
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/bases/fresh2/metadata.json",
+      "bytes": 11714,
+      "sha256": "11ced01b74f4c82a88be4ed7eac69a019b6dc1840dc10de9791d05f9ea2585d3"
+    },
+    {
+      "path": "c20_s4/bases/fresh2/phi.npy",
+      "bytes": 267902656,
+      "sha256": "6f4bd8264a322ee09ae6fc2cf9bb7a9bd446b4ef28a6c451984edead1e3fa089",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756,
+            386
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/bases/fresh2/transform.npy",
+      "bytes": 1238416,
+      "sha256": "d76638dd2742324ae038f5af6ffbacaea775437fc9b38bb6a6b9186d310cc422",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            401,
+            386
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/bases/source/metadata.json",
+      "bytes": 165,
+      "sha256": "c53b47a3e8b2f83ea22ba9f73b0ec64ca1f6ee3e30482701d28d4578ec439313"
+    },
+    {
+      "path": "c20_s4/bases/source/phi.npy",
+      "bytes": 267902656,
+      "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756,
+            386
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/bases/source/transform.npy",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            401,
+            386
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/cache/bubble.npy",
+      "bytes": 694176,
+      "sha256": "222b3a5ffe0955fa572d89e6623f94880eb31015f3433f3c741545809b4423c6",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/cache/features.npy",
+      "bytes": 277619328,
+      "sha256": "516cf69bc94a5b1e4c848e89cc6ec91b9710215670a8be227803897854dc7020",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756,
+            400
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/cache/fields.npz",
+      "bytes": 1361291,
+      "sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/fixed_projection_repeat.npy",
+      "bytes": 31008,
+      "sha256": "233b2df27ad1edd9ab5e37e133ef6814ed658184ce81508b8b275ebb73a1bb6f",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            5,
+            772
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/forces/network_0.json",
+      "bytes": 5993,
+      "sha256": "ce24689933e13b4a986db07ac98ec052685cb10bdfa557c46e68158250ff8a5a"
+    },
+    {
+      "path": "c20_s4/forces/network_0.npz",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "raw_head_gradient",
+          "shape": [
+            2,
+            401
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/forces/network_1.json",
+      "bytes": 5993,
+      "sha256": "033f6555f9feaaa57c99d0951ac667c1f8fbbc07dc05374f334fd22d9eb693f5"
+    },
+    {
+      "path": "c20_s4/forces/network_1.npz",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "raw_head_gradient",
+          "shape": [
+            2,
+            401
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/forces/network_2.json",
+      "bytes": 5993,
+      "sha256": "49121096eb45a509afb0169ff01518851958059f8ed310d67eb6dae5b5f15562"
+    },
+    {
+      "path": "c20_s4/forces/network_2.npz",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "raw_head_gradient",
+          "shape": [
+            2,
+            401
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/forces/nodal_0.json",
+      "bytes": 159,
+      "sha256": "dd70f2274f3c226460b2eab0fc20436382aa8dfc51dcf86be6d9eafa4f3133d9"
+    },
+    {
+      "path": "c20_s4/forces/nodal_0.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/forces/nodal_1.json",
+      "bytes": 159,
+      "sha256": "4e8f9173597bc2585bcb2d9279a48eab8d939f37f8dad40e637074a40ff904e7"
+    },
+    {
+      "path": "c20_s4/forces/nodal_1.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/forces/nodal_2.json",
+      "bytes": 159,
+      "sha256": "70487e0bcb3adaf9a9861abad207073bc198feac2bd9ac3a889c49d114ca0eca"
+    },
+    {
+      "path": "c20_s4/forces/nodal_2.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/forces/nodal_3.json",
+      "bytes": 159,
+      "sha256": "b9d11f09889a74cbbc0a4198f55f2b8798ad3ab3f55a9ef8d7ed19f9f114f772"
+    },
+    {
+      "path": "c20_s4/forces/nodal_3.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/forces/nodal_4.json",
+      "bytes": 159,
+      "sha256": "ae0465b0afeb269448b780e23147c94336b4f06b02caf3e237a71de367a2e20c"
+    },
+    {
+      "path": "c20_s4/forces/nodal_4.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "arrays": [
+        {
+          "key": "u",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "v",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "d",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/mass/cpu_add_at.npy",
+      "bytes": 694176,
+      "sha256": "de64026d85c45b0eca3f73d69ae0c5c6b0c0bb7d04f909eab95f72b09e3a9e27",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/mass/cpu_numpy_element_sums.npy",
+      "bytes": 694176,
+      "sha256": "bdcfce161e9d6a484291b3bfbbf72a8fcecda7e3bf29d486569f58eb47374f1d",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/mass/gpu0.npy",
+      "bytes": 694176,
+      "sha256": "220c176cd405bae003cd72b4a64ad3171a26190ffeda5fbdd24a9217049bfee0",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/mass/gpu1.npy",
+      "bytes": 694176,
+      "sha256": "b498682808ebb1865ac97b1b31ae0ae0da76a709e7c7a0b0b7672e433cdf56aa",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/mass/gpu2.npy",
+      "bytes": 694176,
+      "sha256": "9653103c010e51c59a3e191b46b62989659314aef023031cdaf184cbda553dab",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/mass/mass0.npy",
+      "bytes": 694176,
+      "sha256": "b28aa2080a1c62941aae51854218428bbd6a845173cc9f8672ead3f13c57d2c2",
+      "arrays": [
+        {
+          "key": null,
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/mass/metadata.json",
+      "bytes": 577,
+      "sha256": "3028a2856d992a3a3f64112903a62585edbd83160ae98408800aa6fbf769d9f8"
+    },
+    {
+      "path": "c20_s4/native_fem_contract.json",
+      "bytes": 239,
+      "sha256": "433f6414ecb18ef88e9bf9fff06fb30844cbe5f26031cca4cb2aa51b8f90cfdc"
+    },
+    {
+      "path": "c20_s4/native_fem_force.npz",
+      "bytes": 455542,
+      "sha256": "1c543bdd6ac5f6e0e4ffd1fcae426918a0cc661fc66d5809cc422b826ef4262b",
+      "arrays": [
+        {
+          "key": "gu",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "gv",
+          "shape": [
+            86756
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/projections.json",
+      "bytes": 8435,
+      "sha256": "d8c33d9771e2612355473d110b791b12cfea6b9cddd5c15a1cd8d4d6aa5c6fc6"
+    },
+    {
+      "path": "c20_s4/projections.npz",
+      "bytes": 126886,
+      "sha256": "a57b2f2b8cb086b46bbb11dc6d6b874272cee4588ad94dc738e351cbad2ee481",
+      "arrays": [
+        {
+          "key": "network_0__source",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_1__source",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_2__source",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_0__source",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_1__source",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_2__source",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_3__source",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_4__source",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_0__fresh0",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_1__fresh0",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_2__fresh0",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_0__fresh0",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_1__fresh0",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_2__fresh0",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_3__fresh0",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_4__fresh0",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_0__fresh1",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_1__fresh1",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_2__fresh1",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_0__fresh1",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_1__fresh1",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_2__fresh1",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_3__fresh1",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_4__fresh1",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_0__fresh2",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_1__fresh2",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "network_2__fresh2",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_0__fresh2",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_1__fresh2",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_2__fresh2",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_3__fresh2",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        },
+        {
+          "key": "nodal_4__fresh2",
+          "shape": [
+            772
+          ],
+          "dtype": "float64"
+        }
+      ]
+    },
+    {
+      "path": "c20_s4/result.json",
+      "bytes": 31183,
+      "sha256": "1cd33c9a1dd004c5e36842ea689fa773a37f538ab0720d349d14510c8b1985ad"
+    },
+    {
+      "path": "c20_s4/source_basis_identity.json",
+      "bytes": 297,
+      "sha256": "522c78c833772f03ee31d294b8a520526c125e57182518838f35c1502fb1480a"
+    },
+    {
+      "path": "c20_s4/source_energy_contract.json",
+      "bytes": 190,
+      "sha256": "8454d1ffceb3a4366a1b05a7259433957e345d81cdd8ca82fa9f4c693e383ceb"
+    },
+    {
+      "path": "c20_s4/source_reproduction_attempts.json",
+      "bytes": 19521,
+      "sha256": "d121997bc86bce7de91f1a512185590a04180c70bd39b09ba66f50bed994dab7"
+    },
+    {
+      "path": "c20_s4/trace.json",
+      "bytes": 1664,
+      "sha256": "d0237e3297ed63bed5e85a474888ff41fea0d902c5e7f5d3185c894d632de119"
+    },
+    {
+      "path": "c20_s4/weights_after.pt",
+      "bytes": 9010325,
+      "sha256": "515b50e72e13d5463d5ebc8bb86d156c6ddf226c1512f8ba6556c3f4863ecfae"
+    },
+    {
+      "path": "c20_s4/weights_before.pt",
+      "bytes": 9010357,
+      "sha256": "67dc30aac7f25cf229988868b0b81f3fba4c59c2236d202a200f59a961136252"
+    },
+    {
+      "path": "complete.json",
+      "bytes": 43,
+      "sha256": "87f7090533f290c095f37e2800fa1480c18e451d912b5f51cc4493dedcfcc466"
+    },
+    {
+      "path": "receipt.json",
+      "bytes": 725,
+      "sha256": "bbc8165f9ad6e0fbe06cd4287dbc5d5596e23ad382a459c863a50ec4008eb01a"
+    },
+    {
+      "path": "rows.json",
+      "bytes": 33387,
+      "sha256": "0158a8fe4074e875b462ee50bb4f5bdacdf58f900250e865199323199253f1ac"
+    }
+  ],
+  "local_full_raw_mirror_verified": false,
+  "method": "read-only per-file streaming SHA256 and saved-array shape/dtype inspection; no forward/SVD/solve"
+}

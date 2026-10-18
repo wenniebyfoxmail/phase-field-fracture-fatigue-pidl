@@ -1,0 +1,1157 @@
+{
+  "protocol": "S04-E011-HEAD-READOUT-AUDIT-OFFLINE-r1",
+  "run_id": "pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "producer_commit": "a698ec7b3c4ff98c1df50dacf7fc5adbdf8faa94",
+  "worker": {
+    "status": "completed",
+    "cycle": 20,
+    "substep": 4,
+    "step": 99,
+    "network_repetitions": 3,
+    "nodal_repetitions": 5,
+    "fresh_svd_repetitions": 3,
+    "evaluations": 10,
+    "cap": 32,
+    "deadline_seconds": 600,
+    "elapsed_seconds": 24.771672972477973,
+    "optimizer_updates": 0,
+    "parameter_updates": 0,
+    "history_commits": 0,
+    "rollout_steps": 0,
+    "weights_exact_unchanged": true,
+    "weights_before_sha256": "599c9b2d12dbcc66b558a750bc46e1463b1243b90bc6fbee2a72755e0f80e592",
+    "weights_after_sha256": "599c9b2d12dbcc66b558a750bc46e1463b1243b90bc6fbee2a72755e0f80e592",
+    "Smooth_B0_anchor_unchanged": true,
+    "mechanical_damage_exact_FEM": true,
+    "physical_state_exact_unchanged": true,
+    "threshold_is_readout_label_only": true,
+    "gradient_inf_tolerance": 1e-10,
+    "source_energy": 0.005268400005223913,
+    "source_basis_shape": [
+      401,
+      386
+    ],
+    "fresh_ranks": {
+      "source": 386,
+      "fresh0": 386,
+      "fresh1": 386,
+      "fresh2": 386
+    },
+    "cached_features_encode_count": 1,
+    "basis_mass": "mass0 only",
+    "ridge": 0.0,
+    "training": false
+  },
+  "primary_cross": [
+    {
+      "force": "network_0",
+      "basis": "source",
+      "rank": 386,
+      "calculation": "gpu",
+      "gradient_inf": 3.3665696098916786e-11,
+      "gradient_l2": 1.6479403056443475e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": true
+    },
+    {
+      "force": "network_0",
+      "basis": "source",
+      "rank": 386,
+      "calculation": "numpy_same_force",
+      "gradient_inf": 3.3665509333339994e-11,
+      "gradient_l2": 1.6479380467508643e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": true,
+      "GPU_projection_maxabs_difference": 1.0192239457610221e-15,
+      "GPU_projection_l2_difference": 4.794751221271656e-15
+    },
+    {
+      "force": "network_0",
+      "basis": "source",
+      "rank": 386,
+      "calculation": "numpy_q4_force",
+      "gradient_inf": 3.3664548982048655e-11,
+      "gradient_l2": 1.6479415526990142e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": true
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh0",
+      "rank": 386,
+      "calculation": "gpu",
+      "gradient_inf": 1.1159427375229125e-10,
+      "gradient_l2": 2.1083652116715619e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh0",
+      "rank": 386,
+      "calculation": "numpy_same_force",
+      "gradient_inf": 1.1159448290018428e-10,
+      "gradient_l2": 2.10836685891775e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false,
+      "GPU_projection_maxabs_difference": 1.2448146541197335e-15,
+      "GPU_projection_l2_difference": 4.527419049718281e-15
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh0",
+      "rank": 386,
+      "calculation": "numpy_q4_force",
+      "gradient_inf": 1.1159467382024592e-10,
+      "gradient_l2": 2.1083683100876548e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh1",
+      "rank": 386,
+      "calculation": "gpu",
+      "gradient_inf": 1.1159427375229125e-10,
+      "gradient_l2": 2.1083652116715619e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh1",
+      "rank": 386,
+      "calculation": "numpy_same_force",
+      "gradient_inf": 1.1159448290018428e-10,
+      "gradient_l2": 2.10836685891775e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false,
+      "GPU_projection_maxabs_difference": 1.2448146541197335e-15,
+      "GPU_projection_l2_difference": 4.527419049718281e-15
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh1",
+      "rank": 386,
+      "calculation": "numpy_q4_force",
+      "gradient_inf": 1.1159467382024592e-10,
+      "gradient_l2": 2.1083683100876548e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh2",
+      "rank": 386,
+      "calculation": "gpu",
+      "gradient_inf": 1.1159427375229125e-10,
+      "gradient_l2": 2.1083652116715619e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh2",
+      "rank": 386,
+      "calculation": "numpy_same_force",
+      "gradient_inf": 1.1159448290018428e-10,
+      "gradient_l2": 2.10836685891775e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false,
+      "GPU_projection_maxabs_difference": 1.2448146541197335e-15,
+      "GPU_projection_l2_difference": 4.527419049718281e-15
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh2",
+      "rank": 386,
+      "calculation": "numpy_q4_force",
+      "gradient_inf": 1.1159467382024592e-10,
+      "gradient_l2": 2.1083683100876548e-10,
+      "gradient_inf_tolerance": 1e-10,
+      "below_or_equal_threshold": false
+    }
+  ],
+  "fixed_basis_force_spread": [
+    {
+      "basis": "source",
+      "group": "network",
+      "repetitions": 3,
+      "coefficient_range_inf": 0.0,
+      "gradient_inf_range": 0.0,
+      "max_difference_from_first": 0.0
+    },
+    {
+      "basis": "source",
+      "group": "nodal",
+      "repetitions": 5,
+      "coefficient_range_inf": 0.0,
+      "gradient_inf_range": 0.0,
+      "max_difference_from_first": 0.0
+    },
+    {
+      "basis": "fresh0",
+      "group": "network",
+      "repetitions": 3,
+      "coefficient_range_inf": 0.0,
+      "gradient_inf_range": 0.0,
+      "max_difference_from_first": 0.0
+    },
+    {
+      "basis": "fresh0",
+      "group": "nodal",
+      "repetitions": 5,
+      "coefficient_range_inf": 0.0,
+      "gradient_inf_range": 0.0,
+      "max_difference_from_first": 0.0
+    },
+    {
+      "basis": "fresh1",
+      "group": "network",
+      "repetitions": 3,
+      "coefficient_range_inf": 0.0,
+      "gradient_inf_range": 0.0,
+      "max_difference_from_first": 0.0
+    },
+    {
+      "basis": "fresh1",
+      "group": "nodal",
+      "repetitions": 5,
+      "coefficient_range_inf": 0.0,
+      "gradient_inf_range": 0.0,
+      "max_difference_from_first": 0.0
+    },
+    {
+      "basis": "fresh2",
+      "group": "network",
+      "repetitions": 3,
+      "coefficient_range_inf": 0.0,
+      "gradient_inf_range": 0.0,
+      "max_difference_from_first": 0.0
+    },
+    {
+      "basis": "fresh2",
+      "group": "nodal",
+      "repetitions": 5,
+      "coefficient_range_inf": 0.0,
+      "gradient_inf_range": 0.0,
+      "max_difference_from_first": 0.0
+    }
+  ],
+  "projection_order": [
+    {
+      "force": "network_0",
+      "basis": "source",
+      "rawhead_T_gradient_inf": 2.0540230630270107e-10,
+      "Phi_R_gradient_inf": 3.3665509333339994e-11,
+      "maxabs_order_difference": 1.9922055982508322e-10,
+      "l2_order_difference": 3.565248974430621e-10
+    },
+    {
+      "force": "network_1",
+      "basis": "source",
+      "rawhead_T_gradient_inf": 2.0540230630270107e-10,
+      "Phi_R_gradient_inf": 3.3665509333339994e-11,
+      "maxabs_order_difference": 1.9922055982508322e-10,
+      "l2_order_difference": 3.565248974430621e-10
+    },
+    {
+      "force": "network_2",
+      "basis": "source",
+      "rawhead_T_gradient_inf": 2.0540230630270107e-10,
+      "Phi_R_gradient_inf": 3.3665509333339994e-11,
+      "maxabs_order_difference": 1.9922055982508322e-10,
+      "l2_order_difference": 3.565248974430621e-10
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh0",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    },
+    {
+      "force": "network_1",
+      "basis": "fresh0",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    },
+    {
+      "force": "network_2",
+      "basis": "fresh0",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh1",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    },
+    {
+      "force": "network_1",
+      "basis": "fresh1",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    },
+    {
+      "force": "network_2",
+      "basis": "fresh1",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    },
+    {
+      "force": "network_0",
+      "basis": "fresh2",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    },
+    {
+      "force": "network_1",
+      "basis": "fresh2",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    },
+    {
+      "force": "network_2",
+      "basis": "fresh2",
+      "rawhead_T_gradient_inf": 2.0540230630156287e-10,
+      "Phi_R_gradient_inf": 1.1159448290018428e-10,
+      "maxabs_order_difference": 2.3471123745145824e-10,
+      "l2_order_difference": 3.732224739576731e-10
+    }
+  ],
+  "physical_basis_image": [
+    {
+      "fixed_force": "saved_network_0",
+      "basis": "source",
+      "mass_L2_difference": 0.0,
+      "reference_mass_L2": 1.6479380467493723e-10,
+      "mass_relative_L2_difference": 0.0,
+      "maxabs_difference": 0.0
+    },
+    {
+      "fixed_force": "independent_Q4_network_0",
+      "basis": "source",
+      "mass_L2_difference": 0.0,
+      "reference_mass_L2": 1.647941552697521e-10,
+      "mass_relative_L2_difference": 0.0,
+      "maxabs_difference": 0.0
+    },
+    {
+      "fixed_force": "saved_network_0",
+      "basis": "fresh0",
+      "mass_L2_difference": 1.415222442463256e-10,
+      "reference_mass_L2": 1.6479380467493723e-10,
+      "mass_relative_L2_difference": 0.8587837663283777,
+      "maxabs_difference": 1.6178765492110353e-09
+    },
+    {
+      "fixed_force": "independent_Q4_network_0",
+      "basis": "fresh0",
+      "mass_L2_difference": 1.4152238248709284e-10,
+      "reference_mass_L2": 1.647941552697521e-10,
+      "mass_relative_L2_difference": 0.8587827781600287,
+      "maxabs_difference": 1.6178004220332024e-09
+    },
+    {
+      "fixed_force": "saved_network_0",
+      "basis": "fresh1",
+      "mass_L2_difference": 1.415222442463256e-10,
+      "reference_mass_L2": 1.6479380467493723e-10,
+      "mass_relative_L2_difference": 0.8587837663283777,
+      "maxabs_difference": 1.6178765492110353e-09
+    },
+    {
+      "fixed_force": "independent_Q4_network_0",
+      "basis": "fresh1",
+      "mass_L2_difference": 1.4152238248709284e-10,
+      "reference_mass_L2": 1.647941552697521e-10,
+      "mass_relative_L2_difference": 0.8587827781600287,
+      "maxabs_difference": 1.6178004220332024e-09
+    },
+    {
+      "fixed_force": "saved_network_0",
+      "basis": "fresh2",
+      "mass_L2_difference": 1.415222442463256e-10,
+      "reference_mass_L2": 1.6479380467493723e-10,
+      "mass_relative_L2_difference": 0.8587837663283777,
+      "maxabs_difference": 1.6178765492110353e-09
+    },
+    {
+      "fixed_force": "independent_Q4_network_0",
+      "basis": "fresh2",
+      "mass_L2_difference": 1.4152238248709284e-10,
+      "reference_mass_L2": 1.647941552697521e-10,
+      "mass_relative_L2_difference": 0.8587827781600287,
+      "maxabs_difference": 1.6178004220332024e-09
+    }
+  ],
+  "force_replay": [
+    {
+      "force": "network_0",
+      "maxabs": 4.1348760353165925e-17,
+      "l2": 1.927261817140166e-15,
+      "reference_l2": 0.024925316716953354,
+      "relative_l2": 7.732145749744106e-14,
+      "exactly_equal": false,
+      "free_u_l2_GPU": 0.013488941154683493,
+      "free_u_l2_NumPy": 0.013488941154683489
+    },
+    {
+      "force": "network_1",
+      "maxabs": 4.1348760353165925e-17,
+      "l2": 1.927261817140166e-15,
+      "reference_l2": 0.024925316716953354,
+      "relative_l2": 7.732145749744106e-14,
+      "exactly_equal": false,
+      "free_u_l2_GPU": 0.013488941154683493,
+      "free_u_l2_NumPy": 0.013488941154683489
+    },
+    {
+      "force": "network_2",
+      "maxabs": 4.1348760353165925e-17,
+      "l2": 1.927261817140166e-15,
+      "reference_l2": 0.024925316716953354,
+      "relative_l2": 7.732145749744106e-14,
+      "exactly_equal": false,
+      "free_u_l2_GPU": 0.013488941154683493,
+      "free_u_l2_NumPy": 0.013488941154683489
+    },
+    {
+      "force": "nodal_0",
+      "maxabs": 4.1348760353165925e-17,
+      "l2": 1.927261817140166e-15,
+      "reference_l2": 0.024925316716953354,
+      "relative_l2": 7.732145749744106e-14,
+      "exactly_equal": false,
+      "free_u_l2_GPU": 0.013488941154683493,
+      "free_u_l2_NumPy": 0.013488941154683489
+    },
+    {
+      "force": "nodal_1",
+      "maxabs": 4.1348760353165925e-17,
+      "l2": 1.927261817140166e-15,
+      "reference_l2": 0.024925316716953354,
+      "relative_l2": 7.732145749744106e-14,
+      "exactly_equal": false,
+      "free_u_l2_GPU": 0.013488941154683493,
+      "free_u_l2_NumPy": 0.013488941154683489
+    },
+    {
+      "force": "nodal_2",
+      "maxabs": 4.1348760353165925e-17,
+      "l2": 1.927261817140166e-15,
+      "reference_l2": 0.024925316716953354,
+      "relative_l2": 7.732145749744106e-14,
+      "exactly_equal": false,
+      "free_u_l2_GPU": 0.013488941154683493,
+      "free_u_l2_NumPy": 0.013488941154683489
+    },
+    {
+      "force": "nodal_3",
+      "maxabs": 4.1348760353165925e-17,
+      "l2": 1.927261817140166e-15,
+      "reference_l2": 0.024925316716953354,
+      "relative_l2": 7.732145749744106e-14,
+      "exactly_equal": false,
+      "free_u_l2_GPU": 0.013488941154683493,
+      "free_u_l2_NumPy": 0.013488941154683489
+    },
+    {
+      "force": "nodal_4",
+      "maxabs": 4.1348760353165925e-17,
+      "l2": 1.927261817140166e-15,
+      "reference_l2": 0.024925316716953354,
+      "relative_l2": 7.732145749744106e-14,
+      "exactly_equal": false,
+      "free_u_l2_GPU": 0.013488941154683493,
+      "free_u_l2_NumPy": 0.013488941154683489
+    }
+  ],
+  "field_metrics": {
+    "E_el": 0.005268400005223915,
+    "free_u_l2": 0.013488941154683489,
+    "uv_mass_rel_L2": 0.07548651474572704,
+    "uv_H1_rel": 0.5876388790246525,
+    "elastic_excess_relative_FEM": 0.2193744480616182,
+    "active_integral": 0.005265939601442451,
+    "active_vs_FEM_absolute_L2": 0.04369627910012593,
+    "active_vs_FEM_reference_norm": 0.007138865866370472,
+    "active_vs_FEM_relative_L2": 6.120899302222345,
+    "active_vs_FEM_correlation": 0.10251798586523103,
+    "active_vs_FEM_reference_integral": 0.004317519850105423,
+    "active_vs_FEM_candidate_integral": 0.005265939601442451,
+    "raw_vs_FEM_absolute_L2": 51.125052267742326,
+    "raw_vs_FEM_reference_norm": 71.1029102111913,
+    "raw_vs_FEM_relative_L2": 0.719028969642588,
+    "raw_vs_FEM_correlation": 0.8320428000502161,
+    "raw_vs_FEM_reference_integral": 2.1736944777364164,
+    "raw_vs_FEM_candidate_integral": 0.820234330653818
+  },
+  "validity_checks": [
+    {
+      "check": "independent_native_FEM_force",
+      "passed": true,
+      "native_force_maxabs": 9.665662367708272e-17,
+      "free_u_l2": 3.942356776528018e-15
+    },
+    {
+      "check": "accepted_source",
+      "passed": true
+    },
+    {
+      "check": "weights_exact_unchanged",
+      "passed": true
+    },
+    {
+      "check": "Smooth_B0_anchor_unchanged",
+      "passed": true
+    },
+    {
+      "check": "mechanical_damage_exact_FEM",
+      "passed": true
+    },
+    {
+      "check": "physical_state_exact_unchanged",
+      "passed": true
+    },
+    {
+      "check": "threshold_is_readout_label_only",
+      "passed": true
+    },
+    {
+      "check": "optimizer_updates",
+      "passed": true
+    },
+    {
+      "check": "parameter_updates",
+      "passed": true
+    },
+    {
+      "check": "history_commits",
+      "passed": true
+    },
+    {
+      "check": "rollout_steps",
+      "passed": true
+    },
+    {
+      "check": "ridge",
+      "passed": true
+    },
+    {
+      "check": "worker_completed",
+      "passed": true
+    },
+    {
+      "check": "fixed_target",
+      "passed": true
+    },
+    {
+      "check": "single_cached_feature_encode",
+      "passed": true
+    },
+    {
+      "check": "basis_mass_is_frozen_mass0",
+      "passed": true
+    },
+    {
+      "check": "declared_source_energy",
+      "passed": true
+    },
+    {
+      "check": "zero_weight_digest",
+      "passed": true
+    },
+    {
+      "check": "state_identity",
+      "passed": true
+    },
+    {
+      "check": "fixed_repetition_counts",
+      "passed": true
+    },
+    {
+      "check": "network_0 source u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_0 cached u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_0 source v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_0 cached v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_0 source d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_0 cached d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_0 exact mechanical FEM damage",
+      "passed": true
+    },
+    {
+      "check": "network_0 fixed boundary",
+      "passed": true
+    },
+    {
+      "check": "network_0 source energy",
+      "passed": true,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "network_0 GPU energy replay",
+      "passed": true,
+      "producer": 0.005268400005223913,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "network_1 source u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_1 cached u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_1 source v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_1 cached v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_1 source d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_1 cached d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_1 exact mechanical FEM damage",
+      "passed": true
+    },
+    {
+      "check": "network_1 fixed boundary",
+      "passed": true
+    },
+    {
+      "check": "network_1 source energy",
+      "passed": true,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "network_1 GPU energy replay",
+      "passed": true,
+      "producer": 0.005268400005223913,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "network_2 source u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_2 cached u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_2 source v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_2 cached v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_2 source d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_2 cached d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "network_2 exact mechanical FEM damage",
+      "passed": true
+    },
+    {
+      "check": "network_2 fixed boundary",
+      "passed": true
+    },
+    {
+      "check": "network_2 source energy",
+      "passed": true,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "network_2 GPU energy replay",
+      "passed": true,
+      "producer": 0.005268400005223913,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_0 source u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_0 cached u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_0 source v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_0 cached v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_0 source d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_0 cached d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_0 exact mechanical FEM damage",
+      "passed": true
+    },
+    {
+      "check": "nodal_0 fixed boundary",
+      "passed": true
+    },
+    {
+      "check": "nodal_0 source energy",
+      "passed": true,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_0 GPU energy replay",
+      "passed": true,
+      "producer": 0.005268400005223913,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_1 source u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_1 cached u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_1 source v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_1 cached v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_1 source d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_1 cached d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_1 exact mechanical FEM damage",
+      "passed": true
+    },
+    {
+      "check": "nodal_1 fixed boundary",
+      "passed": true
+    },
+    {
+      "check": "nodal_1 source energy",
+      "passed": true,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_1 GPU energy replay",
+      "passed": true,
+      "producer": 0.005268400005223913,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_2 source u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_2 cached u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_2 source v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_2 cached v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_2 source d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_2 cached d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_2 exact mechanical FEM damage",
+      "passed": true
+    },
+    {
+      "check": "nodal_2 fixed boundary",
+      "passed": true
+    },
+    {
+      "check": "nodal_2 source energy",
+      "passed": true,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_2 GPU energy replay",
+      "passed": true,
+      "producer": 0.005268400005223913,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_3 source u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_3 cached u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_3 source v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_3 cached v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_3 source d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_3 cached d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_3 exact mechanical FEM damage",
+      "passed": true
+    },
+    {
+      "check": "nodal_3 fixed boundary",
+      "passed": true
+    },
+    {
+      "check": "nodal_3 source energy",
+      "passed": true,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_3 GPU energy replay",
+      "passed": true,
+      "producer": 0.005268400005223913,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_4 source u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_4 cached u",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_4 source v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_4 cached v",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_4 source d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_4 cached d",
+      "passed": true,
+      "maxabs": 0.0
+    },
+    {
+      "check": "nodal_4 exact mechanical FEM damage",
+      "passed": true
+    },
+    {
+      "check": "nodal_4 fixed boundary",
+      "passed": true
+    },
+    {
+      "check": "nodal_4 source energy",
+      "passed": true,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "nodal_4 GPU energy replay",
+      "passed": true,
+      "producer": 0.005268400005223913,
+      "independent": 0.005268400005223915
+    },
+    {
+      "check": "producer_native_FEM_force",
+      "passed": true,
+      "maxabs": 8.430857737200953e-17
+    },
+    {
+      "check": "cached_features_shape",
+      "passed": true
+    },
+    {
+      "check": "cached_bubble_shape",
+      "passed": true
+    },
+    {
+      "check": "source saved_rank_metadata",
+      "passed": true
+    },
+    {
+      "check": "fresh0 saved_rank_metadata",
+      "passed": true
+    },
+    {
+      "check": "fresh0 current_full401",
+      "passed": true
+    },
+    {
+      "check": "fresh1 saved_rank_metadata",
+      "passed": true
+    },
+    {
+      "check": "fresh1 current_full401",
+      "passed": true
+    },
+    {
+      "check": "fresh2 saved_rank_metadata",
+      "passed": true
+    },
+    {
+      "check": "fresh2 current_full401",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_0__source",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_1__source",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_2__source",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_0__source",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_1__source",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_2__source",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_3__source",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_4__source",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_0__fresh0",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_1__fresh0",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_2__fresh0",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_0__fresh0",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_1__fresh0",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_2__fresh0",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_3__fresh0",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_4__fresh0",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_0__fresh1",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_1__fresh1",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_2__fresh1",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_0__fresh1",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_1__fresh1",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_2__fresh1",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_3__fresh1",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_4__fresh1",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_0__fresh2",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_1__fresh2",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label network_2__fresh2",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_0__fresh2",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_1__fresh2",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_2__fresh2",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_3__fresh2",
+      "passed": true
+    },
+    {
+      "check": "saved GPU threshold label nodal_4__fresh2",
+      "passed": true
+    }
+  ],
+  "independent_saved_state_review": "passed",
+  "raw_capture_files": 53,
+  "raw_capture_bytes": 1400670192,
+  "local_full_raw_mirror_verified": false,
+  "zero_update_conclusion": "Saved-T reconstructed Phi versus fresh Phi changes the 1e-10 label at exactly identical forces/fields. Same cached SVD repeats are identical. Auxiliary parameter-gradient transformation is also numerically sensitive; old failure exact cause/value remains unknown."
+}

@@ -1,0 +1,18 @@
+{
+  "status": "visually_inspected",
+  "reviewer": "root",
+  "figures": [
+    "readout_cross_projection.png",
+    "readout_attribution.png",
+    "readout_force_differences.png",
+    "readout_decision.png"
+  ],
+  "main_adopted": "readout_decision.png",
+  "notes": [
+    "Original heatmap preserved but tiny white labels on yellow reduce contrast, not adopted as main report asset",
+    "Attribution zero-repeat plot is exactly zero, not missing; generic auto y range is not a physical scale claim",
+    "Force map signed shared linear scale is 1e-16; per-cell averaging is display only",
+    "New decision rendering has legible black values, 0-based linear y axis, actual threshold and distinct auxiliary markers; no new calculation"
+  ],
+  "source_summary_sha256": "353ec7e2245b2fa8d9fa4582b6d8ceb16cc96937de13b51241ab42563be36b2e"
+}

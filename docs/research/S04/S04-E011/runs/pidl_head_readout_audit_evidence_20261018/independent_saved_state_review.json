@@ -1,0 +1,413 @@
+{
+  "status": "passed",
+  "reviewer": "b0_route_inventory",
+  "method": "independent read-only SSH saved-array/tensor audit, CPU only, no network forward/new SVD/physical operator/solve",
+  "run_id": "pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "source_commit": "a698ec7b3c4ff98c1df50dacf7fc5adbdf8faa94",
+  "worker_pid": 3703382,
+  "worker_live": false,
+  "all_five_input_sha_match": {
+    "input": true,
+    "original_model": true,
+    "initial_model": true,
+    "source_fields": true,
+    "source_basis": true
+  },
+  "network_tensor_keys": 26,
+  "all_before_after_source_tensors_exact": true,
+  "all_tensor_finite": true,
+  "fixed_FEM_damage_all_8_exact": true,
+  "field_maxabs_vs_source": {
+    "network_0": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    },
+    "network_1": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    },
+    "network_2": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    },
+    "nodal_0": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    },
+    "nodal_1": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    },
+    "nodal_2": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    },
+    "nodal_3": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    },
+    "nodal_4": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    }
+  },
+  "all_eight_fields_bitwise_identical": true,
+  "raw_head_gradient_shapes": {
+    "network_0": [
+      2,
+      401
+    ],
+    "network_1": [
+      2,
+      401
+    ],
+    "network_2": [
+      2,
+      401
+    ]
+  },
+  "force_spread": {
+    "network_0": {
+      "gu_maxabs_vs_network0": 0.0,
+      "gv_maxabs_vs_network0": 0.0
+    },
+    "network_1": {
+      "gu_maxabs_vs_network0": 0.0,
+      "gv_maxabs_vs_network0": 0.0
+    },
+    "network_2": {
+      "gu_maxabs_vs_network0": 0.0,
+      "gv_maxabs_vs_network0": 0.0
+    },
+    "nodal_0": {
+      "gu_maxabs_vs_network0": 0.0,
+      "gv_maxabs_vs_network0": 0.0
+    },
+    "nodal_1": {
+      "gu_maxabs_vs_network0": 0.0,
+      "gv_maxabs_vs_network0": 0.0
+    },
+    "nodal_2": {
+      "gu_maxabs_vs_network0": 0.0,
+      "gv_maxabs_vs_network0": 0.0
+    },
+    "nodal_3": {
+      "gu_maxabs_vs_network0": 0.0,
+      "gv_maxabs_vs_network0": 0.0
+    },
+    "nodal_4": {
+      "gu_maxabs_vs_network0": 0.0,
+      "gv_maxabs_vs_network0": 0.0
+    }
+  },
+  "actual_bases": {
+    "source": {
+      "transform_shape": [
+        401,
+        386
+      ],
+      "phi_shape": [
+        86756,
+        386
+      ],
+      "sample_rows": [
+        0,
+        1,
+        20,
+        200,
+        2000,
+        20000,
+        40000,
+        86755
+      ],
+      "sample_realization_maxabs": 4.307366907596588e-09,
+      "transform_sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149",
+      "phi_sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+    },
+    "fresh0": {
+      "transform_shape": [
+        401,
+        386
+      ],
+      "phi_shape": [
+        86756,
+        386
+      ],
+      "sample_rows": [
+        0,
+        1,
+        20,
+        200,
+        2000,
+        20000,
+        40000,
+        86755
+      ],
+      "sample_realization_maxabs": 3.841705620288849e-09,
+      "transform_sha256": "d76638dd2742324ae038f5af6ffbacaea775437fc9b38bb6a6b9186d310cc422",
+      "phi_sha256": "6f4bd8264a322ee09ae6fc2cf9bb7a9bd446b4ef28a6c451984edead1e3fa089"
+    },
+    "fresh1": {
+      "transform_shape": [
+        401,
+        386
+      ],
+      "phi_shape": [
+        86756,
+        386
+      ],
+      "sample_rows": [
+        0,
+        1,
+        20,
+        200,
+        2000,
+        20000,
+        40000,
+        86755
+      ],
+      "sample_realization_maxabs": 3.841705620288849e-09,
+      "transform_sha256": "d76638dd2742324ae038f5af6ffbacaea775437fc9b38bb6a6b9186d310cc422",
+      "phi_sha256": "6f4bd8264a322ee09ae6fc2cf9bb7a9bd446b4ef28a6c451984edead1e3fa089"
+    },
+    "fresh2": {
+      "transform_shape": [
+        401,
+        386
+      ],
+      "phi_shape": [
+        86756,
+        386
+      ],
+      "sample_rows": [
+        0,
+        1,
+        20,
+        200,
+        2000,
+        20000,
+        40000,
+        86755
+      ],
+      "sample_realization_maxabs": 3.841705620288849e-09,
+      "transform_sha256": "d76638dd2742324ae038f5af6ffbacaea775437fc9b38bb6a6b9186d310cc422",
+      "phi_sha256": "6f4bd8264a322ee09ae6fc2cf9bb7a9bd446b4ef28a6c451984edead1e3fa089"
+    }
+  },
+  "projection_count": 32,
+  "independent_numpy_projection_error": {
+    "network_0__source": 1.0192239457610221e-15,
+    "network_1__source": 1.0192239457610221e-15,
+    "network_2__source": 1.0192239457610221e-15,
+    "nodal_0__source": 1.0192239457610221e-15,
+    "nodal_1__source": 1.0192239457610221e-15,
+    "nodal_2__source": 1.0192239457610221e-15,
+    "nodal_3__source": 1.0192239457610221e-15,
+    "nodal_4__source": 1.0192239457610221e-15,
+    "network_0__fresh0": 1.2448146541197335e-15,
+    "network_1__fresh0": 1.2448146541197335e-15,
+    "network_2__fresh0": 1.2448146541197335e-15,
+    "nodal_0__fresh0": 1.2448146541197335e-15,
+    "nodal_1__fresh0": 1.2448146541197335e-15,
+    "nodal_2__fresh0": 1.2448146541197335e-15,
+    "nodal_3__fresh0": 1.2448146541197335e-15,
+    "nodal_4__fresh0": 1.2448146541197335e-15,
+    "network_0__fresh1": 1.2448146541197335e-15,
+    "network_1__fresh1": 1.2448146541197335e-15,
+    "network_2__fresh1": 1.2448146541197335e-15,
+    "nodal_0__fresh1": 1.2448146541197335e-15,
+    "nodal_1__fresh1": 1.2448146541197335e-15,
+    "nodal_2__fresh1": 1.2448146541197335e-15,
+    "nodal_3__fresh1": 1.2448146541197335e-15,
+    "nodal_4__fresh1": 1.2448146541197335e-15,
+    "network_0__fresh2": 1.2448146541197335e-15,
+    "network_1__fresh2": 1.2448146541197335e-15,
+    "network_2__fresh2": 1.2448146541197335e-15,
+    "nodal_0__fresh2": 1.2448146541197335e-15,
+    "nodal_1__fresh2": 1.2448146541197335e-15,
+    "nodal_2__fresh2": 1.2448146541197335e-15,
+    "nodal_3__fresh2": 1.2448146541197335e-15,
+    "nodal_4__fresh2": 1.2448146541197335e-15
+  },
+  "projection_labels": {
+    "network_0__source": {
+      "gradient_inf": 3.3665696098916786e-11,
+      "threshold_pass": true
+    },
+    "network_1__source": {
+      "gradient_inf": 3.3665696098916786e-11,
+      "threshold_pass": true
+    },
+    "network_2__source": {
+      "gradient_inf": 3.3665696098916786e-11,
+      "threshold_pass": true
+    },
+    "nodal_0__source": {
+      "gradient_inf": 3.3665696098916786e-11,
+      "threshold_pass": true
+    },
+    "nodal_1__source": {
+      "gradient_inf": 3.3665696098916786e-11,
+      "threshold_pass": true
+    },
+    "nodal_2__source": {
+      "gradient_inf": 3.3665696098916786e-11,
+      "threshold_pass": true
+    },
+    "nodal_3__source": {
+      "gradient_inf": 3.3665696098916786e-11,
+      "threshold_pass": true
+    },
+    "nodal_4__source": {
+      "gradient_inf": 3.3665696098916786e-11,
+      "threshold_pass": true
+    },
+    "network_0__fresh0": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "network_1__fresh0": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "network_2__fresh0": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_0__fresh0": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_1__fresh0": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_2__fresh0": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_3__fresh0": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_4__fresh0": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "network_0__fresh1": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "network_1__fresh1": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "network_2__fresh1": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_0__fresh1": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_1__fresh1": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_2__fresh1": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_3__fresh1": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_4__fresh1": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "network_0__fresh2": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "network_1__fresh2": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "network_2__fresh2": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_0__fresh2": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_1__fresh2": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_2__fresh2": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_3__fresh2": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    },
+    "nodal_4__fresh2": {
+      "gradient_inf": 1.1159427375229125e-10,
+      "threshold_pass": false
+    }
+  },
+  "fixed_projection_repeat_maxabs_vs_first": 0.0,
+  "mass_files": {
+    "mass0": {
+      "maxabs_vs_mass0": 0.0,
+      "sha256": "b28aa2080a1c62941aae51854218428bbd6a845173cc9f8672ead3f13c57d2c2"
+    },
+    "gpu0": {
+      "maxabs_vs_mass0": 2.168404344971009e-19,
+      "sha256": "220c176cd405bae003cd72b4a64ad3171a26190ffeda5fbdd24a9217049bfee0"
+    },
+    "gpu1": {
+      "maxabs_vs_mass0": 2.168404344971009e-19,
+      "sha256": "b498682808ebb1865ac97b1b31ae0ae0da76a709e7c7a0b0b7672e433cdf56aa"
+    },
+    "gpu2": {
+      "maxabs_vs_mass0": 1.0842021724855044e-19,
+      "sha256": "9653103c010e51c59a3e191b46b62989659314aef023031cdaf184cbda553dab"
+    },
+    "cpu_add_at": {
+      "maxabs_vs_mass0": 4.336808689942018e-19,
+      "sha256": "de64026d85c45b0eca3f73d69ae0c5c6b0c0bb7d04f909eab95f72b09e3a9e27"
+    },
+    "cpu_numpy_element_sums": {
+      "maxabs_vs_mass0": 4.336808689942018e-19,
+      "sha256": "bdcfce161e9d6a484291b3bfbbf72a8fcecda7e3bf29d486569f58eb47374f1d"
+    }
+  },
+  "evaluations": 10,
+  "all_trace_completed": true,
+  "last_evaluation_start": 5.166069857776165,
+  "worker_elapsed_seconds": 24.771672972477973,
+  "cap": 32,
+  "deadline_state_seconds": 600,
+  "optimizer_updates": 0,
+  "parameter_updates": 0,
+  "history_commits": 0,
+  "rollout_steps": 0,
+  "review_elapsed_seconds": 3.836056523025036,
+  "limitations": [
+    "No independent post-state tensors for B0 anchor/history/f were saved; their unchanged flags corroborate reviewed mutation-free source, original input SHA, identical full network tensors and exact fixed d/fields, rather than an independent before/after history tensor comparison.",
+    "Actual Phi finiteness/shapes/SHA/full projected vectors are audited; direct design@T verification uses eight declared sampled rows, not an additional full design multiplication or new SVD.",
+    "Remote raw archive audited in place; this JSON does not assert complete local retrieval."
+  ]
+}

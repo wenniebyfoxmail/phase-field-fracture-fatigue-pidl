@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "reviewer": "b0_route_inventory",
+  "review_type": "placement_resource_hold_resume_only",
+  "reviewed_utc": "2026-10-18T20:54:19.964707+00:00",
+  "resume_sha256": "19c4c5289b2f719ad3fdc3049c29080183842ed420d179e03d6cee2cbef036a7",
+  "source_commit": "a698ec7b3c4ff98c1df50dacf7fc5adbdf8faa94",
+  "contract_sha256": "595c7eda3f6f28e3ff46f6b42c4e1c9cea3ff3d9f9840c3547b1793250165d18",
+  "package_manifest_sha256": "16801753333a558d5eb1b3dc67e7b4e4b77a54000a9d80381df8d86a3d2d01d8",
+  "original_review_sha256": "76a8bb3b4799c15d3c857f0f8f3ae64c0310c530b121f3f524833773850aaf60",
+  "checks": {
+    "unchanged_science": "worker,contract,thresholds,source state and budgets unchanged; no rebuild/restage/numerical retry",
+    "local_binding": "exact clean reviewed source, reviewed original launcher/protocol and same bundle/contract verified before remote use",
+    "staged_binding": "same existing fresh task roots, no prior receipt/log/output/claim; bundle/contract SHA, all archived code member SHA, five input SHAs rechecked before execution",
+    "resources": "original full preflight before resume plus second same-SSH GPU5 exact UUID/free>=12288MiB/util<10/no compute app/disk>=10GiB immediately before claim+Popen; never kill/disturb others",
+    "launch_once": "task-owned atomic mkdir .launch_claim is never removed; exclusive worker.log, single detached Popen and task receipt; unknown crash cannot auto-relaunch",
+    "escaping": "AST-parsed actual remote script independently compiled without executing; final receipt newline escape verified literal backslash-n in remote source",
+    "preserved_hold": "staging_hold.json records other PID3675034/zero worker launches; scientific evidence still absent at hold"
+  },
+  "blockers": [],
+  "limitations": [
+    "Review only; no SSH/resource query/launch by reviewer.",
+    "Any claim/log/receipt/output appearance blocks further automatic resume; parent must inspect unknown launch state rather than retry."
+  ],
+  "contract_serialization_only_addendum": {
+    "status": "passed",
+    "previous_review_sha256": "3a6e9fa54445be2b0e3ede75616f8685958eaa299feee67b1c777a2362130d61",
+    "canonical_comparison": "full sorted compact JSON equality preserves scalar types; bool vs integer distinction toy verified",
+    "preserve_before": "exclusive original-byte backup plus SHA equality; explicit semantic-identity/scientific-parameters-unchanged receipt before same-directory exclusive temp write+atomic replace",
+    "after": "exact expected original local contract SHA asserted; all existing archive/code/input/resource/claim/Popen guards unchanged",
+    "scope": "0 Popen prior blocker; no numerical retry or threshold/source/budget change"
+  }
+}

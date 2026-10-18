@@ -1,0 +1,9 @@
+basis,group,repetitions,coefficient_range_inf,gradient_inf_range,max_difference_from_first
+source,network,3,0.0,0.0,0.0
+source,nodal,5,0.0,0.0,0.0
+fresh0,network,3,0.0,0.0,0.0
+fresh0,nodal,5,0.0,0.0,0.0
+fresh1,network,3,0.0,0.0,0.0
+fresh1,nodal,5,0.0,0.0,0.0
+fresh2,network,3,0.0,0.0,0.0
+fresh2,nodal,5,0.0,0.0,0.0

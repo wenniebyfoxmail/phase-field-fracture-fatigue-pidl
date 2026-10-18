@@ -1,0 +1,13 @@
+{
+  "status": "all_decision_payload_SHA_size_verified",
+  "files": 19,
+  "bytes": 2580245,
+  "omitted_from_local_decision_package": [
+    "physical_arrays.npz"
+  ],
+  "remote_full_analysis": "/mnt/data2/drtao/wennie/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/offline_analysis",
+  "local_full_raw_mirror_verified": false,
+  "original_download_directory": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/downloaded_decision_original",
+  "working_directory_has_posthoc_MD_changes": true,
+  "posthoc_revision_record": "posthoc_display_revisions.json"
+}

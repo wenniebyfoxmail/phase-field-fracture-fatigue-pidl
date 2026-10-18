@@ -1,0 +1,227 @@
+{
+  "status": "complete_members_only_SHA_checked_where_raw_manifest_applies",
+  "full_raw_mirror_verified": false,
+  "snapshot_bytes": 260001792,
+  "files": [
+    {
+      "path": "run/launch_receipt.json",
+      "bytes": 1132,
+      "sha256": "b9f4c7b62f3dac7eab4582c5cab0b4b7c49bde40c07145d4ffdff73f79902302",
+      "matched_remote_raw_manifest": false
+    },
+    {
+      "path": "run/worker.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched_remote_raw_manifest": false
+    },
+    {
+      "path": "run/contract.json",
+      "bytes": 2872,
+      "sha256": "595c7eda3f6f28e3ff46f6b42c4e1c9cea3ff3d9f9840c3547b1793250165d18",
+      "matched_remote_raw_manifest": false
+    },
+    {
+      "path": "run/RUN_PROVENANCE.txt",
+      "bytes": 115,
+      "sha256": "88e025affe45f1ca29f61dd38a75854d3b727b533a779aa91f56a59ba3948e38",
+      "matched_remote_raw_manifest": false
+    },
+    {
+      "path": "archive/output/receipt.json",
+      "bytes": 725,
+      "sha256": "bbc8165f9ad6e0fbe06cd4287dbc5d5596e23ad382a459c863a50ec4008eb01a",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/rows.json",
+      "bytes": 33387,
+      "sha256": "0158a8fe4074e875b462ee50bb4f5bdacdf58f900250e865199323199253f1ac",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/complete.json",
+      "bytes": 43,
+      "sha256": "87f7090533f290c095f37e2800fa1480c18e451d912b5f51cc4493dedcfcc466",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/weights_before.pt",
+      "bytes": 9010357,
+      "sha256": "67dc30aac7f25cf229988868b0b81f3fba4c59c2236d202a200f59a961136252",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/source_basis_identity.json",
+      "bytes": 297,
+      "sha256": "522c78c833772f03ee31d294b8a520526c125e57182518838f35c1502fb1480a",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/trace.json",
+      "bytes": 1664,
+      "sha256": "d0237e3297ed63bed5e85a474888ff41fea0d902c5e7f5d3185c894d632de119",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/source_reproduction_attempts.json",
+      "bytes": 19521,
+      "sha256": "d121997bc86bce7de91f1a512185590a04180c70bd39b09ba66f50bed994dab7",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/source_energy_contract.json",
+      "bytes": 190,
+      "sha256": "8454d1ffceb3a4366a1b05a7259433957e345d81cdd8ca82fa9f4c693e383ceb",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/native_fem_force.npz",
+      "bytes": 455542,
+      "sha256": "1c543bdd6ac5f6e0e4ffd1fcae426918a0cc661fc66d5809cc422b826ef4262b",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/native_fem_contract.json",
+      "bytes": 239,
+      "sha256": "433f6414ecb18ef88e9bf9fff06fb30844cbe5f26031cca4cb2aa51b8f90cfdc",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/projections.npz",
+      "bytes": 126886,
+      "sha256": "a57b2f2b8cb086b46bbb11dc6d6b874272cee4588ad94dc738e351cbad2ee481",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/projections.json",
+      "bytes": 8435,
+      "sha256": "d8c33d9771e2612355473d110b791b12cfea6b9cddd5c15a1cd8d4d6aa5c6fc6",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/fixed_projection_repeat.npy",
+      "bytes": 31008,
+      "sha256": "233b2df27ad1edd9ab5e37e133ef6814ed658184ce81508b8b275ebb73a1bb6f",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/weights_after.pt",
+      "bytes": 9010325,
+      "sha256": "515b50e72e13d5463d5ebc8bb86d156c6ddf226c1512f8ba6556c3f4863ecfae",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/result.json",
+      "bytes": 31183,
+      "sha256": "1cd33c9a1dd004c5e36842ea689fa773a37f538ab0720d349d14510c8b1985ad",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/network_0.npz",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/network_0.json",
+      "bytes": 5993,
+      "sha256": "ce24689933e13b4a986db07ac98ec052685cb10bdfa557c46e68158250ff8a5a",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/network_1.npz",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/network_1.json",
+      "bytes": 5993,
+      "sha256": "033f6555f9feaaa57c99d0951ac667c1f8fbbc07dc05374f334fd22d9eb693f5",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/network_2.npz",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/network_2.json",
+      "bytes": 5993,
+      "sha256": "49121096eb45a509afb0169ff01518851958059f8ed310d67eb6dae5b5f15562",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_0.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_0.json",
+      "bytes": 159,
+      "sha256": "dd70f2274f3c226460b2eab0fc20436382aa8dfc51dcf86be6d9eafa4f3133d9",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_1.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_1.json",
+      "bytes": 159,
+      "sha256": "4e8f9173597bc2585bcb2d9279a48eab8d939f37f8dad40e637074a40ff904e7",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_2.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_2.json",
+      "bytes": 159,
+      "sha256": "70487e0bcb3adaf9a9861abad207073bc198feac2bd9ac3a889c49d114ca0eca",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_3.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_3.json",
+      "bytes": 159,
+      "sha256": "b9d11f09889a74cbbc0a4198f55f2b8798ad3ab3f55a9ef8d7ed19f9f114f772",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_4.npz",
+      "bytes": 2683869,
+      "sha256": "d80478c121bc4702d146698e95ec4a92ffacf28f822536548abb1ba07faac785",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/forces/nodal_4.json",
+      "bytes": 159,
+      "sha256": "ae0465b0afeb269448b780e23147c94336b4f06b02caf3e237a71de367a2e20c",
+      "matched_remote_raw_manifest": true
+    },
+    {
+      "path": "archive/output/c20_s4/bases/source/transform.npy",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149",
+      "matched_remote_raw_manifest": true
+    }
+  ],
+  "skipped_large_members": true,
+  "expected_incomplete_stream": [
+    "ReadError: unexpected end of data"
+  ]
+}
