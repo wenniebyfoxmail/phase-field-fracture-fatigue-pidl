@@ -75,11 +75,18 @@ they independently decide whether the route can continue. Name one active
 step and one next step; do not create a separate Experiment, Run, or ledger
 entry for every `D` step.
 
+Make `D1` a **source, overlap, and reuse screen**. Before substantive research
+or implementation work, search the relevant local Storyline/Experiment
+records, Obsidian notes, repository docs, and likely runners, tests, parsers,
+or analysis scripts. Record the search terms/locations briefly and decide:
+reuse, continue, fork, redirect, or stop. Scale the search to the task; do not
+turn a routine edit into a repository-wide audit.
+
 For a direction triggered by a saved post, paper, meeting note, or other
-external idea, make `D1` a **source and overlap screen**. Label the source as
-inspiration or verified evidence, state the new question/estimand/evidence axis
-relative to active Storylines, and merge or redirect it when none is new. Do
-not create a duplicate Storyline or treat a secondary summary as performance
+external idea, label the source as inspiration or verified evidence and state
+the new question/estimand/evidence axis relative to active Storylines. Merge
+or redirect it when none is new. Do not create a duplicate Storyline, repeat an
+unchanged terminal negative, or treat a secondary summary as performance
 evidence.
 
 For exploration, an observed directional gain, capability proof, or diagnostic

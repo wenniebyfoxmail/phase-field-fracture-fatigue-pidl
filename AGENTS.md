@@ -146,6 +146,12 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   one active `D#` and one next step. D steps organise choices; they are not
   extra scientific gates, Runs, or ledger objects. Add them when work is
   created or next touched; do not bulk-retrofit historical records.
+- Before substantive research or implementation work, complete the active
+  ladder's D1 source/overlap/reuse screen: search the relevant local research
+  records, Obsidian notes, docs, and likely code entrypoints. State the concise
+  reuse decision (`reuse | continue | fork | redirect | stop`) in the task
+  record. Keep the search proportionate; routine edits do not require a broad
+  repository audit.
 - Each actual producer execution has a fresh Run ID and a compact tracked run
   receipt. Seeds, arms, retries, failed launches, and hardware reruns are Runs;
   a changed scientific design is a new Experiment.
