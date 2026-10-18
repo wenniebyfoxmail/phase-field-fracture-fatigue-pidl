@@ -1,0 +1,125 @@
+{
+  "protocol": "S04-E011-UVHEAD-NEWTON-r1",
+  "execution": "completed",
+  "producer": {
+    "run_id": "pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production",
+    "phase": "production",
+    "commit": "2f3eddc5eba7340a97b7723a8d97d2d8a1785b3e",
+    "branch": "codex/hard5-q4-t3-2x2-20261005",
+    "dirty": false,
+    "pid": 2676566,
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "/usr/bin/python3",
+      "-u",
+      "/mnt/data2/drtao/wennie/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production/code/tools/s04_e011_analysis/run_pidl_head_newton.py",
+      "--contract",
+      "/mnt/data2/drtao/wennie/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production/contract.json",
+      "--out",
+      "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production/output",
+      "--phase",
+      "production"
+    ],
+    "root": "/mnt/data2/drtao/wennie/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production",
+    "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production",
+    "log": "/mnt/data2/drtao/wennie/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production/worker.log",
+    "GPU": 0,
+    "started_utc": "2026-10-18T11:14:34.852615+00:00"
+  },
+  "retrieval": {
+    "status": "verified",
+    "files": 33,
+    "bytes": 32512292,
+    "remote": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production",
+    "run_id": "pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production",
+    "missing": []
+  },
+  "analysis_commit": "59b78eef94452443fdcef86cab2452dd793caf38",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production/analysis_head_newton_v2",
+  "local_preparation": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_head_newton_preparation_20261018_v1",
+  "quota_stop_line": "explicitly revoked by user before preparation/launch",
+  "state_coordinate_counts": {
+    "c1s4": 776,
+    "c20s4": 774
+  },
+  "states": [
+    {
+      "cycle": 1,
+      "decision": {
+        "actual_reduced_gradient_inf": 1.763519822794296e-10,
+        "conditioned_reduced_gradient_inf": 1.0725361571095604e-14,
+        "reduced_gradient_tolerance": 1e-10,
+        "retained_span_closed": false,
+        "realization_limited": true,
+        "global_nodal_force": 0.025479657574727477,
+        "actual_minus_conditioned_gradient_inf": 1.7635355298175161e-10,
+        "actual_minus_conditioned_energy": 1.128958038165706e-14,
+        "linear_vs_actual_uv_maxabs": 1.6003882247206391e-12,
+        "solver_stop": "conditioned_gradient_tolerance",
+        "comparisons": {
+          "PBD_full_U_energy": {
+            "energy_difference": 0.0006694804445238406,
+            "relative_energy_reduction": -0.11802274733478302,
+            "interpretation": "numerical comparison only; see full independent values"
+          },
+          "UVHEAD_r1": {
+            "energy_difference": -8.284361880201915e-07,
+            "relative_energy_reduction": 0.00013061092903954297,
+            "interpretation": "numerical comparison only; see full independent values"
+          }
+        },
+        "conclusion": "Conditioned coordinates close but actual installed-head gradient does not: numerical realization/implementation limit, not a represented-field floor."
+      },
+      "E_el": 0.006341950028923486,
+      "free_u_l2": 0.025479657574727477,
+      "uv_mass_rel_L2": 0.13238965064150574,
+      "evaluations": 40,
+      "Newton_updates": 5,
+      "dense_assemblies": 5,
+      "explicit_tangent_vector_products": 13
+    },
+    {
+      "cycle": 20,
+      "decision": {
+        "actual_reduced_gradient_inf": 3.346103873581169e-11,
+        "conditioned_reduced_gradient_inf": 1.1308662339892805e-14,
+        "reduced_gradient_tolerance": 1e-10,
+        "retained_span_closed": true,
+        "realization_limited": false,
+        "global_nodal_force": 0.02097605107759165,
+        "actual_minus_conditioned_gradient_inf": 3.345995063051138e-11,
+        "actual_minus_conditioned_energy": -7.615436059538183e-16,
+        "linear_vs_actual_uv_maxabs": 4.1934511418872944e-13,
+        "solver_stop": "conditioned_gradient_tolerance",
+        "comparisons": {
+          "PBD_full_U_energy": {
+            "energy_difference": 0.0006224863014668231,
+            "relative_energy_reduction": -0.1152418277319871,
+            "interpretation": "numerical comparison only; see full independent values"
+          },
+          "UVHEAD_r1": {
+            "energy_difference": -3.953825559750018e-08,
+            "relative_energy_reduction": 6.563355731570297e-06,
+            "interpretation": "numerical comparison only; see full independent values"
+          }
+        },
+        "conclusion": "Actual installed network closes the declared reduced infinity-gradient criterion in the retained frozen-feature span. Any remaining FEM discrepancy is conditional on that retained span and fixed FEM damage; it is not a full-network capacity bound."
+      },
+      "E_el": 0.006024051980505792,
+      "free_u_l2": 0.02097605107759165,
+      "uv_mass_rel_L2": 0.1382966348797156,
+      "evaluations": 40,
+      "Newton_updates": 5,
+      "dense_assemblies": 5,
+      "explicit_tangent_vector_products": 13
+    }
+  ],
+  "claim": "c20 numerical stationary same-energy restricted head, c1 realization-limited; not full-network capacity, arbitrary field-fit error floor, physical teacher or trajectory",
+  "tests": "9 related tiny tests passed, no Mac PIDL training",
+  "final_figures": 6,
+  "history_commits": 0,
+  "rollout_steps": 0,
+  "additional_producer": false
+}

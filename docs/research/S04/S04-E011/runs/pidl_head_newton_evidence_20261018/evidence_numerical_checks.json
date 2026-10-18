@@ -1,0 +1,100 @@
+{
+  "status": "passed",
+  "states": [
+    {
+      "cycle": 1,
+      "actual_gradient_inf": 1.763519822794296e-10,
+      "conditioned_gradient_inf": 1.0725361571095604e-14,
+      "actual_minus_conditioned_gradient_inf": 1.7635355298175161e-10,
+      "actual_stationarity_closed": false,
+      "frozen_tensors_exact": true,
+      "basis_exact": true,
+      "boundary_error": 0.0,
+      "evaluations": 40,
+      "accepted": 5,
+      "dense_assemblies": 5,
+      "explicit_HVP": 13,
+      "maximum_linear_relative_residual": 2.597400842752488e-15,
+      "independent_metrics": {
+        "FEM": {
+          "E_el": 0.004798035971254553,
+          "free_u_l2": 3.8015832443285144e-15,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0
+        },
+        "original_UV_FEMd": {
+          "E_el": 0.010889692759145937,
+          "free_u_l2": 0.014000259968184646,
+          "uv_mass_rel_L2": 0.03589386176001035,
+          "uv_H1_rel": 1.1481936938232615
+        },
+        "PBD_full_U_energy": {
+          "E_el": 0.005672469584399645,
+          "free_u_l2": 0.017118658371087756,
+          "uv_mass_rel_L2": 0.047757879079225136,
+          "uv_H1_rel": 0.5559479511290112
+        },
+        "UVHEAD_r1": {
+          "E_el": 0.006342778465111506,
+          "free_u_l2": 0.025507115318591105,
+          "uv_mass_rel_L2": 0.13154509281268084,
+          "uv_H1_rel": 0.7977028447467301
+        },
+        "Newton_head": {
+          "E_el": 0.006341950028923487,
+          "free_u_l2": 0.02547965757472748,
+          "uv_mass_rel_L2": 0.13238965064150574,
+          "uv_H1_rel": 0.797792418610591
+        }
+      }
+    },
+    {
+      "cycle": 20,
+      "actual_gradient_inf": 3.346103873581169e-11,
+      "conditioned_gradient_inf": 1.1308662339892805e-14,
+      "actual_minus_conditioned_gradient_inf": 3.345995063051138e-11,
+      "actual_stationarity_closed": true,
+      "frozen_tensors_exact": true,
+      "basis_exact": true,
+      "boundary_error": 0.0,
+      "evaluations": 40,
+      "accepted": 5,
+      "dense_assemblies": 5,
+      "explicit_HVP": 13,
+      "maximum_linear_relative_residual": 2.4068677058300016e-15,
+      "independent_metrics": {
+        "FEM": {
+          "E_el": 0.004320576024533599,
+          "free_u_l2": 3.775945107306163e-15,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0
+        },
+        "original_UV_FEMd": {
+          "E_el": 0.011216514978623433,
+          "free_u_l2": 0.019601199803933128,
+          "uv_mass_rel_L2": 0.03739388021947007,
+          "uv_H1_rel": 1.1198184913885147
+        },
+        "PBD_full_U_energy": {
+          "E_el": 0.00540156567903897,
+          "free_u_l2": 0.015995833518180787,
+          "uv_mass_rel_L2": 0.06262684393394058,
+          "uv_H1_rel": 0.5913469685524375
+        },
+        "UVHEAD_r1": {
+          "E_el": 0.006024091518761389,
+          "free_u_l2": 0.02096445043550586,
+          "uv_mass_rel_L2": 0.13851435980898916,
+          "uv_H1_rel": 0.8081683416583437
+        },
+        "Newton_head": {
+          "E_el": 0.006024051980505792,
+          "free_u_l2": 0.02097605107759165,
+          "uv_mass_rel_L2": 0.1382966348797156,
+          "uv_H1_rel": 0.8080740284353384
+        }
+      }
+    }
+  ],
+  "scope": "Independent offline NumPy energy/stress/mass/H1 readout and frozen-network tensor/basis/trace audit; no SSH, optimization or model forward."
+}

@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "review_kind": "independent_code_ready_narrow_difference_review",
+  "reviewer": "b0_route_inventory",
+  "reviewed_utc": "2026-10-18T11:11:23.961753+00:00",
+  "worker_blob": "00d5544cf799829eb35fa1ec49b26fd5499b5624",
+  "tests_blob": "eeea3d2728a9b5fe5a58ee08a5a36c1aa0d1dc33",
+  "launcher_sha256": "68767fa482aae20ffd088a39bdc9794717cd18ff3686f1c5df1f4e56d37c3e03",
+  "protocol_sha256": "53beee2f3a3d414d283cca923ff75dda8b8113df40640ab07c8dc90d604e68e2",
+  "scope": "Only new consistent reduced-tangent Newton worker, its five tiny fixtures, exact launcher/protocol differences. No SSH, launch, full-network training, or producer evaluation by reviewer.",
+  "checks": {
+    "five_tiny_fixtures": "5 passed independently, pytest tests/test_pidl_head_newton.py -q",
+    "compile": "worker/tests/launcher passed",
+    "physics": "Engineering-shear Amor tangent independently matched source: g-degraded deviatoric stiffness; tensile volumetric g and compressive volumetric 1. Toy mixed-sign AD+FD and one-sided zero-trace fixture passed.",
+    "zero_branch": "Selected generalized q=g at exact trace zero is explicitly separated from ReLU AD q=0 and centered-FD q=(g+1)/2. Native directional contracts remain runtime gates, not already-completed producer evidence.",
+    "frozen_representation": "Loads exact previous transform 401x388/387 and theta0 head. No SVD, ridge, new rank cut, hidden/BC/damage changes, history commits, or rollout. Probe and endpoint assert network, B0 anchor, FEM damage, own lower/f unchanged.",
+    "linear_solve": "Cholesky solve with finite direction and relative linear residual <=1e-6. Singular/nonpositive/non-descent stops explicitly; no pseudoinverse/ridge repair.",
+    "budget": "400 energy/gradient calls inclusive AD/FD/source/native/line/final, reserve last actual readout; no new evaluation or matrix/solve after 600s including preparation. At most10 Newton steps/10 dense assemblies/1000 explicit products; dense assembly full-column work recorded separately.",
+    "rollback": "Only completed Armijo-accepted trials update last state. Actual scripted interruption-after-first-accept fixture passed. Pending failed evaluation and work counts persist; no failed trial promoted.",
+    "actual_readout": "Installs raw head then scores actual network E/Ru/L2/H1 and projected head gradient. Conditioned vs actual gradients/energies and realization error remain distinct. Missing terminal readout is partial and not primary evidence.",
+    "launcher": "Clean git archive plus bundle/contract/worker-blob binding; prior input/model/basis SHA staging; fresh roots; duplicate checks; full post-staging GPU preflight; successful zero-update real tangent-memory probe before production. GPU0 and isolated env/receipt consistent."
+  },
+  "claim_boundary": "Code Ready only. Actual stationarity requires installed-network reduced infinity gradient <=1e-10; conditioned-only closure is realization-limited. Failure/cap endpoints do not establish retained-feature or whole-network capacity. Fixed-state solve is not new joint PIDL/FEM trajectory or physical teacher.",
+  "blockers": [],
+  "remaining_before_launch": [
+    "Parent commits reviewed exact worker/tests/protocol and verifies clean source.",
+    "Fresh GPU/process availability and real c1 full-cache tangent/solve/FD zero-update memory probe must pass before two-state production."
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "reviewer": "/root (independent of analyzer author /root/markdown_subjects)",
+  "scope": "offline numerical/field-analysis source; no new Newton output available yet",
+  "reviewed_utc": "2026-10-18T11:10:54.023071+00:00",
+  "analysis_blob": "f576f18056a1da176d08becf4366330398d31e8e",
+  "checks": [
+    "Reads exact canonical input manifest; original/PBD/r1 paths and Newton --run are distinct",
+    "Native NumPy Q4 Eel/freeforce/UVmassL2/H1 formulas reviewed; geometry/Amor operator reused unchanged",
+    "Scored displacement candidates all require exact fixed FEM damage, finite nodal fields and verified actual endpoint",
+    "Partial/last-theta0 fallback never scored as Newton or counted as a gain; missing states explicit",
+    "Actual vs conditioned reduced gradient and global freeforce kept distinct; actual infinity criterion1e-10 predeclared",
+    "Five same-state mechanical candidates, FEM-first full-domain maps, numeric shared-scale signed-error ticks, both prescribed states",
+    "Accepted energy and gradient traces use all accepted points and distinguish actual installed endpoint; no flat-loss capacity inference",
+    "Source author readonly c1/c20 r1 replay checks show fourmetrics within machine precision; no Mac training"
+  ],
+  "runtime_requirements": [
+    "Final new Newton producer schema must retain fields/results names or analysis must be reconciled before actual scoring",
+    "Actual rendered output inspection and independent final evidence review still required"
+  ],
+  "visual_amendment": {
+    "analysis_blob": "deecd55f1386231c5503376fe9832a7c3d967f41",
+    "change": "Only active maps display log10 of GP-weighted cell means with fixed floor1e-12; all independent scalar metrics and decisions unchanged",
+    "root_actual_view": "all six final images inspected; state/method labels, readable scale ticks and actual/conditioned gradient endpoints clear",
+    "figure_sidecars": "6 pass",
+    "final_output": "analysis_head_newton_v2"
+  }
+}

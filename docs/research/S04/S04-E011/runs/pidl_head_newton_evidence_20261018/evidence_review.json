@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "report_review": "passed",
+  "reviewed_utc": "2026-10-18T11:23:57.019735+00:00",
+  "reviewer": "b0_route_inventory",
+  "producer_commit": "2f3eddc5eba7340a97b7723a8d97d2d8a1785b3e",
+  "run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvnewton_2f3eddc_20261018T111147Z_production/analysis_head_newton_v2",
+  "summary_sha256": "32517d7f3063b77094c34c538441362df58370d4f2161f2620ae838a175e4dd5",
+  "report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_head_newton_result_20261018.md",
+  "report_sha256": "729e6a3fbe5b930059321f7528840b499812c38ddc66903cbfb054bfad8fe24e",
+  "obsidian_report": "/Users/wenxiaofang/obsidian/mesh对齐.md",
+  "obsidian_own_section_sha256": "15b604bb894d4c3178bf7ae01ec01e3ebd66b6bc82f559ab2252bee7e0120063",
+  "numerical_checks": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_head_newton_preparation_20261018_v1/evidence_numerical_checks.json",
+  "numerical_checks_sha256": "a375c405a244cacdf7aaeb45be431b79fa319d3e7bd44caca8c9f5164f122067",
+  "retrieval_scope": "33 files /32512292 bytes single-stream retrieval verified by remote-generated sizes/count; no claim of remote per-file SHA recheck",
+  "independent_checks": {
+    "source_scope": "Reviewed exact worker blob00d5544c and protocol/launcher before launch; no new source mechanism needed for this evidence review.",
+    "frozen": "Each accepted network independently compared tensor-exactly to original theta0: hidden layers/activation slopes/damage head unchanged. Saved raw UV head equals accepted_network. Previous transform/theta0_head arrays exact, FEM damage fields exact, original boundary errors<1e-12.",
+    "budget": "Both states40 completed energy/gradient calls; five accepted full steps, five dense Hessian assemblies,13 explicit tangent-vector products, five Cholesky solves. All start times<600s. Residuals~1e-15, no ridge/truncation, no history/rollout.",
+    "native_physics": "Separate offline NumPy implementation of Amor strain/stress, nodal-force assembly, Q4 mass and full-gradient H1 reproduced two states xfive methods xfour metrics. Stored actual/conditioned gradient vector norms and their difference independently checked.",
+    "contracts": "AD-vs-analytic tangent errors~1.7e-11 for norms~1.7e4–2.8e4; eligible FD relative errors~1e-8–5e-8. Initial actual zero-trace GP counts0; branch/zero policy source/tiny fixtures already reviewed.",
+    "stationarity": "c1 actual projected reduced infinity gradient1.7635198228e-10 fails1e-10 while conditioned1.0725361571e-14 closes: realization-limited, no strict actual retained-span floor. c20 actual3.3461038736e-11 and conditioned1.1308662340e-14 close. This is Phi-transpose nodal gradient in same reduced coordinates, not raw-theta gradient/global force.",
+    "comparison": "Newton vs UVHEAD-r1 energy improvements0.0130611%/0.000656336%; still11.8023%/11.5242% above PBD full-network U. Active improves vs PBD while UVmass/H1/global residual are worse; report does not conflate them.",
+    "visual": "Actually viewed stationarity, finalv2 decision, c20 mechanical fields and c20 signed UV errors. FEM-first method labels/shared row scales correct; active log10(cellmean) displayfloor1e-12 explicit and metrics unchanged. Six figure sidecars validator passed.",
+    "visual_only_difference": "v1/v2 states and metrics rows verified exactly identical; only active rendering/sidecar changed.",
+    "claims": "Final report/Obsidian explicitly distinguish c1 strict actual miss from c20 numerical retained-energy-span closure, 388/387 per component and776/774 total, no full-network capacity/physical teacher/whole-trajectory claim, no supervised field-error lower-bound claim."
+  },
+  "states": [
+    {
+      "cycle": 1,
+      "actual_gradient_inf": 1.763519822794296e-10,
+      "conditioned_gradient_inf": 1.0725361571095604e-14,
+      "actual_stationarity_closed": false
+    },
+    {
+      "cycle": 20,
+      "actual_gradient_inf": 3.346103873581169e-11,
+      "conditioned_gradient_inf": 1.1308662339892805e-14,
+      "actual_stationarity_closed": true
+    }
+  ],
+  "blockers": [],
+  "not_performed": [
+    "No SSH",
+    "No new producer evaluation or optimization",
+    "No source modification",
+    "No new budget/threshold"
+  ]
+}
