@@ -1,0 +1,61 @@
+{
+  "channel": "independent read-only Codex subagent",
+  "reviewer": "/root/loss_weight_readonly_review",
+  "model_selection": "inherited parent; no override; no separate backend attestation",
+  "question": "Does the minimal no-update arithmetic-path design distinguish coefficient/weighting/aggregation and implementation risks without changing original tolerance or claiming FP64/FD alone proves no bug?",
+  "material_access": "Reviewer explicitly confirmed reading both snapshot design files and actual diagnostics, runner, network, mapper, field and Q4 energy source locally. No numerical execution, edits or producer operations.",
+  "provided_material": [
+    {
+      "path": "docs/research/S04/S04-E011/gradient_arithmetic_verification_20261018.md",
+      "snapshot": "1c02fff598298d3891557677fb51dc01f9896837",
+      "bytes": 16409,
+      "sha256": "6d9f911df779e5c3e04ba1adaf6361ad7a661485e30052416bd22cb1bb807adc"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/gradient_arithmetic_verification_20261018.json",
+      "snapshot": "1c02fff598298d3891557677fb51dc01f9896837",
+      "bytes": 2455,
+      "sha256": "1dcf8649d8b7fbbc36cd214cfd06a28743f79558dba446768a7d77950230a0b8"
+    }
+  ],
+  "rounds": [
+    {
+      "snapshot": "e13223c6c9338ec2c1f256c744fe922ba0fb8bd2",
+      "verdict": "MODIFY_AND_REREVIEW",
+      "blockers": [
+        "Ordinary central FD at map kinks does not verify selected derivative; define FP64-origin branch-local extension",
+        "Explicit runtime FP32 Tensor promotion and Python scalar construction/conversion rules"
+      ]
+    },
+    {
+      "snapshot": "1c02fff598298d3891557677fb51dc01f9896837",
+      "verdict": "REVIEW_PASS_SCOPED_TO_DESIGN",
+      "resolved": [
+        "FP64-origin fixed-branch local-extension FD with primitive value/selected-slope checks from saved operands; no extra forward/VJP",
+        "Runtime FP32 Tensor exact widening vs same Python binary64 constants/order/conversion points",
+        "Baseline mismatch is a state/numerical-settings gap, not alone proof of wrong input identity"
+      ]
+    }
+  ],
+  "verdict": "REVIEW_PASS_SCOPED_TO_DESIGN",
+  "confirmed": [
+    "Original D/P/N/M/U/Q routes and cross-dtype branch records retained",
+    "Original atol1e-6/rtol1e-4 and save-before-judgment retained",
+    "FP32 22 reverse plus FP64 12 reverse; 34 total reverse and14 total forward",
+    "Node tuple read together; no hidden FP64 node bridge",
+    "No reanchoring; FP32 graph released before FP64",
+    "60s completion unknown; stop and preserve valid prefix; no retries",
+    "No optimizer/history/FEM or two-arm training authorization"
+  ],
+  "answer_retrieval": "Completed reviewer responses received in current task for both rounds; concise content retained in this receipt",
+  "not_certified": [
+    "implementation or Code Ready",
+    "resource admission or60s completion",
+    "numerical root cause",
+    "correctness outside selected local checks",
+    "execution authorization or W0/W25 effects"
+  ],
+  "producer_operations": 0,
+  "new_numeric_evaluations": 0,
+  "after_review_change_scope": "status/review receipt and experiment/Obsidian milestone only; reviewed numeric protocol unchanged"
+}

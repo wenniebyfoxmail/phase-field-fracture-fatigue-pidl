@@ -183,3 +183,23 @@ H3[1,386] is2.53178 times its original allowance; maximum absolute difference
 The magnitude/location question is resolved; numerical guard still fails,
 root cause remains unconfirmed. No tolerance change, beta25/perturbation
 qualification, W0/W25 training, retry or new producer computation follows.
+
+### Arithmetic-path verification design (2026-10-18; preparation only)
+
+[Design v2](gradient_arithmetic_verification_20261018.md) and
+[card](gradient_arithmetic_verification_20261018.json) continue the original
+9-component no-update discrepancy. Native scalar seeds, shared/separate
+weighted VJPs, FP32 node interfaces and full FP64 replay distinguish
+coefficient, weighting and accumulation paths. Two prescribed coordinate
+finite differences target the FP64-origin branch-local extension, not the
+global piecewise objective; runtime Tensor and Python-scalar identity are
+explicit. Proposed cap60s/22GiB, <=34reverse and14forward, no optimizer,
+history commits or FEM. Original1e-6/1e-4 guard and failed evidence retained.
+
+Independent read-only design review required two revisions, then passed v2
+1c02fff5 in its bounded design scope;
+[review receipt](runs/gradient_arithmetic_verification_design_review_20261018.json).
+No new diagnostic runner has been implemented, no numerical evaluation
+or producer invocation occurred, and no root cause or Code Ready is claimed.
+Next: implement the diagnostic-only runner and review its exact code/package
+before any separately authorized execution. W0/W25 training remains closed.

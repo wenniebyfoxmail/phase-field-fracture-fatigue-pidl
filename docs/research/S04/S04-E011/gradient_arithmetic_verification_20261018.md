@@ -194,4 +194,5 @@ native-seed与postscale的区分、参数布局和故意漏项能被发现；只
 v1 `e13223c6` 经独立只读Codex设计审核为MODIFY_AND_REREVIEW：
 将普通全局FD替换为上述明确的局部分支延拓；补齐原运行时Tensor提升和Python标量的来源/转换规则。
 同时明确能量不复现不单独证明输入身份错误。调用上限34 reverse /14 forward保持不变；
-局部原语核验不得暗增NN forward或VJP。v2等待这两处风险的焦点复审，仍未实施或执行。
+局部原语核验不得暗增NN forward或VJP。v2已获焦点复审REVIEW_PASS_SCOPED_TO_DESIGN，绑定`1c02fff598298d3891557677fb51dc01f9896837`；
+没有剩余设计阻碍。仍未实施或执行，不能升级为Code Ready、根因确认或运行许可。

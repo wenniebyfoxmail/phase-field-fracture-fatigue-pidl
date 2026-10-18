@@ -1,6 +1,6 @@
 {
   "protocol": "s04-e011-gradient-arithmetic-verification-design-v2-20261018",
-  "status": "DESIGN_REVISED_PENDING_FOCUSED_REVIEW",
+  "status": "DESIGN_REVIEWED_NOT_CODE_READY",
   "stage": "design only; no new runner or numerical execution",
   "owner_experiment": "S04-E011",
   "claim_class": "C1 evidence-validity",
@@ -63,6 +63,13 @@
         "runtime tensor and Python scalar promotion rules"
       ],
       "numeric_execution": false
+    },
+    {
+      "snapshot": "1c02fff598298d3891557677fb51dc01f9896837",
+      "verdict": "REVIEW_PASS_SCOPED_TO_DESIGN",
+      "scope": "v2 risk-focused design rereview; unchanged v1 source review retained",
+      "numeric_execution": false
     }
-  ]
+  ],
+  "review_receipt": "runs/gradient_arithmetic_verification_design_review_20261018.json"
 }
