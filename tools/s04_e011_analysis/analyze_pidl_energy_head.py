@@ -14,7 +14,7 @@ BASE=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/exper
 OLD=BASE/'runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/retrieved/archive/output'
 
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--run',type=Path,required=True);a=ap.parse_args();out=a.run/'analysis';out.mkdir(exist_ok=True)
+ ap=argparse.ArgumentParser();ap.add_argument('--run',type=Path,required=True);a=ap.parse_args();out=a.run/'analysis';out.mkdir(exist_ok=False)
  worker=a.run/'retrieved/archive/output';op,_=independent_operator(ROOT);rows=[];states=[]
  for cycle in [1,20]:
   rp=worker/f'c{cycle}_s4/result.json'
@@ -34,7 +34,8 @@ def main():
    r=dict(cycle=cycle,substep=4,method=name,E_el=q['E_el'],elastic_excess=q['E_el']/ref['E_el']-1,free_u_l2=q['independent_free_u_l2'],uv_mass_rel_L2=float(np.sqrt(np.sum(mass*((f['u']-fem['u'])**2+(f['v']-fem['v'])**2))/den)),uv_H1_rel=float(np.sqrt(np.sum(w*((q['gu']-ref['gu'])**2+(q['gv']-ref['gv'])**2).sum(2))/hden)))
    rows.append(r)
   hr=rows[-1];pbd=rows[-2];info=json.loads((worker/f'c{cycle}_s4/result.json').read_text());energy_check=abs(hr['E_el']-info['actual_network']['E_el'])/max(abs(hr['E_el']),1e-30);assert energy_check<1e-9,(cycle,energy_check)
-  delta=1-hr['E_el']/pbd['E_el'];states.append(dict(cycle=cycle,pbd_relative_energy_reduction=delta,primary_directional_screen=bool(delta>=1e-4),independent_energy_relative_discrepancy=energy_check,worker=info))
+  checks={k:abs(hr[k]-info['actual_network'][k])/max(abs(hr[k]),1e-30) for k in ['free_u_l2','uv_mass_rel_L2','uv_H1_rel']};assert max(checks.values())<1e-9,(cycle,checks)
+  delta=1-hr['E_el']/pbd['E_el'];states.append(dict(cycle=cycle,pbd_relative_energy_reduction=delta,primary_directional_screen=bool(delta>=1e-4),independent_energy_relative_discrepancy=energy_check,independent_metric_relative_discrepancies=checks,worker=info))
   # Every prescribed state and every scored mechanical candidate, no example selection.
   fig,axs=plt.subplots(3,4,figsize=(15,10),layout='constrained');polygons=inp['nodes'][c]
   for ir,(quantity,label) in enumerate([('u','horizontal u'),('v','vertical v'),('active','active energy')]):
