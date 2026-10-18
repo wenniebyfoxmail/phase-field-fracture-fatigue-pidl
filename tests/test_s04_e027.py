@@ -92,6 +92,21 @@ class Tests(unittest.TestCase):
         lu, ld = p.supervised_components(q, ids)
         torch.testing.assert_close(lu+ld, p.supervised(q, ids))
 
+    def test_diagnostic_nonpositive_energy_is_na_without_stopping_sc(self):
+        p = m.Problem(fixture()); net = torch.nn.Linear(2, 3).double()
+        original = p.parts
+        def negative_total(*args):
+            ee, ed, eh, raw, active = original(*args)
+            return ee, -1-ee-eh, eh, raw, active
+        with patch.object(p, "parts", side_effect=negative_total):
+            result = diagnostics(p, net, .1)
+            self.assertLessEqual(result["total_energy"], 0)
+            self.assertIsNone(result["losses"]["L_P"])
+            self.assertIsNone(result["parameter_gradient_l2"]["L_P"])
+            self.assertIsNotNone(result["L_P_NA_reason"])
+            with self.assertRaisesRegex(ValueError, "nonpositive"):
+                m.physical_loss(p, m.fields(net, p.xy), net)
+
     def test_clone_nonempty_adam_without_step(self):
         net = torch.nn.Linear(2, 3).double()
         opt = torch.optim.Adam(net.parameters(), lr=1e-4)

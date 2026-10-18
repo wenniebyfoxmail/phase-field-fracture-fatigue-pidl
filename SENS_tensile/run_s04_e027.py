@@ -146,15 +146,22 @@ def diagnostics(problem, model, normalizer):
     q = method.fields(model, problem.xy)
     lu, ld = problem.supervised_components(q, problem.sample(torch.Generator().manual_seed(1)))
     lm = method.mechanical_loss(problem, q, normalizer)
-    lp = method.physical_loss(problem, q, model)
+    energy = method.finite(sum(problem.parts(*q.unbind(1))[:3]), "diagnostic total energy")
+    # A P-only log-domain restriction must not become an S/C validity gate.
+    lp = method.physical_loss(problem, q, model) if energy > 0 else None
     components = dict(L_U=lu, L_D=ld, L_mech=lm, L_P=lp)
     norms = {}
     params = tuple(model.parameters())
     for key, loss in dict(components, L_sup=lu+ld, C_mech_weighted=.1*lm).items():
+        if loss is None:
+            norms[key] = None
+            continue
         grads = torch.autograd.grad(loss, params, retain_graph=True, allow_unused=True)
         norm = torch.sqrt(sum(g.square().sum() for g in grads if g is not None))
         norms[key] = float(method.finite(norm, "component gradient").detach())
-    return dict(losses={k: float(method.finite(v, k).detach()) for k, v in components.items()},
+    return dict(losses={k: None if v is None else float(method.finite(v, k).detach()) for k, v in components.items()},
+                total_energy=float(energy.detach()),
+                L_P_NA_reason="nonpositive energy; P log objective undefined" if lp is None else None,
                 parameter_gradient_l2=norms, sample="fixed seed1 mass-sampled 2048 global + 2048 Z")
 
 
