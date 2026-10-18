@@ -96,3 +96,24 @@ Next recommendation is design synthesis from frozen E025/E026 records,
 coordinated with the separate coupling question, not duplicate computation.
 Main-chat result checks only, no independent result review claimed.
 Evidence: [R001 result](S04-E026/R001_result_20261018.md).
+
+## 2026-10-18 — E025/E026 representation synthesis, no new computation
+
+The one-column proxy interaction and late-only loss weighting both miss the
+viewed U0.11 late criterion. This does not establish MOO conflict, insufficient
+whole-network capacity, or displacement–damage coupling as the causal source.
+The32-feature corrector has local/lag/neighborhood/global state information but
+no explicit displacement/strain tensor or equilibrium constraint; its raw-only
+output is not fed back to PINN/damage/history. These are structural limitations,
+not measured feature insufficiency or causal attribution. A direct ridge solve
+also must not be described as a stalled nonlinear residual-head optimizer.
+
+Design disposition: no additional weight/proxy sweep or residual fit now.
+Reuse the separately owned, already prepared c1s4 fixed-d same-energy UV-head
+diagnostic as one upstream component question; do not create a duplicate run.
+It can witness fixed-feature displacement optimization opportunity, not validate
+the32-feature residual representation or explain late cross-Umax transfer.
+Its old r1 resource-precheck stop had zero scientific computation; a revised
+card remains that owner's/user's decision. No new data/SSH/fit/confirmation
+access in this synthesis. Main chat alone updates the residual Obsidian note.
+See [design synthesis](S04-E026/post_E025_E026_representation_review_v1_20261018.md).
