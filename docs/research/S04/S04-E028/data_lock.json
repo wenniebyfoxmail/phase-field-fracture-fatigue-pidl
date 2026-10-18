@@ -1,0 +1,58 @@
+{
+  "protocol": "S04-E028/v1-active-anchor-current-lower-20261018",
+  "reference_lock": {
+    "protocol": "S04-E027/v1-source-faithful-P-20261018",
+    "root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved",
+    "payloads": {
+      "mesh": {
+        "relative": "inputs/common_common_initial.mat",
+        "bytes": 32927359,
+        "sha256": "59a0f81368d0c46a698f94fdfcb32158e96361714d7547f00deed996d4a7c181"
+      },
+      "predecessor": {
+        "relative": "inputs/c0020_s003_post_commit.mat",
+        "bytes": 32000094,
+        "sha256": "c242202960ae1da66d234d8646b12f69e6bab3bd4a119daa1811391e2efc5683"
+      },
+      "case": {
+        "relative": "output/mcs/c20_s4/case.mat",
+        "bytes": 107596994,
+        "sha256": "315e2dc00cd57668bc287af6619b33846dc5273f21c124b6d6f84aa10ed62c48"
+      },
+      "reference": {
+        "relative": "output/mcs/c20_s4/outer_18.mat",
+        "bytes": 24195415,
+        "sha256": "31ab8a56c6485da0ead9b28abcb3f6e6f8973e7eadcd12b6acaed6ade5479483"
+      }
+    },
+    "initializer": {
+      "producer_path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_98.pt",
+      "producer_commit": "ad749c8bbba8120b3961add989b11427fab86254",
+      "sha256": "e0acd981b8c6d69be9b88d676088b8a026448ee24f28ec231ecdd5c266edd69f",
+      "bytes": 4510197,
+      "status": "REMOTE_LOCAL_SIZE_SHA256_MATCH; original exact file; not deserialized; no resource preflight or training",
+      "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027/initializer_retrieval_20261018T121735823711Z/trained_1NN_98.pt",
+      "producer_hostname": "GPUServer8",
+      "identity_receipt": "initializer_retrieval_20261018.json"
+    }
+  },
+  "parent_run": "pf_s04e027_three_arm_v1_20261018",
+  "parent_remote_output": "/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018/output",
+  "parent_payloads": {
+    "S_1500.pt": {
+      "relative": "S_1500.pt",
+      "bytes": 9009653,
+      "sha256": "ef2be905167b6e26be3de5778a42e5043ddebd96610e06b1f39f4106ffca8f0b"
+    },
+    "initial_state.pt": {
+      "relative": "initial_state.pt",
+      "bytes": 9022427,
+      "sha256": "d2bd053a2c6aa8c8264f99c2db0585889662d821ccd04ecbba826dc46f5c5b21"
+    },
+    "predictions.npz": {
+      "relative": "predictions.npz",
+      "bytes": 7369957,
+      "sha256": "b715182bd058d789e1949f19fe0f626c5929dc82a54afb7aaaba2f556ac9ac6d"
+    }
+  }
+}

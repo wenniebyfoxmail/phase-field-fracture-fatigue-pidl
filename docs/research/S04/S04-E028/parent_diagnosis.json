@@ -1,0 +1,201 @@
+{
+  "scope": "post-hoc endpoint algebra on already exposed scored outputs; not causal optimizer experiment",
+  "source_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027/runs/pf_s04e027_three_arm_v1_20261018",
+  "milestones": [
+    {
+      "arm": "P",
+      "step": 0,
+      "active": 0.2840885942769706,
+      "uv_Z": 0.007328898336258461,
+      "d_Z": 0.014987823607329392,
+      "raw_Z": 12.664533802418667,
+      "L_U": 0.0002749591887030269,
+      "L_D": 0.00020074822145716873,
+      "L_mech": 0.9999999999999998,
+      "grad_sup": 0.6155225028230813,
+      "weighted_mech_over_sup": 145.49525170952745
+    },
+    {
+      "arm": "P",
+      "step": 1000,
+      "active": 1.2085324209780146,
+      "uv_Z": 0.03572665699517923,
+      "d_Z": 0.0618071577505562,
+      "raw_Z": 26.358595255405447,
+      "L_U": 0.001452797268646819,
+      "L_D": 0.00341349513612519,
+      "L_mech": 17.95773489270384,
+      "grad_sup": 1.979116538223935,
+      "weighted_mech_over_sup": 101.98967793889041
+    },
+    {
+      "arm": "P",
+      "step": 1500,
+      "active": 2.1267007668293454,
+      "uv_Z": 0.057354475642228356,
+      "d_Z": 0.18693010182684933,
+      "raw_Z": 25.523663098276423,
+      "L_U": 0.0036541354249760415,
+      "L_D": 0.02177562956985797,
+      "L_mech": 23.19559705312314,
+      "grad_sup": 2.9170614597418103,
+      "weighted_mech_over_sup": 95.77860352623168
+    },
+    {
+      "arm": "S",
+      "step": 1000,
+      "active": 1.8588242322443067,
+      "uv_Z": 0.007707456308891095,
+      "d_Z": 0.011713470126276023,
+      "raw_Z": 10.817050604207486,
+      "L_U": 4.882900470153918e-05,
+      "L_D": 0.00012380059501604712,
+      "L_mech": 28.520341810855644,
+      "grad_sup": 0.5799654531656584,
+      "weighted_mech_over_sup": 2321.927067954144
+    },
+    {
+      "arm": "S",
+      "step": 1500,
+      "active": 0.8499168086865116,
+      "uv_Z": 0.0074793233580972935,
+      "d_Z": 0.013485368371254221,
+      "raw_Z": 9.872791878579669,
+      "L_U": 7.012068558942959e-05,
+      "L_D": 0.00013093255986417547,
+      "L_mech": 22.70091505544048,
+      "grad_sup": 0.2979174624435837,
+      "weighted_mech_over_sup": 2557.6852211769315
+    },
+    {
+      "arm": "C",
+      "step": 1500,
+      "active": 0.809411706672311,
+      "uv_Z": 0.08580761749990237,
+      "d_Z": 0.12785574164868113,
+      "raw_Z": 27.266011306772874,
+      "L_U": 0.019415851911194666,
+      "L_D": 0.01199113515990673,
+      "L_mech": 0.5014221265992777,
+      "grad_sup": 6.166972999921871,
+      "weighted_mech_over_sup": 0.8405180571705193
+    }
+  ],
+  "endpoint_breakdown": {
+    "P": {
+      "active_error": 2.126700766829345,
+      "algebra_identity_max_gap": 3.3072503069497827e-15,
+      "hybrid_free_force": {
+        "own": 0.02616677866848845,
+        "own_uv_FEM_d": 0.06325875229491892,
+        "FEM_uv_own_d": 0.0012890257565486855
+      },
+      "raw_only_with_FEM_damage": 21.037566263370646,
+      "damage_only_with_FEM_uv": 0.7917897363723224,
+      "product_cross": 20.605387985261686,
+      "pair_inner_products_normalized": [
+        [
+          442.57919428571086,
+          -8.778288584694094,
+          -431.3709116254101
+        ],
+        [
+          -8.778288584694094,
+          0.6269309866245518,
+          8.516558638169462
+        ],
+        [
+          -431.3709116254101,
+          8.516558638169462,
+          424.5820140231667
+        ]
+      ],
+      "full_uv_gradient_error_RMS": 1.6369040841100766,
+      "zone_uv_gradient_error_RMS": 1.4041676824368807,
+      "damage_projection_max": 0.049154425366209814
+    },
+    "S": {
+      "active_error": 0.8499168086865113,
+      "algebra_identity_max_gap": 5.10702591327572e-15,
+      "hybrid_free_force": {
+        "own": 0.025886251417046292,
+        "own_uv_FEM_d": 0.025185391565024907,
+        "FEM_uv_own_d": 0.007358356452868563
+      },
+      "raw_only_with_FEM_damage": 0.6114473703717968,
+      "damage_only_with_FEM_uv": 3.478021545717597,
+      "product_cross": 3.0847810280826438,
+      "pair_inner_products_normalized": [
+        [
+          0.3738678867345852,
+          -0.05179159513907934,
+          0.023776191878941096
+        ],
+        [
+          -0.05179159513907934,
+          12.09663387247582,
+          -10.603993181110434
+        ],
+        [
+          0.023776191878941092,
+          -10.603993181110434,
+          9.515873991218612
+        ]
+      ],
+      "full_uv_gradient_error_RMS": 1.144447177501078,
+      "zone_uv_gradient_error_RMS": 0.5641592852126337,
+      "damage_projection_max": 0.17658754520639486
+    },
+    "C": {
+      "active_error": 0.8094117066723112,
+      "algebra_identity_max_gap": 1.5652167062452094e-12,
+      "hybrid_free_force": {
+        "own": 0.0038472395645079774,
+        "own_uv_FEM_d": 0.004985761809198226,
+        "FEM_uv_own_d": 3.4463521491889013
+      },
+      "raw_only_with_FEM_damage": 0.8304767495274317,
+      "damage_only_with_FEM_uv": 1299.5498029590833,
+      "product_cross": 1299.5100457209028,
+      "pair_inner_products_normalized": [
+        [
+          0.6896916315056485,
+          -35.02651828951732,
+          35.00303469911363
+        ],
+        [
+          -35.02651828951732,
+          1688829.6903709925,
+          -1688778.0184388377
+        ],
+        [
+          35.00303469911363,
+          -1688778.018438838,
+          1688726.3589295426
+        ]
+      ],
+      "full_uv_gradient_error_RMS": 1.8268660512449426,
+      "zone_uv_gradient_error_RMS": 1.5574544666713996,
+      "damage_projection_max": 1.0042707059426275
+    }
+  },
+  "current_state_bound": {
+    "state": "c20s4 pre-solve lower equals committed c20s3",
+    "fixed_nodes": 251,
+    "fixed_mask_equal_SENT_geometric_line": true,
+    "previous_min": 0.0,
+    "previous_max": 1.0,
+    "current_target_increment_max": 0.7140247233536476,
+    "target_differs_from_lower_nodes": 4115,
+    "strict_lower_gp_gap": 0.0,
+    "forbidden_lower": "U0 initial or current target; use only locked c20s3 lower",
+    "history_commit": 0
+  },
+  "missing": [
+    "Initial and 1000-step nodal fields are not stored in predictions.npz; no PT inference reconstructed",
+    "Stored parameter gradients are norms only; angles, parameter-block directions, Adam-preconditioned updates and intermediate damage fields unavailable"
+  ],
+  "training": false,
+  "pt_read": false,
+  "new_data": false
+}
