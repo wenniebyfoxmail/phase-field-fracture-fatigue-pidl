@@ -115,6 +115,7 @@ GROWTH_CYCLES = (1, 58, 60, 69, 70)
 NEAR_STAGNANT_CYCLES = (3, 4, 71, 72, 73)
 RESOLUTION_SOURCE_FIELDS = ("producer_package_reviewed_commit", "training_commit")
 PRODUCER_EXECUTION_FILES = (
+    "source/s09_e009_four_arm.py",
     "source/s09_e010_support_amplitude.py",
     "source/s09_e010_runner_integration.py",
     "source/s09_e010_producer.py",
@@ -214,7 +215,11 @@ def _unresolved_projection(config: Mapping[str, Any]) -> dict[str, Any]:
     projected["execution_authorized"] = False
     source = projected["source"]
     source["integration_reviewed_commit"] = "TO_BE_SET_AFTER_EXACT_COMMIT_REVIEW"
-    source["input_packet_sha256"] = "TO_BE_LOCKED_FROM_REVIEWED_PACKET"
+    # The reviewed integration validator already freezes the qualified packet
+    # identity.  Project only the runtime-only producer fields back to their
+    # unresolved form; replacing this value with a placeholder makes every
+    # otherwise valid resolved config fail its own inherited validation.
+    source["input_packet_sha256"] = EXPECTED_PACKET_MANIFEST_SHA256
     for field in RESOLUTION_SOURCE_FIELDS:
         source.pop(field, None)
     projected["producer"]["resolved_environment"] = (
@@ -844,6 +849,7 @@ def run_arm_state_machine(
     steps = logged = 0
     stop_update = 0
     checkpoint_present = False
+    checkpoint_sha256: str | None = None
     state = TERMINAL_EXECUTION_FAILED
     reason: str | None = None
     finite = True
@@ -891,6 +897,7 @@ def run_arm_state_machine(
                     evaluation_updates.append(update)
         adapter.save_checkpoint(checkpoint_partial, UPDATES_PER_ARM)
         _require(checkpoint_partial.is_file(), "checkpoint adapter produced no file")
+        checkpoint_sha256 = sha256_file(checkpoint_partial)
         os.replace(checkpoint_partial, checkpoint_path)
         checkpoint_present = True
         state = TERMINAL_COMPLETED
@@ -922,15 +929,16 @@ def run_arm_state_machine(
     try:
         artifacts = _artifact_hashes(arm_dir, common)
         if checkpoint_present:
-            artifacts["checkpoint_update500.pt"] = sha256_file(checkpoint_path)
+            observed_checkpoint_sha256 = sha256_file(checkpoint_path)
+            _require(observed_checkpoint_sha256 == checkpoint_sha256,
+                     "checkpoint changed after atomic publish")
+            artifacts["checkpoint_update500.pt"] = observed_checkpoint_sha256
     except Exception as error:
         state = TERMINAL_EXECUTION_FAILED
         reason = f"EVIDENCE_CLOSE_FAILED: {type(error).__name__}: {error}"
         checkpoint_present = checkpoint_path.is_file()
         artifacts = {}
         fallback_names = [*common]
-        if checkpoint_present:
-            fallback_names.append("checkpoint_update500.pt")
         unavailable: list[str] = []
         for name in fallback_names:
             path = arm_dir / name
@@ -940,6 +948,21 @@ def run_arm_state_machine(
                 except OSError as fallback_error:
                     unavailable.append(
                         f"{name}={type(fallback_error).__name__}: {fallback_error}")
+        if checkpoint_path.is_file():
+            try:
+                observed_checkpoint_sha256 = hashlib.sha256(
+                    checkpoint_path.read_bytes()).hexdigest()
+                artifacts["checkpoint_update500.pt"] = observed_checkpoint_sha256
+                if observed_checkpoint_sha256 != checkpoint_sha256:
+                    unavailable.append(
+                        "checkpoint_update500.pt=HASH_DRIFT_AFTER_ATOMIC_PUBLISH")
+            except OSError as fallback_error:
+                _require(checkpoint_sha256 is not None,
+                         "published checkpoint has no cached write identity")
+                artifacts["checkpoint_update500.pt"] = checkpoint_sha256
+                unavailable.append(
+                    "checkpoint_update500.pt="
+                    f"{type(fallback_error).__name__}: {fallback_error}")
         if unavailable:
             reason += "; FALLBACK_UNREADABLE_ARTIFACTS: " + " | ".join(unavailable)
     receipt = {
@@ -1164,6 +1187,51 @@ def exact_a25_replay_validity(result: ArmRunResult) -> dict[str, Any]:
     }
 
 
+def _persist_exact_a25_replay_trace(
+    output_dir: Path, trace: Mapping[str, Any],
+) -> None:
+    """Write the replay predicate once, or prove an existing copy is exact."""
+    path = output_dir / "exact_a25_replay_trace.json"
+    payload = canonical_json(trace)
+    if path.exists():
+        _require(path.read_bytes() == payload, "exact A25 replay trace drift")
+    else:
+        _write_new_bytes(path, payload)
+
+
+def _arm_execution_failure(result: ArmRunResult) -> bool:
+    return result.receipt["terminal_state"] == TERMINAL_EXECUTION_FAILED
+
+
+def _failure_completion_receipt(
+    *, config: Mapping[str, Any], error: BaseException, start: float,
+    arm_results: Mapping[str, ArmRunResult],
+    exact_a25_replay_trace: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "run_id": config.get("planned_run_id"),
+        "status": "FAILED",
+        "error_type": type(error).__name__,
+        "error": str(error),
+        "elapsed_seconds": time.time() - start,
+        "training_commit": config.get("source", {}).get("training_commit"),
+        "expected_packet_manifest_sha256":
+            config.get("source", {}).get("input_packet_sha256"),
+        "total_optimizer_steps_completed": sum(
+            result.receipt["optimizer_steps_completed"]
+            for result in arm_results.values()
+        ),
+        "arm_receipts": {
+            arm: result.receipt for arm, result in arm_results.items()
+        },
+        "exact_a25_replay_trace": (
+            None if exact_a25_replay_trace is None
+            else dict(exact_a25_replay_trace)
+        ),
+    }
+
+
 def _scorecard(metrics: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "G": float(metrics["G"]),
@@ -1355,12 +1423,31 @@ def _decision_from_results(
     }
 
 
+def _verify_arm_evidence_integrity(
+    arm_results: Mapping[str, ArmRunResult],
+) -> None:
+    """Re-read every arm receipt and hash before signing shared evidence."""
+    for arm, result in arm_results.items():
+        receipt_path = result.arm_dir / "termination_receipt.json"
+        _require(receipt_path.is_file(), f"missing termination receipt: {arm}")
+        disk_receipt = _parse_strict_json_bytes(receipt_path.read_bytes())
+        _require(disk_receipt == result.receipt,
+                 f"termination receipt changed after arm close: {arm}")
+        artifacts = result.receipt["artifacts"]
+        for name, expected_sha256 in artifacts.items():
+            path = result.arm_dir / name
+            _require(path.is_file(), f"arm artifact missing after close: {arm}/{name}")
+            _require(sha256_file(path) == expected_sha256,
+                     f"arm artifact hash drift after close: {arm}/{name}")
+
+
 def write_shared_evidence(
     *, output_dir: Path, config: Mapping[str, Any],
     arm_results: Mapping[str, ArmRunResult], environment: Mapping[str, Any],
     run_metadata: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Write the full shared evaluator/decision package from exact checkpoints."""
+    _verify_arm_evidence_integrity(arm_results)
     decision = _decision_from_results(arm_results)
     _write_new_json(output_dir / "decision_metrics.json", decision)
 
@@ -1407,7 +1494,7 @@ def write_shared_evidence(
                     writer.writerow({"arm": arm, **{name: row[name] for name in fields[1:]}})
 
     replay_trace = decision["exact_a25_replay_gate"]
-    _write_new_json(output_dir / "exact_a25_replay_trace.json", replay_trace)
+    _persist_exact_a25_replay_trace(output_dir, replay_trace)
 
     import matplotlib.pyplot as plt
     completed = [arm for arm in ARM_ORDER if 500 in arm_results[arm].evaluations]
@@ -1639,6 +1726,8 @@ def _run_producer_snapshots(
     _require(not archive_dir.exists(), "fresh archive root already exists")
     archive_dir.mkdir(parents=False)
     start = time.time()
+    arm_results: dict[str, ArmRunResult] = {}
+    replay_trace: dict[str, Any] | None = None
     try:
         environment = _execution_preflight(
             config=config, output_dir=output_dir, repo_root=repo_root)
@@ -1671,7 +1760,6 @@ def _run_producer_snapshots(
         _write_new_bytes(output_dir / "environment.txt", (
             json.dumps(environment, indent=2, sort_keys=True) + "\n").encode())
         config_sha = sha256_file(resolved_config_path)
-        arm_results: dict[str, ArmRunResult] = {}
         for arm in ARM_ORDER:
             runtime = replace(base_runtime, model=models[arm])
             adapter = TorchArmAdapter(
@@ -1679,9 +1767,13 @@ def _run_producer_snapshots(
                 config_sha256=config_sha)
             arm_results[arm] = run_arm_state_machine(
                 arm=arm, adapter=adapter, arm_dir=output_dir / arm)
-            if arm == ARM_A25 and not exact_a25_replay_validity(
-                    arm_results[arm])["pass"]:
-                raise RuntimeError("REPLAY_VALIDITY_GATE_FAILED")
+            if arm == ARM_A25:
+                replay_trace = exact_a25_replay_validity(arm_results[arm])
+                _persist_exact_a25_replay_trace(output_dir, replay_trace)
+                if not replay_trace["pass"]:
+                    raise RuntimeError("REPLAY_VALIDITY_GATE_FAILED")
+            if _arm_execution_failure(arm_results[arm]):
+                raise RuntimeError(f"ARM_EXECUTION_FAILED: {arm}")
         completion = write_shared_evidence(
             output_dir=output_dir, config=config,
             arm_results=arm_results, environment=environment,
@@ -1690,16 +1782,12 @@ def _run_producer_snapshots(
         _write_new_json(archive_dir / "completion_receipt.json", completion)
         return completion
     except BaseException as error:
-        failure = {
-            "schema_version": SCHEMA_VERSION,
-            "run_id": config.get("planned_run_id"),
-            "status": "FAILED",
-            "error_type": type(error).__name__,
-            "error": str(error),
-            "elapsed_seconds": time.time() - start,
-            "training_commit": config.get("source", {}).get("training_commit"),
-            "expected_packet_manifest_sha256":
-                config.get("source", {}).get("input_packet_sha256"),
-        }
+        failure = _failure_completion_receipt(
+            config=config,
+            error=error,
+            start=start,
+            arm_results=arm_results,
+            exact_a25_replay_trace=replay_trace,
+        )
         _write_new_json(archive_dir / "completion_receipt.json", failure)
         raise

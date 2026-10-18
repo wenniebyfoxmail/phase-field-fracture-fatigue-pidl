@@ -19,13 +19,24 @@ from s09_e010_producer import (
     GROWTH_CYCLES,
     HARD_CONSTRAINT_KEYS,
     NEAR_STAGNANT_CYCLES,
+    PRODUCER_EXECUTION_FILES,
+    _arm_execution_failure,
     _conditional_physics_axis,
+    _failure_completion_receipt,
     _load_e009_reference,
+    _persist_exact_a25_replay_trace,
     _protocol_contract_sha256,
+    _unresolved_projection,
+    _verify_arm_evidence_integrity,
     exact_a25_replay_validity,
     run_arm_state_machine,
 )
-from s09_e010_runner_integration import EVALUATION_UPDATES, EXPECTED_CYCLES
+from s09_e010_runner_integration import (
+    EVALUATION_UPDATES,
+    EXPECTED_CYCLES,
+    EXPECTED_PACKET_SHA256,
+    validate_integration_config,
+)
 from s09_e010_support_amplitude import ARM_A25, ARM_B0, ARM_B25
 from s09_stage0a_p1_packet import sha256_file
 
@@ -149,6 +160,7 @@ class MockAdapter:
 def test_protocol_and_frozen_reference_identities_are_bound():
     assert _protocol_contract_sha256(PROTOCOL) == EXPECTED_PROTOCOL_CONTRACT_SHA256
     assert sha256_file(producer.E009_REFERENCE_PATH) == EXPECTED_E009_REFERENCE_SHA256
+    assert "source/s09_e009_four_arm.py" in PRODUCER_EXECUTION_FILES
 
 
 def test_state_machine_completes_exact_500_update_schedule(tmp_path):
@@ -167,6 +179,86 @@ def test_state_machine_preserves_post_step_failure_count(tmp_path):
     assert result.receipt["stop_update"] == 17
     assert result.receipt["optimizer_steps_completed"] == 17
     assert result.receipt["fully_logged_updates"] == 16
+
+
+def test_resolved_projection_preserves_reviewed_packet_identity():
+    config_path = (
+        ROOT / "docs/research/S09/S09-E010/runner_integration_config_20261018.json"
+    )
+    base_path = (
+        ROOT / "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json"
+    )
+    projected = _unresolved_projection(json.loads(config_path.read_text()))
+    assert projected["source"]["input_packet_sha256"] == EXPECTED_PACKET_SHA256
+    validate_integration_config(
+        projected, base_config_path=base_path, synthetic_test_adapter=False)
+
+
+def test_unreadable_checkpoint_writes_failed_receipt(monkeypatch, tmp_path):
+    original_sha256_file = producer.sha256_file
+    original_read_bytes = Path.read_bytes
+
+    def fail_checkpoint_sha(path):
+        if Path(path).name == "checkpoint_update500.pt":
+            raise OSError("checkpoint cannot be read")
+        return original_sha256_file(path)
+
+    def fail_checkpoint_fallback(path):
+        if path.name == "checkpoint_update500.pt":
+            raise OSError("checkpoint still cannot be read")
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(producer, "sha256_file", fail_checkpoint_sha)
+    monkeypatch.setattr(Path, "read_bytes", fail_checkpoint_fallback)
+    result = run_arm_state_machine(
+        arm=ARM_B25, adapter=MockAdapter(), arm_dir=tmp_path / "B25")
+    assert result.receipt["terminal_state"] == "EXECUTION_FAILED"
+    assert result.receipt["update500_checkpoint_present"] is True
+    assert "checkpoint_update500.pt" in result.receipt["artifacts"]
+    assert "FALLBACK_UNREADABLE_ARTIFACTS" in result.receipt["reason"]
+    assert (result.arm_dir / "checkpoint_update500.pt").is_file()
+    assert (result.arm_dir / "termination_receipt.json").is_file()
+
+
+def test_shared_evidence_rejects_post_receipt_arm_artifact_drift(tmp_path):
+    result = run_arm_state_machine(
+        arm=ARM_B0, adapter=MockAdapter(), arm_dir=tmp_path / "B0")
+    train_path = result.arm_dir / "train_log.jsonl"
+    train_path.write_bytes(train_path.read_bytes()[:-1])
+    with pytest.raises(ValueError, match="arm artifact hash drift after close"):
+        _verify_arm_evidence_integrity({ARM_B0: result})
+
+
+def test_execution_failure_stops_later_arms_but_method_inapplicable_does_not(
+    tmp_path,
+):
+    failed = run_arm_state_machine(
+        arm=ARM_B25, adapter=MockAdapter(fail_at=17), arm_dir=tmp_path / "failed")
+    assert _arm_execution_failure(failed) is True
+    failed.receipt["terminal_state"] = "METHOD_INAPPLICABLE"
+    assert _arm_execution_failure(failed) is False
+
+
+def test_replay_trace_is_persisted_before_failure_and_bound_to_failure_receipt(
+    tmp_path,
+):
+    result = _reference_result(tmp_path)
+    result.evaluations[500]["aggregate"]["G"] += 1e-6
+    trace = exact_a25_replay_validity(result)
+    assert trace["pass"] is False
+    _persist_exact_a25_replay_trace(tmp_path, trace)
+    stored = json.loads((tmp_path / "exact_a25_replay_trace.json").read_text())
+    assert stored == trace
+    result.receipt["optimizer_steps_completed"] = 500
+    receipt = _failure_completion_receipt(
+        config={"planned_run_id": "run", "source": {}},
+        error=RuntimeError("REPLAY_VALIDITY_GATE_FAILED"),
+        start=0.0,
+        arm_results={ARM_A25: result},
+        exact_a25_replay_trace=trace,
+    )
+    assert receipt["exact_a25_replay_trace"] == trace
+    assert receipt["total_optimizer_steps_completed"] == 500
 
 
 def _reference_result(tmp_path):
