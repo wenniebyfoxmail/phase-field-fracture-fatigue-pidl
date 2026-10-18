@@ -646,3 +646,18 @@
   about494GiB free. No archive numerical content, real/held arrays, tests,
   imports, factors, plots or B002/C/D run. Packet awaits exact user approval;
   independent numerical/visual acceptance is not bundled into producer scope.
+
+- **2026-10-18 — B002 executed once; warning-stop propagation failed, outputs quarantined.**
+  Exact user-approved synthetic command at cleanruntimea01c55b7/sourceab6f123a;
+  preflight five SHA unchanged, fresh absent output, no symlink. Session57800
+  emitted a Matplotlib font-cache WARNING ->RuntimeError in timer Thread-1.
+  Handler exception stopped only that thread; main continued and wrote success
+  markers, exit0/self elapsed14.636742583s, receipt1SVD/2QR. On detection, scoped
+  ps found no matching live process, so no stop signal was sent or retry made.
+  This violates the unexempted first-warning stop rule; not a clean resource
+  PASS despite exit0. Original artifacts and completion remain unchanged as
+  quarantined evidence; no report/NPZ/image numerical/visual acceptance. Only
+  receipt/completion metadata read, no real/held reads or C/D. See
+  S03-E019/underflow_b002_results.md. Budget not the observed first blocker;
+  next proposed lever is source/artificial-only cross-thread warning propagation
+  protection design/review, not numeric tolerance changes or automatic rerun.
