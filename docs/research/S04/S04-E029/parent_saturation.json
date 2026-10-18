@@ -1,0 +1,93 @@
+{
+  "scope": "post-hoc exact saved model forward and true map derivative; no optimization/FEM/history commit",
+  "source_commit": "d8c21d021d715fef687d11edc7ca1993acc25f5c",
+  "source_dirty": "",
+  "variable_nodes": 86465,
+  "target_growth_nodes": 4115,
+  "states": {
+    "S0": {
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018/output/S_1500.pt",
+      "bytes": 9009653,
+      "sha256": "ef2be905167b6e26be3de5778a42e5043ddebd96610e06b1f39f4106ffca8f0b",
+      "variable": {
+        "nodes": 86465,
+        "raw_margin_min": -3.714927452794295,
+        "raw_margin_median": -1.407906922905795,
+        "raw_margin_max": 2.543459354202417,
+        "below_lower_fraction": 0.9929682530503672,
+        "nonzero_true_derivative_fraction": 0.006013994101659631,
+        "derivative_min": 0.0,
+        "derivative_max": 0.25,
+        "damage_increment_max": 0.6358648385506043
+      },
+      "target_growth": {
+        "nodes": 4115,
+        "raw_margin_min": -1.404099449246225,
+        "raw_margin_median": -0.290459408728891,
+        "raw_margin_max": 2.543459354202417,
+        "below_lower_fraction": 0.9132442284325638,
+        "nonzero_true_derivative_fraction": 0.0660996354799514,
+        "derivative_min": 0.0,
+        "derivative_max": 0.25,
+        "damage_increment_max": 0.6358648385506043
+      },
+      "global_damage_equals_lower": false
+    },
+    "B200": {
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e028_active_anchor_v1_20261018T2037Z/output/B_200.pt",
+      "bytes": 27037775,
+      "sha256": "76d22015f0bf9439225e537e6ce3410ecf2436625391125281f48ba7282eb406",
+      "variable": {
+        "nodes": 86465,
+        "raw_margin_min": -47.0615639189431,
+        "raw_margin_median": -24.11990223893949,
+        "raw_margin_max": -16.73336267924108,
+        "below_lower_fraction": 1.0,
+        "nonzero_true_derivative_fraction": 0.0,
+        "derivative_min": 0.0,
+        "derivative_max": 0.0,
+        "damage_increment_max": 0.0
+      },
+      "target_growth": {
+        "nodes": 4115,
+        "raw_margin_min": -33.02885963955673,
+        "raw_margin_median": -21.85110670733827,
+        "raw_margin_max": -16.73336267924108,
+        "below_lower_fraction": 1.0,
+        "nonzero_true_derivative_fraction": 0.0,
+        "derivative_min": 0.0,
+        "derivative_max": 0.0,
+        "damage_increment_max": 0.0
+      },
+      "global_damage_equals_lower": true
+    },
+    "R200": {
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e028_active_anchor_v1_20261018T2037Z/output/R_200.pt",
+      "bytes": 27037775,
+      "sha256": "390b11eb446b2748504cb0cb175d0a20b0d7a07cf55f4f04e28e6501a6d931ac",
+      "variable": {
+        "nodes": 86465,
+        "raw_margin_min": -46.93809290259553,
+        "raw_margin_median": -23.298844600114677,
+        "raw_margin_max": -15.964027521820604,
+        "below_lower_fraction": 1.0,
+        "nonzero_true_derivative_fraction": 0.0,
+        "derivative_min": 0.0,
+        "derivative_max": 0.0,
+        "damage_increment_max": 0.0
+      },
+      "target_growth": {
+        "nodes": 4115,
+        "raw_margin_min": -31.933931938307108,
+        "raw_margin_median": -21.8543872458587,
+        "raw_margin_max": -15.964027521820604,
+        "below_lower_fraction": 1.0,
+        "nonzero_true_derivative_fraction": 0.0,
+        "derivative_min": 0.0,
+        "derivative_max": 0.0,
+        "damage_increment_max": 0.0
+      },
+      "global_damage_equals_lower": true
+    }
+  }
+}
