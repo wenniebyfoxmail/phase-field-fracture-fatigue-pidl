@@ -1,8 +1,8 @@
 # Attempt S09-E010-A002-core-implementation
 
-- Status: `tested`
+- Status: `accepted`
 - Created: 2026-10-18T13:18:44+01:00
-- Closed: None
+- Closed: 2026-10-18T13:49:53+01:00
 - Type: `core-implementation`
 - Human decision required: False
 
@@ -71,10 +71,10 @@ This is the smallest reviewable layer and keeps Code Ready, Run Ready and scient
 - pass: revised frozen 16-cycle no-step preflight - NO_STEP_PREFLIGHT_PASS; independent max abs differences L_S=2.842170943040401e-14 and L_A=3.469446951953614e-17 under 1e-12; model hash unchanged; optimizer steps 0.
 
 ## Result Interpretation
-Not recorded.
+Exact commit 45d8ec5f158d6fbdc608437f02da4fa43501157f received CORE_CODE_READY_PASS after closing canonical-AUC and frozen-loss-reference blockers; this is Code Ready core evidence only.
 
 ## Claim After Attempt
-Not recorded.
+The S09-E010 support/amplitude numerical core is independently code-reviewed and ready for runner/config/evidence integration without training.
 
 ## Next Action
-Not recorded.
+Implement runner/config/evidence integration from exact commit 45d8ec5f158d6fbdc608437f02da4fa43501157f, keep it no-step, and submit a separate exact-commit review before any execution.

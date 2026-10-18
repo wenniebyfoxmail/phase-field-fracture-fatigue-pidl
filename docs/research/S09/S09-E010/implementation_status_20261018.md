@@ -2,7 +2,7 @@
 
 ## Current state
 
-`CORE_IMPLEMENTATION_REVISION__AWAITING_EXACT_COMMIT_REREVIEW`
+`CORE_CODE_READY_PASS`
 
 The design-reviewed per-cycle support loss, amplitude loss, B0/B25 projected
 gradient rule, exact E009 A25 control and cumulative result classifier are now
@@ -13,7 +13,8 @@ The first exact-commit review returned `REVISE_AND_REREVIEW` for two narrow
 issues: accepted AUC floats were not canonicalised from their validated pair
 counts before the inherited E009 threshold, and the frozen-packet preflight
 did not independently recompute `L_S/L_A`. Both are repaired locally and the
-candidate now awaits review of a new exact commit.
+focused rereview returned `CORE_CODE_READY_PASS` for exact commit
+`45d8ec5f158d6fbdc608437f02da4fa43501157f`.
 
 ## Implemented contract
 
@@ -76,8 +77,8 @@ active only after the prediction leaves zero.
 
 ## Boundary and next gate
 
-This establishes a revised local core candidate. It is not Code Ready, Run
-Ready or scientific evidence. The new exact commit must receive independent
-focused rereview before runner/config/evidence integration. A producer run
-requires a separate reviewed run card and direct authorisation for that E010
-execution.
+This establishes a reviewed Code Ready numerical core. It is not runner
+integration, Run Ready or scientific evidence. The allowed next gate is
+runner/config/evidence integration with continued no-training verification. A
+producer run requires later reviewed execution machinery, a frozen run card
+and direct authorisation for that E010 execution.
