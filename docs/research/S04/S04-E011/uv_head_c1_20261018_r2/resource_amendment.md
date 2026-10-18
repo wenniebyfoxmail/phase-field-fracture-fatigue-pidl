@@ -52,6 +52,9 @@ whitelist is invented. New GPU3 selection is explicit, never an automatic fallba
 ## r2 exact admission and owned-job stop
 
 Physical GPU3 must map to UUID GPU-ea68e432-5acb-5488-5be1-4ba9a2053beb.
+CUDA_VISIBLE_DEVICES uses that FULL UUID, not ordinal3, so inherited CUDA
+enumeration cannot silently select another physical GPU. Worker cuda:0 is the
+single UUID-selected device; NVML also rechecks physical index3/UUID mapping.
 Exactly one resident process is allowed: PID3295884, root UID tuple,
 start_ticks213283304, exact cmdline/cgroup hashes from the read-only09:58:07UTC
 profile. Current PID alone is insufficient; start time/UID/command/cgroup must

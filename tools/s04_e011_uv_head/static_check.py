@@ -34,6 +34,10 @@ def main():
     assert c['resource_policy']['minimum_initial_free_MiB'] == 12288
     assert c['resource_policy']['minimum_runtime_free_MiB'] == 4096
     assert c['resource_policy']['service']['pid'] == 3295884
+    expected_uuid = 'GPU-ea68e432-5acb-5488-5be1-4ba9a2053beb'
+    assert c['resource_policy']['gpu_uuid'] == expected_uuid
+    guard = (here / 'guard.py').read_text()
+    assert "os.environ.get('CUDA_VISIBLE_DEVICES') != '" + expected_uuid + "'" in guard
     assert c['rcond'] == 1e-10 and c['relative_gain_screen'] == 1e-4
     print('AST and four-file contract checks passed; no payload opened, imported or evaluated')
 

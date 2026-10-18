@@ -163,8 +163,8 @@ def main():
                        approval_ref=args.approval_ref,
                        utc=dt.datetime.now(dt.timezone.utc).isoformat()), claim)
     # An approved invocation consumes the card even if any later preflight fails.
-    if os.environ.get('CUDA_VISIBLE_DEVICES') != '3':
-        raise SystemExit('only approved physical GPU3, no fallback')
+    if os.environ.get('CUDA_VISIBLE_DEVICES') != 'GPU-ea68e432-5acb-5488-5be1-4ba9a2053beb':
+        raise SystemExit('only approved physical GPU3 UUID, no ordinal fallback')
     if command(['git', '-C', str(CODE), 'rev-parse', 'HEAD']) != args.expected_source:
         raise SystemExit('source identity mismatch')
     if command(['git', '-C', str(CODE), 'status', '--porcelain', '--untracked-files=all']):
