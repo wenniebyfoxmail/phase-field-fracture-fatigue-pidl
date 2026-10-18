@@ -1,0 +1,1400 @@
+{
+  "all_support_masks_nonempty": true,
+  "all_three_threshold_counts_identical": true,
+  "base_config_path": "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json",
+  "base_config_sha256": "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b",
+  "claim_boundary": "Read-only implementation evidence on the exposed development packet; not Code Ready, training evidence, holdout evidence or a scientific result.",
+  "core_module_sha256": "8f75aaea3e0106847cf72adc4e4ffb0e1f7220c0af119f2d83d00393ec54aedd",
+  "cycles": [
+    1,
+    2,
+    3,
+    4,
+    21,
+    29,
+    41,
+    46,
+    48,
+    58,
+    60,
+    69,
+    70,
+    71,
+    72,
+    73
+  ],
+  "experiment_id": "S09-E010",
+  "maximum_A25_exact_replay_direction_abs_difference": 0.0,
+  "maximum_B25_minus_B0_preclip_physics_abs_difference": 1.3704315460216776e-16,
+  "model_hash_after": "c537d658000b77f4949236d5cd4ae087d198ce78a306e060982a5557fafc4f73",
+  "model_hash_before": "c537d658000b77f4949236d5cd4ae087d198ce78a306e060982a5557fafc4f73",
+  "optimizer_constructed": false,
+  "optimizer_steps_performed": 0,
+  "packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+  "protocol_path": "docs/research/S09/S09-E010/experiment.md",
+  "protocol_sha256": "c97be5487710f53cd1106d042ecea1871a5e8b85dc8a82f5556ac9b0ebe6dee2",
+  "records": [
+    {
+      "A25_direction_sha256": "a14c279e28b4216cfcf9407f0fb52fd9d8849c7d0990c82b213fd5832e8eb987",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "ef2ffc1ece8804cc7298c9cdc9a2628bebc93cddbe41859c6c9f8711187b28cb",
+      "B25_direction_sha256": "445e79ca6c4132aed4a11866d147d19a76a6a0a74e742609f4a5f6d676164853",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 1.3704315460216776e-16,
+      "L_A": 0.049580826170516075,
+      "L_S": 178.065994376549,
+      "cycle": 1,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 1.5753877254348931,
+        "L_H": 1.4322987010375194,
+        "L_P": 0.7007416366084727,
+        "L_S": 25.607302686335892,
+        "L_U": 0.39428298543148627
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 5224,
+        "tau_1e-14": 5224,
+        "tau_1e-15": 5224
+      },
+      "target_amplitude": 0.00153551822517302
+    },
+    {
+      "A25_direction_sha256": "20b9d89f528b7a69224122cdb8564fb7277394a65a9e889559ca104744769a5c",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "a3c46ad4621b70907981df90abb794e762ff8797837dc36b5c216ef6cadce388",
+      "B25_direction_sha256": "d95cd7ac65c5624b7f9afa3f857bbd47a78e5a7a82a2d5d5d12351f7a279cdd5",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 7.860465750519907e-19,
+      "L_A": 2.769781460587946e-06,
+      "L_S": 0.06271570108272286,
+      "cycle": 2,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.01177520072953426,
+        "L_H": 1.4054507977144055,
+        "L_P": 0.7006817412752707,
+        "L_S": 0.20651756869226107,
+        "L_U": 0.39429213022331067
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 4847,
+        "tau_1e-14": 4847,
+        "tau_1e-15": 4847
+      },
+      "target_amplitude": 1.147680090908525e-05
+    },
+    {
+      "A25_direction_sha256": "f2976042600ab47c7b2ba98857cc4f9d1f226add3635a03d04a3440aee7823b8",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "9569f804df99e9f50e04db64d35a09ab969d12005d18c09c390d3f3829e04063",
+      "B25_direction_sha256": "59b3e2613464e2925633bf9a0f42184e7ec8689c577025dd9494f74e128ca9c7",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 1.7189474873341958e-19,
+      "L_A": 5.540717139635514e-07,
+      "L_S": 0.030257257444293383,
+      "cycle": 3,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.005264793875719272,
+        "L_H": 1.4048976655202534,
+        "L_P": 0.7006329385591115,
+        "L_S": 0.0927825780357212,
+        "L_U": 0.3942976932854753
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 4823,
+        "tau_1e-14": 4823,
+        "tau_1e-15": 4823
+      },
+      "target_amplitude": 5.1331160816129616e-06
+    },
+    {
+      "A25_direction_sha256": "6b8ff29ad7e98cd1646c36066c9286fbf6de4d642d4b2f6c94546d8982bb473f",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "90bb4124f0efb1635492432e33103f74651bfe6c9fcd615ac8cac7c1800f1435",
+      "B25_direction_sha256": "8c263f1a7383a54e7e38467dd33b2e58b3fd632ba6e9db5e511f79099a577868",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 1.4230153513872246e-19,
+      "L_A": 3.831168400902896e-07,
+      "L_S": 0.06088290539555891,
+      "cycle": 4,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.004375410069251698,
+        "L_H": 1.4043064191070371,
+        "L_P": 0.7005814418868331,
+        "L_S": 0.0775933385306157,
+        "L_U": 0.39426152237995
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 4795,
+        "tau_1e-14": 4795,
+        "tau_1e-15": 4795
+      },
+      "target_amplitude": 4.268386296054923e-06
+    },
+    {
+      "A25_direction_sha256": "ed55ed186efe14325faf5b871cbf596f46bb39f4e15b3a2156d98efd5602507f",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "c74db47084ac36319d4bf819b13278c3cb1ddf29335839489fba580b716ac618",
+      "B25_direction_sha256": "ec415659921339b01ac6a37a9434246690718b0cc122474b42ff0ed91cf4ef4c",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 6.867743136337867e-18,
+      "L_A": 0.00032032595331310586,
+      "L_S": 43.18612160926732,
+      "cycle": 21,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.1258419503664682,
+        "L_H": 1.2093507887744703,
+        "L_P": 0.6997971189527785,
+        "L_S": 1.9587472062518652,
+        "L_U": 0.3995145141985614
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 5453,
+        "tau_1e-14": 5453,
+        "tau_1e-15": 5453
+      },
+      "target_amplitude": 0.0001234224489791933
+    },
+    {
+      "A25_direction_sha256": "77643087718afd808af5faf0a1c753a22611f63c896446034e520752543e69fb",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "50180e46c21d9c7b2dfe148c206bc451b26038eb7725bfe7905f239669e2103b",
+      "B25_direction_sha256": "dcdf77f0bde3945d4a696e73fabc3c414abc6884212ecf6f60aeecb96a11636c",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 1.4365678785432934e-18,
+      "L_A": 2.7353824387953448e-05,
+      "L_S": 1.8592749040353695,
+      "cycle": 29,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.036769683724607795,
+        "L_H": 1.1022923452040054,
+        "L_P": 0.6994448739337334,
+        "L_S": 0.5546108506686173,
+        "L_U": 0.4000682184222588
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 5630,
+        "tau_1e-14": 5630,
+        "tau_1e-15": 5630
+      },
+      "target_amplitude": 3.606675943354452e-05
+    },
+    {
+      "A25_direction_sha256": "c55c2f00478264ceaeb01f9bef6b18d98e0c0b5f9ede19ee0bba25641ce4542d",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "7ca054c3006694b7ad33ac905cd48e6a92abb1ef041a6737906ebbcd1edd389b",
+      "B25_direction_sha256": "2b081f6747d660e0fa7d7c8c808b0a677ee9f95b0562aaa790bfb12d96452edf",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 4.87890977618477e-18,
+      "L_A": 5.265378447269526e-05,
+      "L_S": 2.55463261175457,
+      "cycle": 41,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.0510322101280395,
+        "L_H": 0.8725190314492809,
+        "L_P": 0.6988497414216637,
+        "L_S": 0.6487176497036962,
+        "L_U": 0.395402425495862
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 6579,
+        "tau_1e-14": 6579,
+        "tau_1e-15": 6579
+      },
+      "target_amplitude": 5.003949194225041e-05
+    },
+    {
+      "A25_direction_sha256": "ab170e7b0ffd93f860b1bd6da4da9a2fba0be377d61a2c3e53cbbcb6a9fbc595",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "f06077234aa413ac2af8d0afb4cba990f7864d865be1c927738fa39b094f90bd",
+      "B25_direction_sha256": "4a9794da7f17b5c82e031d4303b630b149cb6d8987498e9db6613e691257817a",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 9.324138683375338e-18,
+      "L_A": 0.0005423721572882245,
+      "L_S": 37.01226847406443,
+      "cycle": 46,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.16379737690252108,
+        "L_H": 0.7546978234281821,
+        "L_P": 0.6985357853319262,
+        "L_S": 1.9329301111672341,
+        "L_U": 0.38785233279058234
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 7077,
+        "tau_1e-14": 7077,
+        "tau_1e-15": 7077
+      },
+      "target_amplitude": 0.00016060046165012316
+    },
+    {
+      "A25_direction_sha256": "d50c273cf9ce25071ba40b881efe74ee59511d7f9bc21491bbf636eba0d8007c",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "a542edcc1ec49168147ba0a0bcd7bf5c17c556f3a237d0d11f42596288fc6943",
+      "B25_direction_sha256": "d4225d6cb4de23d08811962d1a814c2aa116649e07be1cac041cfbf0ff7bd584",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 6.627185779317646e-18,
+      "L_A": 0.0005452888477950087,
+      "L_S": 38.64911234399517,
+      "cycle": 48,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.16418042543326172,
+        "L_H": 0.7144798701080014,
+        "L_P": 0.6984026745252082,
+        "L_S": 1.8985471304114845,
+        "L_U": 0.3841263947686247
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 7224,
+        "tau_1e-14": 7224,
+        "tau_1e-15": 7224
+      },
+      "target_amplitude": 0.00016103170961374055
+    },
+    {
+      "A25_direction_sha256": "277167169a23f6f6d16cc81d31adbef8091ad2c06ef9e0af2187be2be78e6493",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "b764c2dfefa708d7a763b8509a8ba7301ab08bd8639e78ae30a43accde4b3172",
+      "B25_direction_sha256": "47e12c424d1bf701b8ed6b30d1bfb4bc97848963a584fff9f07371af6c34db43",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 2.5153490401663703e-17,
+      "L_A": 0.0009093769498664011,
+      "L_S": 54.85000602117065,
+      "cycle": 58,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.21198308141112374,
+        "L_H": 0.4857311882426491,
+        "L_P": 0.6976012547636911,
+        "L_S": 2.200361216897125,
+        "L_U": 0.3419848959522453
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 8060,
+        "tau_1e-14": 8060,
+        "tau_1e-15": 8060
+      },
+      "target_amplitude": 0.00020795533516832965
+    },
+    {
+      "A25_direction_sha256": "6db90ebdab7037a86143f54a6a94658d83718cca15e449894c98175322f93d9b",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "80e7c759a7e9996c87c443293385029ac47948538a079974595332a5bec72479",
+      "B25_direction_sha256": "6b7f4b662a84a87d5f74b89a0b5a1eecadda676d36a2caeb7fbd585a2f627cc0",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 1.0191500421363742e-17,
+      "L_A": 0.0007158435008864372,
+      "L_S": 39.836998288785914,
+      "cycle": 60,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.18817139900469904,
+        "L_H": 0.4381131256256112,
+        "L_P": 0.6973874805317644,
+        "L_S": 1.889362258474869,
+        "L_U": 0.3271391250417674
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 8331,
+        "tau_1e-14": 8331,
+        "tau_1e-15": 8331
+      },
+      "target_amplitude": 0.0001845045748390957
+    },
+    {
+      "A25_direction_sha256": "e72248e9eb5e850e48ec13c49fb5a1fd05630f0da746edb7f2ef8d264677fb09",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "1c4b1f1f0bc427f40bbdf366c2b2a7993fe0ca51f6ca1534cca34ef46e5583d7",
+      "B25_direction_sha256": "245e997705ab1f94e7d86b58ab936bda1a8b6bd4b69e35560ad04f682af6137c",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 9.974659986866641e-18,
+      "L_A": 0.001382581475717914,
+      "L_S": 62.280055759328214,
+      "cycle": 69,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.26171979890731434,
+        "L_H": 0.21366623997635636,
+        "L_P": 0.6962881623875747,
+        "L_S": 2.515263095198355,
+        "L_U": 0.19801253353446693
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 8806,
+        "tau_1e-14": 8806,
+        "tau_1e-15": 8806
+      },
+      "target_amplitude": 0.0002564150209144693
+    },
+    {
+      "A25_direction_sha256": "3087894d4e7614e281186f0044e795838d1276b2479b8ff82a4bdeffd4beb987",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "bd487bc20bd0a3ef0ab3d467dc0c25ec85124056f1d3e2139eb3bef581b521b1",
+      "B25_direction_sha256": "5d79bda09e474b1a199663497447d3495d9d907f3cd1844d32f25f3f48638591",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 2.5587171270657905e-17,
+      "L_A": 0.002211337606779022,
+      "L_S": 125.47201615199798,
+      "cycle": 70,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.3309665183894599,
+        "L_H": 0.09429355494806639,
+        "L_P": 0.6962078113809679,
+        "L_S": 3.5419378452592265,
+        "L_U": 0.0007622925234703426
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 7921,
+        "tau_1e-14": 7921,
+        "tau_1e-15": 7921
+      },
+      "target_amplitude": 0.00032428407498111847
+    },
+    {
+      "A25_direction_sha256": "24f096728865ce8f5f089cd5fc52af14ade7da8531cad57dec628f5cd2010727",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "d5e1745054b034009c2256d8e690b47fd78cca4ed369ee0fa93592766c867a34",
+      "B25_direction_sha256": "9813c42ec1c3762f6b2ad64a6c85d0e8c7e628b93a15a989e155218b04205c1f",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 1.9142944607947188e-19,
+      "L_A": 1.844690154840721e-07,
+      "L_S": 0.03432590994665153,
+      "cycle": 71,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.003021218828914464,
+        "L_H": 0.0765541793294141,
+        "L_P": 0.6961699589923958,
+        "L_S": 0.04800968322758306,
+        "L_U": 0.0007437004255452222
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 5336,
+        "tau_1e-14": 5336,
+        "tau_1e-15": 5336
+      },
+      "target_amplitude": 2.9618278389868456e-06
+    },
+    {
+      "A25_direction_sha256": "adef303acc21d6264589fd8856f1dd3dc3fe486939726c303aabc517f0c70e3b",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "47f6680aaede6e23fc937fc0ac31ce8933b969954460d50f0ebc77626abbb6c3",
+      "B25_direction_sha256": "7f96bf64bc9c6190ca9e05ff3b849eec5f34c079d135a852916d41985d208cf3",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 2.371692252312041e-20,
+      "L_A": 2.7283809115454403e-09,
+      "L_S": 0.00043417318874891265,
+      "cycle": 72,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.00036729955622948356,
+        "L_H": 0.07655577192291278,
+        "L_P": 0.6961662819182347,
+        "L_S": 0.005862720979567375,
+        "L_U": 0.0007634547943652988
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 5313,
+        "tau_1e-14": 5313,
+        "tau_1e-15": 5313
+      },
+      "target_amplitude": 3.6020571340683663e-07
+    },
+    {
+      "A25_direction_sha256": "232f8ef5c27b1cb174a5cc33a3f3ab2e4ebc137817456bece7f89e0ed7c69108",
+      "A25_exact_replay_max_abs_difference": 0.0,
+      "B0_direction_sha256": "1aa7e2c97c83382f6a9bdd1dcce16148d32949988e2ccba0f35139ea57d77668",
+      "B25_direction_sha256": "5823330d49ad41e2796f79760a528dbc2f8fe9bbe6cc2335b92fe2170f0c8866",
+      "B25_minus_B0_preclip_physics_max_abs_difference": 3.218725199566341e-20,
+      "L_A": 2.5255693824682937e-08,
+      "L_S": 0.003183340726098121,
+      "cycle": 73,
+      "global_clip_counts": {
+        "A25": 1,
+        "B0": 1,
+        "B25": 1
+      },
+      "gradient_norms": {
+        "L_A": 0.0,
+        "L_D": 0.0011180688156208552,
+        "L_H": 0.07655363756375612,
+        "L_P": 0.696166957664631,
+        "L_S": 0.017639656960036436,
+        "L_U": 0.0007747601871895141
+      },
+      "gradient_unconnected_parameters": {
+        "L_A": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_D": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_H": [
+          "coarse_block.a.weight",
+          "coarse_block.kernel.0.weight",
+          "coarse_block.kernel.0.bias",
+          "coarse_block.kernel.2.weight",
+          "coarse_block.kernel.2.bias",
+          "coarse_block.b.weight",
+          "coarse_block.local.weight",
+          "coarse_block.local.bias",
+          "coarse_block.norm.weight",
+          "coarse_block.norm.bias",
+          "node_decoder.0.weight",
+          "node_decoder.0.bias",
+          "node_decoder.2.weight",
+          "node_decoder.2.bias"
+        ],
+        "L_P": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_S": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ],
+        "L_U": [
+          "gp_decoder.0.weight",
+          "gp_decoder.0.bias",
+          "gp_decoder.2.weight",
+          "gp_decoder.2.bias"
+        ]
+      },
+      "predicted_amplitude": 0.0,
+      "projected_zero_reasons": {
+        "L_A": "AUXILIARY_NORM_AT_OR_BELOW_EPSILON",
+        "L_H": null,
+        "L_P": null,
+        "L_S": null,
+        "L_U": null
+      },
+      "support_counts": {
+        "strict_positive": 5374,
+        "tau_1e-14": 5374,
+        "tau_1e-15": 5374
+      },
+      "target_amplitude": 1.095917212099676e-06
+    }
+  ],
+  "schema_version": "s09-e010-no-step-preflight-v1",
+  "verdict": "NO_STEP_PREFLIGHT_PASS"
+}
