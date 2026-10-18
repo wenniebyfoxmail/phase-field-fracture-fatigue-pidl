@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E031
 protocol_revision: v1-fixed-damage-UV-head-common-step-20261018
-status: preparation
+status: completed
 ---
 # E031：固定E030物理damage，核查UV输出头的可达方向并实现一次有限校正
 
@@ -43,3 +43,7 @@ status: preparation
 直接人方持续最小修复授权及HQ本轮D6具体派发有效。四次旧运行receipt累计约1.07054GPU小时，本次最多.5后<=1.57054，低于原2GPU小时总限。一张允许GPU/实际UUID，空闲>=20GiB、allocator<=free−1GiB/至少1GiB余量，RSS32GiB、输出2GiB。预计显著小于此前200步+绘图的410.8秒量级，但执行硬上限仍1800秒含身份/可达性/候选/评估/保存；外层1790秒TERM+5秒KILL。
 
 Mac只做保存数组分析和轻量fixture，真实模型/梯度/头参数校正均在producer。本次一个fresh Run，输入/schema/clean source/host/UUID/零步身份不合、非有限值/证书计算失败、物理d/历史/非UV参数改变、物理界/预裂纹>1e-10、实际头前向不符，或时间/内存/输出超限，整次立即停止、不重试/恢复/替代权重。无新增云资源或共享进程动作。
+
+## 2026-10-18实际结案
+
+单次Run以b0039a05执行完成，首候选接受，0optimizer/history；33.806910秒，21文件/大小/SHA与独立五图/数值复核通过。主读数.999906339742，支持原头内一步七指标共降的探索性方向信号；raw全域只改善.009366%，旧全域active代价仍在。详情[result](result_20261018.md)，此前预先标准和代数归因均保留。D6完成，交HQ统一评估，不自动追加候选或运行。

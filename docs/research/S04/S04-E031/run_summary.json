@@ -1,0 +1,139 @@
+{
+  "run_id": "pf_s04e031_UVhead_v1_20261018T2214Z",
+  "runtime": {
+    "protocol": "S04-E031/v1-fixed-damage-UV-head-common-step-20261018",
+    "commit": "b0039a05e251d0452da3ad8964c24c91197c2dbc",
+    "execution": "completed_pending_retrieval_review",
+    "host": "GPUServer8",
+    "pid": 3869828,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "cuda_visible_devices": "5",
+    "command": [
+      "/mnt/data2/drtao/wennie/pf_s04e031_UVhead_v1_20261018T2214Z/code/SENS_tensile/run_s04_e031.py",
+      "--execute",
+      "--grant",
+      "/mnt/data2/drtao/wennie/pf_s04e031_UVhead_v1_20261018T2214Z/grant.json",
+      "--out",
+      "/mnt/data2/drtao/pidl_archives/pf_s04e031_UVhead_v1_20261018T2214Z/output"
+    ],
+    "optimizer_steps": 0,
+    "accepted_head_updates": 1,
+    "head_candidate_evals": 1,
+    "metric_gradient_evals": 7,
+    "history_commits": 0,
+    "retry": false,
+    "source_dirty": false,
+    "cuda_cap_bytes": 23762501632,
+    "elapsed_seconds": 33.806909698061645,
+    "peak_cuda_allocated_bytes": 1484386816,
+    "peak_cuda_reserved_bytes": 1793064960,
+    "max_rss_bytes": 2462646272
+  },
+  "retrieval": {
+    "status": "ALL_FILES_SIZE_SHA256_AND_ARCHIVE_VERIFIED",
+    "file_count": 21,
+    "total_bytes": 18643535,
+    "source_commit": "b0039a05e251d0452da3ad8964c24c91197c2dbc",
+    "source_dirty": false,
+    "worker_exited": true,
+    "archive_sha256": "b936e29325cf7f518454a415d88af33ef03b6ae2d46b1583bf841309d31dc829"
+  },
+  "review": {
+    "commit": "b0039a05e251d0452da3ad8964c24c91197c2dbc",
+    "reviewer": "/root/e027_independent_review",
+    "status": "PASS",
+    "inherited_body_review": "889dac1793f33e8f0a8cbda772e176adef58abf8",
+    "delta": [
+      "finite zero row normal zero correction",
+      "exact cached no-correction output with actual NN forward check",
+      "numeric head_endpoint export"
+    ],
+    "fixture_count": 5,
+    "remaining_blockers": []
+  },
+  "human_authorization": "Verified direct human HQ userMessage01a150dc-9907-77b3-a78a-bea34b512a63, continuing minimum repair; HQ D6 specific instruction",
+  "decision": {
+    "primary_max_UV_raw_ratio": 0.9999063397419377,
+    "UV_global_ratio": 0.9840378160201354,
+    "raw_global_ratio": 0.9999063397419377,
+    "status": "DIRECTIONAL_SIGNAL",
+    "accepted_head_updates": 1,
+    "scope": "one fixed-damage UV head finite correction; all seven actual guard values retained"
+  },
+  "verdict": "supports bounded exploratory common-descent head correction; tiny raw gain and prior global active cost remain",
+  "previous_runs_frozen": true,
+  "local_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E031/runs/pf_s04e031_UVhead_v1_20261018T2214Z",
+  "producer_archive": "/mnt/data2/drtao/pidl_archives/pf_s04e031_UVhead_v1_20261018T2214Z",
+  "total_route_GPU_hours_receipt_wall": 1.0799294371064616,
+  "component_changes": {
+    "global_uv_RMS_Us": {
+      "before": 0.01571098393823594,
+      "after": 0.015460202322109122,
+      "ratio": 0.9840378160201354
+    },
+    "zone_uv_RMS_Us": {
+      "before": 0.0074793233580972935,
+      "after": 0.007241890934432285,
+      "ratio": 0.9682548256978409
+    },
+    "global_raw_RMSE": {
+      "before": 49.076604183986916,
+      "after": 49.07200765657422,
+      "ratio": 0.9999063397419377
+    },
+    "zone_raw_RMSE": {
+      "before": 9.872791878579669,
+      "after": 9.869111040756783,
+      "ratio": 0.9996271735626402
+    },
+    "global_active_RMSE": {
+      "before": 0.08028759444767507,
+      "after": 0.08025916234339693,
+      "ratio": 0.9996458717629575
+    },
+    "zone_active_RMSE": {
+      "before": 0.015633229189993197,
+      "after": 0.01558655329429912,
+      "ratio": 0.9970143151407289
+    },
+    "free_force": {
+      "before": 0.025032892731368942,
+      "after": 0.024987697551350718,
+      "ratio": 0.9981945682225695
+    }
+  },
+  "no_PT_or_model_load_on_Mac": true,
+  "evidence_review": {
+    "status": "PASS_NO_EVIDENCE_BLOCKER",
+    "reviewer": "/root/e027_independent_review",
+    "runtime_commit": "b0039a05e251d0452da3ad8964c24c91197c2dbc",
+    "primary_ratio": 0.9999063397419377,
+    "independent_seven_metric_recompute": true,
+    "original_head_dimension": 802,
+    "certificate_curvature_theta_velocity_verified": true,
+    "first_candidate_accepted": true,
+    "physical_damage_bitwise_equal": true,
+    "optimizer_steps": 0,
+    "history_commits": 0,
+    "file_count": 21,
+    "total_bytes": 18643535,
+    "visual_figures_reviewed": 5,
+    "error_reduction_percent": {
+      "global_UV": 1.5962183979864597,
+      "Z_UV": 3.1745174302159063,
+      "global_raw": 0.009366025806234468,
+      "Z_raw": 0.03728264373598078,
+      "global_active": 0.035412823704250584,
+      "Z_active": 0.2985684859271087,
+      "free_force": 0.18054317774305328
+    },
+    "scope": "One realizable protected finite UV-head common-descent correction. Tiny raw gain; earlier global active cost remains .052744 to .080288 to .080259. No full repair, mechanism closure, physical evolution or generalization.",
+    "no_PT": true,
+    "no_model": true,
+    "no_GPU": true,
+    "no_SSH": true,
+    "no_training": true,
+    "no_new_data": true
+  }
+}
