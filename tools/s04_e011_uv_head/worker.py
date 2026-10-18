@@ -243,6 +243,11 @@ def run(contract, out, start):
     gain = (baseline_record['E_el'] - head_metrics['E_el']) / baseline_record['E_el']
     robust = gain >= contract['relative_gain_screen'] and (
         baseline_record['E_el'] - head_metrics['E_el']) > 10 * uncertainty
+    resolved_positive = baseline_record['E_el'] - head_metrics['E_el'] > 10 * uncertainty
+    resolved_negative = head_metrics['E_el'] - baseline_record['E_el'] > 10 * uncertainty
+    verdict = ('optimization_witness' if robust else
+               'small_resolved_gain_below_screen' if resolved_positive else
+               'energy_regression' if resolved_negative else 'numerically_unresolved')
     metrics = dict(protocol=contract['protocol'], run_id=contract['run_id'],
                    state='c1s4 conditional MCS outer9, U=.11999988',
                    original=original_metrics, saved_PBD=baseline_record,
@@ -254,7 +259,7 @@ def run(contract, out, start):
                    full_head_gradient_l2=float(torch.linalg.vector_norm(full_head_gradient)),
                    full_head_gradient_inf=float(full_head_gradient.abs().max()),
                    robust_directional_gain=robust, stationarity_screen=float(np.abs(final_gradient).max()) <= 1e-8,
-                   verdict='optimization_witness' if robust else 'no_resolved_directional_gain',
+                   verdict=verdict,
                    stop=stop, evaluations=count, history_commits=0, rollout_steps=0,
                    hidden_updates=0, damage_updates=0, elapsed_seconds=elapsed(),
                    max_gpu_reserved_bytes=torch.cuda.max_memory_reserved(),
@@ -297,6 +302,18 @@ def run(contract, out, start):
     fig.suptitle('Synthetic seen c1s4, horizon 0; '+contract['run_id'])
     fig.savefig(out / 'decision.png', dpi=160)
     plt.close(fig)
+    (out / 'decision.md').write_text(
+        '# c1s4 same-energy UV head decision figure\n\n'
+        'Source: '+contract['run_id']+'; exact same-run summary.json and fields.npz. '
+        'Synthetic seen c1s4, U=.11999988, horizon0; no independent physical units.\n\n'
+        'Top: fixed-d FEM, saved PBD U endpoint and actual head active fields on '
+        'one common scale, followed by same elastic energy / saved PBD and the '
+        'prospective directional screen. Bottom: signed PBD-FEM, head-FEM and '
+        'head-PBD differences on a common symmetric scale, then free-u residual. '
+        'All cells shown; x/y are native coordinates.\n\n'
+        f'Actual gain={gain:.12g}; verdict={verdict}. Scalars in summary.json '
+        'are authoritative. Energy gain may coexist with spatial or residual cost; '
+        'this is no coupled evolution, capacity or physical-teacher result.\n')
     (out / 'README_analysis.md').write_text(
         '# c1s4 fixed-d UV head\n\nQuestion: lower same elastic energy than saved PBD?\n'
         'Read decision.png from FEM to PBD to actual head, then the energy ratio. '
