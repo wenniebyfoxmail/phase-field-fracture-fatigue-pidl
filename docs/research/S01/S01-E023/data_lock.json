@@ -116,6 +116,6 @@
   "annotation_workbook": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/pavetrack_pd_v3_manifest_20260805/Dataset_PDdescription.xlsx",
   "annotation_workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
   "annotation_snapshot_sha256": "98542eb41ec03eebf7a1f73ddf372dc36bb4432aefa259a6e4e3e168e202e3e9",
-  "annotation_snapshot": "train_polygons.json",
+  "annotation_snapshot": "C:\\Users\\xw436\\pavetrack_inputs\\S01-E023\\train_polygons.json",
   "annotation_snapshot_rows": 850
 }

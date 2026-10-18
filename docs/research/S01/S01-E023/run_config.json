@@ -232,5 +232,15 @@
     "mask_raster": "full source-size Pillow ImageDraw polygon union for two crack classes; pixel centers sampled by floor(context_origin+(index+.5)*context_size/14), no dilation/erosion/GT prompt at prediction",
     "region_semantics": "crack-region envelope, not physical crack width",
     "feature_cache": "float32 memmap shape31156x40x14x14; streamed per candidate; no PCA/sketch/learned compressor"
+  },
+  "pixel_component": {
+    "threshold": 0.5,
+    "comparison": ">=",
+    "empty_empty_Dice": 1,
+    "FIT_constant": "unweighted foreground/total over all ownFIT contexts x16fixed samples",
+    "Brier": "mean((P-Y)^2) per context",
+    "aggregate": "equal context within image, equal images within location, equal12locations",
+    "foreground_context_subset": "reference Y.any(); empty image/location null, no model selection",
+    "independence": "overlapping contexts and pixels are not independent units"
   }
 }

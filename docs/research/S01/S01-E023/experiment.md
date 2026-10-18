@@ -32,9 +32,9 @@ base_commit: 45e07302
 
 835图/31156两框共享union+25%context，floor/ceil/clip，RGB224及E022固定预处理；E003精确权重SHA bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65。只取MobileNetV3-small features[:6]，原生40×14×14，eval/no_grad/float32，0CNN参数更新/梯度，0分类头前向或导数。中间层选择为原生较细空间/小通道成本假设，不选层/分辨率/权重扫描。输出float32磁盘memmap(31156,40,14,14)，payload977052160bytes；单图/<=16context，逐图释放。原pixel identity/hash/root校验全部沿用，不读旧pooled缓存、不做PCA/草图或表示拟合。
 
-每当前主fold只在其FIT8训练像素头。原835图的annotation snapshot与bank image/地点/尺寸/bbox逐一对齐；只对当前FIT图调用区域mask栅格化，先在原图尺寸用Pillow ImageDraw填充两裂缝类别polygon并union，其他类别不填。区域外0包含未标注裂缝的不确定性，不能称完整场景真值；保留该偏差。每context在14格固定行列索引[1,5,8,12]的16中心，映回原图floor后读二值区域标签；边界取clip到图内像素。预测无polygon/GT/地点参数。每context固定16点，不按标签/排名选点、无膨胀腐蚀/GT提示/增强。
+每当前主fold只在其FIT8训练像素头。原835图的annotation snapshot作为不公开的既有训练标注数据附件，未来单独传送到C:\Users\xw436\pavetrack_inputs\S01-E023\train_polygons.json（仅当前850行，SHA绑定），不混入公开源码或全工作簿；Mac原工作簿只用于本次审计。annotation snapshot与bank image/地点/尺寸/bbox逐一对齐；只对当前FIT图调用区域mask栅格化，先在原图尺寸用Pillow ImageDraw填充两裂缝类别polygon并union，其他类别不填。区域外0包含未标注裂缝的不确定性，不能称完整场景真值；保留该偏差。每context在14格固定行列索引[1,5,8,12]的16中心，映回原图floor后读二值区域标签；边界取clip到图内像素。预测无polygon/GT/地点参数。每context固定16点，不按标签/排名选点、无膨胀腐蚀/GT提示/增强。
 
-每fold41系数加截距的像素ridge，y∈{0,1}，L2=.01/不罚截距/float64正常方程。正负层等总权重；层内地点→图→context→cell等质量，只有出现的层参与，单层常数允许但不能宣称学习了区域区别。保存各层/地点/图/上下文/单元支持；主pixel三次fit采样996992行，0优化器/SGD。数值残差<=1e−9、目标不劣同权重常数；单层pixel supervision视不可拟合区域区别，停止拟合后续selector并记录inconclusive，不造正例。
+每fold40个特征权重加1截距、合计41系数的像素ridge，y∈{0,1}，L2=.01/不罚截距/float64正常方程。正负层等总权重；层内地点→图→context→cell等质量，只有出现的层参与，单层常数允许但不能宣称学习了区域区别。保存各层/地点/图/上下文/单元支持；pixel训练包含当前FIT的全部候选context（含原ineligible），不只角色头38768个eligible FIT行；主pixel三次fit采样996992行，0优化器/SGD。数值残差<=1e−9、目标不劣同权重常数；单层pixel supervision视不可拟合区域区别，停止拟合后续selector并记录inconclusive，不造正例。
 
 pixel map=clip(b0+sum b_k F_kij,0,1)，并非校准概率。每fold在其全部31156context预测固定14×14图，93468maps总计；像素头只见FIT8标签，held图固定无监督特征可以预提取。原框/修正框在14格均匀单元的精确面积覆盖，C=z(new)、D=(z(new)−z(old))/2，z=sum(P*coverage)/sum(P)−mean(coverage)。零质量给0并记账，不改eligibility；有效修正框在图内保证非空context，否则身份失败停止。
 
@@ -46,7 +46,7 @@ pixel map=clip(b0+sum b_k F_kij,0,1)，并非校准概率。每fold在其全部3
 
 可行性：E017已有同容量GT知情机会+3/+4/+5重叠，不相加，不保证可学；新819区域实例提供不同空间监督，不增加3/5/6效用正GT。先检查采样正负支持/对齐，再一次冻结实际检验。训练损失、非零图、百万像素、局部排名均不救主标准。
 
-组件L0标签身份/有限性/图内/正负采样支持/模型数值；L1保留正例与原检测；L2最大/所选正GT入前三、预算、保存考虑位；L3实际新/失/净/macro/地点差。OOF及三模型冻结后才为每个held候选生成14格中心polygon参考(只此时读当前held标签)，报告固定.5的区域Dice、Brier对自身FIT前景率常数、全前景/全背景基线及每图差；每图先等context平均再地点平均，像素不是独立样本。仅监督语义组件，不选择层/gate/模型或再拟合；0额外政策/检测指标。不能用该组件阈值过高抹掉已发生实际保旧收益，也不能用它救无检测收益。来源标签不是像素宽度teacher。
+组件L0标签身份/有限性/图内/正负采样支持/模型数值；L1保留正例与原检测；L2最大/所选正GT入前三、预算、保存考虑位；L3实际新/失/净/macro/地点差。OOF及三模型冻结后才为每个held候选生成14格中心polygon参考(只此时读当前held标签)，报告固定.5的区域Dice、Brier对自身FIT前景率常数、全前景/全背景基线及每图差；每图先等context平均再地点平均，像素不是独立样本。冻结像素组件计算：预测>=.5为前景；参考是同一原尺寸polygon raster在14×14所有格中心的二值值。每context先计算mean((P−Y)^2) Brier，以及2TP/(2TP+FP+FN) Dice，分母0（空/空）定义1。自身FIT前景率常数p使用本fold全部FIT context的16固定采样点的未加权前景数/总数（不是平衡训练权重的.5）；保存p与分子分母，不用held估计。常数概率P=p，Dice按相同>=.5阈值，同时列全0/全1二值基线。每图先对其所有候选context指标等权平均，每地点再对图等权，最终12地点等权；保存逐context/图/地点计数。另单列有参考前景context子集的Dice（无此类context的图不参与该子集均值，空地点记null），防止空/空=1掩盖裂缝失败；不以此子集选择模型。pooled TP/FP/FN仅附表，重叠context不称独立像素。仅监督语义组件，不选择层/gate/模型或再拟合；0额外政策/检测指标。不能用该组件阈值过高抹掉已发生实际保旧收益，也不能用它救无检测收益。来源标签不是像素宽度teacher。
 
 主过→有限银行保旧工程收益；主未过→negative，另记可用像素组件。若仍前三0/全弃权则完成固定OOF后停止此固定中间层+41系数像素ridge家族，不换层/容量/目标/采样/阈值/L2/归一化/交集搜索/R002。若像素组件改善但容量无，则下一路线需要新增可信效用支持或直接预算对齐目标；若像素组件也不改善，则先补合格标注/模型容量与域证据，不再仅换描述。下一方案必须另冻结，本版不自动启动。新确认/validation/reserve及353/1459/2028/5982继续封存。
 
