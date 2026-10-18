@@ -3,8 +3,10 @@
 2026-10-18 Europe/London. **DESIGN ONLY, NOT IMPLEMENTED OR RUN.** User
 authorized one minimum conditioning proposal through the S04 coordinating chat.
 No source/model/array reads, numerical tests, fits, SSH or producer work were
-authorized by this design task. This file uses only existing code and tracked
-r2 result text. No independent code-review PASS is claimed for an unimplemented
+authorized by this design task. This file uses only existing code, tracked
+r2 result text and selected stored trace/accepted/basis JSON fields. No
+scientific payload was decoded and no energy/gradient/spectrum was recomputed.
+No independent code-review PASS is claimed for an unimplemented
 method. No new Run directory, claim or producer identity has been created.
 
 Owner: 验证位移–damage 耦合机制 /01a14e3b-f1ff-7360-a084-c1f13b261cc6.
@@ -28,6 +30,25 @@ not the600s optimizer deadline. A lower original-initial energy was achieved,
 but the procedure did not deliver a stationary retained solution. The reported
 6.329e9 condition belongs to the retained mass-weighted design, not a measured
 energy-Hessian condition; no Hessian-spectrum diagnosis was performed.
+
+Read-only trajectory check (values copied directly from frozen JSON):
+
+|Stored evaluation|Stored normalized energy|Stored z-gradient L2|Endpoint role|
+|---|---:|---:|---|
+|4|1.0|454.03649439156976|initial objective/gradient control|
+|15|.8635019217501623|516.6955510876877|first accepted endpoint|
+|301|.585222606410033|15.04359956244379|intermediate evaluated point|
+|381|.5841375504439994|7.602645681449764|intermediate evaluated point|
+|391|.5840456450296679|16.131890142190883|last accepted endpoint|
+|392|.5840335672864352|9.303686405632014|later unaccepted trial, not the result|
+
+Energy still declined while the recorded gradient varied; neither small energy
+changes nor execution exit0 establishes stationarity. The reported stop was
+the evaluation reserve, not a recorded line-search failure or wall deadline.
+No per-trial line-search reason was logged, so no line-search-failure count is
+invented. This is compatible with an uneven energy curvature scale, but cannot
+measure its spectrum or distinguish conditioning from all other finite-budget
+optimization explanations. PC16 remains a prospective hypothesis, not diagnosis.
 
 Keep: c1s4/U=.11999988/MCS outer9 FEM d; canonical Q4/2x2GP/Amor energy;
 original model4 UV bubble/lift and float64 convention; all hidden parameters and
