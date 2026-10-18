@@ -110,6 +110,7 @@ def child(case, root):
         logging.warning('artificial dependency-import warning')
     guard.bind_events(root)
     if case == 'normal_main':
+        logging.getLogger().addHandler(logging.NullHandler())
         logging.getLogger().setLevel(logging.INFO)
         logging.info('ordinary information')
     elif case == 'normal_thread':
