@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "experiment_id": "S04-E015",
+  "protocol_revision": "v1",
+  "base_input_lock": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/docs/research/S04/S04-E013/input_lock.json",
+    "sha256": "82b4527532d0ed444fe8f585b0a28d19cdb4000c16ee6ba3298f4c490125f0d6"
+  },
+  "e014_decision": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E014/runs/S04-E014-R001/analysis/decision.json",
+    "sha256": "83c6cfb4f73a27aad50cfd8f3ec021392ed746eab53cef0e707d06f7768fe4a8"
+  },
+  "e014_arm_summary": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E014/runs/S04-E014-R001/analysis/tables/arm_summary.csv",
+    "sha256": "46b689407bf525c3fb4c45d95bb2160021ae71206994940c356dca18c90eda26"
+  }
+}

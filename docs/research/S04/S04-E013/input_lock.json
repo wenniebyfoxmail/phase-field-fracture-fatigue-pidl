@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "experiment_id": "S04-E013",
+  "protocol_revision": "v1",
+  "graph": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/hard5_loao_gno_dataset_v1_20260826/graph.npz",
+    "sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419"
+  },
+  "fem_manifest": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/hard5_loao_gno_dataset_v1_20260826/RUN_MANIFEST.json",
+    "sha256": "9267a102a38375ebc815404a5ae81b2d3b23622448b5b178a2c4c1a5696e202a"
+  },
+  "trajectories": [
+    {
+      "trajectory_id": "hard5_u011", "umax": 0.11, "event_cycle": 122,
+      "spot_cycle": 121,
+      "fem_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/hard5_loao_gno_dataset_v1_20260826/trajectories/hard5_u011.npz",
+      "fem_sha256": "367b851a1814734d5e122f91477826850375149a108476ef6fab44245cfbe878",
+      "pidl_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u011_peak_trajectory.npz",
+      "pidl_sha256": "1de8017c9dcb19360bfc2581b4f20b325625cfe3d3136b3af68331786960f3e2",
+      "locked_spot_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/cross_umax_first_detect_gate_20260817/pidl_priors/u011_c121_peak_step604_on_fem.npz",
+      "locked_spot_sha256": "2b8c98a0b3854c716e3018c1f3ced8c91f8ef74788fa83477b96a5fa8753f9f0"
+    },
+    {
+      "trajectory_id": "hard5_u012", "umax": 0.12, "event_cycle": 83,
+      "spot_cycle": 82,
+      "fem_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/hard5_loao_gno_dataset_v1_20260826/trajectories/hard5_u012.npz",
+      "fem_sha256": "e80b32675876444888b7d50d3df1f250009770d6b8b45d5dc1f3992197ebbe95",
+      "pidl_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u012_peak_trajectory.npz",
+      "pidl_sha256": "b6a5adeee09e24a0ec1562db4c8525e0c7c9a6efa86e8369551ba5d296af8c6e",
+      "locked_spot_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/cross_umax_first_detect_gate_20260817/pidl_priors/u012_c82_peak_step409_on_fem.npz",
+      "locked_spot_sha256": "1860972b3fca6a44db0158aabf1d8df5719c2d620f0b3b35c61a85d9da7769d5"
+    },
+    {
+      "trajectory_id": "hard5_u013", "umax": 0.13, "event_cycle": 59,
+      "spot_cycle": 58,
+      "fem_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/hard5_loao_gno_dataset_v1_20260826/trajectories/hard5_u013.npz",
+      "fem_sha256": "c91287af619de1dd2ed8b07da680f7d1bc0d06d500441e23887fd031077b253b",
+      "pidl_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u013_peak_trajectory.npz",
+      "pidl_sha256": "2afc4d3e6b285afed7089bdc27875df9822fd2cf495093e9bf28e64dba670937",
+      "locked_spot_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/cross_umax_first_detect_gate_20260817/pidl_priors/u013_c58_peak_step289_on_fem.npz",
+      "locked_spot_sha256": "66447c75e2a762902f3b0537b451aec3a76fe7ae3abba6d4890372700f0f337c"
+    }
+  ]
+}
