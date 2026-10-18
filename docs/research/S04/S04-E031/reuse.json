@@ -1,0 +1,12 @@
+{
+  "head_geometry_owner": "01a0ff36-c53f-7541-8161-a0584b44a9ae",
+  "decision": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/three_head_decision.md",
+  "helper_commit": "1772aa630021a63fa454f4330b5713598575a29d",
+  "helpers": {
+    "s04_e024_head_cone.py": "901a46a42ab619aaff5baabf8d9aba7d56e06789099668ea088dd0fe1babd506",
+    "s04_e024_three_head.py": "fb0d9519dcf91bc2fd23620a803ebf989a6e9a51f549f8219fc43fe7c69757f1"
+  },
+  "reuse": "unit-row convex-hull common descent only (max5->7); exact UV quadratic safe fraction unchanged. No prior physical metric, field, basis or certificate transferred.",
+  "PC16_latest": "G7 finite same-energy head test finished negative; no capacity conclusion. Read latest owner01a14e3b, not old missing-resident resource snapshot.",
+  "different_state": true
+}
