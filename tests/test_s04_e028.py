@@ -88,5 +88,17 @@ class Tests(unittest.TestCase):
         with patch('run_s04_e028.platform.system',return_value='Darwin'):
             with self.assertRaises(PermissionError):admit({}, {}, Path('/nonexistent/E028'))
 
+    def test_actual_gpu_identity_rejection_without_gpu(self):
+        sys.path.insert(0,str(ROOT/'SENS_tensile'))
+        from run_s04_e028 import device_admission
+        grant={'cuda_visible_devices':'5','gpu_uuid':'GPU-expected'}
+        with patch.dict('os.environ',{'CUDA_VISIBLE_DEVICES':'5'}),patch('run_s04_e028.torch.cuda.is_available',return_value=True),patch('run_s04_e028.torch.cuda.device_count',return_value=2),patch('run_s04_e028.subprocess.check_output') as query:
+            with self.assertRaises(PermissionError):device_admission(grant)
+            query.assert_not_called()
+        with patch.dict('os.environ',{'CUDA_VISIBLE_DEVICES':'5'}),patch('run_s04_e028.torch.cuda.is_available',return_value=True),patch('run_s04_e028.torch.cuda.device_count',return_value=1),patch('run_s04_e028.subprocess.check_output',return_value='GPU-other\n'):
+            with self.assertRaises(PermissionError):device_admission(grant)
+        with patch.dict('os.environ',{'CUDA_VISIBLE_DEVICES':'5'}),patch('run_s04_e028.torch.cuda.is_available',return_value=True),patch('run_s04_e028.torch.cuda.device_count',return_value=1),patch('run_s04_e028.subprocess.check_output',return_value='GPU-expected\n'):
+            self.assertEqual(device_admission(grant),'GPU-expected')
+
 
 if __name__=='__main__': unittest.main()

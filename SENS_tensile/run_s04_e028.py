@@ -25,6 +25,17 @@ LOCK=ROOT/'docs/research/S04/S04-E028/data_lock.json'
 def dump(p,v): p.write_text(json.dumps(v,indent=2,allow_nan=False)+'\n')
 
 
+def device_admission(grant):
+    gpu=os.environ.get('CUDA_VISIBLE_DEVICES','')
+    if not gpu or ',' in gpu or grant.get('cuda_visible_devices')!=gpu:
+        raise PermissionError('explicit single GPU required')
+    if not torch.cuda.is_available() or torch.cuda.device_count()!=1:
+        raise PermissionError('exactly one visible CUDA producer required')
+    uuid=subprocess.check_output(['nvidia-smi','-i',gpu,'--query-gpu=uuid','--format=csv,noheader'],text=True).strip()
+    if not uuid or uuid!=grant.get('gpu_uuid'):raise PermissionError('actual GPU UUID mismatch')
+    return uuid
+
+
 def admit(lock,grant,out):
     if platform.system()=='Darwin': raise PermissionError('Mac training prohibited')
     head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
@@ -37,11 +48,9 @@ def admit(lock,grant,out):
         raise PermissionError('fixed budget mismatch')
     if grant.get('hostname')!=platform.node() or grant.get('output')!=str(out.resolve()):
         raise PermissionError('host/output mismatch')
-    gpu=os.environ.get('CUDA_VISIBLE_DEVICES','')
-    if not gpu or ',' in gpu or grant.get('cuda_visible_devices')!=gpu or not torch.cuda.is_available():
-        raise PermissionError('explicit single GPU required')
+    uuid=device_admission(grant)
     if out.exists(): raise FileExistsError('fresh output only; no retry')
-    return head
+    return head,uuid
 
 
 def render(p,predictions,records,scores,out,receipt):
@@ -100,13 +109,13 @@ Single exposed synthetic state, no holdout or generalization/physical-evolution 
 
 
 def run(lock,grant,out):
-    head=admit(lock,grant,out)
+    head,actual_uuid=admit(lock,grant,out)
     free,total=torch.cuda.mem_get_info()
     if free<20*1024**3: raise MemoryError('less than20GiB initial GPU free')
     cap=free-1024**3;torch.cuda.set_per_process_memory_fraction(cap/total,0)
     started=time.monotonic();out.mkdir(parents=True)
     receipt=dict(protocol=m.PROTOCOL,commit=head,execution='preflight',host=platform.node(),pid=os.getpid(),
-        gpu=torch.cuda.get_device_name(0),gpu_uuid=grant['gpu_uuid'],cuda_visible_devices=os.environ['CUDA_VISIBLE_DEVICES'],
+        gpu=torch.cuda.get_device_name(0),gpu_uuid=actual_uuid,cuda_visible_devices=os.environ['CUDA_VISIBLE_DEVICES'],
         command=sys.argv,optimizer_steps=0,optimizer_step_calls=0,history_commits=0,retry=False,
         initial_free_cuda_bytes=free,cuda_cap_bytes=cap,source_dirty=False)
     def guard():
