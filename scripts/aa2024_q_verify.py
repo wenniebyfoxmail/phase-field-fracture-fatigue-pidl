@@ -42,7 +42,8 @@ FIELD_KEYS = ARMS+tuple(k+'_sampled' for k in ARMS)
 ANCHORS = ('8655d49b30e341d488eeb8c15db9a7d347f236634a22adbbf39fcb7b4bbd3ccf',
            '3173f0f659d6e451f7fccc39a4ca0973ae3caad750c9d98ce754a1bcec325674')
 CODE_NAMES = ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py',
-              'aa2024_dyadic_reference.py', 'test_aa2024_underflow.py')
+              'aa2024_dyadic_reference.py', 'test_aa2024_underflow.py',
+              'aa2024_runtime_guard.py', 'test_aa2024_runtime_guard.py')
 
 
 class Rejected(ValueError):
@@ -441,7 +442,13 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--source-commit', required=True)
     parser.add_argument('--allow-two-opaque-hashes', action='store_true')
+    parser.add_argument('--producer-exit-code', type=int, required=True)
+    parser.add_argument('--producer-clean-terminal', action='store_true')
     args = parser.parse_args()
+    # Caller attestation must be backed by the external execution record;
+    # it cannot be inferred from producer completion.json or this verifier.
+    demand(args.producer_exit_code == 0 and args.producer_clean_terminal,
+           'external clean producer exit/terminal attestation required')
     threads = ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'NUMEXPR_NUM_THREADS', 'BLIS_NUM_THREADS')
     demand(all(os.environ.get(k) == '1' for k in threads) and os.environ.get('CUDA_VISIBLE_DEVICES') == '', 'single CPU environment')
     repo = Path(__file__).resolve().parents[1]
@@ -464,12 +471,19 @@ def main():
                 demand(receipt['mode'] == args.mode and receipt['source_commit'] == args.source_commit and
                        receipt['execution_status'] == 'producer_completed_not_independently_accepted', 'producer identity/status')
                 demand((receipt['svd_calls'], receipt['qr_calls']) == (1, 2), 'controlled API count')
-                demand(set(receipt['source_sha256']) == set(initial_code), 'exact five source code keys')
+                demand(set(receipt['source_sha256']) == set(initial_code), 'exact reviewed source code keys')
                 for name, digest in receipt['source_sha256'].items():
                     demand(name in CODE_NAMES and
                            file_sha(Path(__file__).with_name(name)) == digest, 'reviewed producer code identity')
+                guard = receipt.get('runtime_guard', {})
+                demand(guard.get('version') == 'E019-D03-G01-v0.2' and
+                       guard.get('healthy') is True and guard.get('fatal_seen') is False and
+                       guard.get('events_file') == 'runtime_guard_events.log' and
+                       guard.get('external_exit_required') is True, 'guarded producer metadata')
+                demand(file_sha(args.input/'runtime_guard_events.log') ==
+                       hashlib.sha256(b'').hexdigest(), 'empty runtime guard events')
                 required = {'certificate.npz', 'report.json', 'q_residuals.png', 'q_residuals.pdf', 'q_residuals.md',
-                            'q_square_ledger.png', 'q_square_ledger.pdf', 'q_square_ledger.md'}
+                            'q_square_ledger.png', 'q_square_ledger.pdf', 'q_square_ledger.md', 'runtime_guard_events.log'}
                 demand(set(receipt['artifacts_sha256']) == required, 'exact artifact list')
                 for name, digest in receipt['artifacts_sha256'].items():
                     path = args.input/name; demand(file_sha(path) == digest, 'artifact hash '+name); before[str(path)] = digest

@@ -17,6 +17,17 @@ import warnings
 
 warnings.simplefilter('error')
 
+from aa2024_runtime_guard import install_cli
+
+_RUNTIME_GUARD = install_cli() if __name__ == '__main__' else None
+
+
+def guard_point(phase=None, _expected=_RUNTIME_GUARD):
+    if _expected is not None:
+        if _RUNTIME_GUARD is not _expected:
+            _expected.fatal('guard_reference_lost')
+        _expected.check(phase)
+
 
 class StopLogging(logging.Handler):
     def emit(self, record):
@@ -24,11 +35,14 @@ class StopLogging(logging.Handler):
             raise RuntimeError('unexpected logging warning: '+record.getMessage())
 
 
-logging.getLogger().addHandler(StopLogging(level=logging.WARNING))
+if _RUNTIME_GUARD is None:
+    logging.getLogger().addHandler(StopLogging(level=logging.WARNING))
 
+guard_point('numerical_imports')
 import numpy as np
 from scipy import linalg
 from aa2024_dyadic_reference import check_model, column_reference, comparison, failure_text
+guard_point('numerical_imports_done')
 
 ARMS = ('old', 'proxy', 'intact')
 THREADS = ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS',
@@ -43,7 +57,8 @@ BASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/exp
 PREP = BASE/'S03-E016/S03-E016-R001/prepare'
 FIT = BASE/'S03-E016/S03-E016-R002/fit'
 CODE_NAMES = ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py',
-              'aa2024_dyadic_reference.py', 'test_aa2024_underflow.py')
+              'aa2024_dyadic_reference.py', 'test_aa2024_underflow.py',
+              'aa2024_runtime_guard.py', 'test_aa2024_runtime_guard.py')
 
 
 class Stop(ValueError):
@@ -81,6 +96,7 @@ class Budget:
         self.clock, self.start = clock, clock()
 
     def check(self):
+        guard_point()
         elapsed = self.clock()-self.start
         if elapsed >= 60:
             raise TimeoutError('soft60s incomplete; no retry')
@@ -269,11 +285,13 @@ def analyze(a, factors, budget, expected_rank=None):
 
 
 def sha(path):
+    guard_point()
     safe_path(path, file=True)
     h = hashlib.sha256()
     with Path(path).open('rb') as f:
         for chunk in iter(lambda: f.read(1048576), b''):
             h.update(chunk)
+    guard_point()
     return h.hexdigest()
 
 
@@ -369,23 +387,31 @@ def artificial():
 
 
 def write_json(path, obj):
+    guard_point('write_json')
     safe_path(path)
     with path.open('x') as f:
         json.dump(obj, f, indent=2, allow_nan=False)
+    guard_point()
 
 
 def draw(a, report, out, mode):
+    guard_point('plot_setup')
     # Force all writable plotting caches into this new run before first import.
     for key, name in (('MPLCONFIGDIR', '.mplconfig'), ('XDG_CACHE_HOME', '.cache')):
         cache = out/name
         safe_path(cache)
         cache.mkdir(exist_ok=False)
         os.environ[key] = str(cache)
+        guard_point()
+    guard_point('matplotlib_import')
     import matplotlib
+    guard_point()
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
+    guard_point('matplotlib_import_done')
     title = 'E019-D03 | '+mode+' | stages13/14 training only'
     fig, axes = plt.subplots(2, 4, figsize=(14, 6), sharex=True, sharey=True, constrained_layout=True)
+    guard_point()
     maps = [(a['r']/a['scale']).reshape(-1, 2)]+[(a[k+'_r']/a['scale']).reshape(-1, 2) for k in ARMS]
     bound = max(float(np.max(np.abs(v))) for v in maps) or 1e-15
     try:
@@ -397,10 +423,14 @@ def draw(a, report, out, mode):
         fig.colorbar(points, ax=axes, label='D^-1 residual [mm]', shrink=.8)
         fig.suptitle(title+'\nAll 648 points; deweighted display only; shared scale', fontsize=10)
         for ext in ('png', 'pdf'):
+            guard_point('save_residuals')
             fig.savefig(out/('q_residuals.'+ext), dpi=170)
+            guard_point()
     finally:
         plt.close(fig)
+    guard_point('next_figure')
     fig, ax = plt.subplots(figsize=(9, 5), constrained_layout=True)
+    guard_point()
     try:
         rows = report['rows']; x = np.arange(3)
         floor = [r['J_Q_mm2'] for r in rows]; gap = [r['gap2_mm2'] for r in rows]
@@ -410,20 +440,25 @@ def draw(a, report, out, mode):
         ax.set(xticks=x, xticklabels=ARMS, ylabel='weighted squared residual [mm²]', title=title)
         ax.legend(loc='upper left', bbox_to_anchor=(0, -.12), ncol=3, frameon=False, fontsize=8)
         for ext in ('png', 'pdf'):
+            guard_point('save_ledger')
             fig.savefig(out/('q_square_ledger.'+ext), dpi=170)
+            guard_point()
     finally:
         plt.close(fig)
     for stem, panels in (
             ('q_residuals', 'U/V rows, Q retained projection then old/proxy/intact columns; red/blue signed D^-1 residual mm. One symmetric scale from all panels. Zero maps use display-only +/-1e-15 mm.'),
             ('q_square_ledger', 'old/proxy/intact bars: blue J_Q plus orange gap squared; black dots J_k. Vertical axis mm²; squares add, RMS does not.')):
+        guard_point('write_sidecar')
         (out/(stem+'.md')).write_text('# '+stem+'\n\n## Figure question\n\nIs the retained-space residual ledger numerically consistent?\n\n## How to read\n\n'+panels+
             '\n\n## Data provenance\n\nSame-directory certificate.npz/report.json; E019-D03 '+mode+
             '; all 648 source points, same weights/BC. No held data.\n\n## Key numerical takeaway\n\n'+json.dumps(report['rows'])+
             '\n\n## Limitations and claim boundary\n\nTraining C1 numerical check, one specimen/cycle292018.5 for real mode; artificial mode is resource-only. '
             'No physical inversion, phase field, causal allocation, new prediction or historical E019 rescue. Deweighting is display-only. No interpolation, smoothing, subset selection or component-RMS renormalization.\n')
+        guard_point()
 
 
 def main():
+    guard_point('initial_preflight')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('mode', choices=('synthetic', 'real'))
     parser.add_argument('--output', type=Path, required=True)
@@ -444,6 +479,9 @@ def main():
                    execution_status='incomplete', inputs={}, artifacts_sha256={})
     budget = Budget(); factors = Factors()
     try:
+        if _RUNTIME_GUARD is not None:
+            _RUNTIME_GUARD.bind_events(allowed)
+        budget.check()
         with warnings.catch_warnings():
             warnings.simplefilter('error')
             with np.errstate(all='raise'):
@@ -457,14 +495,18 @@ def main():
                     p, fields = artificial(); before = {}
                 budget.check(); arrays = construct(p, fields, factors, budget)
                 report = analyze(arrays, factors, budget, expected_rank=1203 if args.mode == 'real' else None)
+                guard_point('save_certificate')
                 safe_path(allowed/'certificate.npz')
                 np.savez(allowed/'certificate.npz', **arrays)
+                guard_point()
                 write_json(allowed/'report.json', report)
                 budget.check(); draw(arrays, report, allowed, args.mode); budget.check()
                 for path, digest in before.items():
                     require(sha(path) == digest, 'source changed '+path)
                 receipt['artifacts_sha256'] = {p.name: sha(p) for p in allowed.iterdir() if p.is_file()}
                 final_identity(repo, args.source_commit, actual, receipt['source_sha256'])
+                if _RUNTIME_GUARD is not None:
+                    receipt['runtime_guard'] = _RUNTIME_GUARD.receipt_state()
                 receipt.update(elapsed_before_receipt=budget.check(), svd_calls=factors.svd_calls, qr_calls=factors.qr_calls,
                                execution_status='producer_completed_not_independently_accepted')
                 write_json(allowed/'execution_receipt.json', receipt)
@@ -472,8 +514,11 @@ def main():
                 final_identity(repo, args.source_commit, actual, receipt['source_sha256'])
                 write_json(allowed/'completion.json', dict(receipt_sha256=sha(allowed/'execution_receipt.json')))
                 elapsed = budget.check()
+        guard_point('success_stdout')
         print(json.dumps(dict(status='producer_completed_not_independently_accepted', elapsed_seconds=elapsed)))
+        guard_point('success_stdout_done')
     except BaseException as exc:
+        guard_point('failure_capture')
         completion = allowed/'completion.json'
         if completion.exists():
             completion.unlink()  # Only this fresh run's invalid success marker, never frozen inputs.
