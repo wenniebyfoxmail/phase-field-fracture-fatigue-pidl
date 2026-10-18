@@ -35,3 +35,28 @@ def admit_finite(values, baseline, delta_relative):
     failures=[key for key in GUARDS if values[key]>baseline[key]]
     if delta_relative>.02*(1+1e-12): failures.append('parameter_budget')
     return not failures,failures
+
+
+def uv_safe_fraction(error, velocity, weights):
+    """Half the smallest positive UV zero crossing; velocity is one full R step."""
+    error,velocity=np.asarray(error),np.asarray(velocity)
+    if error.ndim!=2 or error.shape!=velocity.shape or error.shape[1]!=2:
+        raise ValueError('UV quadratic schema')
+    if not np.isfinite(error).all() or not np.isfinite(velocity).all():raise ValueError('nonfinite UV quadratic')
+    terms={}
+    for name,weight in weights.items():
+        weight=np.asarray(weight)
+        if weight.shape!=(len(error),) or not np.isfinite(weight).all() or np.any(weight<0) or weight.sum()<=0:
+            raise ValueError('UV quadratic weights')
+        c=float(np.sum(weight[:,None]*error**2))
+        b=float(np.sum(weight[:,None]*error*velocity))
+        aa=float(np.sum(weight[:,None]*velocity**2))
+        if not np.isfinite([c,b,aa]).all() or c<=0 or aa<=0 or b>=0:
+            raise ValueError('no resolved descending UV quadratic')
+        crossing=-2*b/aa
+        if not np.isfinite(crossing) or crossing<=0:raise ValueError('UV crossing unresolved')
+        terms[name]=dict(constant=c,linear_half=b,quadratic=aa,positive_zero_crossing=crossing)
+    if not terms:raise ValueError('UV regions missing')
+    fraction=min(1.,.5*min(t['positive_zero_crossing'] for t in terms.values()))
+    if fraction<=0 or not np.isfinite(fraction):raise ValueError('UV safe fraction unresolved')
+    return fraction,terms

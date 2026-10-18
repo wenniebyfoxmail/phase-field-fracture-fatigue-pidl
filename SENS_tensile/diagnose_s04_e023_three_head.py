@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from threadpoolctl import threadpool_limits
-from s04_e024_three_head import enrich_basis,admit_finite,GUARDS
+from s04_e024_three_head import enrich_basis,admit_finite,uv_safe_fraction,GUARDS
 from s04_e024_head_cone import elastic_driver
 from s04_e024_weak_guard import Mechanics
 from diagnose_s04_e023_terminal_head import scores,network_order,sha,read,write_csv,STATES
@@ -28,9 +28,16 @@ def run(a):
     assert (prior/'results/receipt.json').read_bytes()==(source/'docs/research/S04/S04-E024/fullhead_cone_receipt.json').read_bytes()
     assert (control/'results/receipt.json').read_bytes()==(source/'docs/research/S04/S04-E024/background_guard_receipt.json').read_bytes()
     manifests={p:read(p/'archive_manifest.json')['files'] for p in (prior,control)}
-    metrics=[];physical=[];trials=[];guards=[];audits=[];assets=[];derivatives=[]
+    prior_compute=0.
+    if a.step_rule=='uv-curvature':
+        first=root/'S04-E024/three_head_finite_v1/results/receipt.json'
+        assert first.read_bytes()==(source/'docs/research/S04/S04-E024/three_head_r1_receipt.json').read_bytes()
+        first_receipt=read(first)
+        assert first_receipt['source_commit']=='a7a9305c026f23295bd2354f5cefb81e35c9e97c' and first_receipt['accepted_external_fields']==0
+        prior_compute=first_receipt['wall_seconds']
+    metrics=[];physical=[];trials=[];guards=[];audits=[];assets=[];derivatives=[];quadratics=[]
     for st in STATES:
-        if time.perf_counter()-start>600:raise RuntimeError('wall cap')
+        if time.perf_counter()-start+prior_compute>600:raise RuntimeError('combined compute cap')
         model,data,base,origin,asset=load_endpoint(old,e021,e022,e023,st,'E023')
         digest=state_digest(model);cp=e023/'runs'/HEAD_LOCKS[st]['run_id']
         before={str(cp/n):sha(cp/n) for n in HEAD_LOCKS[st]['files']}
@@ -68,9 +75,14 @@ def run(a):
             return vals
 
         origin_values=actual_values(origin);assert min(origin_values.values())>0
+        velocity=radius*network_order(model,data['xy'],np.zeros_like(base),realised,1024)
+        seed=1.
+        if a.step_rule=='uv-curvature':
+            seed,terms=uv_safe_fraction((origin-data['equilibrated_uv'])/abs(US),velocity/abs(US),weights)
+            for region,values in terms.items():quadratics.append(dict(state=st,region=region,seed_fraction=seed,**values))
         accepted=False;chosen=theta.copy();uv=origin.copy();fraction=0.;accepted_k=None
         for k in range(9):
-            t=2.**(-k);coef=theta+radius*t*realised
+            t=seed*2.**(-k);coef=theta+radius*t*realised
             candidate=network_order(model,data['xy'],base,coef,1024)
             np.testing.assert_array_equal(candidate[window==0],origin[window==0])
             bc=(data['xy'][:,1]==-.5)|(data['xy'][:,1]==.5)
@@ -80,7 +92,7 @@ def run(a):
             branch=float(np.mean((mech.strains(candidate)[...,:2].sum(2)>=0)!=mech.branches))
             for key in GUARDS:
                 gap=vals[key]-origin_values[key];ratio=vals[key]/origin_values[key]
-                trials.append(dict(state=st,k=k,fraction=t,guard=key,origin=origin_values[key],candidate=vals[key],difference=gap,ratio=ratio,
+                trials.append(dict(state=st,k=k,seed_fraction=seed,fraction=t,guard=key,origin=origin_values[key],candidate=vals[key],difference=gap,ratio=ratio,
                     rejected=bool(vals[key]>origin_values[key]),increase_scale='numerical-scale' if 0<ratio-1<=1e-12 else ('resolved_increase' if ratio>1 else 'no_increase'),
                     trial_accepted=ok,rejected_names=';'.join(reasons),delta_relative=delta_relative,branch_changed_gp_fraction=branch))
             if ok:accepted=True;chosen=coef;uv=candidate;fraction=t;accepted_k=k;break
@@ -105,10 +117,10 @@ def run(a):
             else:
                 get=lambda arm:next(row['elastic_driver_error'] for row in physical if row['state']==st and row['arm']==arm and row['region']==quantity[7:])
             derivatives.append(dict(state=st,quantity=quantity,relative_rms_derivative=slope,fraction=fraction,first_order_percent=100*fraction*slope,actual_percent=100*(get('three_head')/get('E023')-1)))
-        affinity=origin+radius*fraction*(network_order(model,data['xy'],np.zeros_like(base),realised,1024))
+        affinity=origin+fraction*velocity
         affine_gap=float(np.max(abs(uv-affinity)));assert affine_gap<=1e-12
         np.testing.assert_array_equal(uv[window==0],origin[window==0])
-        audits.append(dict(state=st,dimension=3,accepted=accepted,accepted_k=accepted_k,accepted_fraction=fraction,visited_candidates=k+1,
+        audits.append(dict(state=st,dimension=3,step_rule=a.step_rule,seed_fraction=seed,accepted=accepted,accepted_k=accepted_k,accepted_fraction=fraction,visited_candidates=k+1,
             radius=radius,delta_relative=float(np.linalg.norm(chosen-theta)/np.linalg.norm(theta)),affine_max_abs=affine_gap,outside_max_abs=0.,bc_max_abs=0.,
             branch_changed_gp_fraction=float(np.mean((mech.strains(uv)[...,:2].sum(2)>=0)!=mech.branches)),coordinates=coordinates.tolist(),**geometry))
         np.savez_compressed(a.out/f'{st}_three_head.npz',uv=uv,head_coefficients=chosen,original_coefficients=theta,delta=chosen-theta,
@@ -117,16 +129,18 @@ def run(a):
         assert all(sha(Path(p))==h for p,h in before.items()) and all(sha(Path(p))==h for p,h in input_hashes.items())
         assets.append(dict(**asset,original_file_hashes=before,input_hashes=input_hashes,model_digest=digest))
         peak=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*(1 if platform.system()=='Darwin' else 1024)
-        if peak>3*1024**3 or time.perf_counter()-start>600:raise RuntimeError('resource cap')
+        if peak>3*1024**3 or time.perf_counter()-start+prior_compute>600:raise RuntimeError('resource cap')
         print(st,audits[-1],flush=True)
         del model,mech
     for name,rows in [('uv_metrics.csv',metrics),('physical_metrics.csv',physical),('line_search.csv',trials),('guard_values.csv',guards),('first_order_comparison.csv',derivatives)]:write_csv(a.out/name,rows)
+    if quadratics:write_csv(a.out/'uv_quadratics.csv',quadratics)
     (a.out/'numerics.json').write_text(json.dumps(audits,indent=2)+'\n')
     (a.out/'receipt.json').write_text(json.dumps(dict(source_commit=commit,states=list(STATES),assets=assets,wall_seconds=time.perf_counter()-start,peak_rss_bytes=int(peak),
+        step_rule=a.step_rule,prior_r1_compute_seconds=prior_compute,combined_compute_seconds=prior_compute+time.perf_counter()-start,
         parameter_radius_fraction=.02,accepted_external_fields=sum(row['accepted'] for row in audits),neural_optimizer_steps=0,new_direction_solves=0,three_dimensional_optimisations=0,
         original_checkpoint_writes=0,history_fatigue_damage_updates=0,remote_actions=0,scope='first feasible finite step along verified combination in one-axis enriched3D; not3Doptimum or coupled evolution'),indent=2)+'\n')
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--project',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--expected-commit',required=True)
+    p=argparse.ArgumentParser();p.add_argument('--project',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--expected-commit',required=True);p.add_argument('--step-rule',choices=('budget','uv-curvature'),default='budget')
     with threadpool_limits(limits=2):run(p.parse_args())
