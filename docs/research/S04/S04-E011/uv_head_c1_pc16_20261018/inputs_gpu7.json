@@ -1,0 +1,135 @@
+{
+  "protocol": "S04-E011-UVH-C1-PC16-v1",
+  "run_id": "pf_s04e011_uvh_c1_pc16_g7_r1_20261018",
+  "cycle": 1,
+  "substep": 4,
+  "load": 0.11999988,
+  "FEM_outer": 9,
+  "source_base": "bf0f21b572ad2f5a74d30dfcf8fbf402ece2ab08",
+  "files": [
+    {
+      "role": "state",
+      "path": "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/inputs/c1_peak.npz",
+      "local_reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_block_preparation_20261017_v1/inputs/c1_peak.npz",
+      "bytes": 15183163,
+      "sha256": "ac63ba676376179f0539c156e3fd49f8e74c5eba386f684c71a617bb637b7fdd",
+      "decode_fields": [
+        "nodes",
+        "cells",
+        "freeu",
+        "u_fem",
+        "v_fem",
+        "d_fem"
+      ]
+    },
+    {
+      "role": "model",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_4.pt",
+      "bytes": 4510165,
+      "sha256": "9c4ebbe4bcf1d4bc6b4997f1072a6a5f68e0c94783d0365b0224a7175ed12d1b",
+      "decode_fields": [
+        "weights_only state_dict"
+      ]
+    },
+    {
+      "role": "frozen_transform",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvh_c1_r2_20261018/head.npz",
+      "bytes": 1204696,
+      "sha256": "deaf3fea860a4563df84f7909afbde49d76430b633bce542b4896ef9526e8d65",
+      "decode_fields": [
+        "transform"
+      ]
+    },
+    {
+      "role": "frozen_summary",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvh_c1_r2_20261018/summary.json",
+      "bytes": 2527,
+      "sha256": "ee4062e4e9d990bee7b5c7507301894b53c88f57c833c67ea092cbdbcafaa877",
+      "decode_fields": [
+        "protocol",
+        "run_id",
+        "original",
+        "saved_PBD",
+        "head",
+        "retained_gradient_l2",
+        "full_head_gradient_l2",
+        "full_head_gradient_inf",
+        "numerical_energy_uncertainty",
+        "stationarity_screen"
+      ]
+    },
+    {
+      "role": "frozen_basis",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvh_c1_r2_20261018/basis.json",
+      "bytes": 11038,
+      "sha256": "f6d6c38ddb75460e7490f96b8a0743659cfad52117fd3455b30580228c5ccda3",
+      "decode_fields": [
+        "rank",
+        "columns",
+        "rcond",
+        "retained_condition",
+        "omitted_directions"
+      ]
+    }
+  ],
+  "read_semantics": "Future execution only: hash all five exact whole files once, then decode only listed keys; PT weights_only state_dict. head.npz permits transform only, never z/uv_weight/uv_bias. Metadata identities copied from the existing transfer_manifest without reading or hashing source payloads during preparation.",
+  "budget": {
+    "wall_seconds": 900,
+    "opt_no_new_eval_seconds": 600,
+    "work_seconds": 840,
+    "work_units": 400,
+    "rss_bytes": 8589934592,
+    "gpu_reserved_bytes": 8589934592,
+    "output_bytes": 104857600,
+    "gpu_process_bytes": 8589934592
+  },
+  "rcond": 1e-10,
+  "relative_gain_screen": 0.0001,
+  "resource_policy": {
+    "physical_GPU": 7,
+    "gpu_uuid": "GPU-350d3f31-8bd6-4257-4d4c-21ad344eaa81",
+    "minimum_initial_free_MiB": 12288,
+    "minimum_runtime_free_MiB": 4096,
+    "maximum_admission_utilization_percent": 10,
+    "admission_samples": 3,
+    "admission_interval_seconds": 1,
+    "runtime_monitor_interval_seconds": 1,
+    "unknown_or_unreadable_process": "stop_owned_child_only",
+    "admission_modes": [
+      "empty"
+    ],
+    "lock_admission_mode_for_attempt": true,
+    "allow_only_own_worker": true
+  },
+  "work_ledger": {
+    "total": 400,
+    "hvp": 68,
+    "controls": 16,
+    "optimization": 308,
+    "final": 8,
+    "hvp_calls": 34,
+    "hvp_cost": 2,
+    "energy_or_energy_and_gradient_cost": 1,
+    "standalone_gradient_cost": 1,
+    "no_reallocation": true
+  },
+  "pc16": {
+    "seed": 1,
+    "sketch_columns": 16,
+    "rank": 388,
+    "z_dimension": 776,
+    "z_gradient_inf_threshold": 1e-08,
+    "Q_orthogonality_scaled_tolerance": 1e-10,
+    "factor_scaled_tolerance": 1e-10,
+    "field_abs_tolerance": 1e-09,
+    "energy_abs_tolerance": 1e-10,
+    "derivative_abs_tolerance": 1e-08,
+    "derivative_relative_tolerance": 0.0001,
+    "nonzero_probe_norm": 1e-06,
+    "library_y_gtol": 0.0,
+    "ftol": 1e-14,
+    "maxcor": 10,
+    "maxls": 20
+  },
+  "resource_revision": "GPU7-empty-selfcontained-r1"
+}
