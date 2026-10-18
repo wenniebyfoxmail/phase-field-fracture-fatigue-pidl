@@ -1,0 +1,19 @@
+{
+  "code_review": {
+    "status": "CODE_AND_PROTOCOL_FOCUSED_REVIEW_PASSED",
+    "reviewer": "/root/e027_independent_review",
+    "exact_commit": "d8c21d021d715fef687d11edc7ca1993acc25f5c",
+    "tests": 9,
+    "covered": "current lower/forward bounds, active-anchor B/R contrast, norm cap, identity and single-device/actualUUID guard, no changes to E027",
+    "new_run_preflight_required": true
+  },
+  "evidence_review": {
+    "reviewer": "/root/e027_independent_review",
+    "status": "execution_scoring_and_figures_integrity_passed",
+    "exact_source": "d8c21d021d715fef687d11edc7ca1993acc25f5c",
+    "updates": 400,
+    "history_commits": 0,
+    "scope": "read-only JSON/JSONL/NPZ, locked case lower and figures; no PT/model inference/SSH/newdata",
+    "conclusion": "R/B directional; no effective full-state repair. Both final d exactly c20s3 lower. Stored10/50/100/200 checkpoints show100% variable nodes below lower; do not claim unsaved intermediate persistence."
+  }
+}

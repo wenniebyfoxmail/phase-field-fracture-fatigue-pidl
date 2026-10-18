@@ -1,0 +1,53 @@
+{
+  "run_id": "pf_s04e028_active_anchor_v1_20261018T2037Z",
+  "source_commit": "d8c21d021d715fef687d11edc7ca1993acc25f5c",
+  "execution": "completed",
+  "retrieval": {
+    "status": "ALL_FILES_SIZE_SHA256_AND_ARCHIVE_VERIFIED",
+    "file_count": 25,
+    "total_bytes": 81625867,
+    "source_commit": "d8c21d021d715fef687d11edc7ca1993acc25f5c",
+    "source_dirty": false,
+    "worker_exited": true,
+    "archive_sha256": "455f99445fb4bd6a2148be5a22ccfafe42a9a2b2a4633c151dcc4a45fcf01ea6"
+  },
+  "receipt": {
+    "protocol": "S04-E028/v1-active-anchor-current-lower-20261018",
+    "commit": "d8c21d021d715fef687d11edc7ca1993acc25f5c",
+    "execution": "completed_pending_retrieval_review",
+    "host": "GPUServer8",
+    "pid": 3675034,
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "cuda_visible_devices": "5",
+    "command": [
+      "/mnt/data2/drtao/wennie/pf_s04e028_active_anchor_v1_20261018T2037Z/code/SENS_tensile/run_s04_e028.py",
+      "--execute",
+      "--grant",
+      "/mnt/data2/drtao/wennie/pf_s04e028_active_anchor_v1_20261018T2037Z/grant.json",
+      "--out",
+      "/mnt/data2/drtao/pidl_archives/pf_s04e028_active_anchor_v1_20261018T2037Z/output"
+    ],
+    "optimizer_steps": 400,
+    "optimizer_step_calls": 400,
+    "history_commits": 0,
+    "retry": false,
+    "initial_free_cuda_bytes": 24836243456,
+    "cuda_cap_bytes": 23762501632,
+    "source_dirty": false,
+    "optimizer_attempt": "completed_finite",
+    "elapsed_seconds": 649.7647855710238,
+    "peak_cuda_allocated_bytes": 5677914624,
+    "peak_cuda_reserved_bytes": 5974786048,
+    "max_rss_bytes": 3684491264
+  },
+  "decision": {
+    "R_active": 0.2740293971516676,
+    "status": "DIRECTIONAL_SIGNAL",
+    "scope": "exposed single state active-anchor component; inspect full costs"
+  },
+  "scientific_conclusion": "no effective full-state repair",
+  "disposition": "repair only flat damage representation in independent E029; E028 frozen",
+  "local_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E028/runs/pf_s04e028_active_anchor_v1_20261018T2037Z",
+  "source_review": "focused_review.json"
+}

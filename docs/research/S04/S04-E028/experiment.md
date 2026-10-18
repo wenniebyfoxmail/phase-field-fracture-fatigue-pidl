@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E028
 protocol_revision: v1-active-anchor-current-lower-20261018
-status: preparation
+status: completed-frozen
 ---
 # E028：在当前物理可行域内，检验直接active监督
 
@@ -43,3 +43,8 @@ E027的0/1000/1500固定记录及同一终态NPZ，见parent_diagnosis.json、pa
 任一输入/模型SHA/schema/原S预测复放不合、当前lower语义不合、非有限loss/梯度/参数/字段、硬界或预裂纹违背>1e-10、设备/预算/时间/输出触限立即停止整次试验，不启动剩余臂，不重试。普通数值性能不佳是固定终点诊断，不事后添加新停止阈值。完整性与重点图在取回后复核；必要预检不通过不以轻量单测替代。
 
 最小结论：若R相对B及自己0步降低active并保持u/d合理，支持直接active锚点是可控的单态修复组件；若无收益或tradeoff严重，保留负结果并定位梯度/饱和，不再自动扫参。无论结果如何，旧E027判据与结果不动。
+
+
+## 固定终点结果
+
+已完成、取回、独立复核；R/B=.274029方向信号保留，但R3.83983高于mapped0 .77277，非有效修复。全部终态d等c20s3 lower，已存检查点及posthoc真实raw/导数定位到平坦区。见[result_20261018.md](result_20261018.md)。仅转入独立E029，不改本试验。
