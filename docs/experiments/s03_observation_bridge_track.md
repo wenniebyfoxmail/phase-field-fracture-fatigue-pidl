@@ -316,3 +316,18 @@ Cleanproducerd8752569,R0010.983s,245hashesunchanged,3targetmasksidentical;
 allcase/sourcefiguresrenderedandchecked. Literalfloat-equalityflagdefect
 documentedwithoutrescore; differences<1.82e−12. Nextproposefixednext3complete
 stageswithsameobserver/simpletrend,notexecuted; no newstageimagesopened.
+
+### E047 next3complete stages, frozen observer — 2026-10-18
+
+[E047results](../research/S03/S03-E047-MD01/results.md): metadataselects27/28/29,
+minfilenames0403/0406/0409, reusealready-exposedE031sources. D2completed:
+queries25,26→27;26,27→28;27,28→29, savedbeforetargetdecode. SameE045observer,
+E042area-trend/hold;25/26E046cachesexact. TargetA10399/11344/12672,
+L238/235/242. HoldAE1208/945/1328,trend622/263/383px²;MAE1160.333/422.667,
+−63.57%,3/3winsandcalculable. Growthincrements1208/945/1328afterprior1830;
+localdecelerationthenrebound,notphysicalmechanismclaim. Cleanproducerc35ef19d,
+R0011.368s,286hashesunchanged,3immutablepredictionchains;allsource/maskand
+forecastfiguresinspected. No retuning/training/downloads oroldscorereplacement.
+D3nextproposesame-stageother2photos27/28/29observation-variationcheck;metadata
+ends29, do notinventnext3stages. Notexecuted; currenttrendworkingbaseline,
+notindependent-specimengeneralisation orphysicalaperture.

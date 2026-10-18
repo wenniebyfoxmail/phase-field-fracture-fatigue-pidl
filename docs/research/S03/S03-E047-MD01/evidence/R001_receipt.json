@@ -1,0 +1,27 @@
+{
+  "execution": "succeeded",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 60968,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_frozen_next_three.py",
+    "run",
+    "--lock",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E047-MD01/runs/S03-E047-MD01-R000/selection_lock.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E047-MD01/runs/S03-E047-MD01-R001"
+  ],
+  "started_utc": "2026-10-18T20:34:20.878806+00:00",
+  "commit": "c35ef19defd3aaca33ec663ff15747daaf1eb567",
+  "dirty": [],
+  "selection_sha256": "927284d71f2af7956d9da6b043843207a318c5843d03fe8c36af0258bad43e2d",
+  "code_sha256": "8fd6a4452066e6f72b8d9ccce887baca120db0db502ba3db902c4f1e018572ef",
+  "retrieval": "verified_local",
+  "protected_files_verified": 286,
+  "history_cache_exact": 2,
+  "target_extractions": 3,
+  "prediction_before_decode_chains": 3,
+  "wall_seconds": 1.3678755840519443,
+  "cpu_seconds": 1.356018,
+  "ended_utc": "2026-10-18T20:34:22.246416+00:00"
+}

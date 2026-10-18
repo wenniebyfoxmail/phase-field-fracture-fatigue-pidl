@@ -1,0 +1,15 @@
+{
+  "execution": "succeeded",
+  "source_summary_sha256": "86521d5f2711654ee8976f0b83826cbb1e993df3b37a1cc22811c90b570f27b3",
+  "renderer_sha256": "8fd6a4452066e6f72b8d9ccce887baca120db0db502ba3db902c4f1e018572ef",
+  "figures": 2,
+  "numerical_rerun": false,
+  "output_hashes": {
+    "F01_all_target_observations.md": "ef8f7f5f0cc16b85c887c100ee7fd608de74e97309f9ceaf5671003fdcb071d4",
+    "F02_every_window_forecast.png": "b963d9abb5738c38671c7f18d17617ae31b2afba313e4db7b942fd52979f541b",
+    "F02_every_window_forecast.pdf": "bff401b46c5b48734a492b51431fae35c521e46dfefc3fa50b8ef0410e6a1f6c",
+    "F02_every_window_forecast.md": "c41345c831f447a90b75e3948cb4c543b4447d4d54016d4fbae22c7a00ca3a19",
+    "F01_all_target_observations.png": "896cf1ce9bb83cc92016891de89939428eae5bb1c79f32d08d82b0000a84d8e2",
+    "F01_all_target_observations.pdf": "671b5ec217004766b411b8082b5a070dd05215183e57d05998ef4f0707322343"
+  }
+}

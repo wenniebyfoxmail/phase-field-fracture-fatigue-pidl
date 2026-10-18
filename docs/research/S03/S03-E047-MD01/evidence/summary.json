@@ -1,0 +1,130 @@
+{
+  "role": "one already-exposed MD01 trajectory;3 overlapping next-window queries",
+  "protocol": "E047-frozen-observer-next3-v1",
+  "comparisons": [
+    {
+      "history_a": 25,
+      "origin": 26,
+      "target": 27,
+      "horizon": 1,
+      "observed_area": 10399,
+      "observed_support": 238,
+      "observed_mass": 43.69327731092437,
+      "persistence": 9191.0,
+      "secant": 11021.0,
+      "raw_secant": 11021.0,
+      "persistence_ae": 1208.0,
+      "secant_ae": 622.0,
+      "gain_vs_persistence": 586.0,
+      "signed_trend_error": 622.0,
+      "observed_increment": 1208,
+      "historical_increment": 1830,
+      "empty_candidate_mask": false
+    },
+    {
+      "history_a": 26,
+      "origin": 27,
+      "target": 28,
+      "horizon": 1,
+      "observed_area": 11344,
+      "observed_support": 235,
+      "observed_mass": 48.272340425531915,
+      "persistence": 10399.0,
+      "secant": 11607.0,
+      "raw_secant": 11607.0,
+      "persistence_ae": 945.0,
+      "secant_ae": 263.0,
+      "gain_vs_persistence": 682.0,
+      "signed_trend_error": 263.0,
+      "observed_increment": 945,
+      "historical_increment": 1208,
+      "empty_candidate_mask": false
+    },
+    {
+      "history_a": 27,
+      "origin": 28,
+      "target": 29,
+      "horizon": 1,
+      "observed_area": 12672,
+      "observed_support": 242,
+      "observed_mass": 52.36363636363637,
+      "persistence": 11344.0,
+      "secant": 12289.0,
+      "raw_secant": 12289.0,
+      "persistence_ae": 1328.0,
+      "secant_ae": 383.0,
+      "gain_vs_persistence": 945.0,
+      "signed_trend_error": -383.0,
+      "observed_increment": 1328,
+      "historical_increment": 945,
+      "empty_candidate_mask": false
+    }
+  ],
+  "observations": [
+    {
+      "stage": 25,
+      "role": "exact_E046_history",
+      "area": 7361,
+      "support": 250,
+      "mass": 29.444,
+      "occupied_fraction": 1.0,
+      "p10": 16.0,
+      "p50": 30.0,
+      "p90": 40.0
+    },
+    {
+      "stage": 26,
+      "role": "exact_E046_history",
+      "area": 9191,
+      "support": 240,
+      "mass": 38.295833333333334,
+      "occupied_fraction": 0.96,
+      "p10": 18.0,
+      "p50": 40.0,
+      "p90": 55.0
+    },
+    {
+      "stage": 27,
+      "role": "new_frozen_rule_observation",
+      "area": 10399,
+      "support": 238,
+      "mass": 43.69327731092437,
+      "occupied_fraction": 0.952,
+      "p10": 20.0,
+      "p50": 46.0,
+      "p90": 59.0
+    },
+    {
+      "stage": 28,
+      "role": "new_frozen_rule_observation",
+      "area": 11344,
+      "support": 235,
+      "mass": 48.272340425531915,
+      "occupied_fraction": 0.94,
+      "p10": 35.0,
+      "p50": 49.0,
+      "p90": 64.0
+    },
+    {
+      "stage": 29,
+      "role": "new_frozen_rule_observation",
+      "area": 12672,
+      "support": 242,
+      "mass": 52.36363636363637,
+      "occupied_fraction": 0.968,
+      "p10": 38.0,
+      "p50": 53.5,
+      "p90": 66.9
+    }
+  ],
+  "mae": {
+    "persistence": 1160.3333333333333,
+    "secant": 422.6666666666667
+  },
+  "relative_gain": 0.6357368572249353,
+  "coverage": "3/3 paired calculable windows",
+  "wins": 3,
+  "frozen_observer": true,
+  "old_halfdepth_masks_scores_unchanged": true,
+  "no_new_downloads": true
+}

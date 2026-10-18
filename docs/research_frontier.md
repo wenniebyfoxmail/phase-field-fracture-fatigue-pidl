@@ -65,8 +65,11 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   E045rule, accepted24/25/26masksexactreused. Same3windows MAEhold/trend/separated
   1378/717.333/717.333px² (−47.94%vshold),2wins1loss,3/3calculable.
   ConstantoriginLmakesseparatedredundant; exposeddevelopmentonly,nogeneralisation
-  orphysicalapertureclaim. Oldhalfdepth/masks/scorespreserved. Nextfixednext3
-  completestagesproposed,notopened; freezeacceptedobserver,noperfectsegmentationprerequisite.
+  orphysicalapertureclaim. E047next3complete27/28/29completedwithsameobserver:
+  hold/trendMAE1160.333/422.667px² (−63.57%),3/3winsandcalculable;forecasts
+  savedbeforetargetdecode,already-exposedsourceonly,notblindreplication.
+  Oldhalfdepth/masks/scorespreserved. Mappingends29;nextproposestage-internal
+  remaining-photovariationcheck,notexecuted. Freezeacceptedobserver,noperfectsegmentationprerequisite.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
