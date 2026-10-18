@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import platform
 import resource
+import signal
 import subprocess
 import sys
 import time
@@ -27,6 +28,37 @@ LOCK = ROOT / "docs/research/S04/S04-E027/data_lock.json"
 
 def dump(path, value):
     path.write_text(json.dumps(value, indent=2, allow_nan=False)+"\n")
+
+
+def initializer_compatibility(path, lock):
+    """First bounded Run phase, CPU only; never called during static preparation."""
+    payload = dict(relative=path.name, bytes=lock["initializer"]["bytes"], sha256=lock["initializer"]["sha256"])
+    method.verify_payload(path.parent, payload)
+    state = torch.load(path, map_location="cpu", weights_only=True)
+    expected = {"input_layer.weight": (400, 2), "input_layer.bias": (400,),
+                "output_layer.weight": (3, 400), "output_layer.bias": (3,)}
+    for j in range(7):
+        expected[f"hidden_layers.{j}.weight"] = (400, 400)
+        expected[f"hidden_layers.{j}.bias"] = (400,)
+    for j in range(8):
+        expected[f"activations.{j}.coeff"] = ()
+    if not isinstance(state, dict) or set(state) != set(expected):
+        raise ValueError("initializer must be the exact bare 26-key MLP state_dict; no wrapper/fallback")
+    observed = {}
+    for name, shape in expected.items():
+        value = state[name]
+        if (not isinstance(value, torch.Tensor) or value.device.type != "cpu"
+                or tuple(value.shape) != shape or value.dtype not in (torch.float32, torch.float64)):
+            raise ValueError(f"initializer shape/type/dtype mismatch: {name}")
+        method.finite(value, f"initializer {name}")
+        observed[name] = dict(shape=list(value.shape), dtype=str(value.dtype))
+    return state, dict(status="passed", source_sha256=payload["sha256"], bytes=payload["bytes"],
+                       keys=observed, training_dtype="torch.float64", weights_only=True,
+                       optimizer_steps=0, fallback=False)
+
+
+def deadline_signal(signum, frame):
+    raise TimeoutError("external joint-wall deadline; no retry")
 
 
 def execution_admission(lock, grant):
@@ -47,8 +79,14 @@ def execution_admission(lock, grant):
         raise PermissionError("budget mismatch")
     if not os.environ.get("CUDA_VISIBLE_DEVICES") or "," in os.environ["CUDA_VISIBLE_DEVICES"]:
         raise PermissionError("explicit single CUDA_VISIBLE_DEVICES required")
+    if grant.get("cuda_visible_devices") != os.environ["CUDA_VISIBLE_DEVICES"]:
+        raise PermissionError("device approval mismatch")
     if not torch.cuda.is_available() or torch.cuda.device_count() != 1:
         raise PermissionError("one CUDA producer required")
+    uuid = subprocess.check_output(["nvidia-smi", "-i", os.environ["CUDA_VISIBLE_DEVICES"],
+            "--query-gpu=uuid", "--format=csv,noheader"], text=True).strip()
+    if not uuid or grant.get("gpu_uuid") != uuid:
+        raise PermissionError("GPU UUID approval mismatch")
     return head
 
 
@@ -214,19 +252,28 @@ def run(root, lock, grant, output, initializer):
         raise FileExistsError("fresh output only")
     if grant.get("output") != str(output.resolve()) or grant.get("hostname") != platform.node():
         raise PermissionError("producer/output approval mismatch")
-    if torch.cuda.mem_get_info()[0] < 24*1024**3:
-        raise MemoryError("less than 24 GiB GPU free before preflight")
+    free_cuda, total_cuda = torch.cuda.mem_get_info()
+    if free_cuda < 20*1024**3:
+        raise MemoryError("less than 20 GiB GPU free before preflight")
+    # Leave 1 GiB headroom below the actually free device memory. This is a
+    # per-process allocation bound, not a claim that the graph already fits.
+    cuda_cap = free_cuda-1024**3
+    torch.cuda.set_per_process_memory_fraction(cuda_cap/total_cuda, device=0)
     start = time.monotonic()
     output.mkdir(parents=True)
     receipt = dict(protocol=method.PROTOCOL, commit=head, execution="preflight",
                    optimizer_steps=0, history_commits=0, host=platform.node(), pid=os.getpid(),
                    cuda_visible_devices=os.environ["CUDA_VISIBLE_DEVICES"], command=sys.argv,
-                   gpu=torch.cuda.get_device_name(0), source_dirty=False)
+                   gpu=torch.cuda.get_device_name(0), gpu_uuid=grant["gpu_uuid"], source_dirty=False,
+                   initial_free_cuda_bytes=free_cuda, total_cuda_bytes=total_cuda,
+                   cuda_allocator_cap_bytes=cuda_cap, cuda_headroom_bytes=1024**3)
     progress = dict(optimizer_steps=0, optimizer_step_calls=0, optimizer_attempt="not_started")
     def guard():
         torch.cuda.synchronize()
         if time.monotonic()-start > 7200:
             raise TimeoutError("2 hour joint cap")
+        if torch.cuda.max_memory_reserved() > cuda_cap or torch.cuda.mem_get_info()[0] < 1024**3:
+            raise MemoryError("CUDA allocation/headroom bound exceeded")
         # Linux ru_maxrss is KiB; Darwin is rejected before reaching this path.
         if resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024 > 32*1024**3:
             raise MemoryError("32 GiB process RSS cap")
@@ -234,11 +281,13 @@ def run(root, lock, grant, output, initializer):
             raise OSError("2 GiB output cap")
     try:
         dump(output/"data_lock.json", lock)
+        # The first payload operation is the bounded exact initializer check.
+        # No FE state, model instance, optimizer or computation graph precedes it.
+        state, compatibility = initializer_compatibility(initializer, lock)
+        dump(output/"initializer_compatibility.json", compatibility)
+        guard()
         root = Path(grant["data_root"])  # explicitly approved producer staging, never a fallback
         check = method.prepare(root, lock)
-        payload = dict(relative=initializer.name, bytes=lock["initializer"]["bytes"], sha256=lock["initializer"]["sha256"])
-        method.verify_payload(initializer.parent, payload)
-        state = torch.load(initializer, map_location="cpu", weights_only=True)
         arrays = method.load_reference(root, lock)
         problem = method.Problem(arrays, "cuda:0")
         torch.manual_seed(1)
@@ -272,12 +321,24 @@ def run(root, lock, grant, output, initializer):
             raise TimeoutError("preflight estimated joint budget exceeds cap")
         dump(output/"preflight.json", dict(reference=check, benchmark_seconds=benchmark,
              allowance_factor=1.25, evaluation_save_reserve_seconds=600,
-             total_estimate_seconds=estimate, peak_cuda_bytes=torch.cuda.max_memory_allocated()))
+             total_estimate_seconds=estimate, peak_cuda_bytes=torch.cuda.max_memory_allocated(),
+             peak_cuda_reserved_bytes=torch.cuda.max_memory_reserved(), cuda_cap_bytes=cuda_cap))
+        guard()
         # Independent empty optimizers; both initial models contain identical state.
         pmodel, smodel = copy.deepcopy(common), copy.deepcopy(common)
         adam = lambda model: torch.optim.Adam(model.parameters(), lr=1e-4, betas=(.9, .999), eps=1e-8, weight_decay=0)
         popt, sopt = adam(pmodel), adam(smodel)
         prng, srng = torch.Generator().manual_seed(1), torch.Generator().manual_seed(1)
+        # Save the actual common start once; P/S have identical parameters and
+        # independent empty Adam objects. This is provenance, never a resume API.
+        initial_equal = all(torch.equal(a, b) for a, b in zip(pmodel.state_dict().values(), smodel.state_dict().values()))
+        if not initial_equal or popt.state or sopt.state:
+            raise ValueError("P/S common-start or empty-Adam mismatch")
+        torch.save(dict(model=common.state_dict(), P_optimizer=popt.state_dict(), S_optimizer=sopt.state_dict(),
+                        P_rng=prng.get_state(), S_rng=srng.get_state(),
+                        initializer_sha256=lock["initializer"]["sha256"]), output/"initial_state.pt")
+        dump(output/"initial_identity.json", dict(P_S_parameter_equal=True, empty_Adam=True,
+            initializer_sha256=lock["initializer"]["sha256"], sampling_seed=1, history_source="locked FEM predecessor only"))
         milestones, records, resources = [], [], {}
         def checkpoint(arm, step, model):
             guard()
@@ -308,7 +369,22 @@ def run(root, lock, grant, output, initializer):
         segment("P", pmodel, popt, prng, "P", 1, 1500)
         segment("shared_prefix", smodel, sopt, srng, "S", 1, 1000)
         cmodel, copt, crng = method.clone_branch(smodel, sopt, srng)
+        parameters_equal = all(torch.equal(a, b) for a, b in zip(smodel.state_dict().values(), cmodel.state_dict().values()))
+        independent = all(a.data_ptr() != b.data_ptr() for a, b in zip(smodel.parameters(), cmodel.parameters())) and srng is not crng
+        rng_equal = torch.equal(srng.get_state(), crng.get_state())
+        adam_equal = bool(sopt.state) and len(sopt.state) == len(copt.state)
+        for sp, cp in zip(smodel.parameters(), cmodel.parameters()):
+            left, right = sopt.state[sp], copt.state[cp]
+            adam_equal = adam_equal and set(left) == set(right)
+            for key in left:
+                adam_equal = adam_equal and (torch.equal(left[key], right[key]) if torch.is_tensor(left[key]) else left[key] == right[key])
+                if torch.is_tensor(left[key]):
+                    independent = independent and left[key].data_ptr() != right[key].data_ptr()
+        if not parameters_equal or not rng_equal or not adam_equal or not independent or sopt.param_groups[0]["lr"] != copt.param_groups[0]["lr"]:
+            raise ValueError("S/C fork parameter/Adam/RNG mismatch")
         torch.save(dict(model=smodel.state_dict(), optimizer=sopt.state_dict(), rng=srng.get_state()), output/"prefix1000.pt")
+        dump(output/"fork_identity.json", dict(shared_updates=1000, parameters_equal=parameters_equal,
+            nonempty_Adam_equal=adam_equal, sampling_rng_equal=rng_equal, independent_objects=independent))
         prefix = next(r for r in milestones if r["arm"] == "S" and r["step"] == 1000)
         milestones.append(dict(copy.deepcopy(prefix), arm="C", reused_from="S shared prefix at 1000"))
         dump(output/"prefix1000.json", prefix["scores"])
@@ -346,6 +422,7 @@ def run(root, lock, grant, output, initializer):
 
 
 def main():
+    signal.signal(signal.SIGTERM, deadline_signal)
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--prepare", action="store_true")
     ap.add_argument("--execute", action="store_true")
