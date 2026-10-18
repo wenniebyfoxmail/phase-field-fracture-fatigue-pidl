@@ -1,0 +1,30 @@
+{
+  "verdict": "BOUNDED_NEGATIVE_RESULT_EVIDENCE_REVIEW_PASS",
+  "source_commit": "a7a9305c026f23295bd2354f5cefb81e35c9e97c",
+  "blockers": [],
+  "accepted_fields": 0,
+  "exact_original_fallback_states": 3,
+  "all_visited_UV_values_checked": 108,
+  "original_files_hash_checked": 33,
+  "prior_input_hash_checked": 6,
+  "min_UV_positive_crossings": {
+    "c20s4": 0.0016005412430579956,
+    "c60s4": 5.989690572978252e-05,
+    "c83s4": 0.0008689931114390038
+  },
+  "new_candidates_evaluated_by_reviewer": 0,
+  "followup_status": "Analytic same-direction initial step is mathematically justified for prospective protocol review, not silently appended to v1 or executed by reviewer.",
+  "result_sha256": {
+    "uv_metrics.csv": "c0065e13259ddc1df49a0aedcacb93c61da8be8a2654631a60949fae0ff460ea",
+    "c83s4_three_head.npz": "9a751a765fa94f5efa69173d0421d7e7c21248cc33af9fd1234fe408ac9ece61",
+    "line_search.csv": "428be04f5355372b1ee623fa58243460ec8f3e8d214abaee10773aec585c2d8d",
+    "c20s4_three_head.npz": "8ec8e1fdf900161adb67202a2b2aa148364b67118df248da596d886cee8147b3",
+    "first_order_comparison.csv": "1ab5a5ad1a4abadf77e930bad55617846a8fe103e78c2c4e3416511f25fc1f9b",
+    "c60s4_three_head.npz": "531142710d562e1db52f6137b076ad72ed057a5a569e5e684026ff14265c19a5",
+    "archived_uv_curvature_diagnosis.json": "c87eb2af6b55dee2f32ff7ca81cdfb6b812fb35982fab5b9c72311fb2d95cb5e",
+    "numerics.json": "508cb90c9d385e2f05c9444979e88aa2ace3c5270f7ec3e9460938f7961b5f2b",
+    "physical_metrics.csv": "0e1a5c6a37a870c2c1f94c64919f1838f7d02de9d5e945dd0c8e20cd647d07a2",
+    "guard_values.csv": "fceb62131ba6cc63dddfe5598eee2074b78d8bb0d3e1982aefc800f0bead3bfb",
+    "receipt.json": "ddbccbec613d93bb294e1695d6851227a472e837e5f977971d66f8a8949dc02c"
+  }
+}

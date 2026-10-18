@@ -1,0 +1,11 @@
+{
+  "source_commit": "a7a9305c026f23295bd2354f5cefb81e35c9e97c",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/three_head_finite_v1",
+  "file_count": 28,
+  "total_bytes": 4193091,
+  "scope": "D010 r1 preserved all-rejected negative",
+  "manifest_sha256": "8ed4fa6d8313b3fbe5f7dd5dd9954832beab215862050d169d8b2112d2176c6e",
+  "results": "results/",
+  "figures": "../three_head_finite_v2/figures/uv_step_calibration.png",
+  "independent_review": "review/"
+}

@@ -1,0 +1,11 @@
+# D010 r2 focused independent Code Ready review
+
+**PASS**, exact prospective source `1772aa630021a63fa454f4330b5713598575a29d`; no blocking finding. Independently reran **10 targeted tests, all passed**. No r2 field or unvisited candidate was executed by the reviewer.
+
+The change addresses the mechanism independently verified in r1: the finite grid did not enter the fixed-direction UV-compatible interval. For each positive normalized regional weight, native linear-head error gives c+2bt+at², with b<0 and a>0. The helper rejects unresolved/nonfinite cases, computes -2b/a, and fixes the single initial fraction to min(1, half the smallest positive crossing). This is an analytic interior fraction, not a fit to select an outcome, and the half-crossing factor is explicit before execution.
+
+Physical velocity uses original actual layer order at the external verified coefficient direction, with zero base, multiplied by the same R. All D/bias/BC/window factors therefore occur exactly once; target error and velocity share 1/absUs normalization. Original saved UV is the centre. Final actual decode is compared against origin+fraction*velocity with the unchanged 1e-12 affine check; that identity remains subordinate to actual seven-guard admission.
+
+Only the initial fraction changes under explicit `--step-rule uv-curvature`; the prescribed k0..8, first actual feasible stopping, actual native nonlinear AMOR/instantaneous driver evaluation, four UV guards, shared 2% maximum, exact outside/BC, original-file/model/input identity, and exact saved-original fallback are unchanged. The analytic bound does not admit weak/driver physics or replace actual field comparison. R1 receipt is byte-bound to the tracked negative receipt and required to contain zero accepted fields; its numeric wall time is included in the combined 600-second cap. R1 output is not reused or overwritten.
+
+The remaining limits are unchanged: no new direction search, parameter fit, 3D optimum, checkpoint write, training, unseen state or history/fatigue evolution. Report the actual fraction and tiny parameter use, every visited rejection, and secondary physical costs; a finite passing component is not an application or equilibrium acceptance threshold. Subsequent numerical evidence and prose/plot review remain required.

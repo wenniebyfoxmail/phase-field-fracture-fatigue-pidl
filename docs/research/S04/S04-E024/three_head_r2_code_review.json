@@ -1,0 +1,21 @@
+{
+  "verdict": "BOUNDED_R2_CODE_READY_PASS",
+  "source_commit": "1772aa630021a63fa454f4330b5713598575a29d",
+  "blocking_findings": [],
+  "targeted_pytest_passed": 10,
+  "source_sha256": {
+    "SENS_tensile/s04_e024_three_head.py": "fb0d9519dcf91bc2fd23620a803ebf989a6e9a51f549f8219fc43fe7c69757f1",
+    "SENS_tensile/diagnose_s04_e023_three_head.py": "6619014d70fcf30ec6761e1b9230e4adcf3b857304a80fbb066cc82a8c2633a8",
+    "tests/test_s04_e024_three_head.py": "13ceef44802b8d2469dd2ab891118ee973608ccba0e8b4c69bcf4fa09fc453b5",
+    "docs/research/S04/S04-E024/three_head_curvature_protocol.md": "7bbfab16179773f7f2e6536b13bf2a82cb63c1d4d00c86b49cea753f67ac42c6",
+    "docs/research/S04/S04-E024/three_head_r1_receipt.json": "ddbccbec613d93bb294e1695d6851227a472e837e5f977971d66f8a8949dc02c"
+  },
+  "actual_execution_by_reviewer": false,
+  "conditions": [
+    "r1 negative remains immutable",
+    "r2 uses explicit --step-rule uv-curvature and fresh v2 output",
+    "only seven actual field guards accept candidates, not analytic UV bound",
+    "first feasible stops at fixed k0..8; no later optimisation or automatic attempt",
+    "report actual tiny step and parameter norm, not capacity or optimum claim"
+  ]
+}

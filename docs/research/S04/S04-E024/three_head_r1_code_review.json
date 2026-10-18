@@ -1,0 +1,21 @@
+{
+  "verdict": "BOUNDED_CODE_READY_PASS",
+  "source_commit": "a7a9305c026f23295bd2354f5cefb81e35c9e97c",
+  "source_sha256": {
+    "SENS_tensile/s04_e024_three_head.py": "a3498a57bb8344fdcde1536ba0bfb98d12fe869b55cb1d68c4d57e3f52d6d7e1",
+    "SENS_tensile/diagnose_s04_e023_three_head.py": "9786d06dee16fdb12154ca4de7d1b80a2a280c57dbca1aecd492bc3510ae11a0",
+    "tests/test_s04_e024_three_head.py": "0994f74f482159f5a87a9b953b344f281aab9fd1d2d1da3b912b2aeb90c8789e",
+    "docs/research/S04/S04-E024/three_head_protocol.md": "dc5c509ebb45d23bdefc94a201818fae6e3248d60aa9192b69fa94a094a62f1b"
+  },
+  "independent_pytest_passed": 9,
+  "blocking_findings": [],
+  "scope": "Only the prescribed first actual feasible fixed-halving step along the saved strict-five direction realised in enriched 3D. No new direction fit or 3D optimum.",
+  "actual_results_executed_by_reviewer": false,
+  "result_requirements": [
+    "all visited guards and numerical rejection causes retained",
+    "actual native nonlinear fields and shared parameter budget independently recomputed",
+    "exact fallback identity and first feasible stopping audited",
+    "absolute driver errors and FEM reference scales accompany relative errors",
+    "secondary full/damage driver costs, branch changes, old portability warnings and missing histories preserved"
+  ]
+}

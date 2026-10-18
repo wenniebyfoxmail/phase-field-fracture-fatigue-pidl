@@ -1,0 +1,11 @@
+{
+  "source_commit": "1772aa630021a63fa454f4330b5713598575a29d",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/three_head_finite_v2",
+  "file_count": 56,
+  "total_bytes": 68567487,
+  "scope": "D010 r2 bounded real finite component gains; no application/evolution claim",
+  "manifest_sha256": "3bca393b741fde7fb99201d8ebd15a98b48336db601d56f856bac5d7fc8822e9",
+  "results": "results/",
+  "figures": "figures/",
+  "independent_review": "review/"
+}

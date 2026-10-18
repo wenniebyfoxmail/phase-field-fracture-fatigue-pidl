@@ -1,0 +1,65 @@
+[
+  {
+    "state": "c20s4",
+    "dimension": 3,
+    "accepted": false,
+    "accepted_k": null,
+    "accepted_fraction": 0.0,
+    "visited_candidates": 9,
+    "radius": 0.001743214045824267,
+    "delta_relative": 0.0,
+    "affine_max_abs": 0.0,
+    "outside_max_abs": 0.0,
+    "bc_max_abs": 0.0,
+    "branch_changed_gp_fraction": 0.0,
+    "coordinates": [
+      -0.0005145707606568286,
+      0.29731153436045965,
+      0.9547803866613317
+    ],
+    "orthogonal_remainder_norm": 0.9547803866613317,
+    "reconstruction_max_abs": 3.469446951953614e-18
+  },
+  {
+    "state": "c60s4",
+    "dimension": 3,
+    "accepted": false,
+    "accepted_k": null,
+    "accepted_fraction": 0.0,
+    "visited_candidates": 9,
+    "radius": 0.0017705456513495562,
+    "delta_relative": 0.0,
+    "affine_max_abs": 0.0,
+    "outside_max_abs": 0.0,
+    "bc_max_abs": 0.0,
+    "branch_changed_gp_fraction": 0.0,
+    "coordinates": [
+      0.003910255791526622,
+      0.312835853101053,
+      0.9497991571454366
+    ],
+    "orthogonal_remainder_norm": 0.9497991571454366,
+    "reconstruction_max_abs": 2.7755575615628914e-17
+  },
+  {
+    "state": "c83s4",
+    "dimension": 3,
+    "accepted": false,
+    "accepted_k": null,
+    "accepted_fraction": 0.0,
+    "visited_candidates": 9,
+    "radius": 0.0014171275903012346,
+    "delta_relative": 0.0,
+    "affine_max_abs": 0.0,
+    "outside_max_abs": 0.0,
+    "bc_max_abs": 0.0,
+    "branch_changed_gp_fraction": 0.0,
+    "coordinates": [
+      0.0007730724000982569,
+      0.5906764733290751,
+      0.8069081151002205
+    ],
+    "orthogonal_remainder_norm": 0.8069081151002205,
+    "reconstruction_max_abs": 2.7755575615628914e-17
+  }
+]
