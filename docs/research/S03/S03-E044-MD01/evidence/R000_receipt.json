@@ -1,0 +1,36 @@
+{
+  "execution": "succeeded",
+  "metadata_only": true,
+  "no_pixels_decoded": true,
+  "selection_sha256": "bd63b4e36bf5ca0f9bede0b06dbdc7f50184e22421863ec2b593ea5b6f5b06c2",
+  "files": [
+    {
+      "stage": 24,
+      "filename": "IMG_0394.JPG",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0394.JPG",
+      "official_id": "dc36397c-859e-491b-9310-587730d52c56",
+      "excel_row": 76,
+      "bytes": 17488347,
+      "sha256": "573fa3d7a65fd76e613cfb44e80784b4544953818d1a2b0376c33f0b9c4efb90"
+    },
+    {
+      "stage": 25,
+      "filename": "IMG_0397.JPG",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0397.JPG",
+      "official_id": "b6fc372e-0b53-4e98-af71-6c550d0675d3",
+      "excel_row": 79,
+      "bytes": 17445758,
+      "sha256": "20adfbe57e0c02e3c89be0ee080f93da3ef246853ff9af93fd34729874f57f03"
+    },
+    {
+      "stage": 26,
+      "filename": "IMG_0400.JPG",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0400.JPG",
+      "official_id": "79dbc65d-89a0-4e1d-8b4b-6c2999f6741e",
+      "excel_row": 82,
+      "bytes": 17510742,
+      "sha256": "31cba1e6237032ca057cbc525d2125278aeb29e9d36d2a036616f8c14593654a"
+    }
+  ],
+  "protected_inputs": 173
+}
