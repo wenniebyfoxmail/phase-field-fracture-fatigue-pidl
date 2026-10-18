@@ -27,7 +27,7 @@ from material_properties import MaterialProperties
 from pff_model import PFFModel
 from compute_energy import compute_energy
 from q4_quadrature import q4_shape_data,q4_gradient,q4_interpolate
-from loss_weight_diagnostics import gradient_probe,sign_stats,rprop_state_summary
+from loss_weight_diagnostics import gradient_probe,sign_stats,rprop_state_summary,GradientDecompositionError
 
 
 def make_field(state,device,adapter=None,load=.02999988):
@@ -118,7 +118,19 @@ def main(a):
         for k,v in field.nodal_damage_alignment.named_buffers():assert torch.equal(v,frozen_buffers[k])
     def probe(field,path,arm_start=None):
         budget(arm_start);*_,ee=evaluate(field)
-        info,vectors=gradient_probe(ee,regularizer(field),list(field.net.parameters()))
+        try:info,vectors=gradient_probe(ee,regularizer(field),list(field.net.parameters()))
+        except GradientDecompositionError as exc:
+            index=exc.diagnostics['largest_difference_flat_index'];offset=0
+            for name,p in field.net.named_parameters():
+                if offset<=index<offset+p.numel():
+                    exc.diagnostics['largest_difference_parameter']=name
+                    exc.diagnostics['parameter_local_flat_index']=index-offset
+                    exc.diagnostics['parameter_shape']=list(p.shape)
+                    break
+                offset+=p.numel()
+            dump(path.with_suffix('.failure.json'),exc.diagnostics)
+            torch.save({k:v.cpu() for k,v in exc.vectors.items()},path.with_suffix('.failure.pt'))
+            raise
         dump(path,info)
         budget(arm_start)
         return info,vectors
@@ -151,6 +163,10 @@ def main(a):
         serialize_reload_bitwise_equal=True,perturbation='output_layer.bias[2]-=1e-3',
         perturbed_Eh=pert['energies'][2],network_and_buffers_restored=True,
         elapsed_seconds=time.monotonic()-started,torch=torch.__version__,Rprop='single_tensor foreachFalse'))
+    if a.preflight_only:
+        dump(a.out/'preflight_only_terminal.json',dict(status='no_step_audit_complete',optimizer_updates=0,
+            history_commits=0,FEM_solves=0,elapsed_seconds=time.monotonic()-started))
+        return
     np.savez_compressed(a.out/'fixed_inputs.npz',node_coords=z['canonical_node_coords'],connectivity=z['connectivity'],
         FEM_initial_damage=z['FEM_initial_damage'],crack_mask=z['crack_mask'],hist_alpha=hist.cpu().numpy())
     del origin,check,restored,vectors,uvd,uvd2,uvd3,origin_uvd,capture,loaded,before_state
@@ -233,6 +249,7 @@ def main(a):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--recipe',type=Path,required=True);p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--preflight-only',action='store_true')
     args=p.parse_args()
     try:main(args)
     except BaseException as exc:

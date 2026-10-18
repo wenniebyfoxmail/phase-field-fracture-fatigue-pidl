@@ -158,3 +158,14 @@ endpoints are required for DeltaJ200; failure/cap does not permit earlier/best
 endpoint substitution, retry, added updates/arms/load/history refresh or FEM.
 This is one seen synthetic c1s1 development diagnostic, not convergence,
 independent prediction, physical validation or teacher qualification.
+
+### W0/W25 first GPU admission outcome
+
+Run `pf_s04e011_wpair_20261018T121457Z`, source03a8f320, passed GPU5 resource
+admission but stopped at origin fullNN gradient-decomposition guard before
+any optimizer step. Both200 endpoints are absent: effect verdict
+`inconclusive`, not a negative gamma result. [Receipt and bounded repair](runs/loss_weight_pair_20261018_result.md).
+Compact receipts/log verified; initial bundle remains remote. No retry,
+threshold relaxation, new FEM or history update. A diagnostics-only patch
+preserves the guard and records the presently missing mismatch magnitude;
+it has not been executed on producer.

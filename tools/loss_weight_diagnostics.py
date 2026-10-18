@@ -4,6 +4,13 @@ import math
 import torch
 
 
+class GradientDecompositionError(RuntimeError):
+    def __init__(self,diagnostics,vectors):
+        super().__init__('fullNN gradient decomposition mismatch')
+        self.diagnostics=diagnostics
+        self.vectors=vectors
+
+
 def flatten_grad(value, params):
     gg = torch.autograd.grad(value, params, retain_graph=True, allow_unused=True)
     result = torch.cat([(torch.zeros_like(p) if g is None else g).reshape(-1)
@@ -51,7 +58,19 @@ def gradient_probe(energies,reg,params):
         direct[beta]=flatten_grad(torch.log10(total)+1e-5*reg,params)
         discrepancy=float((expected-direct[beta]).abs().max())
         if not torch.allclose(expected,direct[beta],atol=1e-6,rtol=1e-4):
-            raise RuntimeError('fullNN gradient decomposition mismatch')
+            diff=expected-direct[beta]
+            limits=1e-6+1e-4*direct[beta].abs()
+            diagnostics=dict(beta=beta,energy=float(total.detach()),
+                energies=[float(q.detach()) for q in energies],
+                original_guard='torch.allclose(expected,direct,atol=1e-6,rtol=1e-4)',
+                guard_relaxed=False,difference_Linf=discrepancy,
+                difference_L2=norm(diff),direct_L2=norm(direct[beta]),
+                expected_L2=norm(expected),direct_Linf=float(direct[beta].abs().max()),
+                relative_L2=norm(diff)/norm(direct[beta]) if norm(direct[beta]) else None,
+                failing_components=int((diff.abs()>limits).sum()),
+                largest_difference_flat_index=int(diff.abs().argmax()),
+                raw_gradient_L2={k:norm(v) for k,v in raw.items()})
+            raise GradientDecompositionError(diagnostics,dict(raw,expected=expected,direct=direct[beta]))
         rows.append(dict(beta=beta,energy=float(total.detach()),total_gradient_L2=norm(direct[beta]),
             raw_gradient_L2={k:norm(v) for k,v in raw.items()},
             weighted_log_gradient_L2={k:norm(v) for k,v in terms.items()},
