@@ -1,0 +1,22 @@
+{
+  "execution": "succeeded",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 79157,
+  "command": [
+    "scripts/md01_cached_stage_forecast.py",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001"
+  ],
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "started_utc": "2026-10-18T10:04:41.335042+00:00",
+  "commit": "24be8408f3933a47861deea3a66c15800ffe5ac6",
+  "dirty": [
+    "?? docs/research/S03/S03-E042-MD01/",
+    "?? scripts/md01_cached_stage_forecast.py"
+  ],
+  "inputs_verified": 61,
+  "retrieval": "verified_local",
+  "wall_seconds": 2.219576584000606,
+  "cpu_seconds": 2.1432819999999997,
+  "ended_utc": "2026-10-18T10:04:43.554470+00:00"
+}

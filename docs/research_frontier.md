@@ -47,8 +47,11 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   height. Mixedsurfacecountsnotrecall; oldmaskunchanged. Updatedhumanauthority
   permitsE041singlelocalguiderepair: left+5880/-1367candidatepx2, old1021bottom
   retained; sourceoverlayshowstrajectoryrecovery, nottruth/physicalwidth.
-  No newframe/threshold/scoring. Cross-stagecheckseparatedesign; parallel
-  21/22/23baseline replay remainsseparateproposal,nomandatoryfouranchors.
+  E042freezesidentificationandadvancescached5framestosequence/3windowprediction:
+  persistence/secantMAE1104.667/1205.5px²; oldlatequeryretains473gain,earlycoverage
+  fragmentationlimitsareaextrapolation. Ninecachedsettings3/9favoursecantoverall;
+  noerrorselection,newextractionorD01duplication. Nextseparatesupport/thickness
+  observationsforfixedsimplepredictionrepair,nomandatoryfouranchors.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。

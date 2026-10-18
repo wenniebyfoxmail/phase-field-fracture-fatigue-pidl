@@ -247,3 +247,16 @@ no path/width/forecast or14stage access. SingleR0010.560s,19hashesunchanged.
 Deliverablecomplete; nextoneproposalcross-stage repeatability requiresseparate
 design/allowedsupport, not tonight'sextraunapprovedrun. Quota93remaining at
 prefinalcheck, stopline80notreached, noresetorremotejob.
+
+### E042 frozen observation sequence and relative-stage replay — 2026-10-18
+
+Useracceptscurrentidentification; [E042results](../research/S03/S03-E042-MD01/results.md)
+advance downstream withoutnewsegmentation. Fivecachedframes, all3fixedwindows:
+persistence/secantMAE1104.667/1205.5px²,1/3wins; old21/22/23query retains473gain,
+notnewvalidation. All3calculable,oneexposedtrajectory. Ninecachedsettings3/9favour
+secantoverall, noselection. Commonareas2064/1743/4054/4565/5057 withoccupiedrows
+181/151/250/250/250 of250: earlyareachange confoundsfragmentedidentification,
+notconfirmedphysicalshrinkage. E041accepted19commonmask=v1exact. Single2.220s
+analysis,61inputs/36oldprotectedunchanged; originalsoverlaysandallerrorsdisplayed.
+Nextseparateobservationsupportfromthickness; fixedsimplepredictionrepair, not
+morepixelpolishing, mandatorybackgroundanchors orduplicatedD01state-spacework.
