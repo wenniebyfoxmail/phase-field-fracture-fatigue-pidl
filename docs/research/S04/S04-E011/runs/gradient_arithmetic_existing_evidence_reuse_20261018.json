@@ -1,0 +1,23 @@
+{
+  "owner_thread": "01a14bbc-c8fd-7bd2-85fe-e0d6cbadc85d",
+  "source_commit": "8edc762a99bacfa6825ed413a148fbcccd09a921",
+  "diagnostic_run": "pf_s04e011_wgradfix_8edc762_20261018T210153Z",
+  "existing_materials": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/S04-E011/runs/weight_gradient_fix_20261018.md",
+      "bytes": 2453,
+      "sha256": "48789bf89f2888fcd48edf10c1698eca70abe118e1f5f04a28edf3c99b3a7deb"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/S04-E011/runs/weight_gradient_arithmetic_controls_20261018.json",
+      "bytes": 5939,
+      "sha256": "338fdad9c4538864972462c2150efdd3a0611df3237aa69ce5f782df7765f98a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/S04-E011/runs/weight_gradient_fix_evidence_review_20261018.json",
+      "bytes": 3999,
+      "sha256": "e8bf1738f52b7d1c19a2137b3ce58dda213c229de7cdd7f72165bbd2efac3fda"
+    }
+  ],
+  "observation": "Independent owner already performed central float32 shared/separate backward-order controls. This chat only prepared/reviewed its supplementary high-precision design; no duplicate execution."
+}

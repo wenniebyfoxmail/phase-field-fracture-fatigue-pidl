@@ -1,5 +1,7 @@
 # 梯度算术路径最小零更新核验（设计 v2；未实施、未执行）
 
+**当前处置：复用另一owner已完成的算术对照；本方案作为补充设计保留，暂不实施或执行。详见末节收口补充。**
+
 本轮仅准备方案并独立审核。没有新 producer Run、NN forward、参数扰动、训练或 FEM 求解。
 原始失败和9项差异保留；`atol=1e-6, rtol=1e-4` 不变。设计审核不等于 Code Ready 或执行许可。
 
@@ -196,3 +198,42 @@ v1 `e13223c6` 经独立只读Codex设计审核为MODIFY_AND_REREVIEW：
 同时明确能量不复现不单独证明输入身份错误。调用上限34 reverse /14 forward保持不变；
 局部原语核验不得暗增NN forward或VJP。v2已获焦点复审REVIEW_PASS_SCOPED_TO_DESIGN，绑定`1c02fff598298d3891557677fb51dc01f9896837`；
 没有剩余设计阻碍。仍未实施或执行，不能升级为Code Ready、根因确认或运行许可。
+
+## 收口补充：复用并行owner新证据，不安排重复执行
+
+方案复审后收到总部同步，并直接读取原对话 `PIDL 上翘诊断与改善：完整物理场`
+（thread `01a14bbc-c8fd-7bd2-85fe-e0d6cbadc85d`）的人方指令与最新记录，
+以及其本地已保存控制结果、代码和证据复核receipt。该对话另有明确的
+“查清修好9项、复审后原W0/W25各200步”授权；该授权不用于本对话启动任何工作。
+
+已有控制Run `pf_s04e011_wgradfix_8edc762_20261018T210153Z`，源代码
+`8edc762a99bacfa6825ed413a148fbcccd09a921`，在同一原点、float32、原1e-6/1e-4下：
+
+| 已存在对照 | 越界数 | 与本设计的关系 |
+|---|---:|---|
+| 原参数梯度末端缩放相加 | 9 | 重现P；raw分项和direct均报告与原件逐位一致 |
+| 提前缩放但分别反传 | 12 | 已覆盖“仅移动乘法位置不足以闭合”的U类控制 |
+| 手算独立链式系数、一次联合VJP | 0，逐位相等 | 已覆盖M类核心，不能再把这一问题当作完全未知 |
+| 真实输出adjoint统一网络VJP | 0，逐位相等 | 已有网络共享反传路径定位，不是独立系数参考 |
+| H3固定X/adjoints的局部仿射顺序对照 | FP32为4，局部FP64为0 | 支持局部归约精度解释；不是完整网络FP64重放 |
+
+这份已有证据及其独立复核支持：所复现9项与共享网络中分别/联合反传的float32
+加权和汇合顺序有关；没有把训练loss、梯度、优化器或容差改成另一个值。
+这不等于全实现无bug，也不替代完整高精度梯度oracle。
+本对话只读取已保存的compact控制和源码，**没有重新计算GPU/模型或独立重开全向量**。
+已有复核也明确其独立核对范围为原9项数值/代码和producer摘要，不能写成重算全部新向量。
+
+来源：[已有修复与证据说明](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/S04-E011/runs/weight_gradient_fix_20261018.md)、
+[控制结果](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/S04-E011/runs/weight_gradient_arithmetic_controls_20261018.json)、
+[证据复核](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/S04-E011/runs/weight_gradient_fix_evidence_review_20261018.json)。
+
+**当前处置改为reuse/defer**：上述v2是已经通过设计审核的补充方案，不实施、不排队、不另建producer。
+它额外能检验完整FP64模型/能量/链式路径（已有64仅局部GEMM），
+原运行时标量提升、跨dtype非光滑分支变化，以及两坐标局部程序导数。
+只有这些剩余问题被明确列为新的决策瓶颈，才考虑另行实现/Code Ready/准确版本执行授权；
+不因补充设计已通过就重复现有控制或延迟原owner的取回核验。
+
+原owner报告pair Run `pf_s04e011_wpair_fix_8edc762_20261018T210743Z` 已各200步完成，
+正在核验场数组；本对话未重算或确认其FEM误差，不新增场结论。
+两臂产物和场误差由该执行owner保持唯一所有权，HQ取回判断。本对话没有启动两臂。
+因此上文“训练关闭/未启动”均指本对话的准备权限及本设计，不能改写另一对话的授权执行事实。
