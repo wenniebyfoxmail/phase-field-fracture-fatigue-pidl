@@ -1,0 +1,5 @@
+# Pixel supervision asset audit only
+
+2026-10-18. User removed the earlier usage stop line and authorised continued qualification/design/review/implementation/tests. This first audit reads the hash-pinned existing workbook, but inspects polygon/bbox fields ONLY for exact835image identities of E022's original train bank. No new source images, sealed annotations, teacher inference, fitting, or policy/metric replay. At most6 previously retrieved E022case snapshots may be decoded for polygon-overlay visual qualification. Old model receipts/training-source metadata/checkpoint file hashes are inventory only,not teacher qualification by architecture/name.
+
+Decide whether existing labels provide per-pixel visible-crack truth, broader distress-region polygon supervision, boxes only or unavailable information. Preserve all old scientific outcomes. The subsequent experiment proposal must retain original E003/capacity/abstention and sealed-site exclusions; its training/teacher scope and budget require separate freezing and6.1sol-Mediumdesignreview before implementation. No producer run in this turn.

@@ -1,0 +1,28 @@
+{
+  "workbook": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/pavetrack_pd_v3_manifest_20260805/Dataset_PDdescription.xlsx",
+  "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "scope_images": 835,
+  "covered_images": 835,
+  "selected_instances": 850,
+  "classes": {
+    "Patch": 5,
+    "Pothole": 26,
+    "Alligator Crack": 249,
+    "Transverse Crack": 570
+  },
+  "out_of_image": 0,
+  "invalid": [],
+  "source_image_reads": 0,
+  "source_decodes": 0,
+  "new_model_inference": 0,
+  "new_fits": 0,
+  "sealed_annotation_fields_inspected": false,
+  "polygon_vertices_min": 5,
+  "polygon_vertices_max": 130,
+  "crack_boxes_match_pinned_E003_targets": true,
+  "crack_instances": 819,
+  "annotation_reference": "human-drawn crack-region envelope; not physical visible-width GT",
+  "annotation_snapshot_sha256": "98542eb41ec03eebf7a1f73ddf372dc36bb4432aefa259a6e4e3e168e202e3e9",
+  "source": "asset_audit_20261018",
+  "new_information_axis": "previously unused segmentation polygon supervision"
+}

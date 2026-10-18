@@ -1,0 +1,121 @@
+{
+  "protocol": "S01-E023-v1",
+  "source_run": "S01-E017-R001",
+  "source_commit": "28fd58ba1d227cb3eec479972f0f5a098668fc88",
+  "source_zip": "C:\\Users\\xw436\\pavetrack_runs\\S01-E017-R001\\delivery\\S01-E017-R001-evidence-v1.zip",
+  "source_zip_sha256": "189f1cb23688013c3692c8cc3dfb0df1400ac6f01ac6b65316c4cd180314cd6d",
+  "source_files": {
+    "input_snapshot/qualification.json": "7d9f9532246bdc846ad557e2fae0950a0249eceb71a61119be106d6ecdf446d6",
+    "input_snapshot/candidate_identity.json": "807d48894475b8619e58b057efaa44a80939c2d1868190171605880654c187da",
+    "input_snapshot/scores.json": "fb84e5df4bf006d4df546a2d047cda0850fd055574924c49ed04a24da14d7344",
+    "input_snapshot/fit8_fold_0.json": "edd7251bbe32b0545a614461e863bfcd8ff0a4aa74544e60d20ed9b193324d9d",
+    "input_snapshot/fit8_fold_1.json": "d3e77f451971266fb41cbec901286169a07f9355c2a71855968fbb2a7c6f1c25",
+    "input_snapshot/fit8_fold_2.json": "d2b9082d308182b8241e9d45f6c44e8f2b94f4391e86a4456cc24f3c83ed2a54",
+    "input_snapshot/source_receipt.json": "3c0d080cc369e6a8ced88dde15fff9d9fbef007fe68c5dbdecb5bfe615bda68c",
+    "input_snapshot/scoring_receipt.json": "83240c94d48c91fab187cb1940c1da9f78173792301249a35b9bc6302e6e4b59",
+    "input_snapshot/launch.json": "e42eb6c275ffab36e9400d74f74bdc7e5f27af9dcddccb47eb3768589c303ce1",
+    "input_snapshot/output_receipt.json": "4f5c7f2d8a4b47ad298daf652da9a97054a18585151d47c63121262e4822649c",
+    "supervision_fold_0.json": "aa3fb7e18f387311146f62a94ecfb428e5ef559101cd566b0e936f202f7b94d0",
+    "supervision_fold_1.json": "78b830e7ec712a4da130a6b503bfd7ea44a214e27d30b64571b453cefca77b3c",
+    "supervision_fold_2.json": "c20cae6ca1a66c72521d4be4c9e4e2e32f1aabc2830089673d547df03e90c8a2",
+    "context_fold_0.json": "f474c87ed495d6ac8719125701bfec49929abf0054f9220c7ccfdfdfcbff1cc8",
+    "context_fold_1.json": "6726ffec3c1ae5c65acbc8619caff5027c69e289032b460c925981fb96e554a5",
+    "context_fold_2.json": "f96e6e2b79764c23f09356c2d4382478c5dd0f3dfcefde57aac9589907552982",
+    "input_audit.json": "0406feba9363a3bdfbd9b210fce030e93b66b2cf2b34c9646ba8ec8bfcf55f47",
+    "launch.json": "5e135d2811a04160cc5d819a58ee4fb34cb8a378dd04dea618478d8506cfa988",
+    "output_receipt.json": "1f0129be3915e27a9474dde67c5970213b9fe210116a75421c8fe870c89b859e"
+  },
+  "original_rows_digest": "8770a36c06010cb0200c327c593e47aa29b914757f16eab1ac20edc16c4a2888",
+  "metadata_path": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\manifest_train_validation.json",
+  "metadata_sha256": "6fc622943a78063926d96a13e727013ae22d12919a3af3814cfc221bd1a7e5bb",
+  "classifier_identity_only": "superseded by E003_checkpoint_sha256: frozen semantic extraction, no parameter fitting or detector rescoring",
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "source_original_count": 43347,
+  "source_correction_count": 31156,
+  "source_eligible_count": 19384,
+  "source_B12_hits": 684,
+  "forbidden_inputs": [
+    "checkpoint weights except the exact hash-pinned frozen E003 checkpoint for semantic extraction only",
+    "full12 U labels as training targets",
+    "R004 joint chosen corrections as learner data",
+    "four consumed qualification sites",
+    "validation/confirmation/reserve sites",
+    "E017 FIT_audit/oracle selected rows/results/cases as learner inputs",
+    "other fold training labels in a current fold model",
+    "GT, identities, location, H0, cutoffs or cached roles as prediction features",
+    "E018 models/scores/selections as training inputs",
+    "PCA/representation/sketch dimension/seed/channel/L2/sign/threshold/capacity search",
+    "E019 models, predictions, PCA or selection as learner input",
+    "all pooled content arrays, PCA/sketches/learned compression/directions",
+    "all pixels except exact835 train identities pinned in candidate_identity",
+    "held GT/labels in current FIT training/gate; no learned photometric statistics",
+    "all neural models except pinned frozen E003 intermediate extraction; all backbone backward/parameter gradients/updates; new boxes or detector rescoring"
+  ],
+  "fresh_access": false,
+  "prior_experiment_reference": {
+    "experiment": "S01-E022",
+    "reviewed_commit": "f8990c148b14298db16490cd6f4460794271a8dc",
+    "result_zip_sha256": "f10e4753ba5b946cc80ac64e2a2c0d843cc5ccac4a872706915f3664ac63d32d",
+    "used_for_training": false,
+    "old_hits": 684,
+    "net_GT": 0,
+    "max_policy_positive_GT": [
+      0,
+      0,
+      0
+    ]
+  },
+  "source_zip_bytes": 11668613,
+  "ancestor_R004_commit": "fdc6c195aabbc518c3d2239dd900e5869c09a179",
+  "ancestor_R004_zip_sha256": "a650b3117e9a4417681f75662d98f633c96679c0a2a4708229d0135e327db751",
+  "source_image_root": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\images\\train",
+  "image_identity_member": "input_snapshot/candidate_identity.json",
+  "source_images": 835,
+  "E003_checkpoint_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+  "E003_checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt",
+  "permitted_semantic_extraction": {
+    "checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt",
+    "checkpoint_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+    "backbone": "only frozen features[:6],40x14x14",
+    "training": "own-FIT polygon-region pixel-head41 coefficients; no CNN/classifier update",
+    "held_scope": "no current held polygon enters pixel or role fitting/gate"
+  },
+  "annotation_workbook": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/pavetrack_pd_v3_manifest_20260805/Dataset_PDdescription.xlsx",
+  "annotation_workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "annotation_snapshot_sha256": "98542eb41ec03eebf7a1f73ddf372dc36bb4432aefa259a6e4e3e168e202e3e9",
+  "annotation_snapshot": "C:\\Users\\xw436\\pavetrack_inputs\\S01-E023\\train_polygons.json",
+  "annotation_snapshot_rows": 850
+}

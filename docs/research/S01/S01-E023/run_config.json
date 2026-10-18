@@ -1,0 +1,246 @@
+{
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "excluded_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "input_counts": {
+    "images": 835,
+    "original_rows": 43347,
+    "corrections": 31156
+  },
+  "policy": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "score": "sqrt(original_proposer_confidence * corrected_E003_probability)",
+    "eligibility": "unchanged E012 base eligible19384, additionally strict positive original/corrected intersection; base indices/eligibility remain immutable",
+    "correction_order": "learned Q*N*A descending, unchanged s0 descending, image/box/key; no detector rescore",
+    "max_per_image": 1,
+    "max_per_source_group": 3,
+    "source_group_unit": "fixed four-site E012 group; apply same cap to each included group during FIT/jackknife/held",
+    "originals": "immutable prefix, all original scores unchanged; retain E003 as deployed comparator"
+  },
+  "producer": {
+    "hostname": "D-26-09",
+    "ssh_alias": "gpu-server",
+    "account": "ad\\xw436",
+    "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "gpu_physical_index": 1,
+    "gpu_logical_index": 0,
+    "CUDA_VISIBLE_DEVICES": "1",
+    "gpu_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+    "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
+    "fallback": false,
+    "GPU": true
+  },
+  "locality": {
+    "predicate": "min(old_x2,new_x2)>max(old_x1,new_x1) AND min(old_y2,new_y2)>max(old_y1,new_y1)",
+    "edge_contact": false,
+    "epsilon": false,
+    "threshold_search": false,
+    "trainable_parameters": 0,
+    "field": "positive_intersection",
+    "base_eligibility_unchanged": true
+  },
+  "protocol": "S01-E023-v1",
+  "proposed_run_id": "S01-E023-R001",
+  "claim_class": "C2 real-road conditional OOF protected detection gain on consumed/reused twelve train sites",
+  "feature": {
+    "probability_clip": 1e-06,
+    "GT_free": true,
+    "names": [
+      "corrected_probability",
+      "original_corrected_IoU",
+      "inverse_nonparent_overlap",
+      "inverse_original_score_pressure",
+      "corrected_supervised_region_concentration",
+      "paired_supervised_region_gain"
+    ],
+    "fit_scales": false,
+    "reference_cutoff_as_feature": false,
+    "thresholds": [
+      0,
+      0.0625,
+      0.125,
+      0.25,
+      "abstain"
+    ]
+  },
+  "fit": {
+    "expected_positive_GT": [
+      3,
+      5,
+      6
+    ],
+    "expected_positive_sites": [
+      3,
+      3,
+      4
+    ],
+    "model": "41-coefficient supervised pixel-region ridge plus unchanged11-coefficient Q/N/A role heads per main fold",
+    "ridge": 0.01,
+    "numerical_tolerance": 1e-09,
+    "heads": {
+      "Q": {
+        "columns": [
+          0,
+          1,
+          4,
+          5
+        ],
+        "target": "corrected_max_IoU"
+      },
+      "N": {
+        "columns": [
+          2,
+          4,
+          5
+        ],
+        "target": "valid_localisation AND novel_reference"
+      },
+      "A": {
+        "columns": [
+          3
+        ],
+        "target": "cached admitted AND lost==0 AND FP==0"
+      }
+    },
+    "diagnostic_scope": "no deletion refits; pixel/role/held descriptive components from fixed models only",
+    "model_sets": 3,
+    "head_fits": 9
+  },
+  "criterion": {
+    "name": "pooled12_OOF_protected_net_gain",
+    "old_E003_retention_minimum": 0.95,
+    "net_new_GT_minimum": 1,
+    "macro_delta_strictly_positive": true,
+    "no_all_folds_active_gate": true
+  },
+  "budget": {
+    "runs": 1,
+    "cpu_threads": 1,
+    "total_wall_seconds": 3600,
+    "peak_RSS_bytes": 4294967296,
+    "model_sets": 3,
+    "model_fits": 9,
+    "linear_solves": 12,
+    "training_target_rows": 38768,
+    "context_feature_builds": 6,
+    "prediction_rows": 58152,
+    "fit_baseline_metrics": 3,
+    "calibration_policy_comparisons": 15,
+    "final_OOF_comparisons": 1,
+    "held_group_comparisons": 3,
+    "new_singleton_U": 0,
+    "head_forwards": 0,
+    "backbone_forwards": 31156,
+    "pixel_reads": 841,
+    "gradient_steps": 0,
+    "full12_refits": 0,
+    "source_image_decodes": 835,
+    "spatial_feature_rows": 31156,
+    "case_image_decodes": 6,
+    "source_image_reads": 841,
+    "upper_bound_counters": [
+      "case_image_decodes",
+      "source_image_reads",
+      "pixel_reads"
+    ],
+    "head_input_gradient_rows": 0,
+    "backbone_backward_rows": 0,
+    "parameter_gradient_steps": 0,
+    "max_semantic_batches": 2505,
+    "peak_GPU_allocated_bytes": 4294967296,
+    "peak_GPU_reserved_bytes": 4294967296,
+    "pixel_head_fits": 3,
+    "pixel_training_sample_rows": 996992,
+    "pixel_map_prediction_rows": 93468,
+    "pixel_evaluation_rows": 31156,
+    "feature_cache_bytes": 977052160,
+    "archive_bytes_limit": 2147483648
+  },
+  "fresh_access": false,
+  "execution_authorized": false,
+  "spatial": {
+    "context_padding_fraction": 0.25,
+    "mass_floor": 1e-12,
+    "case_limit": 6,
+    "checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt",
+    "checkpoint_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+    "input_size": 224,
+    "batch_size": 16,
+    "dtype": "float32",
+    "grid_size": 14,
+    "feature_channels": 40,
+    "backbone_slice": "features[:6] ->40x14x14, no_grad/eval, all parameters frozen",
+    "backend": {
+      "matmul_precision": "highest",
+      "cuda_matmul_allow_tf32": false,
+      "cudnn_allow_tf32": true,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": false
+    },
+    "sample_indices": [
+      1,
+      5,
+      8,
+      12
+    ],
+    "pixel_ridge": 0.01,
+    "pixel_numerical_tolerance": 1e-09,
+    "pixel_parameters_per_fold": 41,
+    "role_parameters_per_fold": 11,
+    "mask_raster": "full source-size Pillow ImageDraw polygon union for two crack classes; pixel centers sampled by floor(context_origin+(index+.5)*context_size/14), no dilation/erosion/GT prompt at prediction",
+    "region_semantics": "crack-region envelope, not physical crack width",
+    "feature_cache": "float32 memmap shape31156x40x14x14; streamed per candidate; no PCA/sketch/learned compressor"
+  },
+  "pixel_component": {
+    "threshold": 0.5,
+    "comparison": ">=",
+    "empty_empty_Dice": 1,
+    "FIT_constant": "unweighted foreground/total over all ownFIT contexts x16fixed samples",
+    "Brier": "mean((P-Y)^2) per context",
+    "aggregate": "equal context within image, equal images within location, equal12locations",
+    "foreground_context_subset": "reference Y.any(); empty image/location null, no model selection",
+    "independence": "overlapping contexts and pixels are not independent units"
+  }
+}
