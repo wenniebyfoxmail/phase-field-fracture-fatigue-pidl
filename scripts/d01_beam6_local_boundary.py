@@ -11,7 +11,7 @@ from matplotlib.patches import Polygon
 from audit_d01_measurement_readiness import mapped_points,intervals
 from d01_section3_prediction import write_csv
 
-ROOT=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl');BASE=ROOT/'local_archive/experiments/S03-E016-D01';EXT=BASE/'fourteen_stage_extension_20261017';OUT=BASE/'beam6_section3_local_20261018'
+ROOT=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl');BASE=ROOT/'local_archive/experiments/S03-E016-D01';EXT=BASE/'fourteen_stage_extension_20261017';OUT=BASE/'beam6_section3_local_20261018_r002'
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def dump(p,x):p.write_text(json.dumps(x,indent=2))
 def main():
@@ -47,8 +47,8 @@ def main():
         return rr[0]
     for frame,(o,h,gray,mask,rgb) in enumerate(zip(obs,hs,grays,masks,rgbs)):
         for y in ys:
-            xy=mapped_points(center,normal,h,dense-60,np.array([y]));mp=cv2.remap(mask,*xy,cv2.INTER_LINEAR)[0];r=selected(mp);assert r is not None
-            widths.append({'image':o['image'],'load_kN':o['metadata']['nominal_stage_load_kN'],'tangent_offset_ref_px':y,'left':r[0],'right':r[1],'width':r[1]-r[0],'saved_centerline':y==0})
+            xy=mapped_points(center,normal,h,dense-60,np.array([y]));mp=cv2.remap(mask,*xy,cv2.INTER_LINEAR)[0];r=selected(mp)
+            widths.append({'image':o['image'],'load_kN':o['metadata']['nominal_stage_load_kN'],'tangent_offset_ref_px':y,'left':r[0] if r else None,'right':r[1] if r else None,'width':r[1]-r[0] if r else None,'status':'ok' if r else 'ambiguous','saved_centerline':y==0})
             if y==0:
                 assert abs((r[1]-r[0])-o['model_widths_strip_px'][0])<1e-9;crossings[frame]=r;g=cv2.remap(gray,*xy,cv2.INTER_LINEAR)[0].astype(float)
                 for x,gg,mm in zip(dense,g,mp):profiles.append({'image':o['image'],'x_strip_px':x,'gray':gg,'mask_occupancy':mm})
@@ -61,12 +61,13 @@ def main():
     write_csv(OUT/'parallel_transect_widths.csv',widths);write_csv(OUT/'centerline_profiles.csv',profiles);write_csv(OUT/'contrast_operator_diagnostic.csv',boundary)
     paired=[]
     for y in ys:
-        z=[next(r for r in widths if r['image']==o['image'] and r['tangent_offset_ref_px']==y) for o in obs];paired.append({'tangent_offset_ref_px':y,'width20':z[0]['width'],'width30':z[1]['width'],'change':z[1]['width']-z[0]['width']})
+        z=[next(r for r in widths if r['image']==o['image'] and r['tangent_offset_ref_px']==y) for o in obs];ok=all(r['width'] is not None for r in z);paired.append({'tangent_offset_ref_px':y,'width20':z[0]['width'],'width30':z[1]['width'],'change':z[1]['width']-z[0]['width'] if ok else None,'status':'ok' if ok else 'ambiguous'})
     write_csv(OUT/'paired_parallel_changes.csv',paired)
     side_summary={}
     for side in [-1,1]:
         z=[r for r in texture if r['side_normal']==side];side_summary[str(side)]={'median_dx':float(np.median([r['dx_ref_px'] for r in z])),'median_dy':float(np.median([r['dy_ref_px'] for r in z])),'normal_components':[r['normal_component_ref_px'] for r in z],'ncc_peaks':[r['ncc_peak'] for r in z]}
-    summary={'saved_centerline_widths':[o['model_widths_strip_px'][0] for o in obs],'centerline_change':paired[4]['change'],'parallel_same_offset_change_range':[min(r['change'] for r in paired),max(r['change'] for r in paired)],'parallel_width20_range':[min(r['width20'] for r in paired),max(r['width20'] for r in paired)],'parallel_width30_range':[min(r['width30'] for r in paired),max(r['width30'] for r in paired)],'parallel_band_median_widths':[float(np.median([r['width20'] for r in paired])),float(np.median([r['width30'] for r in paired]))],'texture_side_diagnostics':side_summary,'no_registration_correction_applied':True,'no_width_replacement_applied':True}
+    valid=[r for r in paired if r['change'] is not None]
+    summary={'saved_centerline_widths':[o['model_widths_strip_px'][0] for o in obs],'centerline_change':paired[4]['change'],'parallel_total_pairs':len(paired),'parallel_valid_pairs':len(valid),'parallel_ambiguous_offsets':[r['tangent_offset_ref_px'] for r in paired if r['change'] is None],'parallel_same_offset_change_range_valid_only':[min(r['change'] for r in valid),max(r['change'] for r in valid)],'parallel_width20_range_valid_only':[min(r['width20'] for r in valid),max(r['width20'] for r in valid)],'parallel_width30_range_valid_only':[min(r['width30'] for r in valid),max(r['width30'] for r in valid)],'parallel_band_median_widths_valid_only':[float(np.median([r['width20'] for r in valid])),float(np.median([r['width30'] for r in valid]))],'median_is_not_qualified_replacement':len(valid)!=len(paired),'texture_side_diagnostics':side_summary,'no_registration_correction_applied':True,'no_width_replacement_applied':True}
     dump(OUT/'summary.json',summary)
     fig,axs=plt.subplots(2,2,figsize=(12,10));half=180;xx,yy=np.meshgrid(np.arange(-half,half+1)+center[0],np.arange(-half,half+1)+center[1])
     for i,(rgb,h,mask) in enumerate(zip(rgbs,hs,masks)):
