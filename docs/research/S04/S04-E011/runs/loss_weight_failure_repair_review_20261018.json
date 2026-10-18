@@ -1,0 +1,18 @@
+{
+  "reviewer": "/root/loss_weight_readonly_review",
+  "channel": "independent read-only Codex",
+  "commit": "99cad0b32eb88fcae496785f8090286e8bdfe5ea",
+  "verdict": "REVIEW_PASS_SCOPED_TO_FAILURE_RECORD_DIAGNOSTICS_AND_NO_STEP_CONTROL_FLOW",
+  "evidence": "retrieved producer log/receipt/terminal_failure and exact executed03a8f320 code versus diagnostic99cad0b3 patch",
+  "confirmed": [
+    "one Run stops at origin gradient-decomposition guard before any opt.step; optimization/history/FEM0",
+    "weight effect inconclusive; no J/update200 pair or before-after training maps",
+    "original failure lacks mismatch magnitude, root cause unknown; float32-order explanation only a candidate",
+    "original allclose atol1e-6 rtol1e-4 and failure exit preserved; discrepancy norms/index/name/vectors saved before abort",
+    "preflight-only returns before training-arm loop on success and aborts on failure; neither path updates optimizer",
+    "4 independent CPU tests pass including corrupted gradient retaining failure diagnostic"
+  ],
+  "reviewer_producer_operations": 0,
+  "new_execution_authorization": false,
+  "next_audit": "proposal only <=60s; effective timeout must be materialized in any subsequently authorized fresh launch"
+}
