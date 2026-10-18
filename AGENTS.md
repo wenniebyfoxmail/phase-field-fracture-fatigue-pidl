@@ -269,6 +269,10 @@ do not invent a conclusion when there is only preparation or visibility.
   research route. It owns local reuse, the Decision Ladder, stage-appropriate
   criteria, visual explanations, progress summaries and milestone records.
   Add only the domain requirements below; run the shared workflow once.
+- **Deep Research and paper archival:** at topic intake or a bottleneck that
+  needs external evidence, use `docs/skills/deep-research-obsidian/SKILL.md`.
+  Archive the report and supporting papers in Obsidian and link the next D step.
+  HQs include these current skill paths and the active D step in executor briefs.
 - **Independent review routing:** when a research HQ arranges or interprets a
   design, Code Ready, or evidence review, read
   `docs/skills/research-review-channels/SKILL.md`. Present the channel choices

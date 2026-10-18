@@ -75,3 +75,7 @@ references/
 !docs/skills/pidl-experiment-gate/references/*.md
 !docs/skills/road-fracture-experiment-gate/references/
 !docs/skills/road-fracture-experiment-gate/references/*.md
+!docs/skills/research-decision-core/references/
+!docs/skills/research-decision-core/references/*.md
+!docs/skills/deep-research-obsidian/references/
+!docs/skills/deep-research-obsidian/references/*.md

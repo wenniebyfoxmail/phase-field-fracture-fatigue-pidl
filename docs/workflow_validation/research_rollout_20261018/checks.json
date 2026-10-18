@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-18",
+  "helper_tests": [
+    {
+      "fixture": "Good.md",
+      "exit_code": 0,
+      "checked_links": 2,
+      "issues": [],
+      "scope": "existence and uniqueness only; not paper identity or scientific verification"
+    },
+    {
+      "fixture": "Missing.md",
+      "exit_code": 1,
+      "checked_links": 1,
+      "issues": [
+        {
+          "note": "/tmp/research-archive-check.F9m3qA/Missing.md",
+          "link": "Not downloaded.pdf",
+          "matches": 0
+        }
+      ],
+      "scope": "existence and uniqueness only; not paper identity or scientific verification"
+    },
+    {
+      "fixture": "Report.md",
+      "exit_code": 1,
+      "checked_links": 2,
+      "issues": [
+        {
+          "note": "/tmp/research-archive-check.F9m3qA/Report.md",
+          "link": "Reading note",
+          "matches": 2
+        }
+      ],
+      "scope": "existence and uniqueness only; not paper identity or scientific verification"
+    },
+    {
+      "fixture": "Paths.md",
+      "exit_code": 0,
+      "checked_links": 1,
+      "issues": [],
+      "scope": "existence and uniqueness only; not paper identity or scientific verification"
+    }
+  ],
+  "vault_link_test": {
+    "checked_links": 8,
+    "issues": [],
+    "scope": "existence and uniqueness only; not paper identity or scientific verification"
+  },
+  "skill_validation": {
+    "core": "valid",
+    "deep_research": "valid"
+  },
+  "python_compile": "2 scripts compile",
+  "scope": "No new scientific run, network retrieval, or manual-download action was executed by these tests."
+}

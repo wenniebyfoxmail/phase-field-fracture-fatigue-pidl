@@ -89,6 +89,11 @@ criterion to rescue an old result.
 
 ## Turn Results Into The Next Action
 
+At topic intake, around a useful brainstorming decision, or when a measured
+bottleneck needs external solutions, use `deep-research-obsidian` to preserve
+the synthesis and source papers. Choose the occasion that resolves the live
+decision; do not insert a compulsory research round before every attempt.
+
 Report execution status, evidence availability, the bounded conclusion, and the
 research action separately. Code running or data transferring establishes only
 that capability. For a formal test:
@@ -164,3 +169,11 @@ Conclusion / next step:
 
 Reuse existing formal protocols and run receipts for confirmatory work. Loading
 this core does not require new IDs, duplicate records, or extra approval stages.
+
+## HQ And Sub-Agent Handoffs
+
+Each HQ passes the current core path, relevant domain adapter, active D step,
+purpose, evidence/code pointers, permitted scope, budget and expected output
+to its executors. Executors return the result, its evidence pointer and next
+decision. Reuse one owner record; do not open a duplicate ladder for every
+helper. A workflow refresh does not authorise a new run, retry or data access.
