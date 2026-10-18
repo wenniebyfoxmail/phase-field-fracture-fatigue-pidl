@@ -453,7 +453,7 @@ def main():
     demand(all(os.environ.get(k) == '1' for k in threads) and os.environ.get('CUDA_VISIBLE_DEVICES') == '', 'single CPU environment')
     repo = Path(__file__).resolve().parents[1]
     current, initial_code = code_identity(repo, args.source_commit)
-    run = 'S03-E019-D03-B002' if args.mode == 'synthetic' else 'S03-E019-D03-R001'
+    run = 'S03-E019-D03-B003' if args.mode == 'synthetic' else 'S03-E019-D03-R001'
     demand(args.input == BASE/'S03-E019-D03'/run and args.output == BASE/'S03-E019-D03'/(run+'-acceptance'), 'exact input/output root')
     safe_path(args.input); demand(args.input.is_dir(), 'producer directory')
     safe_path(args.output)

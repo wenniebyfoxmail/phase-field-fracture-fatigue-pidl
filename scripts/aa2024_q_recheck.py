@@ -468,7 +468,7 @@ def main():
     require(all(os.environ.get(k) == '1' for k in THREADS) and os.environ.get('CUDA_VISIBLE_DEVICES') == '', 'single CPU environment')
     repo = Path(__file__).resolve().parents[1]
     actual = snapshot(repo, args.source_commit)
-    allowed = BASE/'S03-E019-D03'/('S03-E019-D03-B002' if args.mode == 'synthetic' else 'S03-E019-D03-R001')
+    allowed = BASE/'S03-E019-D03'/('S03-E019-D03-B003' if args.mode == 'synthetic' else 'S03-E019-D03-R001')
     safe_path(allowed)
     require(args.output == allowed and not allowed.exists(), 'fresh exact output root')
     allowed.mkdir(parents=True, exist_ok=False)
