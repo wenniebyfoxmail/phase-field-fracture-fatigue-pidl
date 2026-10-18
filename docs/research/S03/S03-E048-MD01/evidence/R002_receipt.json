@@ -1,0 +1,21 @@
+{
+  "execution": "succeeded",
+  "source_summary_sha256": "96ef1da6e3565e61d18ade9db34c3a93e2715174a894720fc91b51ed0d2edeb8",
+  "renderer_sha256": "4e9a9964d53c3118c377488255f9728475a21382df321768a1cb82089cdb1b52",
+  "figures": 4,
+  "numerical_rerun": false,
+  "output_hashes": {
+    "F01_step28_all_photos.md": "5fd19ee00cd5ca2b19d217035eb136c8f9e07e1efa8e257125323a99bc73f52a",
+    "F02_observation_and_gain_sensitivity.md": "773392aa7e59d16e4f39c4329a81681096dd7b90b9b862c4438554703966023f",
+    "F01_step28_all_photos.pdf": "2a3f6ec6b3770a13895e6f64a80c1ca2394a598877119e9022ea243a8c964a56",
+    "F01_step27_all_photos.png": "6381b25a878a73408e1ad94ebf66b10f58931cd912077a8879b0c896daecd5c6",
+    "F01_step28_all_photos.png": "77f4ab0ad23f44b6281da459830947adf768cfe349636107716426589687f617",
+    "F01_step27_all_photos.pdf": "46c62e3d41d45318acac6a590cfde6c16e09a135433a5d78f24f061a2b1687e3",
+    "F01_step29_all_photos.png": "ba4ddbc79965f4aca7f7dafde7d9d2aae4177386aad3c49f11e697e05bc41e94",
+    "F01_step29_all_photos.pdf": "7df99936b965d723dbd03939b32b624f5ec412e673533a4e6d9fbb61e70c3197",
+    "F01_step27_all_photos.md": "ee6295a432800d02351355015f0d653bd50c06ad1d65f1a4f2fb4054a7980d7e",
+    "F02_observation_and_gain_sensitivity.pdf": "3ccb819a8c21d722f20b674c4aa882b994b57cd8d731d79f4d57ea440eba38a9",
+    "F02_observation_and_gain_sensitivity.png": "70f1a034b3142e9a1eec2dd63ac47213a3d6eb155fddd8a66981a77124daa329",
+    "F01_step29_all_photos.md": "ed26ec4e1054cc5ac9a552bc0b1f70a12c529d393698e78f1fbff1093931c473"
+  }
+}

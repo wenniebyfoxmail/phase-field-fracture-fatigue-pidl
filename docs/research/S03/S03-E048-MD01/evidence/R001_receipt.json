@@ -1,0 +1,27 @@
+{
+  "execution": "succeeded",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 68147,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_stage_photo_variation.py",
+    "run",
+    "--lock",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E048-MD01/runs/S03-E048-MD01-R000/input_lock.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E048-MD01/runs/S03-E048-MD01-R001"
+  ],
+  "started_utc": "2026-10-18T20:44:15.783500+00:00",
+  "lock_sha256": "ce6f55f2f9ffad12d2e31f1426d906bc0b76111dde7b1f4970252d6c18f50eb2",
+  "commit": "2b20f29c7140a32dc0109e7feebc9498bce793b4",
+  "dirty": [],
+  "retrieval": "verified_local",
+  "protected_files_verified": 319,
+  "verified_extra_sources": 6,
+  "new_source_bytes": 105980893,
+  "unchanged_E047_masks_scores": 3,
+  "stage_forecast_snapshots": 3,
+  "wall_seconds": 51.6516100000008,
+  "cpu_seconds": 2.945088,
+  "ended_utc": "2026-10-18T20:45:07.434965+00:00"
+}

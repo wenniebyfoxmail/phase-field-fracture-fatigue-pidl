@@ -331,3 +331,18 @@ forecastfiguresinspected. No retuning/training/downloads oroldscorereplacement.
 D3nextproposesame-stageother2photos27/28/29observation-variationcheck;metadata
 ends29, do notinventnext3stages. Notexecuted; currenttrendworkingbaseline,
 notindependent-specimengeneralisation orphysicalaperture.
+
+### E048 same-stage remaining photos, observation/gain sensitivity — 2026-10-18
+
+[E048results](../research/S03/S03-E048-MD01/results.md): D1reuse/sourcescreen,
+D2allfixed27/28/29photos.3E047masksexactreused,6additionalofficialfilesverified
+andmeasuredonce, sameobserver. Area163/41/206px²spans(1.567/.361/1.626%ofphoto1);
+stageareaorderingretained. Originalforecastsfixedtarget-only9gainspositive;
+propagateall3/9/27localcombinations39positive. All27coherent3-windowpathspositive,
+holdMAE1125…1193.667/trend292.333…458,gain735.667…832.667,paired61.63…74.01%.
+Finitephotostressnotindependenttrials/CI; commonbiasandstageinternalrealchange
+unresolved. OldE047111scores/halfdepth/masksunchanged. Clean2b20f29c,R00151.65s
+wall(incl105.98MBdownloads)/2.945sCPU,319protectedhashesunchanged;3snapshots
+beforetargetgroups,all39/27arithmeticchecked,all4figuresinspected.
+D3retainobserver/simpletrend; nextproposeindependent-specimen/sequenceidentity
+availabilitycheck,nottuningorphotoaveraging; notexecuted.

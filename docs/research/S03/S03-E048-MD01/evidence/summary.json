@@ -1,0 +1,477 @@
+{
+  "role": "finite within-nominal-stage photo-choice diagnostic, one trajectory, no independent replication",
+  "stages": [
+    {
+      "stage": 27,
+      "areas": [
+        10399,
+        10259,
+        10236
+      ],
+      "area_min": 10236,
+      "area_max": 10399,
+      "span": 163,
+      "span_fraction_of_photo1": 0.015674584094624484,
+      "max_deviation_from_photo1": 163,
+      "supports": [
+        238,
+        237,
+        238
+      ],
+      "masses": [
+        43.69327731092437,
+        43.28691983122363,
+        43.00840336134454
+      ],
+      "fixed_gain_min": 260.0,
+      "fixed_gain_max": 586.0,
+      "fixed_wins": 3,
+      "propagated_gain_min": 260.0,
+      "propagated_gain_max": 586.0,
+      "propagated_wins": 3,
+      "propagated_total": 3
+    },
+    {
+      "stage": 28,
+      "areas": [
+        11344,
+        11383,
+        11342
+      ],
+      "area_min": 11342,
+      "area_max": 11383,
+      "span": 41,
+      "span_fraction_of_photo1": 0.0036142454160789845,
+      "max_deviation_from_photo1": 39,
+      "supports": [
+        235,
+        237,
+        235
+      ],
+      "masses": [
+        48.272340425531915,
+        48.029535864978904,
+        48.263829787234044
+      ],
+      "fixed_gain_min": 678.0,
+      "fixed_gain_max": 760.0,
+      "fixed_wins": 3,
+      "propagated_gain_min": 678.0,
+      "propagated_gain_max": 1068.0,
+      "propagated_wins": 9,
+      "propagated_total": 9
+    },
+    {
+      "stage": 29,
+      "areas": [
+        12672,
+        12566,
+        12772
+      ],
+      "area_min": 12566,
+      "area_max": 12772,
+      "span": 206,
+      "span_fraction_of_photo1": 0.016256313131313132,
+      "max_deviation_from_photo1": 106,
+      "supports": [
+        242,
+        242,
+        244
+      ],
+      "masses": [
+        52.36363636363637,
+        51.925619834710744,
+        52.34426229508197
+      ],
+      "fixed_gain_min": 945.0,
+      "fixed_gain_max": 945.0,
+      "fixed_wins": 3,
+      "propagated_gain_min": 943.0,
+      "propagated_gain_max": 1147.0,
+      "propagated_wins": 27,
+      "propagated_total": 27
+    }
+  ],
+  "observations": [
+    {
+      "stage": 27,
+      "photo": 1,
+      "filename": "IMG_0403.JPG",
+      "area": 10399,
+      "support": 238,
+      "mass": 43.69327731092437,
+      "occupied_fraction": 0.952,
+      "p10": 20.0,
+      "p50": 46.0,
+      "p90": 59.0,
+      "reused_E047_mask": true
+    },
+    {
+      "stage": 27,
+      "photo": 2,
+      "filename": "IMG_0404.JPG",
+      "area": 10259,
+      "support": 237,
+      "mass": 43.28691983122363,
+      "occupied_fraction": 0.948,
+      "p10": 20.0,
+      "p50": 45.0,
+      "p90": 60.0,
+      "reused_E047_mask": false
+    },
+    {
+      "stage": 27,
+      "photo": 3,
+      "filename": "IMG_0405.JPG",
+      "area": 10236,
+      "support": 238,
+      "mass": 43.00840336134454,
+      "occupied_fraction": 0.952,
+      "p10": 19.700000000000003,
+      "p50": 45.0,
+      "p90": 60.0,
+      "reused_E047_mask": false
+    },
+    {
+      "stage": 28,
+      "photo": 1,
+      "filename": "IMG_0406.JPG",
+      "area": 11344,
+      "support": 235,
+      "mass": 48.272340425531915,
+      "occupied_fraction": 0.94,
+      "p10": 35.0,
+      "p50": 49.0,
+      "p90": 64.0,
+      "reused_E047_mask": true
+    },
+    {
+      "stage": 28,
+      "photo": 2,
+      "filename": "IMG_0407.JPG",
+      "area": 11383,
+      "support": 237,
+      "mass": 48.029535864978904,
+      "occupied_fraction": 0.948,
+      "p10": 35.0,
+      "p50": 50.0,
+      "p90": 64.0,
+      "reused_E047_mask": false
+    },
+    {
+      "stage": 28,
+      "photo": 3,
+      "filename": "IMG_0408.JPG",
+      "area": 11342,
+      "support": 235,
+      "mass": 48.263829787234044,
+      "occupied_fraction": 0.94,
+      "p10": 35.0,
+      "p50": 50.0,
+      "p90": 64.0,
+      "reused_E047_mask": false
+    },
+    {
+      "stage": 29,
+      "photo": 1,
+      "filename": "IMG_0409.JPG",
+      "area": 12672,
+      "support": 242,
+      "mass": 52.36363636363637,
+      "occupied_fraction": 0.968,
+      "p10": 38.0,
+      "p50": 53.5,
+      "p90": 66.9,
+      "reused_E047_mask": true
+    },
+    {
+      "stage": 29,
+      "photo": 2,
+      "filename": "IMG_0410.JPG",
+      "area": 12566,
+      "support": 242,
+      "mass": 51.925619834710744,
+      "occupied_fraction": 0.968,
+      "p10": 37.1,
+      "p50": 53.0,
+      "p90": 67.0,
+      "reused_E047_mask": false
+    },
+    {
+      "stage": 29,
+      "photo": 3,
+      "filename": "IMG_0411.JPG",
+      "area": 12772,
+      "support": 244,
+      "mass": 52.34426229508197,
+      "occupied_fraction": 0.976,
+      "p10": 38.0,
+      "p50": 53.5,
+      "p90": 68.0,
+      "reused_E047_mask": false
+    }
+  ],
+  "coherent_paths": [
+    {
+      "path": "111",
+      "photo27": 1,
+      "photo28": 1,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 422.6666666666667,
+      "gain": 737.6666666666665
+    },
+    {
+      "path": "112",
+      "photo27": 1,
+      "photo28": 1,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 387.3333333333333,
+      "gain": 737.6666666666667
+    },
+    {
+      "path": "113",
+      "photo27": 1,
+      "photo28": 1,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 456.0,
+      "gain": 737.6666666666667
+    },
+    {
+      "path": "121",
+      "photo27": 1,
+      "photo28": 2,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 383.6666666666667,
+      "gain": 776.6666666666665
+    },
+    {
+      "path": "122",
+      "photo27": 1,
+      "photo28": 2,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 348.3333333333333,
+      "gain": 776.6666666666667
+    },
+    {
+      "path": "123",
+      "photo27": 1,
+      "photo28": 2,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 417.0,
+      "gain": 776.6666666666667
+    },
+    {
+      "path": "131",
+      "photo27": 1,
+      "photo28": 3,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 424.6666666666667,
+      "gain": 735.6666666666665
+    },
+    {
+      "path": "132",
+      "photo27": 1,
+      "photo28": 3,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 389.3333333333333,
+      "gain": 735.6666666666667
+    },
+    {
+      "path": "133",
+      "photo27": 1,
+      "photo28": 3,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 458.0,
+      "gain": 735.6666666666667
+    },
+    {
+      "path": "211",
+      "photo27": 2,
+      "photo28": 1,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 340.6666666666667,
+      "gain": 819.6666666666665
+    },
+    {
+      "path": "212",
+      "photo27": 2,
+      "photo28": 1,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 305.3333333333333,
+      "gain": 819.6666666666667
+    },
+    {
+      "path": "213",
+      "photo27": 2,
+      "photo28": 1,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 374.0,
+      "gain": 819.6666666666667
+    },
+    {
+      "path": "221",
+      "photo27": 2,
+      "photo28": 2,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 327.6666666666667,
+      "gain": 832.6666666666665
+    },
+    {
+      "path": "222",
+      "photo27": 2,
+      "photo28": 2,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 292.3333333333333,
+      "gain": 832.6666666666667
+    },
+    {
+      "path": "223",
+      "photo27": 2,
+      "photo28": 2,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 361.0,
+      "gain": 832.6666666666667
+    },
+    {
+      "path": "231",
+      "photo27": 2,
+      "photo28": 3,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 341.3333333333333,
+      "gain": 819.0
+    },
+    {
+      "path": "232",
+      "photo27": 2,
+      "photo28": 3,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 306.0,
+      "gain": 819.0
+    },
+    {
+      "path": "233",
+      "photo27": 2,
+      "photo28": 3,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 374.6666666666667,
+      "gain": 819.0
+    },
+    {
+      "path": "311",
+      "photo27": 3,
+      "photo28": 1,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 356.0,
+      "gain": 804.3333333333333
+    },
+    {
+      "path": "312",
+      "photo27": 3,
+      "photo28": 1,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 320.6666666666667,
+      "gain": 804.3333333333333
+    },
+    {
+      "path": "313",
+      "photo27": 3,
+      "photo28": 1,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 389.3333333333333,
+      "gain": 804.3333333333335
+    },
+    {
+      "path": "321",
+      "photo27": 3,
+      "photo28": 2,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 343.0,
+      "gain": 817.3333333333333
+    },
+    {
+      "path": "322",
+      "photo27": 3,
+      "photo28": 2,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 307.6666666666667,
+      "gain": 817.3333333333333
+    },
+    {
+      "path": "323",
+      "photo27": 3,
+      "photo28": 2,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 376.3333333333333,
+      "gain": 817.3333333333335
+    },
+    {
+      "path": "331",
+      "photo27": 3,
+      "photo28": 3,
+      "photo29": 1,
+      "persistence_mae": 1160.3333333333333,
+      "secant_mae": 356.6666666666667,
+      "gain": 803.6666666666665
+    },
+    {
+      "path": "332",
+      "photo27": 3,
+      "photo28": 3,
+      "photo29": 2,
+      "persistence_mae": 1125.0,
+      "secant_mae": 321.3333333333333,
+      "gain": 803.6666666666667
+    },
+    {
+      "path": "333",
+      "photo27": 3,
+      "photo28": 3,
+      "photo29": 3,
+      "persistence_mae": 1193.6666666666667,
+      "secant_mae": 390.0,
+      "gain": 803.6666666666667
+    }
+  ],
+  "paths_positive": 27,
+  "path_gain_min": 735.6666666666665,
+  "path_gain_max": 832.6666666666667,
+  "path_count": 27,
+  "path_trend_mae_range": [
+    292.3333333333333,
+    458.0
+  ],
+  "path_hold_mae_range": [
+    1125.0,
+    1193.6666666666667
+  ],
+  "original_E047_scores_exact": true,
+  "baseline_masks_exact_reused": 3,
+  "new_extractions": 6,
+  "local_scenarios": 39,
+  "target_only_scores": 9,
+  "old_halfdepth_unchanged": true
+}
