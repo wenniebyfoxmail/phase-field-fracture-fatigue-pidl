@@ -1,0 +1,41 @@
+{
+  "experiment": "S04-E027",
+  "event": "original initializer identity verification and single-file retrieval",
+  "status": "RETRIEVED_REMOTE_LOCAL_IDENTITY_MATCH",
+  "human_authorization": "human user current turn: read-only exact trained_1NN_98.pt and retrieve if present",
+  "started_utc": "2026-10-18T12:17:48.721154+00:00",
+  "completed_utc": "2026-10-18T12:18:06.883739+00:00",
+  "producer_hostname": "GPUServer8",
+  "ssh_endpoint": "drtao@172.16.100.2",
+  "producer_path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_98.pt",
+  "producer_commit": "ad749c8bbba8120b3961add989b11427fab86254",
+  "bytes": 4510197,
+  "sha256": "e0acd981b8c6d69be9b88d676088b8a026448ee24f28ec231ecdd5c266edd69f",
+  "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027/initializer_retrieval_20261018T121735823711Z/trained_1NN_98.pt",
+  "full_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027/initializer_retrieval_20261018T121735823711Z/receipt.json",
+  "remote_file_stat": {
+    "mtime_ns": 1791455636410123243,
+    "inode": 3063214410,
+    "device": 2065,
+    "mode": 432
+  },
+  "remote_local_identity_match": true,
+  "original_file_unchanged": true,
+  "single_file_count": 1,
+  "metadata_consistency": "all four FEM input identities, protocol, producer path and producer commit unchanged",
+  "activity": {
+    "remote_resource_preflight": false,
+    "training": false,
+    "optimizer_steps": 0,
+    "history_commits": 0,
+    "FEM": false,
+    "model_deserialization": false,
+    "new_scientific_field_or_holdout_reads": false,
+    "remote_writes": false,
+    "initializer_replacement": false
+  },
+  "validation_boundary": "byte identity and availability verified; actual serialized keys/shapes/dtype not inspected and no model constructed; earlier source-derived state/schema retained",
+  "retained_code_review": "91537ce240d892fc71f714cceedc1cea92c32b1b",
+  "retained_unit_tests": 15,
+  "note": "old missing-file findings remain dated history; this receipt supersedes that availability status only"
+}

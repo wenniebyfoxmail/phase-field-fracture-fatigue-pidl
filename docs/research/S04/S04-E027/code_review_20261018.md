@@ -1,5 +1,7 @@
 # S04-E027 本地准备与独立代码审查交接
 
+> 最新状态（2026-10-18）：用户批准的原trained98单文件只读核验/取回完成，自身大小与SHA256远近一致、已补data_lock；见本文末节和initializer_retrieval_20261018.json。下列未找到/无SSH/lock未改等是此前时点的历史记录。源码未改，资源预检与训练仍未进行。
+
 2026-10-18；Owner chat `01a14bc7-fd2a-73e1-9d0f-de457ba1dcc0`；HQ chat `01a14bb9-6cd1-7ee2-9647-5190d786f7ba`。用户授权范围是本地接口、三臂代码、必要检查及独立审查；先不启动训练。报告在本对话/本地归档供HQ读取，没有另行发送消息。
 
 **结论：代码准备范围通过独立审查，无剩余已知阻断性代码问题；完整 Code Ready / Run Ready 未签，运行未授权、未执行。**
@@ -62,3 +64,16 @@
 三臂共同条件保持：P/S从同一个network98复制所有参数、各建空Adam与seed1采样；C在S1000时复制全部参数、非空Adam和采样RNG；不继承原RPROP，也不重新运行C前缀。共同应用目标U=.11999988，前态/历史仍来自原四MAT中的FEM输入，绝不由PIDL history98覆盖。
 
 **只缺这一具体对象：** 原运行精确`best_models/trained_1NN_98.pt`网络文件及它自身的size/SHA256/可用映射。最小补齐动作是由总部安排对该唯一producer路径只读核验存在性与身份，存在时仅取回该文件及收据；无需其它checkpoint、新状态数组、计算图预检或训练。若文件实际缺失或不能归属，则停止此初始化准备，将任何替代设计单独交用户决定。本轮没有远程操作、checkpoint payload读取、模型实例化/替代初始化、新科学数组/留出、训练或FEM。
+
+## 2026-10-18 原文件只读核验与取回完成
+
+用户本轮明确批准只读核验原producer该确切trained98，存在则取回及其自身大小/SHA；不换权重、不做资源预检或训练。已在GPUServer8核验原唯一路径是常规文件且无路径跳转，hash前后inode/大小/mtime/ctime一致；单文件SCP取回后Mac重算大小/SHA相同，已设本地只读。
+
+- 文件：原Q4运行`best_models/trained_1NN_98.pt`，路径/producer commit保持原定义；没有替代权重。
+- 大小：**4510197 bytes**；SHA256：`e0acd981b8c6d69be9b88d676088b8a026448ee24f28ec231ecdd5c266edd69f`。
+- 本地：`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027/initializer_retrieval_20261018T121735823711Z/trained_1NN_98.pt`。
+- 紧凑收据：`initializer_retrieval_20261018.json`；原SSH/传输命令与stat收据：`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027/initializer_retrieval_20261018T121735823711Z/receipt.json`。
+
+`data_lock.json`只补initializer的自身bytes/SHA、本地路径、producer hostname和核验状态；四MAT身份、protocol、producer路径/commit以及代码完全不改。此前“本地未发现/未知哈希”的状态由此次真实收据更新，先前过程记录保留。15项测试和91537ce2源码独审是历史有效验证，不重复整套测试，也不把旧审查冒充新data-lock快照审核。
+
+初始化**字节身份和本地可用性已齐**。未反序列化模型，因此实际state_dict键/shape/dtype尚未检查；此前c20s3/裸state_dict语义仍明确是原源码/记录推导。未加载科学状态数组或留出，未改变初始化设计/参数，未启动GPU资源探测、计算图、训练或FEM。下一步只将更新后的lock交总部结合既有代码审查统一决定；本次单文件授权不包含资源预检或执行授权。

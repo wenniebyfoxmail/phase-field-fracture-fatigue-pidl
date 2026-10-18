@@ -52,3 +52,7 @@ v2方案对P的转录错误按真实E011目标纠正：`L_P=log10(E_el+E_d+E_irr
 ## 2026-10-18 初始化身份澄清（不改设计）
 
 本地源码与原manifest匹配，确认原Q4运行trained_1NN_98应为c20s3、U=.08999988结束时的裸网络state_dict；三臂仍在目标U=.11999988共用该参数，历史只取FEM。原NCP contract仅绑定97/99网络与history98，没有trained98自身条目，旧“已绑定权重”措辞更正为“由原保存源码与状态映射确定的唯一期望文件”。其自身hash/bytes仍未知，所查本地文件名清单未发现正确运行映射。详见code_review_20261018.md及initializer_identity_20261018.json；只需补这一确切文件及自身身份收据，未换初始化/未改lock/未重复15项检查与代码审查，无远程或训练。
+
+## 2026-10-18 初始化原文件身份已补齐
+
+用户本轮批准的单文件只读核验/取回完成：原GPUServer8确切trained98存在，4510197 bytes，SHA256 `e0acd981b8c6d69be9b88d676088b8a026448ee24f28ec231ecdd5c266edd69f`；本地/远端一致，local_path与身份已补入data_lock。见initializer_retrieval_20261018.json及code_review_20261018.md末节；旧未知状态保留为历史。源码/三臂/四MAT/协议不改，15项检查与91537ce2独审保留。未反序列化权重、未做资源预检、未训练；本次不授予完整Run Ready或运行许可。
