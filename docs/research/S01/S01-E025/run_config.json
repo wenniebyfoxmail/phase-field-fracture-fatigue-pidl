@@ -349,7 +349,8 @@
       "rule": "both final-step models independently beat best own selected-context prevalence/all0/all1 Brier and foreground Dice by >1e-6 on their same8 training contexts; training capability only; no site/generalisation claim",
       "prediction_rows": 48
     },
-    "network": "RGB128 area-average to32; two3x3ReLU convs per level8/16/32; maxpool2 twice; bilinear align_corners=False upsample and skip concatenate; decoder16 then8;1x1logits; no pretrained weights/BN/dropout; zero final bias"
+    "network": "RGB128 area-average to32; two3x3ReLU convs per level8/16/32; maxpool2 twice; bilinear align_corners=False upsample and skip concatenate; decoder16 then8;1x1logits; no pretrained weights/BN/dropout; zero final bias",
+    "support_preflight": "all3train6 dual classes and fixed8distinct controls checked before ANY optimizer; missing=>global execution stop/scientific inconclusive/StageB null; normal control metric or qualification miss remains fold-local"
   },
   "resource_notes": "GPU1/CPU1/3600s/RSS4GiB/GPU4GiB/temp12GiB/archive3GiB unchanged;9small models,3840trainingsteps,batch8;RGB/mask/mappayload same E024. No real execution in this task.",
   "budget_definitions": {

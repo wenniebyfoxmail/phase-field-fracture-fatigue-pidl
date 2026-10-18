@@ -28,11 +28,15 @@ def support_checks(data,targets,cfg,g):
     return states
 
 def train_and_qualify(data,run,cfg,g,emit,engine):
-    models=[];banks=[];controls=[];names=[]
+    models=[];banks=[];controls=[];names=[];selections=[]
+    # Global support preflight precedes ALL gradients; unavailable references stop
+    # with an inconclusive receipt, never partially fit a broken nine-model plan.
     for k in range(3):
-        bank=spatial.references(data,k,run,cfg,g,c,emit);banks.append(bank);own=[]
-        # All support selection is train6-only, before any optimizer step.
-        selected=model.control_indices(data['candidates'],bank,cfg,k)
+        bank=spatial.references(data,k,run,cfg,g,c,emit);banks.append(bank)
+        model.training_scope(data['candidates'],bank,cfg,k)
+        selections.append(model.control_indices(data['candidates'],bank,cfg,k))
+    for k,bank in enumerate(banks):
+        own=[];selected=selections[k]
         for j in range(2):
             g.take('localizer_models');g.take('control_models')
             m=engine.fit(data['rgb'],bank,data['candidates'],k,control=j)
@@ -109,15 +113,10 @@ def outer_pixels(data,localizers,admitted,cfg,g):
 
 def cases(data,targets,added,admitted,qualifications,run,cfg,g,emit):
     keys=[];kind='qualification_only';originals={v['parent_id']:v for v in data['originals']}
-    if not admitted:
-        for k,rows in data['qualification_rows'].items():
-            for loc in cfg['localizer']['qual_locations'][k]:
-                choices=[(j,row) for j,row in enumerate(rows) if row['location']==loc];j,row=min(choices,key=lambda v:(-originals[v[1]['parent_id']]['score'],v[1]['image_id'],tuple(v[1]['row']['box_xyxy']),v[1]['parent_id']));keys.append((k,row,data['qualification_maps'][k][j],'own qualification site, excluded from CNN fit'))
-    else:
-        by={v['parent_id']:v for v in data['candidates']};orig={v['parent_id']:v for v in data['originals']};kind='OOF_appended' if added else 'FIT_opportunity_not_selected'
-        pool={v['parent_id'] for v in added} if added else {v['parent_id'] for k in admitted for v in data['labels'][k]['rows'] if v['U']>0}
-        for key in sorted(pool,key=lambda x:(-orig[x]['score'],by[x]['image_id'],tuple(by[x]['row']['box_xyxy']),x))[:6]:
-            row=by[key];k=c.group_of(row['location'],cfg) if added else min(k for k in admitted if any(v['parent_id']==key and v['U']>0 for v in data['labels'][k]['rows']));keys.append((k,row,data['maps'][k][row['index']],'OOF held' if added else 'FIT opportunity, not OOF detection'))
+    # Cases never depend on admission or downstream success: fixed qualification only.
+    for k,rows in data['qualification_rows'].items():
+        for loc in cfg['localizer']['qual_locations'][k]:
+            choices=[(j,row) for j,row in enumerate(rows) if row['location']==loc];j,row=min(choices,key=lambda v:(-originals[v[1]['parent_id']]['score'],v[1]['image_id'],tuple(v[1]['row']['box_xyxy']),v[1]['parent_id']));keys.append((k,row,data['qualification_maps'][k][j],'own qualification site, excluded from CNN fit'))
     result=[];buffers=[]
     for j,(k,row,heat,scope_name) in enumerate(keys[:6]):
         im=row['image_id'];rec=data['images'][im];raw=spatial.image_bytes(rec,g);path=run/'case_images'/f'{j}.jpg';path.parent.mkdir(exist_ok=True);path.write_bytes(raw);buffers.append(raw);result.append(dict(parent_id=row['parent_id'],fold=k,image_id=im,location=row['location'],width=rec['width'],height=rec['height'],snapshot=path.relative_to(run).as_posix(),sha256=hashlib.sha256(raw).hexdigest(),context=data['contexts'][row['index']],heatmap=heat.tolist(),original=row['row']['original_box_xyxy'],corrected=row['row']['box_xyxy'],GT=targets[im],GT_polygons=[v['polygon'] for v in data['annotations'][im] if v['category'] in ['Alligator Crack','Transverse Crack']],scope=scope_name))

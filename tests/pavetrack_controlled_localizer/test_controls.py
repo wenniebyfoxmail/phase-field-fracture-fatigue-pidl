@@ -90,6 +90,8 @@ def test_all_partial_none_and_either_control_veto(tmp_path,monkeypatch,fail,cont
         oof=c.read(run/'OOF_predictions.json')
         assert all(oof['folds'][k]['rows']==[] and oof['folds'][k]['threshold']=='abstain' for k in range(3) if k not in admitted)
     assert result['originals_unchanged']
+    cases=c.read(run/'cases.json');assert cases['kind']=='qualification_only'
+    assert all(v['location'] in cfg['localizer']['qual_locations'][v['fold']] for v in cases['cases'])
 
 
 def test_all_nine_frozen_before_control_and_qualification_and_controls_never_deploy(tmp_path,monkeypatch):
@@ -116,3 +118,14 @@ def test_control_and_model_caps_fail_closed(field):
 
 def test_production_denied_on_Mac_before_training():
     with pytest.raises(PermissionError):c.require_producer(CFG)
+
+
+def test_missing_later_fold_control_support_stops_before_any_optimizer(tmp_path,monkeypatch):
+    d,t,cfg,run,emit,expected,g=extracted(tmp_path);original=net.control_indices
+    def unavailable(rows,bank,cfg,k):
+        if k==1:raise net.ReferenceUnavailable('fixture missing support on later fold')
+        return original(rows,bank,cfg,k)
+    monkeypatch.setattr(net,'control_indices',unavailable)
+    with pytest.raises(net.ReferenceUnavailable):a.train_and_qualify(d,run,cfg,g,emit,ToyBackend(cfg,g))
+    assert g.counts['gradient_steps']==g.counts['localizer_models']==0
+    assert not list(run.glob('localizer_model_fold_*.json'))
