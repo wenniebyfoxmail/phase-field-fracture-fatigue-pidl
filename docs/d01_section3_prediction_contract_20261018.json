@@ -1,0 +1,47 @@
+{
+  "stage": "exploration; all source sequences previously viewed",
+  "question": "Does a small load-conditioned state-space predictor improve next observed section3 width over persistence and load secant?",
+  "scope": "same14 observations, three beams, section3 only, one-step rolling assimilation, no masks/images changed or neural training",
+  "methods": [
+    "persistence",
+    "load_secant",
+    "state_space"
+  ],
+  "primary": "equal-weight mean of per-beam MAE on forecasts with >=2 historical observations (8 total)",
+  "warmup": "first transition per beam retained separately; all three means start at persistence (11 records per method total)",
+  "forecast_information": "prefix observations and specified next nominal load only; assimilation after scoring, reset per beam",
+  "target": "next bias-contaminated mask-derived width; not independent true aperture or physical lifetime",
+  "state": "[expected mask width, local slope per10kN]; initial state[first observed width,0], initial covariance diag[measurement variance,1]",
+  "transition": "F=[[1,d],[0,1]], Q=acceleration_sigma^2 * [[d^3/3,d^2/2],[d^2/2,d]], d=delta nominal load/10kN",
+  "measurement": "H=[1,0], independent working Gaussian epsilon with R=sigma^2; forecast bands include next-observation R",
+  "nominal": {
+    "measurement_sigma_strip_px": 1.0,
+    "acceleration_sigma": 0.05
+  },
+  "measurement_sigma_scenarios_strip_px": [
+    0.5,
+    1.0,
+    2.0
+  ],
+  "acceleration_sigma_scenarios": [
+    0.025,
+    0.05,
+    0.2
+  ],
+  "last_observation_perturbations_strip_px": [
+    -1.0,
+    1.0
+  ],
+  "constant_bias_scenarios_strip_px": [
+    0.0,
+    1.0,
+    3.0
+  ],
+  "assumption_rationale": "fixed engineering scales in strip pixels, not estimated variance or correction; span plausible boundary perturbations without claiming calibration",
+  "no_selection": "nominal settings fixed before execution; all9 noise scenarios retained, no best-setting promotion",
+  "intervals": "Gaussian95% working predictive bands conditional on assumptions; 8 outcomes cannot establish calibration",
+  "comparison": "candidate vs strongest simpler method, report mixed/negative beam results; no frozen previous result changed",
+  "resource_cap": "local CPU NumPy2x2 algebra and plots, <1min; one nominal comparison plus fixed9 noise and perturbation scenarios",
+  "stop": "after requested exports and plots, no architecture search, new inference or training",
+  "next_test": "use results to choose whether state-space adds value; if not, retain simpler comparator"
+}
