@@ -360,3 +360,22 @@ no newtargetpixels/ZIP/XLSX/PDFdownload, no measurement/prediction/training.
 Relatedpapersearchreturnedabstract/result-captiontextincidentally:recordtext
 exposure,neverclaimvirginholdout. D3nextreadMD03acquisition/numberingtext,
 thenfixminimalhistory-onlyROI/triplettest; notexecuted. Oldscores/halfdepthkept.
+
+### E049 MD03 fixed triplet, frozen observer transfer — 2026-10-18
+
+[E049result](../research/S03/S03-E049-MD03/results.md): D1reusecompleted,
+D2methodsverifyCanonEOS6D/100mm/DICspeckles, butno filename-time/loadmapping
+orTIFFcapturetags. Fixed19.2%beam ranks87/130/173,files89/132/175; only2histories
+beforeimmutableprediction, thenofficialtargetdownload/decode. Native16bitfixed
+//257readerrepair andcentralgeometric-probeseed (notcrackannotation) documented
+beforetarget; E045/E037recognition unchanged. Areas5343/5400/6381px²;
+hold5400AE981,trend/separated5457AE924,gain57(5.81%),1/1numericalcoverage.
+HistoricalLconstant272makesseparatedredundant,targetL330. Cyanoverlaysfollow
+sprayedspeckleclusters;guidecolumn2723→2776(53px),nocracktruthortimequalification.
+Usefulpipeline/candidate-outputresult,notverifiedcrack-growthforecastornovelmodel.
+Code01528c09,history1.028s/target0.799sanalysis,373oldguardshashesunchanged,
+independentarray/arithmetic/orderchecks,3finalPNGsviewed/sidecarsvalidated.
+D3active: propose existing3image texture-correspondence/new-opening structure
+inspection,notmoredarkthresholdtuning,newwindowsorcomplexpredictor. OldMD01
+halfdepth/masks/scoresunchanged;33.7%beamunopened. Evidenceunder
+local_archive/experiments/S03-E049-MD03/README_analysis.md inparentroot.
