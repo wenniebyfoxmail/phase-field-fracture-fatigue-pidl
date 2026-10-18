@@ -42,8 +42,9 @@ def run(a):
     for state in STATES:
         if time.perf_counter()-t>600:raise RuntimeError('wall budget')
         raw=old/'inputs'/f'{state}.npz';data=validate_reference(state,raw)
-        with np.load(raw) as z:fatigue=z['fatigue'].copy();prior_damage=z['prior_damage'].copy();active_after=z['active_after'].copy()
-        frozen=[fatigue.copy(),prior_damage.copy(),data['damage'].copy()];input_file=prev/'results'/f'{state}_shrink02.npz'
+        with np.load(raw) as z:
+            frozen_optional={key:z[key].copy() for key in ['fatigue','prior_damage'] if key in z.files};active_after=z['active_after'].copy()
+        frozen={key:value.copy() for key,value in frozen_optional.items()};frozen_damage=data['damage'].copy();input_file=prev/'results'/f'{state}_shrink02.npz'
         assert sha(input_file)==manifest['files'][str(input_file.relative_to(prev))]['sha256'];input_hash=sha(input_file)
         cpdir=e023/'runs'/HEAD_LOCKS[state]['run_id'];before={str(cpdir/n):sha(cpdir/n) for n in HEAD_LOCKS[state]['files']}
         assert all(before[str(cpdir/n)]==h for n,h in HEAD_LOCKS[state]['files'].items())
@@ -64,11 +65,11 @@ def run(a):
                     mean=float(np.sum(refs['weights'][mask]*values[key][mask])/np.sum(refs['weights'][mask])) if key!='strain' else None
                     metrics.append(dict(state=state,arm=arm,region=region,quantity=key,relative_gp_l2_error=error,weighted_mean=mean))
             free=refs['free'];gap=refs['rho_scale']*np.sqrt(np.sum((values['force'][free]-refs['force'][free])**2/refs['mass'][free,None]))
-            residuals.append(dict(state=state,arm=arm,rho_u=values['rho_u'],force_error_rho_scale=float(gap),reference_rho_u=refs['rho_u'],energy=float(np.sum(values['weights']*values['active_energy'])),trace_sign_mismatch_gp_fraction=float(np.sum(refs['weights']*((values['strain'][...,:2].sum(2)>=0)!=(refs['strain'][...,:2].sum(2)>=0)))/refs['weights'].sum())))
+            residuals.append(dict(state=state,arm=arm,rho_u=values['rho_u'],force_error_rho_scale=float(gap),reference_rho_u=refs['rho_u'],integrated_active_energy=float(np.sum(values['weights']*values['active_energy'])),trace_sign_mismatch_gp_fraction=float(np.sum(refs['weights']*((values['strain'][...,:2].sum(2)>=0)!=(refs['strain'][...,:2].sum(2)>=0)))/refs['weights'].sum())))
         np.savez_compressed(a.out/f'{state}_physical.npz',gp_xy=refs['gp_xy'],weights=refs['weights'],gp_damage=refs['gp_damage'],**{arm+'_'+key:vals[key] for arm,vals in outputs.items() for key in ['strain','psi0','active_energy','elastic_damage_driver']})
-        assert np.array_equal(fatigue,frozen[0]) and np.array_equal(prior_damage,frozen[1]) and np.array_equal(data['damage'],frozen[2])
+        assert all(np.array_equal(v,frozen[k]) for k,v in frozen_optional.items()) and np.array_equal(data['damage'],frozen_damage)
         assert sha(input_file)==input_hash and all(sha(Path(f))==h for f,h in before.items())
-        assets.append(dict(state=state,reference_sha256=sha(raw),uv_input_sha256=input_hash,original_file_hashes=before,fatigue_sha256=__import__('hashlib').sha256(fatigue.tobytes()).hexdigest(),frozen_channels_unchanged=True))
+        assets.append(dict(state=state,reference_sha256=sha(raw),uv_input_sha256=input_hash,original_file_hashes=before,frozen_optional_sha256={k:__import__('hashlib').sha256(v.tobytes()).hexdigest() for k,v in frozen_optional.items()},max_history_present=False,frozen_channels_unchanged=True))
         peak=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*(1 if platform.system()=='Darwin' else 1024)
         if peak>3*1024**3:raise RuntimeError('RSS budget')
         print(state,'DONE',[(x['arm'],x['rho_u']) for x in residuals if x['state']==state],flush=True)
