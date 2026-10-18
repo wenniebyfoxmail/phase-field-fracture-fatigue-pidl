@@ -1,0 +1,17 @@
+{
+  "execution": "succeeded",
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001",
+  "source_summary_sha256": "0ea3a4795cf8a099adc2b2bc88ea836018cf075e940e9086b0ce14e9bf0adf74",
+  "source_profiles_sha256": "a344b10cf6c6a56af3f60a49af7d3493530f97257a53c8069f499cf6cd660330",
+  "renderer_sha256": "d304a7853558d8174d34146c0bd3bccfc67ee6cb1c8444bbb48b3908def32a8e",
+  "figures": 2,
+  "new_numeric_analysis": false,
+  "output_hashes": {
+    "F02_separated_prediction_comparison.pdf": "5cf230b301488ce79c76cf8ba5c8aeb08582b6f3d85a4d0421d5df5477e48993",
+    "F02_separated_prediction_comparison.png": "b0729ca76700df4f8c11b607fe1fc97104454bbe5a982787c9e1c77f51834eae",
+    "F01_support_and_row_mass.pdf": "fbffeffb3de707a00c70cb0b95261d1aee570fafbc258550c0ea1ef644c83a63",
+    "F01_support_and_row_mass.md": "66aaa861de9ec57962becefd19e4d567b2a30f3fd2096d0daad2317ac689ba77",
+    "F01_support_and_row_mass.png": "d00217cb74f352137c9e8b48f0e495af0bb6d7654274bb76c1d580d4de400bae",
+    "F02_separated_prediction_comparison.md": "3c89db2b30d8db946d12e36b23e609a6ea2adbaed49fc0c91c86d7d2b858aa55"
+  }
+}

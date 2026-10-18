@@ -260,3 +260,17 @@ notconfirmedphysicalshrinkage. E041accepted19commonmask=v1exact. Single2.220s
 analysis,61inputs/36oldprotectedunchanged; originalsoverlaysandallerrorsdisplayed.
 Nextseparateobservationsupportfromthickness; fixedsimplepredictionrepair, not
 morepixelpolishing, mandatorybackgroundanchors orduplicatedD01state-spacework.
+
+### E043 separate detected support and conditional row mass — 2026-10-18
+
+[E043results](../research/S03/S03-E043-MD01/results.md): userrevokes80%stopline,
+freezesidentification; newfixed Lhold/Msecant withA=L*M. All3windowsMAE
+786.973vs persistence1104.667/areasecant1205.5px², reductions28.76/34.72%.
+Case22error644.5→73.12, earlieststill2268.80;latecasealgebraicallyties19.
+Ninecachedsettings7/9beatpersistence,8/9beatsecant, noerrorselection, somearms
+duplicate. Candidate/shadowcontaminationnotrepairedorquantified; Lnottruelength,
+Mnotnormalwidth/oldhalfdepth/physicalaperture. 3overlappingdevelopmentwindows,
+noindependentvalidation. R001single0.232s,148inputhashes/oldE042filesunchanged,
+27rationalarithmeticchecks; bothactualfiguresdisplayed, no newextraction/training.
+Nextnewfixedstage/windowverification proposed, notexecuted; preservecurrentrules,
+oldhalfdepth/scoring, observerrisk flags ratherthanclaimshadowremoval.

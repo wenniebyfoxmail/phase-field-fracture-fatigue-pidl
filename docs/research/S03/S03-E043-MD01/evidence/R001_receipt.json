@@ -1,0 +1,21 @@
+{
+  "execution": "succeeded",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 85155,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_support_mass_forecast.py",
+    "run",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001"
+  ],
+  "started_utc": "2026-10-18T11:02:35.938672+00:00",
+  "commit": "999eeeeb1dfedb07baaacb9412f6a5b3286099f2",
+  "dirty": [],
+  "retrieval": "verified_local",
+  "input_hashes_verified": 148,
+  "old_E042_files_protected": 15,
+  "wall_seconds": 0.23162333300570026,
+  "cpu_seconds": 0.19837400000000002,
+  "ended_utc": "2026-10-18T11:02:36.170154+00:00"
+}

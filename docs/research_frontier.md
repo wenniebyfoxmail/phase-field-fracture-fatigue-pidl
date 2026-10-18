@@ -50,8 +50,11 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   E042freezesidentificationandadvancescached5framestosequence/3windowprediction:
   persistence/secantMAE1104.667/1205.5px²; oldlatequeryretains473gain,earlycoverage
   fragmentationlimitsareaextrapolation. Ninecachedsettings3/9favoursecantoverall;
-  noerrorselection,newextractionorD01duplication. Nextseparatesupport/thickness
-  observationsforfixedsimplepredictionrepair,nomandatoryfouranchors.
+  E043fixedsupport-hold/conditionalrowmass-secant reducesMAEto786.973px²
+  (−28.76%vs persistence,−34.72%vs areasecant),earlieststillpoor;7/9cached
+  settingsbeatpersistence,8/9beatsecant. No errorselection/newmask/training.
+  Shadowfalsepositivesremain;candidateforecastgainnottruecrackaccuracy.
+  Nextnewfixedstage/windowcheckproposed,notexecuted,nomandatoryfouranchors.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
