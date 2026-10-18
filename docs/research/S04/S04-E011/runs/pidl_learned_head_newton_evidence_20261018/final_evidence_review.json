@@ -34,5 +34,15 @@
     "No source/report edits"
   ],
   "compact_receipt_sha256": "b9645b1a29364559d7e1f4e2d494eddb66839e1ad87eb3d266e708cdeda7f507",
-  "final_wording_addendum_utc": "2026-10-18T13:01:37.365973+00:00"
+  "final_wording_addendum_utc": "2026-10-18T13:01:37.365973+00:00",
+  "csv_line_ending_addendum": {
+    "reviewed_utc": "2026-10-18T13:03:01.381492+00:00",
+    "change": "Tracked compact metrics CSV only CRLF toLF; original analysis CSV unchanged.",
+    "original_metrics_sha256": "bd7a7564acc3897d493dc85408475e3bfbb129eeb37c018f1425d0e3eb0b3ce0",
+    "tracked_metrics_sha256": "46f150a69188896051c527d18d1e1a4c3ba0d0960085c767e8eccd5d3d0861ab",
+    "byte_normalization_equality": true,
+    "decoded_all_cells_equal": true,
+    "numeric_recalculation": false,
+    "status": "passed"
+  }
 }
