@@ -42,6 +42,31 @@ a new research direction. Do not repeat an unchanged terminal attempt.
 At a continuation, reuse the existing D1 record and check only what changed;
 do not restart D1 each turn. Routine edits need only a proportionate lookup.
 
+## Keep The Goal Continuous
+
+Keep a short goal anchor near the top of the existing owner note: original
+question -> current question; `continue | fork | redirect` and why; scope-change
+authority/source when applicable; previous route's status. Link an existing
+decision rather than copying it. Refresh only when scope changes or a handoff
+reveals a mismatch, not every turn.
+
+A user-directed change is legitimate: follow it without asking again, preserve
+the old route and its results, and explain whether the new work advances that
+question or replaces it. When scope materially changes, update the owner note
+and its Roadmap/portfolio summary together; correct a misleading chat title where
+permitted, or put a prominent current-scope line in the update/handoff.
+
+Easier data or tools do not by themselves authorise replacing the question.
+An in-scope method repair needs no extra scope approval; a materially different
+question outside existing authority is a proposed fork/redirect for the user
+to choose. Do not quietly lower the target or relabel a negative result.
+
+Keep acquisition separate from scientific progress. If access is blocking,
+state which decision it enables and the condition for returning to it or taking
+an in-scope alternative; continue useful unblocked work or park that dependency.
+A request sent, file obtained or waiting status is not an answered research
+question. Keep the HQ's next scientific decision visible.
+
 ## Decision Ladder
 
 Keep a short ladder inside the existing goal, Experiment, or task note.
@@ -160,6 +185,7 @@ For an exploratory task, a short plan/record suffices:
 
 ```text
 Purpose / evidence stage:
+Goal anchor / existing scope-decision pointer:
 D1 reuse decision and source pointers:
 Decision ladder / active step:
 Smallest action / comparator / observable / resource cap:
@@ -172,8 +198,11 @@ this core does not require new IDs, duplicate records, or extra approval stages.
 
 ## HQ And Sub-Agent Handoffs
 
-Each HQ passes the current core path, relevant domain adapter, active D step,
-purpose, evidence/code pointers, permitted scope, budget and expected output
-to its executors. Executors return the result, its evidence pointer and next
-decision. Reuse one owner record; do not open a duplicate ladder for every
-helper. A workflow refresh does not authorise a new run, retry or data access.
+Each HQ passes the current core path, relevant domain adapter, goal anchor,
+active D step, evidence/code pointers, permitted scope, budget, expected output
+and advance/return/redirect condition to its executors. Make clear how the
+helper's subquestion serves the current goal. Executors return the result,
+its evidence pointer and its impact on that goal and next decision. Carry scope
+changes into the portfolio summary, not just the helper's activity report.
+Reuse one owner record; do not open a duplicate ladder for every helper.
+A workflow refresh does not authorise a new run, retry or data access.

@@ -22,8 +22,11 @@ boundaries, budgets and execution authority retain their exact conditions.
 Historical skill copies remain for reproducibility, not as current workflow
 entrypoints. Existing D1 work may be reused; a continuation need not restart it.
 
-HQs pass these installed paths, active D step, task/evidence pointers, scope
-and budget to existing live and future sub-agents. Keep one owner record.
+Use the core's `Keep The Goal Continuous` section when a route changes or is
+handed off: keep the current question and its relation to the earlier goal visible.
+HQs pass these installed paths, goal anchor, active D step, task/evidence
+pointers, scope, budget and return/redirect condition to live and future sub-agents.
+Keep one owner record and carry material scope changes into portfolio summaries.
 A refresh alone never launches a run, retry, cloud task or producer operation.
 
 For `0 idea test`, keep code, logs and reproduction payloads in the case;
