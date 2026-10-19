@@ -10,12 +10,12 @@
 | 项目 | 精确值 |
 |---|---|
 | CardID | S04-E011-UVH-C1-FN776-CARD-r1 |
-| Dev源码 | 5f985f675a5f894bf54f9b5c76161ded43fd2cf1 |
-| Producer根快照 | 083de287b37ce417fafdad65078edb6e3a20aa5d |
-| Bundle ref | refs/codex/fn776-gpu7-5f985f675a5f |
-| Bundle字节数 | 185526 |
-| Bundle SHA256 | d1cfec58daeee1fdb6fa770da7b0661aa35ae8137cdfd82b36c2cfaeabb3195f |
-| 本地源码包 | /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_20261019/package_5f985f67/code.bundle |
+| Dev源码 | f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92 |
+| Producer根快照 | e72d36e136600eee75644a50e530f6d7340fc7e8 |
+| Bundle ref | refs/codex/fn776-gpu7-f1ed1ed969b1 |
+| Bundle字节数 | 185682 |
+| Bundle SHA256 | 39482f986345e8faeed64e30725b815731c3609279fab36c5f75241a538266f6 |
+| 本地源码包 | /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_20261019/package_f1ed1ed9/code.bundle |
 | RunID | pf_s04e011_uvh_c1_fn776_r1_20261019 |
 | GPU | Taobo物理GPU7，GPU-350d3f31-8bd6-4257-4d4c-21ad344eaa81；worker逻辑cuda:0 |
 | Root | /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019 |
@@ -24,11 +24,11 @@
 
 本卡Git身份由后续审查回执记录，避免将自身提交号写入正文造成自引用。
 源码包为无父提交、无基础对象依赖的完整bundle；空目录检出验证通过：
-47个代码/文本文件、609472字节选定内容、完整fsck、干净工作区、逐文件
+47个代码/文本文件、609923字节选定内容、完整fsck、干净工作区、逐文件
 blob/大小/权限和19个可达本地Python文件的AST依赖闭包。包含此前涉及的
 SENS_tensile/field_computation.py。核心source/SENS力学文件与既定源码逐blob
 相同；8个保留科学函数AST相同。worker blob为
-600b803cf48407109302cceb62525fe7e5a25eb1。
+adb8c050b5330026cc120f47f14244ab040af028。
 
 ## 问题、输入与结果判据
 
@@ -110,22 +110,22 @@ Taobo Python worker、路径/claim/旧终止记录。未知状态先查证，SSH
 ## 审批后唯一部署与启动
 
 按[部署说明](deployment_fn776.md)，先完成只读SSH/重复/资源核对，再
-创建全新Root；仅传上述bundle到Root/source.bundle，核验185526字节及
+创建全新Root；仅传上述bundle到Root/source.bundle，核验185682字节及
 指定SHA256。任一冲突或失败停止，不修旧目录，不远程补对象。以下命令
 是审批后的固定步骤，本轮未执行：
 
 ```bash
 git init /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code
-git -C /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code fetch /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/source.bundle refs/codex/fn776-gpu7-5f985f675a5f
-git -C /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code checkout --detach 083de287b37ce417fafdad65078edb6e3a20aa5d
-/usr/bin/python3 -B /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code/tools/s04_e011_fn776/verify_code_package.py --code /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code --expected-source 083de287b37ce417fafdad65078edb6e3a20aa5d
+git -C /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code fetch /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/source.bundle refs/codex/fn776-gpu7-f1ed1ed969b1
+git -C /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code checkout --detach e72d36e136600eee75644a50e530f6d7340fc7e8
+/usr/bin/python3 -B /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code/tools/s04_e011_fn776/verify_code_package.py --code /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code --expected-source e72d36e136600eee75644a50e530f6d7340fc7e8
 ```
 
 再次核对无重复后，仅启动一次：
 
 ```bash
 cd /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/code
-nohup env PYTHONDONTWRITEBYTECODE=1 PYTHONOPTIMIZE=0 CUDA_VISIBLE_DEVICES=GPU-350d3f31-8bd6-4257-4d4c-21ad344eaa81 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 /usr/bin/python3 -B tools/s04_e011_fn776/guard.py --execute-approved --approval-ref S04-E011-UVH-C1-FN776-CARD-r1 --expected-source 083de287b37ce417fafdad65078edb6e3a20aa5d > /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/guard.log 2>&1 < /dev/null &
+nohup env PYTHONDONTWRITEBYTECODE=1 PYTHONOPTIMIZE=0 CUDA_VISIBLE_DEVICES=GPU-350d3f31-8bd6-4257-4d4c-21ad344eaa81 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 /usr/bin/python3 -B tools/s04_e011_fn776/guard.py --execute-approved --approval-ref S04-E011-UVH-C1-FN776-CARD-r1 --expected-source e72d36e136600eee75644a50e530f6d7340fc7e8 > /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r1_20261019/guard.log 2>&1 < /dev/null &
 ```
 
 Guard先排他创建attempt_claim.json，此后准入失败亦消耗该卡；再次验证
@@ -141,10 +141,10 @@ Guard先排他创建attempt_claim.json，此后准入失败亦消耗该卡；再
 ## 审核边界与审批用语
 
 当前完成的是标准库AST/text/Git检查与源码包空目录物化。没有导入数值
-库、读取科学数组、执行夹具、矩阵构造、QR、梯度或GPU计算。独立静审
-回执另存；只评价该精确代码/契约，不证明收敛、900秒或8GiB可行。
+库、读取科学数组、执行夹具、矩阵构造、QR、梯度或GPU计算。独立静审修正了零迹附近分支变化的记录：仅按实际tau>0刚度分支计数，
+负/零点数独立记录；不改变方向、能量或预算。最终精确复审回执另存；只评价该精确代码/契约，不证明收敛、900秒或8GiB可行。
 
-可批准的范围为：“批准按S04-E011-UVH-C1-FN776-CARD-r1、Dev 5f985f67、
-Producer 083de287，在Taobo物理GPU7执行唯一一次检验，含卡内SSH检查、
+可批准的范围为：“批准按S04-E011-UVH-C1-FN776-CARD-r1、Dev f1ed1ed9、
+Producer e72d36e1，在Taobo物理GPU7执行唯一一次检验，含卡内SSH检查、
 部署、五文件读取、求解及报告取回；遵守25424单位/900秒/8GiB RSS及CUDA/
 100MiB预算、4GiB余量监测及失败不重试规则。”
