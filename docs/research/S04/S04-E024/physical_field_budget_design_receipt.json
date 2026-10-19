@@ -1,0 +1,17 @@
+{
+  "status": "DESIGN_REVIEW_PASS_NOT_IMPLEMENTED_NOT_EXECUTED",
+  "reviewed_design_commit": "ecf1cc9f080a12f5579a234ecbc9f55191060e6e",
+  "baseline_scientific_source": "ab403ff58a5d014b293a059fb5d94a0c5168e5c9",
+  "plan_sha256": "0441e6cc847c501b822c5bb1fbf0ed816bd8a97bc5c526178a0d88aa50280d32",
+  "contract_sha256": "8bc35175839dc69ee4fcab618903a5043401d871f45cdfc104c88f6527834236",
+  "design_review_sha256": "a34ddcb6e6d8a8f5399cc5c85a3d6191c5c0e8a83f054108200478c7d15499cf",
+  "initial_review_sha256": "ab822ed65ce97ddbafadfa9319b0f19fad11115f8cba9bce0afd74d9c48a68f9",
+  "contract_stage_note": "submission-time awaiting-review snapshot retained byte-exact; current design status is this receipt plus final review",
+  "new_head_solves": 0,
+  "new_model_or_FEM_forwards": 0,
+  "NN_optimizer_steps": 0,
+  "history_fatigue_damage_updates": 0,
+  "remote_actions": 0,
+  "source_code_changed": false,
+  "next": "implementation and nontraining checks, then exact-source Code Ready; no execution authority inherited"
+}

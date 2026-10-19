@@ -1,0 +1,12 @@
+{
+  "status": "DESIGN_TEXT_AND_ARITHMETIC_CHECK_PASS",
+  "scope": "JSON/schema, counts and resource arithmetic only; not Code Ready, numerical solver, new field or scientific result",
+  "reviewed_design_commit": "ecf1cc9f080a12f5579a234ecbc9f55191060e6e",
+  "plan_sha256": "0441e6cc847c501b822c5bb1fbf0ed816bd8a97bc5c526178a0d88aa50280d32",
+  "contract_sha256": "8bc35175839dc69ee4fcab618903a5043401d871f45cdfc104c88f6527834236",
+  "13_unique_guards": true,
+  "12_profiles_36_solves_324_trials_max": true,
+  "3120s_stage_cap_sum": true,
+  "parameter_cap_and_ridge_absent": true,
+  "new_scientific_execution": false
+}

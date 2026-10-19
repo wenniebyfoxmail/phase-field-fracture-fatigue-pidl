@@ -1,0 +1,66 @@
+{
+  "verdict": "CHANGES_REQUIRED",
+  "review_type": "INDEPENDENT_READ_ONLY_DESIGN_REVIEW",
+  "source_commit": "98d7381f76b44cd917239947042a8d6a8ab0678b",
+  "source_sha256": {
+    "docs/research/S04/S04-E024/physical_field_budget_plan.md": "4af1d421c374eebc08c4f0a61796c53388bf2266073a685b6d5974bd020ac1fe",
+    "docs/research/S04/S04-E024/physical_field_budget_contract.json": "7ef91d9a35d1b5aae1a2338c639933df58828c969535e420a747c7da6fb5be98"
+  },
+  "baseline_commit": "ab403ff58a5d014b293a059fb5d94a0c5168e5c9",
+  "blocking_findings": [
+    {
+      "id": "B1",
+      "blocking": true,
+      "finding": "Actual admission field authority must be explicit after parameter cap removal.",
+      "change": "Cast external head to original producer dtype, reconstruct through actual raw network, and use that field for all13guards/Q/actual reduction; affine consistency threshold cannot excuse actual violations."
+    },
+    {
+      "id": "B2",
+      "blocking": true,
+      "finding": "Resource cap promises lack explicit parent supervision and cumulative hard deadline implementation contract.",
+      "change": "Specify parent-monitored absolute per-phase and total deadlines, stop child safely at remaining budget, preserve partial profiles and never start next profile/state after numerical cap exhaustion."
+    }
+  ],
+  "clarifications": [
+    {
+      "id": "N1",
+      "blocking": false,
+      "finding": "Zero fullUV error makes normalized objective/improvement denominator undefined; other zero denominators also affect mapping check.",
+      "change": "Declare exact original no-correction stop if fullUV baseline error zero. Other zero components use exact-zero-change policy with no divide0/epsilon; explicitly define zero-denominator consistency checks."
+    },
+    {
+      "id": "N2",
+      "blocking": false,
+      "finding": "Different finite SLSQP returns alone do not isolate13guard cost.",
+      "change": "Retain solver stopping/KKT/resolution diagnostics and cross-score already visited main/ablation candidates against both guard sets; do not create extra candidates or claim causal cost from unresolved gap."
+    },
+    {
+      "id": "N3",
+      "blocking": false,
+      "finding": "Dense568 SLSQP costs/conditioning remain unknown;12completeprofiles not guaranteed by caps.",
+      "change": "Freeze state/profile order; future same-dimensional synthetic analytic-Jacobian check and memory/time estimate at CodeReady; incomplete profiles stay unexecuted, not zero/selected winners."
+    },
+    {
+      "id": "N4",
+      "blocking": false,
+      "finding": "Explicit full stacked strain/driver/force Jacobians may exceed memory.",
+      "change": "Require native-support/halo and chunked Gram contractions, measured peakRSS; no full GP stacked Jacobian retention."
+    },
+    {
+      "id": "N5",
+      "blocking": false,
+      "finding": "Budget geometric opportunity should be distinguished from predicted attainability.",
+      "change": "Reverse triangle gives fullUV relative RMS gain<=min(eta,1), hence10/30/100% optimistic geometry bounds only; not new target or application threshold."
+    }
+  ],
+  "new_scientific_fields_or_candidates_or_solves": 0,
+  "stage": "DESIGN_ONLY",
+  "sound_parts": [
+    "Physical-change budget and FEM-relative error guards are distinct.",
+    "Q uses immutable original E023 centre and free-force VECTOR difference, not rho norm difference.",
+    "Original2%cap/ridge truly absent; invertible coordinate floor is not a head penalty.",
+    "13main guards contain original7 plus4strain/full-damage driver; eta.3 seven-guard comparison explicitly diagnostic.",
+    "Same three exposed-state references and missing histories remain unchanged."
+  ],
+  "next": "One consolidated plan/contract revision, then focused independent re-review; no implementation or execution permission."
+}
