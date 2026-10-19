@@ -52,8 +52,10 @@ class ArtificialAdapter:
             "D_DIRECT": ("direct_damage_head.weight", "direct_damage_head.bias"),
             "F_AMP": ("amplitude_residual.weight", "amplitude_residual.bias"),
             "F_AMP_SHAPE": (
-                "amplitude_residual.weight", "amplitude_residual.bias",
-                "shape_logits.weight", "shape_logits.bias",
+                "amplitude_residual.weight",
+                "amplitude_residual.bias",
+                "shape_logits.weight",
+                "shape_logits.bias",
             ),
         }[arm]
         ids = tuple(range(self._next_id, self._next_id + len(names)))
@@ -146,15 +148,33 @@ def test_config_freezes_mapping_physics_arms_budget_resources_and_disabled_launc
     ("mutation", "error", "match"),
     [
         (lambda c: c.update(execution_authorized=True), PermissionError, "disabled"),
-        (lambda c: c["data"].update(cycles=list(reversed(c["data"]["cycles"]))), ValueError, "cycle order"),
+        (
+            lambda c: c["data"].update(cycles=list(reversed(c["data"]["cycles"]))),
+            ValueError,
+            "cycle order",
+        ),
         (lambda c: c["physics"].update(beta=1.0), ValueError, "physics boundary"),
         (lambda c: c["budget"].update(total_update_cap=193), ValueError, "budget"),
-        (lambda c: c["producer"].update(cuda_visible_devices="0"), ValueError, "producer envelope"),
-        (lambda c: c["bindings"].update(packet_loader="other:load"), ValueError, "binding"),
-        (lambda c: c["source"].update(producer_package_reviewed_commit="b" * 40), ValueError, "premature"),
+        (
+            lambda c: c["producer"].update(cuda_visible_devices="0"),
+            ValueError,
+            "producer envelope",
+        ),
+        (
+            lambda c: c["bindings"].update(packet_loader="other:load"),
+            ValueError,
+            "binding",
+        ),
+        (
+            lambda c: c["source"].update(producer_package_reviewed_commit="b" * 40),
+            ValueError,
+            "premature",
+        ),
     ],
 )
-def test_config_fails_closed_on_identity_scope_or_authority_drift(mutation, error, match):
+def test_config_fails_closed_on_identity_scope_or_authority_drift(
+    mutation, error, match
+):
     config = config_fixture()
     mutation(config)
     with pytest.raises(error, match=match):
@@ -171,7 +191,8 @@ def test_binding_targets_are_real_source_symbols_without_resolving_or_importing_
         assert path.is_file(), reference
         tree = ast.parse(path.read_text(encoding="utf-8"))
         top_level = {
-            node.name for node in tree.body
+            node.name
+            for node in tree.body
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
         }
         assert name in top_level, reference
@@ -191,7 +212,9 @@ def test_package_import_is_stdlib_only_and_has_no_eager_scientific_calls():
 
 def test_disabled_candidate_rejects_before_binding_resolution(monkeypatch):
     called = []
-    monkeypatch.setattr(package.importlib, "import_module", lambda name: called.append(name))
+    monkeypatch.setattr(
+        package.importlib, "import_module", lambda name: called.append(name)
+    )
     with pytest.raises(PermissionError, match="execution_authorized is false"):
         package.resolve_real_bindings(
             config_fixture(), cli_flag=True, observed_commit="0" * 40
@@ -214,11 +237,16 @@ def test_disabled_launch_wrapper_stops_without_scientific_import_or_asset_argume
     )
     assert result.returncode != 0
     assert "execution_authorized is false" in result.stderr
-    assert "packet-dir" not in RUNNER_PATH.read_text(encoding="utf-8")
-    assert "checkpoint" not in RUNNER_PATH.read_text(encoding="utf-8")
+    source = RUNNER_PATH.read_text(encoding="utf-8")
+    assert source.index("assert_launch_enabled(") < source.index(
+        "resolve_real_bindings("
+    )
+    assert "--packet-dir" in source and "--initial-checkpoint" in source
 
 
-def test_artificial_fixture_executes_exact_three_arm_budget_and_writes_closed_evidence(tmp_path):
+def test_artificial_fixture_executes_exact_three_arm_budget_and_writes_closed_evidence(
+    tmp_path
+):
     adapter = ArtificialAdapter()
     output = tmp_path / "fixture"
     receipt = package.run_artificial_fixture(
@@ -290,4 +318,3 @@ def test_evidence_writer_is_canonical_hash_bound_and_write_once(tmp_path):
     assert (tmp_path / "receipt.json").read_bytes() == package.canonical_json(value)
     with pytest.raises(ValueError, match="already exists"):
         writer.write_json("receipt.json", value)
-

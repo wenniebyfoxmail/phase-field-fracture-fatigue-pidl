@@ -22,20 +22,27 @@ def main() -> None:
     if not args.check_disabled_candidate:
         parser.error("--check-disabled-candidate is required")
     raw = args.package_config.read_bytes()
-    config = json.loads(raw, parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
+    config = json.loads(
+        raw, parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value))
+    )
     validate_package_config(config)
     if raw != canonical_json(config):
         raise ValueError("package config is not canonical JSON")
-    print(json.dumps({
-        "status": config["status"],
-        "execution_authorized": False,
-        "scientific_assets_read": False,
-        "bindings_resolved": False,
-        "model_forward": 0,
-        "autograd_collections": 0,
-        "optimizer_constructions": 0,
-        "optimizer_steps": 0,
-    }, sort_keys=True))
+    print(
+        json.dumps(
+            {
+                "status": config["status"],
+                "execution_authorized": False,
+                "scientific_assets_read": False,
+                "bindings_resolved": False,
+                "model_forward": 0,
+                "autograd_collections": 0,
+                "optimizer_constructions": 0,
+                "optimizer_steps": 0,
+            },
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

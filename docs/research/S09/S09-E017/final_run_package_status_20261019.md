@@ -2,7 +2,7 @@
 
 Date: 2026-10-19
 
-Status: `REVISE__NO_EXECUTION`
+Status: `IMPLEMENTATION_CANDIDATE_AWAITING_EXACT_REVIEW__NO_EXECUTION`
 
 ## Purpose
 
@@ -59,6 +59,16 @@ feature, independent damage/amplitude/shape parameters, exact operation-bound
 counters, failure-safe streaming evidence and retrieval verification. Obtain an
 exact-commit implementation review before enabling any real adapter or reading
 scientific assets.
+
+## 2026-10-20 implementation update
+
+The disabled candidate now contains the real checkpoint converter, isolated
+three-arm heads, concrete A/S/R/P-to-PCGrad-to-AdamW path, transactional
+evidence boundaries, fixed evaluator and field/figure outputs. The focused
+synthetic suite reports `121 passed`; Ruff, syntax, canonical-config and
+whitespace checks pass. This closes implementation work locally but does not
+close Code Ready: the exact dependency-closed commit still requires the
+requested independent package review.
 
 ## Prohibited and not performed
 
