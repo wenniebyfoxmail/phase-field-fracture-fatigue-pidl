@@ -22,6 +22,7 @@ from s09_e013_producer import (  # noqa: E402
     EXPECTED_PROTOCOL_SHA256,
     EXPECTED_RUN_CONFIG_SHA256,
     WALL_TIME_CAP_SECONDS,
+    _check_deadline,
     _execution_files_clean,
     _initialise_arms,
     zero_step_audit,
@@ -42,6 +43,7 @@ def main() -> None:
     parser.add_argument("--expected-commit", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    deadline = time.time() + WALL_TIME_CAP_SECONDS
     if current_commit(ROOT) != args.expected_commit or not _execution_files_clean(ROOT):
         raise ValueError("execution code identity mismatch")
     if sha256_file(args.run_config) != EXPECTED_RUN_CONFIG_SHA256:
@@ -72,7 +74,7 @@ def main() -> None:
     with progress_path.open("xb") as progress_stream:
         audit = zero_step_audit(
             runtime, optimizers[ARM_LOCAL],
-            deadline=time.time() + WALL_TIME_CAP_SECONDS,
+            deadline=deadline,
             progress_stream=progress_stream,
         )
     receipt = {
@@ -91,9 +93,11 @@ def main() -> None:
         "audit": audit,
         "progress_path": str(progress_path),
     }
+    receipt_payload = canonical_json(receipt)
+    _check_deadline(deadline, "standalone_zero_step_receipt_publication")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("xb") as stream:
-        stream.write(canonical_json(receipt))
+        stream.write(receipt_payload)
     print(json.dumps({
         "status": audit["status"],
         "wrong_local_helpful": audit["predicted_adamw_increases_wrong_local_margin_count"],

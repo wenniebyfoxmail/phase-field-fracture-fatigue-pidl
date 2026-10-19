@@ -92,6 +92,7 @@ PRODUCER_FILES = (
     # dependency closure for the runtime/model/physics/evaluator imports.
     "source",
     "scripts/run_s09_e013_producer.py",
+    "scripts/check_s09_e013_zero_step.py",
     "docs/research/S09/S09-E013/experiment.md",
     "docs/research/S09/S09-E013/run_config.json",
 )
@@ -448,6 +449,20 @@ def _classify_zero_step_records(records: list[dict[str, Any]]) -> dict[str, Any]
     }
 
 
+def _close_zero_step_audit(
+    *, records: list[dict[str, Any]], runtime: Any,
+    optimizer: torch.optim.AdamW, before_hash: str, optimizer_hash: str,
+    deadline: float,
+) -> dict[str, Any]:
+    summary = _classify_zero_step_records(records)
+    _require(parameter_state_sha256(runtime.model) == before_hash,
+             "zero-step audit changed model")
+    _require(_optimizer_state_sha256(optimizer) == optimizer_hash,
+             "zero-step audit changed optimizer")
+    _check_deadline(deadline, "zero_step:before_admission_publication")
+    return summary
+
+
 def zero_step_audit(
     runtime: Any, optimizer: torch.optim.AdamW, *, deadline: float,
     progress_stream: io.BufferedWriter | None = None,
@@ -541,12 +556,11 @@ def zero_step_audit(
             ),
             "arms": arm_records,
         })
-    _check_deadline(deadline, "zero_step:before_admission_publication")
-    summary = _classify_zero_step_records(records)
-    _require(parameter_state_sha256(runtime.model) == before_hash,
-             "zero-step audit changed model")
-    _require(_optimizer_state_sha256(optimizer) == optimizer_hash,
-             "zero-step audit changed optimizer")
+    summary = _close_zero_step_audit(
+        records=records, runtime=runtime, optimizer=optimizer,
+        before_hash=before_hash, optimizer_hash=optimizer_hash,
+        deadline=deadline,
+    )
     return {
         "status": "ZERO_STEP_DIRECTION_READY" if summary["passed"] else "ZERO_STEP_DIRECTION_STOP",
         **summary,
@@ -1317,7 +1331,9 @@ def run_producer(
                 runtimes[ARM_LOCAL], optimizers[ARM_LOCAL], deadline=deadline,
                 progress_stream=progress_stream,
             )
-        _write_json(output_dir / "zero_step_audit.json", audit)
+        audit_payload = canonical_json(audit)
+        _check_deadline(deadline, "zero_step_audit_write_before")
+        _write_new(output_dir / "zero_step_audit.json", audit_payload)
         _check_deadline(deadline, "zero_step_after")
         _require(audit["passed"], "ZERO_STEP_DIRECTION_STOP")
         for arm in ARM_ORDER:

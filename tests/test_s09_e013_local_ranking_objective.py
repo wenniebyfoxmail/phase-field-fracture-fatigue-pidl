@@ -2,6 +2,7 @@ from collections import OrderedDict
 from types import SimpleNamespace
 import time
 import numpy as np
+import subprocess
 import pytest
 import torch
 from s09_e013_local_ranking_objective import (
@@ -11,8 +12,8 @@ from s09_e013_local_ranking_objective import (
 )
 import s09_e013_producer as producer
 from s09_e013_producer import (
-    ArmRunResult, _classify_zero_step_records, _local_support_metrics,
-    _reconstruct_saved_endpoint,
+    ArmRunResult, _classify_zero_step_records, _close_zero_step_audit,
+    _execution_files_clean, _local_support_metrics, _reconstruct_saved_endpoint,
 )
 from s09_e011_ranking_objective import merge_ranking_gradients as merge_e011, ARM_RANK
 
@@ -117,6 +118,39 @@ def test_zero_step_rejects_global_protection_cohort_of_twelve():
 
 def test_zero_step_accepts_frozen_cohorts_with_directional_gain():
     assert _classify_zero_step_records(_audit_fixture())['passed'] is True
+
+
+def test_audit_close_rejects_deadline_crossed_by_final_hash(monkeypatch):
+    clock=[3599.]
+    monkeypatch.setattr(producer.time,'time',lambda:clock[0])
+    monkeypatch.setattr(producer,'parameter_state_sha256',lambda model:'same-model')
+    def optimizer_hash(optimizer):
+        clock[0]+=2.
+        return 'same-optimizer'
+    monkeypatch.setattr(producer,'_optimizer_state_sha256',optimizer_hash)
+    with pytest.raises(TimeoutError,match='before_admission_publication'):
+        _close_zero_step_audit(
+            records=_audit_fixture(),runtime=SimpleNamespace(model=object()),
+            optimizer=object(),before_hash='same-model',
+            optimizer_hash='same-optimizer',deadline=3600.,
+        )
+
+
+def test_standalone_entry_drift_is_rejected(tmp_path):
+    repo=tmp_path/'repo'
+    entry=repo/'scripts/check_s09_e013_zero_step.py'
+    entry.parent.mkdir(parents=True)
+    entry.write_text('pass\n')
+    def git(*args):
+        return subprocess.run(
+            ['git',*args],cwd=repo,check=True,capture_output=True,text=True,
+        ).stdout.strip()
+    git('init','-q'); git('add','.')
+    git('-c','user.name=Review Fixture','-c','user.email=review@example.invalid',
+        'commit','-qm','fixture')
+    assert _execution_files_clean(repo)
+    entry.write_text('pass\n# unreviewed entry change\n')
+    assert not _execution_files_clean(repo)
 
 
 def test_endpoint_local_metrics_distinguish_equal_amplitude_spatial_fields():
