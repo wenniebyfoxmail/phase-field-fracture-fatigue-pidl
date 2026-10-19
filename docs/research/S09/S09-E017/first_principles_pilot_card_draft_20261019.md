@@ -1,6 +1,6 @@
 # S09-E017 first-principles factorised-head pilot card (draft)
 
-Status: `REVISED_DESIGN_ONLY__AWAITING_STATIC_REREVIEW`
+Status: `DESIGN_READY__IMPLEMENTATION_PLANNING_ONLY__NO_EXECUTION`
 Owner: Mac-PIDL
 Date: 2026-10-19
 
