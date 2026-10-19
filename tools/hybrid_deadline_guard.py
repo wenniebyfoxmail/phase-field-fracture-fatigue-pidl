@@ -57,8 +57,11 @@ def guard_loop(worker,supervisor,fd,phase_deadline,step_seconds,report,ready_fd=
             if wf in ready:
                 # Final deadline audit after exit; a worker cannot hide a late
                 # success behind a resource monitor blocked in os.walk/fsync.
+                drain()
+                if reason:break
                 now=time.monotonic()
-                if now>=phase_deadline or active and now>=active['deadline']:reason='late worker exit'
+                if now>=phase_deadline:reason='late worker exit'
+                elif active:reason='incomplete step completion at worker exit'
                 break
     except BaseException as exc:
         reason='controller exception: '+type(exc).__name__

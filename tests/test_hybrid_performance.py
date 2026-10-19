@@ -174,3 +174,30 @@ def test_queued_step_completion_is_drained_before_timeout(tmp_path,monkeypatch,f
     report=tmp_path/'guard.json';g.guard_loop(123,456,99,1000.,120.,report)
     result=json.loads(report.read_text());assert result['reason']==expected and sock.n>=3
     os.close(b);os.close(d)
+
+
+@pytest.mark.parametrize('next_step',[False,True])
+def test_worker_exit_rejects_missing_step_done(tmp_path,monkeypatch,next_step):
+    """Artificial controller only: exit cannot certify an unfinished step."""
+    import hybrid_deadline_guard as g
+    a,b=os.pipe();c,d=os.pipe();fds=iter((a,c))
+    messages=[dict(event='step_start',step=1,started=0.)]
+    if next_step:messages += [dict(event='step_done',step=1,finished=20.),dict(event='step_start',step=2,started=21.)]
+    class FakeSocket:
+        def setblocking(self,value):pass
+        def close(self):pass
+        def recv(self,size):
+            if messages:return json.dumps(messages.pop(0)).encode()
+            raise BlockingIOError()
+    sock=FakeSocket()
+    monkeypatch.setattr(g.sys,'platform','linux')
+    monkeypatch.setattr(g.os,'pidfd_open',lambda pid:next(fds),raising=False)
+    monkeypatch.setattr(g.socket,'socket',lambda **kw:sock)
+    monkeypatch.setattr(g.time,'monotonic',lambda:30.)
+    monkeypatch.setattr(g.select,'select',lambda *args:([a],[],[]))
+    report=tmp_path/'exit_guard.json';g.guard_loop(123,456,99,1000.,120.,report)
+    result=json.loads(report.read_text())
+    assert result['reason']=='incomplete step completion at worker exit'
+    assert result['status']=='deadline_or_control_stop'
+    assert result['active']['step']==(2 if next_step else 1)
+    os.close(b);os.close(d)
