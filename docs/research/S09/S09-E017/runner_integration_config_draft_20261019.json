@@ -1,0 +1,116 @@
+{
+  "schema_version": "s09-e017-static-runner-contract-v1",
+  "planned_run_id": "S09-E017-R001-factorised-head-p0",
+  "status": "RUNNER_CONFIG_EVIDENCE_CANDIDATE__NO_IO",
+  "execution_authorized": false,
+  "source": {
+    "reviewed_core_commit": "5ac6b7955b56309ac8ff2fda50b16b2e1669110a",
+    "integration_commit_binding": "REVIEW_MANIFEST_EXACT_COMMIT"
+  },
+  "data": {
+    "evidence_domain": "synthetic_exposed_development",
+    "mapping": "independent_cycle_s00_to_s04_peak",
+    "cycles": [1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73],
+    "packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+    "base_runtime_config_sha256": "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b",
+    "checkpoint_sha256": "24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05",
+    "scientific_assets_read_in_this_gate": false,
+    "fresh_holdout_access": false
+  },
+  "operator_mapping": {
+    "input_function": "x_to_d_s00_H_s00_alpha_bar_s00_q_prev_s00_f_s00_load_path_s00_s05_mesh_material_boundary",
+    "output_function": "x_to_d_s04_H_s04_alpha_bar_s04_q_prev_s04_f_s04_u_s04",
+    "damage_target_function": "x_to_delta_d_s00_to_s04_peak",
+    "sample_semantics": "independent_cycle",
+    "autoregressive": false
+  },
+  "physics": {
+    "objective_group": "P",
+    "residual": "native_q4_amor_mechanical_equilibrium_free_displacement_dofs",
+    "external_gradient_weight_beta": 0.25,
+    "included": ["mechanical_equilibrium"],
+    "excluded": ["damage_stationarity", "kuhn_tucker_history_complementarity", "fatigue_law_closure", "full_incremental_variational_inequality"]
+  },
+  "arms": {
+    "D_DIRECT": {
+      "active_objectives": ["A", "S", "R", "P"],
+      "trainable_parameter_classes": ["direct_damage_head"],
+      "frozen_parameter_classes": ["shared_trunk", "non_damage_heads"],
+      "shared_initial_state_required": true,
+      "shape_gradient_mode": "ACTIVE"
+    },
+    "F_AMP": {
+      "active_objectives": ["A", "R", "P"],
+      "trainable_parameter_classes": ["amplitude_residual"],
+      "frozen_parameter_classes": ["shared_trunk", "non_damage_heads", "b25_conditional_shape"],
+      "shared_initial_state_required": true,
+      "shape_gradient_mode": "WITHHELD_DIAGNOSTIC_ONLY"
+    },
+    "F_AMP_SHAPE": {
+      "active_objectives": ["A", "S", "R", "P"],
+      "trainable_parameter_classes": ["amplitude_residual", "shape_logits"],
+      "frozen_parameter_classes": ["shared_trunk", "non_damage_heads"],
+      "shared_initial_state_required": true,
+      "shape_gradient_mode": "ACTIVE"
+    }
+  },
+  "optimizer": {
+    "class": "AdamW",
+    "dtype": "float64",
+    "learning_rate": 0.0003,
+    "betas": [0.9, 0.999],
+    "epsilon": 1e-08,
+    "weight_decay": 0.0,
+    "scheduler": null,
+    "constructed_in_this_gate": false,
+    "state_entries": 0,
+    "step_count": 0
+  },
+  "budget": {
+    "updates_per_arm": 64,
+    "total_update_cap": 192,
+    "evaluation_updates": [0, 1, 4, 16, 32, 64],
+    "fixed_endpoint_update": 64,
+    "early_success_selection": false,
+    "budget_transfer": false,
+    "retry": false
+  },
+  "metrics": {
+    "decision_vector_widths": {"A": 2, "S": 6, "R": 2, "P": 4},
+    "lower_is_better": true
+  },
+  "gradients": {
+    "representations": ["raw", "scaled", "projected"],
+    "group_weights": {"A": 1.0, "S": 1.0, "R": 1.0, "P": 0.25},
+    "required_geometry": ["pairwise_dot", "pairwise_cosine", "pairwise_conflict"],
+    "required_update_diagnostics": ["frozen_scales", "permutation", "projection_log", "preclip_norm", "postclip_norm", "raw_group_dot_realised_update"],
+    "f_amp_shape_gradient": "WITHHELD_DIAGNOSTIC_ONLY"
+  },
+  "first_stop": {
+    "reasons": ["IDENTITY_MISMATCH", "DIRTY_STATE", "RESOURCE_CHECK_FAILED", "PARAMETER_FREEZE_DRIFT", "OPTIMIZER_STATE_NOT_EMPTY", "NONFINITE_VALUE", "DAMAGE_BOUND_VIOLATION", "IRREVERSIBILITY_VIOLATION", "FACTORISATION_ROUNDTRIP_FAILURE", "MISSING_SCHEDULED_RECORD", "RESOURCE_CAP_EXCEEDED", "RECEIPT_HASH_MISMATCH", "PROHIBITED_OPERATION_ATTEMPT"],
+    "scope": "WHOLE_THREE_ARM_RUN",
+    "receipt_policy": "WRITE_ONCE_PRESERVE_LAST_COMPLETE",
+    "retry": false,
+    "alternate_gpu": false
+  },
+  "figures": {
+    "field": "damage_increment",
+    "panels": ["FEM_REFERENCE", "D_DIRECT", "F_AMP", "F_AMP_SHAPE", "SIGNED_ERROR"],
+    "cycles": [1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73],
+    "shared_physical_color_scale": true,
+    "per_panel_normalisation": false,
+    "colorbar_location": "OUTSIDE_PANEL",
+    "right_edge_band_interpretation": "PREDICTED_FIELD_MASS_NOT_COLORBAR",
+    "selection_rule": "ALL_FROZEN_CYCLES_AT_UPDATE_64"
+  },
+  "producer_envelope": {
+    "alias": "gpu-taobo",
+    "hostname": "GPUServer8",
+    "cuda_visible_devices": "5",
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "wall_time_cap_seconds": 1800,
+    "reserved_memory_cap_gib": 20,
+    "checked_live_in_this_gate": false
+  },
+  "gate_prohibitions": ["model_forward", "autograd_collection", "optimizer_construction", "optimizer_mutation", "scientific_packet_read", "checkpoint_read", "ssh", "gpu_preflight", "gpu_occupation"]
+}
