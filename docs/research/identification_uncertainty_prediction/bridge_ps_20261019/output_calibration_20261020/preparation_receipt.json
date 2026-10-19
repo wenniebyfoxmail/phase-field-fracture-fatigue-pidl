@@ -1,0 +1,113 @@
+{
+  "status": "INDEPENDENTLY_REVIEWED_DISABLED_PREPARATION_ONLY",
+  "date": "2026-10-20 Europe/London",
+  "reviewed_source_commit": "19ba6c63ddb24e3029d4144a358d6d1318d677b5",
+  "package_sha256": "c5ee5856c2ef5ec4e22dd14e906cd3accd223fb8f5d1fd747e0132870c1540e1",
+  "package_lock_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/output_calibration_20261020/package_lock.json",
+  "config_sha256": "a4e7d50d9106a316a4680825a43126ddae045198b48c44c2eb124e6b7236b98f",
+  "accepted_design_commit": "fe54ab36df890551f13e0e515ab50c2ad69c97c8",
+  "source_archive": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020/disabled_source_package.tar",
+    "bytes": 860160,
+    "sha256": "da9051baa280244165a8c87ffc4b446d85e031a67be6d08cc2891e9263eea4b6"
+  },
+  "independent_review": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020/independent_code_review.md",
+    "sha256": "2eade0eb882e322ade1a88fbc80b73a782df49e52627a35f6493d5a00b9a1783",
+    "verdict": "REVIEW_PASS_FOR_DISABLED_PREPARATION_ONLY"
+  },
+  "owner_artificial_tests": {
+    "count": 15,
+    "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020/artificial_tests.log",
+    "receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020/artificial_tests_receipt.json",
+    "scope": "actual shared code path on handcrafted4group arrays;96solves/2160inner scores/112outer scores in one comparison; suite repeats some comparisons",
+    "true_production_counts_executed": false
+  },
+  "scientific_contract": {
+    "expected_solves": 2166,
+    "predictor": 1444,
+    "residualizer": 722,
+    "inner_candidate_scores": 1853280,
+    "outer_scores": 16016,
+    "groups": 19,
+    "H": [
+      10,
+      40
+    ],
+    "channels": 2,
+    "all_C30_retained": true,
+    "primary": "L(selected simple C27)-L(selected separate A25)",
+    "not_R003_exact_replay": true
+  },
+  "source_transitive_files_sha256": {
+    "PROTOCOL.md": "1dc7d68964c2e729921d5f849eee8d702315c5c78fe698fad3956fdf52d6f066",
+    "build_lock.py": "f2042821e0c69c5b41a3677314481939a098b38d1528ed6715a63e620bc16ae4",
+    "config.json": "a4e7d50d9106a316a4680825a43126ddae045198b48c44c2eb124e6b7236b98f",
+    "engine.py": "bcc5a1fff61f4d00a0047b02d3b0a481e898128a6cd05e7788b59e6c53002de3",
+    "evidence.py": "dd39c3465216f024215e55bee19b334e80ff1861ea4b90e6dc3778a162937ee3",
+    "figures.py": "99101f96e68eae23ddcbd53f14b96515fdfbf22ed1fae285bae02c794bce2d45",
+    "frozen_cohort.json": "19a75f76d68d63294744031b9369864185bb3da313f520699242132a5b7ae553",
+    "input_manifest.json": "f54753600f76dec7a5c153f413bb27a311d9d8551b966cc91fa6b21b663151de",
+    "legacy_config.json": "8c339efce6964aa4e2efcf4c654a11b5ace9b0fee319d362370dfaa6ff98804f",
+    "legacy_state.py": "5bff0d293be761e1b6b08d8f14d9e2e2d58987f666d5e48d38d894cc90ccf39d",
+    "package.py": "d65e123c846fb595f590c931a917bb44593e149a279c240d6411e9a4332c0738",
+    "producer_data.py": "17947657e84611d74130f7bf2545211416f04823751d41938cef28a58159acf8",
+    "r002_base.py": "262b8ddb79f81896e6dcb6717e4722f479a6bca65a3dc84e33a322097e555d1a",
+    "requirements.txt": "bbade7f0307fc4f59e35f3ca6ad5c19c92c21cf05cd6ee71557294b931968137",
+    "resource_contract.py": "402880fbc0abde80392d9cbc914010fc100caa79bf26d1d94b3c90c417af2b0e",
+    "runtime_guard.py": "fa17fb0f6630b5c60cb07a42b454b95f98ffebd8c95d56c8b530c7d9b3f32bef",
+    "supervise.py": "299d9c373ee0ef5f6cf31baf96852b16f549f1d07beffbe8eea2f5ad728ad27e",
+    "test_package.py": "413c6c50dc609fd5cc5fe3e41ddd7dcd6f6da2bdcf852e591c7f095fe0dca6d7",
+    "worker.py": "83909ae1141869d41c5d3a40b24d909f9995cf3bb9f56dbf33b22402c0f0345f"
+  },
+  "commands": {
+    "disabled_controller": [
+      "/Users/wenxiaofang/miniconda3/bin/python3",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/output_calibration_20261020/supervise.py",
+      "--config",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/output_calibration_20261020/config.json",
+      "--approval-receipt",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/output_calibration_20261020/HQ_APPROVAL_NOT_CREATED.json"
+    ],
+    "artificial_only": [
+      "/Users/wenxiaofang/miniconda3/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/output_calibration_20261020",
+      "-p",
+      "test_package.py",
+      "-v"
+    ]
+  },
+  "pending_HQ_resource_decision": {
+    "original_storage_bytes": 104857600,
+    "minimal_original_two_copy_floor_bytes": 126444032,
+    "new_full_outer_native_evidence_payload_bytes": 513061120,
+    "proposed_budget": {
+      "wall_seconds": 1200,
+      "threads": 1,
+      "rss_bytes": 2147483648,
+      "total_generated_bytes": 1610612736,
+      "archive_bytes": 734003200,
+      "gpu": 0
+    },
+    "approved": false,
+    "measured_producer_feasibility": false,
+    "reason": "self-contained seven-arm native fields/outer target errors plus all inner native scores and complete uncompressed archive; every temporary/cache/source/log/copy counted"
+  },
+  "readiness_limits": [
+    "No scientific input/native target/cohort-case parsing or real fit/forward/SSH/producer precheck performed",
+    "Frozen metadata text only copied/hashed; existing availability and Linux dependencies not verified",
+    "Budget/resource decision does not authorize data access or launch; enabling needs new reviewed config/lock and exact later authority",
+    "Code/source artificial review only, not producer Code Ready or scientific validation",
+    "Unknown specimen independence/release-step/current anchor/exploratory limits and original R003 warning breach retained"
+  ],
+  "estimator_implemented": true,
+  "enabled": false,
+  "scientific_inputs_accessed": false,
+  "artificial_solves_and_forwards_executed": true,
+  "execution_authority": false,
+  "sealed_diagnostic_resumed_or_rendered": false
+}
