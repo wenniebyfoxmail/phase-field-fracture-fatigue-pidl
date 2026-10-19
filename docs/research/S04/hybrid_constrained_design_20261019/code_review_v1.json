@@ -1,0 +1,130 @@
+{
+  "verdict": "MODIFY_AND_REREVIEW",
+  "review_type": "independent exact-snapshot library/API Code Ready review; not producer/scientific validation",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-19T12:33:56.576889+00:00",
+  "commit": "ed7e2f774861b66cefaef3d67a5455fcab785218",
+  "material_manifest": "docs/research/S04/hybrid_constrained_design_20261019/implementation_snapshot_v1.json",
+  "manifest_sha256": "9484a56bbee450f626b68af24949d863385b5ba17aaf9f1818effb85ace56b80",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "8ba755546220b30922b26ad2d89080bfe2ec1589cab68fbdb5d682e4692c5d80",
+    "source/hybrid_incremental.py": "d5030cf49406abbeef2c7409c2fcdbfacd369fadce68f5413889b269253179cc",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "tools/audit_hybrid_labels.py": "5fdd8f8fb28478de4c16462ac17fbd2a65a5ec8503272b6bd0d173f33d5bbc65",
+    "tests/test_hybrid_incremental.py": "5fbcc45316b9325dd267298cb471e2ccdf5033423a7e9269de59c43656f660e5",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/implementation_v1.md": "e591c6d5efc8465195728416d91c669d94b7f6894277f4eb74a1b10a229b15c8",
+    "docs/research/S04/hybrid_constrained_design_20261019/implementation_checks_v1.json": "5edbfab0ea26e85795dcb79c67b95a7eef05ba69ed656f6536e729864ed45565",
+    "docs/research/S04/hybrid_constrained_design_20261019/existing_label_audit_v1.json": "1130719da792d06dd8f630b9515a44c0463203e626a68ada0120f0d42cc4fdb7",
+    "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v1.md": "abe13c7465c5aa7813286dd47418c1da36525ec7e3e6ef28697c375fd2112d27",
+    "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v1.json": "5afd9b2265d21cde0c65e4c7f75a7a896ef794f124de26e4c80f816efad5f841",
+    "docs/research/S04/hybrid_constrained_design_20261019/design_v1.md": "ca50ad0e4913308165745311ece5ff1226f93b8c5c3b5e17512e7df240531b0d"
+  },
+  "frozen_design_sha256": "ca50ad0e4913308165745311ece5ff1226f93b8c5c3b5e17512e7df240531b0d",
+  "findings": [
+    {
+      "id": "R1",
+      "priority": "P2",
+      "file": "source/hybrid_incremental.py",
+      "lines": "207-209",
+      "title": "Preserve integer DOF indices in the predictor API",
+      "problem": "frozen_array always coerces to float64. Thus the valid integer prescribed_dofs supplied to solve_step reach custom predictors as float64, breaking normal NumPy/Torch indexing. The built-in features function silently casts them back and the existing shape test does not expose the public-interface error.",
+      "evidence": "Exact ed7 git-object solver + algebraic fixture: predictor received dtype float64, writeable False.",
+      "required_fix": "Pass an immutable int64 array and add a custom predictor that performs integer indexing; retain float64 field/value arrays."
+    },
+    {
+      "id": "R2",
+      "priority": "P2",
+      "file": "source/hybrid_incremental.py",
+      "lines": "204-218,262-268",
+      "title": "Do not certify a used but unidentified predictor as NN_OFF",
+      "problem": "Any custom predictor without model_id is currently executed, yet the accepted certificate uses getattr(...,\"NN_OFF\"). The same label conflates attempted model, rejected/fallback initial guess, and NN-disabled baseline, corrupting paired-method provenance.",
+      "evidence": "Exact ed7 git-object solver completed one network_inference call and certificate model_id was NN_OFF.",
+      "required_fix": "Validate a nonempty string model identity before any model/scientific call. Bind actual initializer role/model and any attempted/rejected predictor/fallback reason separately in the certificate/work ledger; test unidentified and fallback paths."
+    },
+    {
+      "id": "R3",
+      "priority": "P2",
+      "file": "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v1.md",
+      "lines": "Resource caps table; validation_budget_v1.json cpu_wall_hours_cap/cpu_core_hours_cap",
+      "title": "Charge host CPU work during GPU training and inference",
+      "problem": "124 wall/1984 core-hour CPU envelope is exactly120 numerical+4 setup/IO; it leaves no declared allowance for host CPU preprocessing/training/inference associated with the12 GPU hours. A total-cost budget cannot omit that work.",
+      "required_fix": "Add an explicit conservative host allowance or account for the overlap without double-counting. Proposed sequential12 host wall hours at <=16cores yields136 total wall/2176 core-hours; keep a single <=16core host envelope and retain all GPU caps. These remain unprofiled proposals."
+    },
+    {
+      "id": "R4",
+      "priority": "P2",
+      "file": "tools/audit_hybrid_labels.py",
+      "lines": "62-66; existing_label_audit_v1.json independent_complete_trajectories",
+      "title": "Distinguish a seen c1 sequence from a qualified complete trajectory",
+      "problem": "The five accepted c1 substeps are reported as independent_complete_trajectories=1 even though the report explicitly establishes zero new-backend certified labels, no disjoint full-trajectory split and no degraded-fatigue coverage. The field can be mistaken for available complete training/evaluation trajectories.",
+      "required_fix": "Report seen_sequences=1 separately from qualified_complete_trajectories=0 (and retain five candidate transitions/zero certified labels). Update the generator and new audit receipt; preserve the old v1 artifact as history."
+    }
+  ],
+  "checks": [
+    {
+      "topic": "Snapshot",
+      "result": "All17 files match exact committed manifest hashes; v1 commit clean at first inspection. Parent began authorized v2 edits afterward; subsequent reproductions used git-object ed7 source, not the changing worktree."
+    },
+    {
+      "topic": "Node-K/energy",
+      "result": "Reviewed old accepted lower, all-one/fixed DOF exact elimination, full free OSQP box solve, active release, bound-roundoff recovery followed by original final KKT, Gc/ell=w1 and thickness scaling. No decisive physical-assembly defect found in supported contract."
+    },
+    {
+      "topic": "Joint closure/history",
+      "result": "Final psi/q rebuilt from immutable preimage after mechanics re-equilibration; fresh final QP assembly/KKT and original force residual use identical u/d/f; f fixed within block and fresh fixed-point residual checked. No rolling lower or inner A accumulation. Mock requires >10 iterations and final-history-once check passes."
+    },
+    {
+      "topic": "Transaction",
+      "result": "Read state digest/version CAS and monotonicity checks, atomic tempfile/file-fsync/rename/directory-fsync, stale rejection and replace-fault tests. Post-replace fsync fault raises CommitUncertain rather than false rollback. No controller state is returned on failure; external runner still must halt/reconcile uncertain outcomes and stale crash locks before continuation."
+    },
+    {
+      "topic": "Network",
+      "result": "Reviewed frozen weights check, eval/no-grad inference,27features from accepted state/current-load mechanical predictor, deterministic mesh/coarse graph, GP projection only for features, no future fields. Two public predictor/provenance errors are R1/R2. No trained model was loaded."
+    },
+    {
+      "topic": "Label inventory",
+      "result": "Reviewed only audit source and existing JSON, not scientific MAT arrays. Five seen c1 repaired transitions have nodal bounds/lower and saved joint status under their old protocol; four exceed the new unit-scale default and all f=1. Zero directly certified new-backend labels is appropriately conservative; R4 corrects trajectory wording."
+    },
+    {
+      "topic": "Validation plan",
+      "result": "Four entire amplitude trajectories, grouped train/validation/test, same-backend NN-off/classical/NN, own-state rollout,600test steps each,3600numerical steps total,onefit/20000updates/12GPUh and no auto retry are coherent proposed comparison scope. R3 closes the host CPU ledger; exact run card, labels, scientific criterion, capacity/operator parity remain future requirements."
+    }
+  ],
+  "executed_checks": [
+    {
+      "command": "PYTHONPATH=source:. /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python -m pytest -q tests/test_hybrid_incremental.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py",
+      "result": "29 passed in0.62s; exit0"
+    },
+    {
+      "command": "Exact git-object arithmetic/mock probe of custom predictor API, using existing algebraic backend fixture",
+      "result": "DOF dtype float64; inference_calls1; certificate model_id NN_OFF. No scientific mesh solve/data/model."
+    },
+    {
+      "command": "17 committed manifest-file SHA256 comparisons",
+      "result": "All matched"
+    }
+  ],
+  "not_executed": [
+    "No new scientific arrays or holdout reads",
+    "No trained model/checkpoint load",
+    "No training/optimizer updates",
+    "No new project FEM/scientific solve",
+    "No SSH/GPU/producer work",
+    "Did not rerun the five existing seen MAT label audit"
+  ],
+  "required_before_producer": [
+    "FixR1-R4 and focus-review exact changed snapshot; unchanged design need not be reviewed again.",
+    "Qualified accepted state0/label and native-operator parity incl scales, GP ordering, hard line, final force/KKT and original model identity.",
+    "Prospective exact run card fixing residual scales/tolerances/trajectory splits/scientific/cost acceptance, solver identities and budgets.",
+    "Actual CPU/GPU/RAM/storage capacity admission, external hard watchdog and tested durable recovery/cost runner.",
+    "Eligible labels, frozen graph/normalization/model/training receipt; no random model or metadata assertion alone constitutes qualification.",
+    "Zero-mode/near-singular support remains explicit reject-only; library is not yet a complete producer deploy/trajectory or speed demonstration."
+  ],
+  "conclusion": "Core numerical/state/transaction design is faithfully represented in the supported library API, with no additional decisive core finding beyondR1-R4. Hold library Code Ready pending those bounded fixes. No scientific or producer-ready approval."
+}

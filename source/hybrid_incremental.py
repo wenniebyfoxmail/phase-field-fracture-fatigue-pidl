@@ -183,6 +183,11 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
     try:
         backend.validate_state(old)
         previous_id = old.fingerprint()
+        attempted_model_id = "NN_OFF"
+        if predictor is not None:
+            attempted_model_id = getattr(predictor, "model_id", None)
+            if not isinstance(attempted_model_id, str) or not attempted_model_id.strip():
+                raise ValueError("predictor requires a nonempty frozen model_id")
         if not isinstance(next_load_id, str) or not next_load_id:
             raise ValueError("target load identity required")
         dofs = np.asarray(prescribed_dofs)
@@ -198,6 +203,8 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                             lambda: backend.mechanics(lower, dofs, values, settings))
         work[-1]["solver"] = info
         d = lower.copy() if classical_initial is None else np.asarray(classical_initial, float).copy()
+        initialization_source = "previous_state" if classical_initial is None else "classical"
+        neural_used = False
         if (d.shape != lower.shape or not np.isfinite(d).all()
                 or np.any(d < lower) or np.any(d > 1)):
             raise ValueError("invalid classical feasible initial guess")
@@ -206,13 +213,15 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             try:
                 a = call("network_inference", lambda: predictor.predict(
                     old, frozen_array(u_pred), frozen_array(psi_pred), next_load_id,
-                    frozen_array(dofs), frozen_array(values)))
+                    np.frombuffer(dofs.tobytes(), dtype=dofs.dtype), frozen_array(values)))
                 a = np.asarray(a, float)
                 if a.shape != lower.shape or not np.isfinite(a).all():
                     raise ValueError("malformed neural prediction")
                 d = lower + (1 - lower) * np.clip(a, 0., 1.)
                 d[backend.crack] = 1.
+                initialization_source, neural_used = "neural", True
             except (ValueError, RuntimeError) as exc:
+                initialization_source = "classical_fallback"
                 work.append(dict(work_id=len(work), kind="initial_guess_fallback",
                                  reason=str(exc), wall_seconds=0., status="baseline_initial"))
         # The common mechanics result is reusable only if d is identical.
@@ -265,7 +274,9 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                                    damage=damage_audit, mechanics=force_audit,
                                    fatigue_residual=fatigue_residual,
                                    total_wall_seconds=perf_counter() - start,
-                                   model_id=getattr(predictor, "model_id", "NN_OFF"))
+                                   model_id=attempted_model_id if neural_used else "NN_OFF",
+                                   attempted_model_id=attempted_model_id,
+                                   initialization_source=initialization_source)
                 return StepProposal(previous_id, state, certificate, tuple(work))
             d, u_cache = new_d, final_u
         raise RuntimeError("joint iteration cap reached; no accepted proposal")

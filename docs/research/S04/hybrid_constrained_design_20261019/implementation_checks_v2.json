@@ -1,0 +1,28 @@
+{
+  "stage": "engineering_unit_contracts_only",
+  "command": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_hybrid_incremental.py",
+    "tests/test_native_q4_damage_qp.py",
+    "tests/test_damage_conditioned_equilibrium.py",
+    "--tb=short"
+  ],
+  "pythonpath": "source:.",
+  "returncode": 0,
+  "stdout": ".................................                                        [100%]\n33 passed in 0.63s\n",
+  "stderr": "",
+  "runtime": {
+    "python": "3.12.2",
+    "numpy": "2.2.6",
+    "scipy": "1.14.1",
+    "torch": "2.11.0",
+    "osqp": "1.0.4"
+  },
+  "project_fem_solves": 0,
+  "training_updates": 0,
+  "holdout_reads": 0,
+  "claim": "Unit contracts and existing regressions only; not numerical/physical method validation"
+}

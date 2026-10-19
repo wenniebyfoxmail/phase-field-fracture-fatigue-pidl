@@ -116,6 +116,9 @@ def test_cap_failure_and_invalid_nn_fallback_do_not_advance_state():
         def predict(self,*args):return np.full(4,np.nan)
     p=proposal(predictor=Bad())
     assert any(w["kind"]=="initial_guess_fallback" for w in p.work)
+    assert p.certificate['model_id']=='NN_OFF'
+    assert p.certificate['attempted_model_id']=='bad'
+    assert p.certificate['initialization_source']=='classical_fallback'
 
 
 def test_transaction_single_commit_stale_reject_restart_and_write_failure(tmp_path,monkeypatch):
@@ -170,3 +173,25 @@ def test_label_metadata_missing_contract_cannot_be_qualified():
     assert not result['metadata_eligible']
     assert 'input_accepted_verified' in result['missing_or_mismatched']
     assert not result['array_qualification_performed_here']
+
+
+@pytest.mark.parametrize('identity',[None,'',17])
+def test_unidentified_predictor_is_rejected_before_any_mechanics(identity):
+    class Unidentified:
+        model_id=identity
+        def predict(self,*args):raise AssertionError('must not run')
+    with pytest.raises(StepFailure,match='model_id') as err:
+        proposal(predictor=Unidentified())
+    assert not err.value.work
+
+
+def test_predictor_receives_immutable_integer_dofs_and_receipt_binds_used_model():
+    class Indexed:
+        model_id='identified-unit-initializer'
+        def predict(self,old,u,psi,load,dofs,values):
+            assert dofs.dtype==np.int64 and not dofs.flags.writeable
+            assert u[dofs].shape==values.shape
+            return np.full(4,.1)
+    p=proposal(predictor=Indexed())
+    assert p.certificate['model_id']=='identified-unit-initializer'
+    assert p.certificate['initialization_source']=='neural'

@@ -62,7 +62,8 @@ def audit_c1(root):
     return dict(schema="hybrid-existing-label-audit-v1", scope="five known seen c1 repaired transitions only",
                 project_data_reads="candidate/pre/proof/proposed fields in these five files; no heldout/remote scan",
                 training=False, new_fem=False, source_domain_candidates=5,
-                certified_new_backend_labels=0, independent_complete_trajectories=1,
+                certified_new_backend_labels=0, seen_sequences=1,
+                qualified_complete_trajectories=0,
                 fatigue_degraded_accepted_transitions=0, rows=rows,
                 reasons=[
                     "Repaired native archive already has nodal lower/box/hard-line and fresh precommit; do not reject it as merely soft FEM.",
@@ -110,4 +111,4 @@ if __name__ == "__main__":
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
     print(json.dumps({k: result[k] for k in ("source_domain_candidates", "certified_new_backend_labels",
-                                            "independent_complete_trajectories")}, indent=2))
+                                            "seen_sequences", "qualified_complete_trajectories")}, indent=2))

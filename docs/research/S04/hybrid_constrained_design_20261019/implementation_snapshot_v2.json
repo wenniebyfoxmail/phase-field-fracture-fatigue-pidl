@@ -1,0 +1,30 @@
+{
+  "schema": "hybrid-implementation-review-snapshot-v2",
+  "supersedes": "ed7e2f77 and implementation_snapshot_v1.json",
+  "files": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "8ba755546220b30922b26ad2d89080bfe2ec1589cab68fbdb5d682e4692c5d80",
+    "source/hybrid_incremental.py": "773b6a30145f517627c36f058ea56a05f197c1cb9467e882fc85c79cc05ac2da",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tests/test_hybrid_incremental.py": "5a8b24ae0ae1a33c65ea60e593131b8cf4d3a8757f57a9c0509014c8995b4a3e",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/implementation_v2.md": "c07912a3aacde2543935c0e24509fe7bfe24d2548914b256d3fbdfba889e603c",
+    "docs/research/S04/hybrid_constrained_design_20261019/implementation_checks_v2.json": "ccddf638dbed011b658890956d3b028a1acf31d3c14d570b2aaf229f3db6e81b",
+    "docs/research/S04/hybrid_constrained_design_20261019/existing_label_audit_v2.json": "5e71eb0606786974f627fe3adf0ffd053683191733e18171e9a8bc459b28e8c5",
+    "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v2.md": "512d8e8be9cdf1465d8c31bd2d05e61af30f5e8dc573cda7e13544f3a7d69603",
+    "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v2.json": "2be4fa0adf43af2297442b77ca921beb98098dc5f9cf78ac5c8a52732f5ef5ff",
+    "docs/research/S04/hybrid_constrained_design_20261019/design_v1.md": "ca50ad0e4913308165745311ece5ff1226f93b8c5c3b5e17512e7df240531b0d"
+  },
+  "repairs": [
+    "R1 immutable integer DOF indexing",
+    "R2 pre-call required model identity and actual/fallback receipt",
+    "R3 all GPU host CPU included: 136wall/2176coreh with one <=16core pool",
+    "R4 seen_sequences=1; qualified_complete_trajectories=0"
+  ],
+  "scope": "library/API readiness only; no producer or scientific result"
+}

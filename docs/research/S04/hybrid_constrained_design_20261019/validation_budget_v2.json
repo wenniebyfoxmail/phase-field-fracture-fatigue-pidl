@@ -1,0 +1,85 @@
+{
+  "schema": "hybrid-complete-validation-budget-v2",
+  "status": "PROPOSAL_NOT_AUTHORIZED_NOT_EXECUTED",
+  "purpose": "one integrated method comparison; not a micro-test staircase",
+  "families": 1,
+  "claim": "same-family load-path generalization only; not material/geometry or physical truth",
+  "trajectories": [
+    {
+      "id": "train_A",
+      "amplitude_multiplier": 0.8,
+      "cycles": 120,
+      "substeps_per_cycle": 5
+    },
+    {
+      "id": "train_B",
+      "amplitude_multiplier": 1.2,
+      "cycles": 120,
+      "substeps_per_cycle": 5
+    },
+    {
+      "id": "validation",
+      "amplitude_multiplier": 1.0,
+      "cycles": 120,
+      "substeps_per_cycle": 5
+    },
+    {
+      "id": "test",
+      "amplitude_multiplier": 0.9,
+      "cycles": 120,
+      "substeps_per_cycle": 5
+    }
+  ],
+  "base_load_cycle": [
+    0.02999988,
+    0.05999988,
+    0.08999988,
+    0.11999988,
+    0.0
+  ],
+  "fem_reference_steps": 2400,
+  "extra_classical_test_steps": 600,
+  "extra_hybrid_test_steps": 600,
+  "total_numerical_substeps_cap": 3600,
+  "cpu_workers": 1,
+  "cpu_cores_per_worker_cap": 16,
+  "cpu_wall_hours_cap": 136,
+  "cpu_core_hours_cap": 2176,
+  "numerical_step_soft_wall_seconds": 120,
+  "numerical_cpu_wall_hours_cap": 120,
+  "setup_io_analysis_cpu_wall_hours_cap": 4,
+  "gpu_count_cap": 1,
+  "training_gpu_hours_cap": 8,
+  "feature_inference_validation_gpu_hours_cap": 4,
+  "total_gpu_hours_cap": 12,
+  "gpu_vram_gib_cap": 24,
+  "host_ram_gib_cap": 64,
+  "primary_storage_gib_cap": 128,
+  "archive_storage_gib_cap": 128,
+  "training_fits_cap": 1,
+  "training_optimizer_steps_cap": 20000,
+  "trajectory_seed_count": 1,
+  "architecture_sweeps": 0,
+  "producer_retries": 0,
+  "adaptive_step_extensions": 0,
+  "training_model_selection": "one fit; validation early stopping; no test-based checkpoint choice",
+  "runtime_estimate": "unprofiled hard planning envelope, not a measured duration prediction",
+  "evaluation_roles": [
+    "same-problem NN-off reference",
+    "classical feasible extrapolation",
+    "frozen NN initializer"
+  ],
+  "historical_pidlfem": "reuse existing references only where state/load/domain comparable; no new PIDL training",
+  "blocking_before_launch": [
+    "exact admissible state0/mesh/GP/initial crack and hashes",
+    "grouped trajectory and load manifest frozen; protected test remains unopened",
+    "explicit physical residual scales and final scientific criterion",
+    "producer/hardware/solver build identity and memory capacity check",
+    "external watchdog/durable recovery/cost runner exact-code review",
+    "eligible new labels/model training receipt and prospective user execution authorization"
+  ],
+  "failure_policy": "stop on first unaccepted state; preserve trial and remaining budget; no auto retry/new eta/tolerance or extra trajectories",
+  "gpu_host_cpu_wall_hours_cap": 12,
+  "gpu_host_cpu_core_hours_cap": 192,
+  "cpu_concurrency_rule": "one host worker pool; numerical, setup, training host and inference host share at most 16 cores total; no extra parallel pool"
+}
