@@ -102,6 +102,8 @@ def verify(code, expected):
     worker = next(row for row in rows if row['path'] == 'tools/s04_e011_fn776/worker.py')
     assert worker['blob'] == manifest['locked_science_worker_blob']
     row_blobs = {row['path']: row['blob'] for row in rows}
+    for path, blob in manifest['locked_solver_blobs'].items():
+        assert row_blobs[path] == blob, 'reviewed solver blob mismatch: '+path
     for path, blob in manifest['frozen_mechanics_blobs'].items():
         assert row_blobs[path] == blob, 'frozen mechanics blob mismatch: '+path
     imports = check_local_imports(code, manifest)

@@ -1,83 +1,57 @@
-"""Standard-library static contract/dependency tests; never execute solver code."""
+"""FN776-r2 diff checks: AST/text/Git only; no mock or runtime exercise."""
 import ast
-import copy
+import hashlib
 import json
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
-
-from verify_code_package import check_local_imports
 
 
 def check(root):
-    if sys.flags.optimize:
-        raise RuntimeError('static checks require Python optimization disabled')
-    folder = root/'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019'
-    c = json.loads((folder/'inputs_fn776.json').read_text())
-    reference = json.loads((folder/'mechanics_ast.json').read_text())
-    worker = ast.parse((root/'tools/s04_e011_fn776/worker.py').read_text())
-    run = next(n for n in worker.body if isinstance(n, ast.FunctionDef) and n.name == 'run')
-    nested = {n.name: n for n in run.body if isinstance(n, ast.FunctionDef)}
-    for name, expected in reference['functions'].items():
-        assert ast.dump(nested[name], include_attributes=False) == expected, name
-    pc, budget, caps = c['fn776'], c['budget'], c['work_ledger']
-    assert pc['rank'] == 388 and pc['z_dimension'] == 776
-    assert pc['max_outer_steps'] == 16 and pc['max_backtracking_trials'] == 32
-    assert pc['curvature_slot_units'] == 776*2 == 1552
-    assert pc['max_outer_steps']*1552 == caps['curvature'] == 24832
-    assert 16*32 == caps['trials'] == 512
-    # Four initial E/G controls + one E/G and one HVP per complete direction.
-    assert 4 + 16*(1+2) == 52 <= caps['controls'] == 64
-    assert 3 <= caps['final'] == 16
-    assert sum(caps[k] for k in ('curvature','controls','trials','final')) == caps['total'] == budget['work_units'] == 25424
-    assert budget['wall_seconds'] == 900 and budget['opt_no_new_eval_seconds'] == 600 and budget['work_seconds'] == 840
-    assert budget['rss_bytes'] == budget['gpu_reserved_bytes'] == budget['gpu_process_bytes'] == 8*1024**3
-    assert budget['output_bytes'] == 100*1024**2
-    assert c['resource_policy']['minimum_runtime_free_MiB'] == 4096
-    assert c['resource_policy']['gpu_uuid'] == 'GPU-350d3f31-8bd6-4257-4d4c-21ad344eaa81'
-    assert len(c['files']) == 5 and sum(r['bytes'] for r in c['files']) == 20911589
-    assert next(r for r in c['files'] if r['role'] == 'frozen_transform')['decode_fields'] == ['transform']
-    assert pc['z_gradient_inf_threshold'] == 1e-8
-    selected = [p.relative_to(root).as_posix() for p in (root/'source').rglob('*.py')]
-    selected += ['SENS_tensile/run_native_q4_one_step_matrix.py','SENS_tensile/field_computation.py']
-    selected += [p.relative_to(root).as_posix() for p in (root/'tools/s04_e011_fn776').glob('*.py')]
-    catalog = {}
-    for directory in ('source','SENS_tensile','tools/s04_e011_fn776'):
-        for path in (root/directory).glob('*.py'):
-            catalog.setdefault(path.stem, []).append(path.relative_to(root).as_posix())
-    manifest = dict(files=[dict(path=p) for p in selected], local_module_catalog=catalog,
-                    import_entrypoints=[p for p in selected if p.startswith('tools/')])
-    closure = check_local_imports(root, manifest)
-    broken = copy.deepcopy(manifest)
-    broken['files'] = [r for r in manifest['files'] if r['path'] != 'SENS_tensile/field_computation.py']
-    try:
-        check_local_imports(root, broken)
-    except AssertionError as error:
-        assert 'missing local module: SENS_tensile/field_computation.py' in str(error)
-    else:
-        raise AssertionError('missing-local-module negative test did not fail')
-    # Test the actual promisor regex constant, not an independently copied regex.
-    tree = ast.parse((root/'tools/s04_e011_fn776/verify_code_package.py').read_text())
-    pattern = next(n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and
-                   isinstance(n.value, str) and 'promisor' in n.value)
-    with tempfile.TemporaryDirectory(prefix='fn776-code-git-') as temp:
-        subprocess.run(['git','init','-q',temp],check=True,capture_output=True)
-        subprocess.run(['git','-C',temp,'config','remote.origin.promisor','true'],check=True)
-        found = subprocess.check_output(['git','-C',temp,'config','--get-regexp',pattern],text=True).strip()
-        assert found == 'remote.origin.promisor true'
+    assert not sys.flags.optimize
+    folder=root/'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019'
+    original=json.loads((folder/'inputs_fn776.json').read_text()) if (folder/'inputs_fn776.json').exists() else None
+    current=json.loads((folder/'inputs_fn776_r2.json').read_text())
+    preserved=('protocol','files','budget','fn776','work_ledger','resource_policy','resource_revision','rcond','relative_gain_screen','cycle','substep','load','FEM_outer','source_base')
+    if original is not None:
+        for key in preserved:assert current[key]==original[key],key
+    assert current['run_id']=='pf_s04e011_uvh_c1_fn776_r2_20261019'
+    assert current['control_plane']['diagnostic_reserve_bytes']==1024**2
+    assert current['control_plane']['guard_sampled_payload_stop_bytes']==current['budget']['output_bytes']-2*1024**2
+    assert current['control_plane']['readonly_preflight_seconds']==60
+    frozen={}
+    for name in ('worker.py','square_root.py'):
+        path='tools/s04_e011_fn776/'+name
+        raw=(root/path).read_bytes()
+        if (root/'SOURCE_PROVENANCE.json').exists():
+            expected=json.loads((root/'SOURCE_PROVENANCE.json').read_text())['locked_solver_blobs'][path]
+            assert hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()==expected,path
+        else:
+            prior=subprocess.check_output(['git','show','f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92:'+path],cwd=root)
+            assert raw==prior,path
+        frozen[path]=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+    parsed={}
     for path in (root/'tools/s04_e011_fn776').glob('*.py'):
-        tree = ast.parse(path.read_text(), filename=str(path))
-        for n in tree.body:
-            if isinstance(n, (ast.Import,ast.ImportFrom)):
-                modules = [a.name for a in n.names] if isinstance(n,ast.Import) else [n.module]
-                assert all(m.split('.')[0] not in ('torch','numpy','scipy','matplotlib') for m in modules)
-    return dict(status='standard_library_static_checks_passed', mechanics_AST_functions=list(reference['functions']),
-                planned_controls_upper_bound=52, planned_final_readouts=3, cap=25424,
-                local_import_closure=closure, missing_module_negative=True, promisor_negative=True,
-                scientific_arrays_accessed=0, numerical_imports_or_calls=0,
-                boundary='No numerical fixture, gradient, QR, matrix assembly or runtime feasibility tested')
+        tree=ast.parse(path.read_text(),filename=str(path));parsed[path.name]=tree
+        for node in tree.body:
+            if isinstance(node,(ast.Import,ast.ImportFrom)):
+                modules=[a.name for a in node.names] if isinstance(node,ast.Import) else [node.module]
+                assert all(m.split('.')[0] not in ('numpy','torch','scipy','matplotlib') for m in modules)
+    remote=parsed['remote_control_r2.py']
+    embedded=next(n.value.args[0].value for n in remote.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='CONTRACT' for t in n.targets))
+    assert json.loads(embedded)==current
+    # Preflight reuses exact reviewed GPU/identity helper AST; only command logging changes.
+    guard=parsed['guard.py']
+    for name in ('digest','service_identity','gpu_snapshot'):
+        a=next(n for n in guard.body if isinstance(n,ast.FunctionDef) and n.name==name)
+        b=next(n for n in remote.body if isinstance(n,ast.FunctionDef) and n.name==name)
+        assert ast.dump(a,include_attributes=False)==ast.dump(b,include_attributes=False),name
+    return dict(status='DIFF_STATIC_PASS',frozen_solver_blobs=frozen,preserved_contract_keys=list(preserved),
+                parsed_modules=len(parsed),resource_helper_AST_unchanged=True,
+                control_budget='1MiB control +98MiB sampled producer payload +1MiB producer terminal <=100MiB',
+                checks='AST/text/Git only; no mocked subprocess/resource check, numeric import or runtime validation',
+                SSH=False,scientific_payload_access=False,numerical_calls=False)
 
 
-if __name__ == '__main__':
+if __name__=='__main__':
     print(json.dumps(check(Path(__file__).resolve().parents[2]),indent=2))

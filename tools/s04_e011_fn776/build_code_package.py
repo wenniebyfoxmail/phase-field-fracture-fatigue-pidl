@@ -30,11 +30,14 @@ def build(source, out):
              'SENS_tensile/field_computation.py',
              'tools/s04_e011_fn776/worker.py', 'tools/s04_e011_fn776/square_root.py',
              'tools/s04_e011_fn776/static_checks.py', 'tools/s04_e011_fn776/guard.py',
+             'tools/s04_e011_fn776/control_r2.py',
+             'tools/s04_e011_fn776/remote_control_r2.py', 'tools/s04_e011_fn776/verify_retrieval_r2.py',
              'tools/s04_e011_fn776/build_code_package.py', 'tools/s04_e011_fn776/verify_code_package.py',
+             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r2.json',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776.json',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/protocol_fn776.md',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/mechanics_ast.json',
-             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/deployment_fn776.md'}
+             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/deployment_fn776_r2.md'}
     rows = []
     local_modules = {}
     for line in cmd(['git', 'ls-tree', '-r', source]).splitlines():
@@ -51,16 +54,21 @@ def build(source, out):
         rows.append(dict(path=path, mode=mode, blob=blob, bytes=size))
     assert exact <= {row['path'] for row in rows}
     worker_blob = cmd(['git', 'rev-parse', source+':tools/s04_e011_fn776/worker.py'])
+    locked_solver_blobs = {}
+    for path in ('tools/s04_e011_fn776/worker.py', 'tools/s04_e011_fn776/square_root.py'):
+        original = cmd(['git','rev-parse','f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92:'+path])
+        assert cmd(['git','rev-parse',source+':'+path]) == original, 'reviewed solver changed: '+path
+        locked_solver_blobs[path] = original
     mechanics = {}
     for row in rows:
         if row['path'].startswith(('source/', 'SENS_tensile/')):
             original_blob = cmd(['git', 'rev-parse', '3dfef418828e53632b3a5c90521ab8989dbf9673:'+row['path']])
             assert row['blob'] == original_blob, 'frozen mechanics changed: '+row['path']
             mechanics[row['path']] = original_blob
-    manifest = dict(development_source=source, locked_science_worker_blob=worker_blob, frozen_mechanics_blobs=mechanics,
+    manifest = dict(development_source=source, locked_science_worker_blob=worker_blob, locked_solver_blobs=locked_solver_blobs, frozen_mechanics_blobs=mechanics,
                     local_module_catalog=local_modules,
                     import_entrypoints=['tools/s04_e011_fn776/'+name+'.py' for name in
-                                        ('worker', 'guard', 'square_root', 'build_code_package', 'verify_code_package', 'static_checks')],
+                                        ('worker', 'guard', 'square_root', 'build_code_package', 'verify_code_package', 'static_checks', 'control_r2', 'remote_control_r2', 'verify_retrieval_r2')],
                     source_repository='wenniebyfoxmail/phase-field-fracture-fatigue-pidl',
                     scope='code-only self-contained FN776 GPU7 snapshot; no scientific payload', files=rows)
     text = json.dumps(manifest, indent=2)+'\n'

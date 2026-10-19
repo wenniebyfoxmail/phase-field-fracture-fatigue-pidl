@@ -10,12 +10,12 @@ import subprocess
 import sys
 import time
 
-RUN = 'pf_s04e011_uvh_c1_fn776_r1_20261019'
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r1'
+RUN = 'pf_s04e011_uvh_c1_fn776_r2_20261019'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r2'
 ROOT = Path('/mnt/data2/drtao/wennie') / RUN
 OUT = Path('/mnt/data2/drtao/pidl_archives') / RUN
 CODE = ROOT / 'code'
-CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776.json'
+CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r2.json'
 
 
 def digest(path):
@@ -253,7 +253,8 @@ def main():
     def interrupt(signum, frame):
         raise KeyboardInterrupt('guard received signal ' + str(signum))
     signal.signal(signal.SIGTERM, interrupt)
-    # Includes all payload, stdout/stderr, cache/tmp, receipt and plot bytes.
+    # Includes all producer payload/log/cache/tmp/plot bytes. Reserve1MiB for
+    # terminal receipts and1MiB for unique Mac control diagnostics within100MiB.
     with (OUT / 'worker.log').open('xb') as log:
         child = subprocess.Popen([sys.executable, '-B', str(Path(__file__).resolve()), '--worker'],
                                  cwd=CODE, env=env, stdout=log, stderr=subprocess.STDOUT,
@@ -275,7 +276,7 @@ def main():
                     reason = 'wall_limit'
                 elif rss > contract['budget']['rss_bytes']:
                     reason = 'sampled_RSS_limit'
-                elif usage > contract['budget']['output_bytes'] - 1024**2:
+                elif usage > contract['budget']['output_bytes'] - 2*1024**2:
                     reason = 'output_limit'
                 if reason:
                     break
