@@ -1,0 +1,48 @@
+{
+  "protocol": "BRIDGE-PS-v1.0",
+  "status": "PREPARED_REVIEWED_NO_EXECUTION_AUTHORITY",
+  "runtime_source_commit": "d67f0ac68f4baa8c665ad4b9ee8eea83a1006782",
+  "design_commit": "569cc865a9090e050042c7daf037cd2f0e535bba",
+  "r002_source_commit": "5ea77160e8bb72a1b3b7a2d91d9bcf09282f5011",
+  "package_sha256": "6d03ace1cf6550756d127cea99f1e24737a290368b0c1bfbe87e3420760a47a2",
+  "runtime_files": {
+    "state.py": "5bff0d293be761e1b6b08d8f14d9e2e2d58987f666d5e48d38d894cc90ccf39d",
+    "contract.py": "bab5e13d9ce1da4e5214ff601359afb076fac8acbf3faa9ffe1a22ced6c51e6c",
+    "supervise.py": "57cad67e6e69169bb0efd66589a585ccbcdecb04bd554e7bbd98c609dc96bc90",
+    "worker.py": "2b74e86e2e6b79a11ba8c6b738c35cb2b2e692da2415eeeb67aed95075589789",
+    "analysis.py": "7b3d1010ecbf446e389398dd241c56897d23597e91aa6ef7ed8d555b89b42ac4",
+    "verify.py": "b2fe85a9b98435650ba9279dd4217ed975376bed0080738b3921b6761af0beff",
+    "r002_base.py": "262b8ddb79f81896e6dcb6717e4722f479a6bca65a3dc84e33a322097e555d1a",
+    "config.producer.json": "8c339efce6964aa4e2efcf4c654a11b5ace9b0fee319d362370dfaa6ff98804f",
+    "frozen_cohort.json": "19a75f76d68d63294744031b9369864185bb3da313f520699242132a5b7ae553",
+    "input_manifest.json": "f54753600f76dec7a5c153f413bb27a311d9d8551b966cc91fa6b21b663151de",
+    "r002_verification.json": "b045b46ad5889a94064db76adeef93aa406757eedf6b40f51db1396767144158",
+    "design.md": "a17e23c60e7c1bf35b5e699388dbb4fee9deb744717a868ec2c2695cbb294b60",
+    "design_plan.json": "bcfe5d5762bcaca52fb201daa5f59a8e597254eab8f3f4a4c47f5dab33eb6fd5",
+    "design_source_manifest.json": "ac56be5b8a9de2ca191c4f8ba48d2730d8a805672b7144eb5779132cefeb01df",
+    "interface_fixture.py": "f50ae7017c21be31a93c764513053a5f71dc56d0e44a8dd75a3b48e006d4de4a",
+    "test_interface_fixture.py": "5c38cbd3f7d237fc9b7d9084f1d3e5ea863e7524991e72a9fd9788a9f135fc18",
+    "test_state_contract.py": "35b0262b0aa226720e0d998fd05ae124130ebcd6fdddbd71e08abf2602db7a0e"
+  },
+  "review_verdict": "REVIEW_PASS_BOUNDED_CODE_CONTRACT",
+  "owner_fixture_tests": 32,
+  "scientific_array_access": false,
+  "real_fit_forward": false,
+  "ssh_or_resource_preflight": false,
+  "execution_authority": false,
+  "proposed_run_id": "IU-BRIDGE-PS-20261019-R003",
+  "proposed_caps": {
+    "wall_seconds": 1800,
+    "cpu_threads": 1,
+    "gpu": 0,
+    "rss_as_gib": 8,
+    "output_gib": 4,
+    "archive_gib": 4
+  },
+  "review_artifacts": {
+    "independent_review_v1.md": "29e2d8c229a5586ea92af80720c2c2b80c7f46f4b4f7c334fbd515cb246cb584",
+    "independent_review_v2.md": "292c1a5ff6424551c2b1d31f23ba75d52074bbcf267f081f01f23402fa0b8fc0",
+    "fixture_log_v2.txt": "8f4dba103799600fbb9f57462326de9f532a4473c5260816f52bb1a94a5cffa6",
+    "REVIEW_RECEIPT.md": "d26a2784c18da2d512cf0ba63c099c798236e510616dccc86856d16c12de9c67"
+  }
+}

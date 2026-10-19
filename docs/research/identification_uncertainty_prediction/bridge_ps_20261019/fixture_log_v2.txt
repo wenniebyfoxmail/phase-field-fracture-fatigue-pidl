@@ -1,0 +1,47 @@
+..................../Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/r002_base.py:249: RuntimeWarning: divide by zero encountered in matmul
+  coef = np.linalg.solve(z.T@(weights[:,None]*z)+penalty,
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/r002_base.py:249: RuntimeWarning: overflow encountered in matmul
+  coef = np.linalg.solve(z.T@(weights[:,None]*z)+penalty,
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/r002_base.py:249: RuntimeWarning: invalid value encountered in matmul
+  coef = np.linalg.solve(z.T@(weights[:,None]*z)+penalty,
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/r002_base.py:250: RuntimeWarning: divide by zero encountered in matmul
+  z.T@(weights[:,None]*y))
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/r002_base.py:250: RuntimeWarning: overflow encountered in matmul
+  z.T@(weights[:,None]*y))
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/r002_base.py:250: RuntimeWarning: invalid value encountered in matmul
+  z.T@(weights[:,None]*y))
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:52: RuntimeWarning: divide by zero encountered in matmul
+  coef=np.linalg.solve(z.T@(w[:,None]*z)+penalty,z.T@(w[:,None]*y));model=mean,scale,coef
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:52: RuntimeWarning: overflow encountered in matmul
+  coef=np.linalg.solve(z.T@(w[:,None]*z)+penalty,z.T@(w[:,None]*y));model=mean,scale,coef
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:52: RuntimeWarning: invalid value encountered in matmul
+  coef=np.linalg.solve(z.T@(w[:,None]*z)+penalty,z.T@(w[:,None]*y));model=mean,scale,coef
+......../Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:99: RuntimeWarning: divide by zero encountered in matmul
+  zt=finite(raw_train)@T.T;zq=finite(raw_query)@T.T;mz=mean@T.T
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:99: RuntimeWarning: overflow encountered in matmul
+  zt=finite(raw_train)@T.T;zq=finite(raw_query)@T.T;mz=mean@T.T
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:99: RuntimeWarning: invalid value encountered in matmul
+  zt=finite(raw_train)@T.T;zq=finite(raw_query)@T.T;mz=mean@T.T
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:102: RuntimeWarning: divide by zero encountered in matmul
+  P=(T@(np.diag(sq**2))@T.T)/(sz[:,None]*sz[None,:])
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:102: RuntimeWarning: overflow encountered in matmul
+  P=(T@(np.diag(sq**2))@T.T)/(sz[:,None]*sz[None,:])
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/state.py:102: RuntimeWarning: invalid value encountered in matmul
+  P=(T@(np.diag(sq**2))@T.T)/(sz[:,None]*sz[None,:])
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/test_state_contract.py:44: RuntimeWarning: divide by zero encountered in matmul
+  z=np.c_[np.ones(8),(x@e['T'].T-e['feature_mean'])/e['feature_scale']];W=state.weights(g);P=np.zeros((37,37));P[1:,1:]=e['penalty']
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/test_state_contract.py:44: RuntimeWarning: overflow encountered in matmul
+  z=np.c_[np.ones(8),(x@e['T'].T-e['feature_mean'])/e['feature_scale']];W=state.weights(g);P=np.zeros((37,37));P[1:,1:]=e['penalty']
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/test_state_contract.py:44: RuntimeWarning: invalid value encountered in matmul
+  z=np.c_[np.ones(8),(x@e['T'].T-e['feature_mean'])/e['feature_scale']];W=state.weights(g);P=np.zeros((37,37));P[1:,1:]=e['penalty']
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/test_state_contract.py:45: RuntimeWarning: divide by zero encountered in matmul
+  residual=(z.T@(W[:,None]*z)+alpha*P)@e['coef']-z.T@(W[:,None]*y)
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/test_state_contract.py:45: RuntimeWarning: overflow encountered in matmul
+  residual=(z.T@(W[:,None]*z)+alpha*P)@e['coef']-z.T@(W[:,None]*y)
+/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/test_state_contract.py:45: RuntimeWarning: invalid value encountered in matmul
+  residual=(z.T@(W[:,None]*z)+alpha*P)@e['coef']-z.T@(W[:,None]*y)
+....
+----------------------------------------------------------------------
+Ran 32 tests in 0.021s
+
+OK
