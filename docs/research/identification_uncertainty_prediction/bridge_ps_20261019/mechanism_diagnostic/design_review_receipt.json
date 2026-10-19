@@ -1,0 +1,48 @@
+{
+  "status": "DESIGN_SUPPORTED_ONLY_NOT_IMPLEMENTED_OR_AUTHORIZED",
+  "recorded_date": "2026-10-20 Europe/London",
+  "review_declared_date": "2026-10-19 Europe/London",
+  "reviewed_source_commit": "fe54ab36df890551f13e0e515ab50c2ad69c97c8",
+  "design_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/mechanism_diagnostic/STOPPED.md",
+  "design_sha256": "334d050d2fb1924f5d9f6c4c647e04844c1a1ee9189b4d731581c98f7b655d8b",
+  "channel": "Independent read-only Codex reviewer /root/bridge_exact_review; not Pro or cloud Work",
+  "reviews": {
+    "design_review.md": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/repair_preparation_20261019/design_review.md",
+      "sha256": "597dbbe4e61c7bacbb1261ee521825b09cc289ab402187fb8ed0a27b1095220a"
+    },
+    "design_review_final.md": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/repair_preparation_20261019/design_review_final.md",
+      "sha256": "0e4d585bebc8009d7a72243c74f02ca381c890f860797f8b0b56d2c3d6e9a80e"
+    }
+  },
+  "decision": "One complete exploratory output-calibration comparison is worth later implementation preparation; frozen interface only at this step",
+  "question": "Does separate global/centered correction shrinkage beat train-selected uniform shrinkage plus fixed corner ablations?",
+  "primary": "Equal-group/equal-H native balanced loss(selected simple C27)-loss(selected separate A25)",
+  "same25_not_same_complexity": true,
+  "solves": {
+    "predictor": 1444,
+    "residualizer": 722,
+    "total": 2166
+  },
+  "native_score_counts": {
+    "inner_unique_candidate_case_scores": 1853280,
+    "outer_seven_arm_scores": 16016
+  },
+  "source_inputs_identified_not_accessed": true,
+  "existing_outer_predictions_legal_for_new_inner_oof": false,
+  "estimator_implemented": false,
+  "scientific_data_opened": false,
+  "fit_or_forward": false,
+  "ssh": false,
+  "sealed_diagnostic_resumed_or_rendered": false,
+  "execution_authority": false,
+  "proposed_caps_measured_or_approved": false,
+  "remaining_gaps": [
+    "Implement exact17/18group isolation and frozen-alpha interfaces",
+    "New old-input/native-target access and2166fits require separate authority; no saved inner OOF substitute",
+    "Complete scoring/cache/storage/exit contract and budget feasibility not validated",
+    "Independent implementation review absent; no Code Ready",
+    "Exposed19groups/unknown specimen independence, current-anchor/release-stage representation; no identifiability/causal/road forecasting claim"
+  ]
+}
