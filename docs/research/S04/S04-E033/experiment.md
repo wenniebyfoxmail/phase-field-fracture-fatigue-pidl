@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E033
 protocol_revision: v1-full-head-eleven-guards-one-axis-20261019
-status: admission_stopped
+status: completed_primary_negative
 ---
 # E033：完整UV头只读诊断；有证书才作唯一单轴增广校正
 
@@ -63,3 +63,8 @@ Mac仅合成fixture和保存数组分析，不加载真实PT/模型、真实梯�
 ## 2026-10-19 首次资源准入停止（未启动）
 
 GPU5身份正确，但18314MiB空闲/87%利用率未满足20480MiB/0%条件；断言早于启动标记与Popen。本次无worker、模型加载、梯度或校正，后续只读核验无本次残留进程。科学可达性未评价，不作head/方法失败结论；新增GPU小时0、累计1.09177620。停止本Run，不重试/换卡/新编号绕过，未追加审查。[最短可核验回执](admission_stop_20261019.md)、[运行摘要](run_summary.json)。
+
+
+## 2026-10-19 明确授权的一次资源恢复：已完成
+
+原首停Run及其回执不覆盖。用户明确批准同E033第二次资源尝试，原source30ba0572/权重/判据保持，freshGPU5准入通过；52.83秒完成11×802诊断和一轴校正（9proxy迭代、2候选、1接受）。11项误差均改善，u全域/Z下降6.716%/2.660%，damage逐位不变；raw全域仅降.0108045%<.1%主幅度目标，反力绝对误差扩大3.20倍。累计receipt1.106451GPUh、保守整进程上界1.10834<2，无重试/换卡。29输出哈希/数组/五图核验完成；原独审保持、未追加审查。本次结束，交总部统一评估。[实际结果](result_20261019.md)、[attempt02收据](attempt02_summary.json)。

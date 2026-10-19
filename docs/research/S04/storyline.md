@@ -60,3 +60,8 @@ A frozen seven-gradient span at the actual E031 endpoint, fresh projected gradie
 ### 2026-10-19 — E033 resource admission stopped before launch
 
 D8 full802 eleven-metric diagnostic/conditional one-axis correction was prepared and reviewed at clean30ba0572. GPU5 matched UUID but had18314MiB free and87% utilization, failing20480MiB/0% before exclusive launch marker/Popen. Read-only followup found no launch receipt/log/output or matching process. Model/gradient/correction/FEM counts and addedGPUh are0; route remains1.0917762GPUh. Resource admission failure is not a no-direction/capacity/method result. Stop this run without retry/card switch/new-ID bypass or further review; HQ owns future resource decisions. [Receipt](S04-E033/admission_stop_20261019.md).
+
+
+### 2026-10-19 — E033 explicitly authorized resource resume, completed
+
+Historical admission stop preserved; one user-authorized freshGPU5 attempt at unchanged clean30ba0572.11×802 diagnostic resolves strict directions in both full head and old7; one eligible axis used.9proxy iterations and2predeclared candidates give1accepted correction, protecting all11 errors and fixed damage. UVglobal/Z improve2.758%/1.271%, uglobal/Z6.716%/2.660%; rawglobal only.0108045%<.1% amplitude target, negative with component progress. Unguarded reaction absolute error grows3.20x; u remains7.506%/5.422% worse thanE031, oldglobalactive cost remains.52.8298s,29files/32360392B verified with saved-array geometry/field/candidate checks and5visuals; totalreceipt1.106451GPUh, conservative full-processbound1.10834<2. No retry/card switch/new experiment/review; attempt ended for HQ evaluation. [Result](S04-E033/result_20261019.md), [receipt](S04-E033/attempt02_summary.json).
