@@ -17,7 +17,9 @@ def render(run):
     
     for j,row in enumerate(primary):
         if row['gain'] is None:
-            for a in ax:a.text(j,.05,'inconclusive',ha='center',fontsize=8,rotation=90)
+            for a in ax:a.text(j,.5,'inconclusive',ha='center',va='center',fontsize=8,rotation=90,transform=a.get_xaxis_transform())
+    for a in ax:a.set_xlim(-.5,len(sites)-.5)
+    if all(row['gain'] is None for row in primary):ax[0].set_ylim(-.05,.05)
     fig.suptitle(prefix+f'E028 primary native/max/any: {sum(p["qualified"] for p in result["pairs"])}/3 original pairs qualified\nPartial envelopes; no independent holdout, selector or OOF claim',fontsize=10);fig.tight_layout();fig.savefig(run/'F00_site_qualification.png',dpi=140);plt.close(fig)
     names=list(result['combinations']);fig,(ax,table_ax)=plt.subplots(2,1,figsize=(13,8),gridspec_kw={'height_ratios':[3,2]});x=np.arange(len(names))
     for j,site in enumerate(sites):
