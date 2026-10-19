@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from threadpoolctl import threadpool_limits
 from s04_e024_three_head import admit_finite,GUARDS
-from s04_e024_joint_head import quadratic_terms,solve_joint
+from s04_e024_joint_head import quadratic_terms,solve_joint,write_trials
 from s04_e024_head_cone import elastic_driver
 from s04_e024_weak_guard import Mechanics
 from diagnose_s04_e023_terminal_head import scores,network_order,sha,read,write_csv,STATES
@@ -144,7 +144,8 @@ def run(a):
         if peak>3*1024**3 or time.perf_counter()-start>600:raise RuntimeError('resource cap')
         print(st,audits[-1],flush=True)
         del model,mech
-    for name,rows in [('uv_metrics.csv',metrics),('physical_metrics.csv',physical),('line_search.csv',trials),('guard_values.csv',guards)]:write_csv(a.out/name,rows)
+    for name,rows in [('uv_metrics.csv',metrics),('physical_metrics.csv',physical),('guard_values.csv',guards)]:write_csv(a.out/name,rows)
+    write_trials(a.out/'line_search.csv',trials)
     if quadratics:write_csv(a.out/'proxy_quadratics.csv',quadratics)
     (a.out/'numerics.json').write_text(json.dumps(audits,indent=2)+'\n')
     (a.out/'receipt.json').write_text(json.dumps(dict(source_commit=commit,states=list(STATES),assets=assets,wall_seconds=time.perf_counter()-start,peak_rss_bytes=int(peak),

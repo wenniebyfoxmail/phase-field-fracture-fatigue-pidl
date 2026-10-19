@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'SENS_tensile'))
-from s04_e024_joint_head import quadratic_terms, solve_joint
+from s04_e024_joint_head import quadratic_terms, solve_joint, write_trials, TRIAL_FIELDS
 
 
 def test_exact_mass_quadratic_and_gradient():
@@ -85,3 +85,13 @@ def test_floor_changes_coordinates_not_the_original_objective():
     assert report['success'] and report['feasible']
     assert report['numerical_rank_relative_1e12'] == 2
     assert report['objective_half_relative_change'] == pytest.approx(-.02, abs=1e-10)
+
+
+def test_all_solver_fallback_zero_forward_table_is_parseable(tmp_path):
+    import csv
+    output = tmp_path/'line_search.csv'
+    write_trials(output, [])
+    with output.open() as file:
+        reader = csv.DictReader(file)
+        assert tuple(reader.fieldnames) == TRIAL_FIELDS
+        assert list(reader) == []

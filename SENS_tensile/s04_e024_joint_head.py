@@ -1,6 +1,19 @@
 """D011: exact-UV-curvature coordinates for a fixed three-head convex proxy."""
+import csv
 import numpy as np
 from scipy.optimize import minimize
+
+TRIAL_FIELDS = ('state', 'k', 'fraction', 'guard', 'origin', 'candidate', 'difference',
+                'ratio', 'rejected', 'increase_scale', 'trial_accepted', 'rejected_names',
+                'delta_relative', 'branch_changed_gp_fraction')
+
+
+def write_trials(path, rows):
+    """Even all-solver-fallback attempts have a parseable zero-candidate table."""
+    with path.open('w') as file:
+        writer = csv.DictWriter(file, fieldnames=TRIAL_FIELDS, lineterminator='\n')
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def quadratic_terms(error, columns, weights):
