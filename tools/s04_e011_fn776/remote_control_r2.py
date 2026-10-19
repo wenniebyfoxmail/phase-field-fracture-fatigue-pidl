@@ -186,6 +186,11 @@ def launch(expected):
         with (ROOT/'guard.log').open('xb') as log:
             child=subprocess.Popen(argv,cwd=CODE,env=env,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
         receipt=dict(status='LAUNCH_SUBMITTED',run_id=RUN,source=expected,guard_pid=child.pid,argv=argv,utc=dt.datetime.now(dt.timezone.utc).isoformat())
+        try:
+            raw=Path('/proc/'+str(child.pid)+'/stat').read_text()
+            receipt['guard_start_ticks']=int(raw[raw.rfind(')')+2:].split()[19])
+        except FileNotFoundError:
+            receipt.update(guard_start_ticks=None,already_exited_at_launch_receipt=True,exit_code=child.poll())
         (ROOT/'launch_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt
 
@@ -194,14 +199,25 @@ def monitor():
     receipt_path=OUT/'guard_receipt.json'
     launch_receipt=json.loads((ROOT/'launch_receipt.json').read_text())
     guard=json.loads(receipt_path.read_text()) if receipt_path.exists() else None
-    terminal=(guard is not None and guard.get('status') in ('completed','stopped_or_failed')) or (ROOT/'operator_terminal.json').exists()
-    command(['ps','-p',str(launch_receipt['guard_pid']),'-o','pid,etime,stat,args']) if not terminal else None
+    terminal_record=(guard is not None and guard.get('status') in ('completed','stopped_or_failed')) or (ROOT/'operator_terminal.json').exists()
+    try:
+        raw=Path('/proc/'+str(launch_receipt['guard_pid'])+'/stat').read_text()
+        fields=raw[raw.rfind(')')+2:].split()
+        start_ticks=int(fields[19]);expected=launch_receipt.get('guard_start_ticks')
+        live=(expected is None or start_ticks==expected) and fields[0]!='Z'
+        process=dict(live=live,state=fields[0],start_ticks=start_ticks,expected_start_ticks=expected)
+    except FileNotFoundError:
+        process=dict(live=False,missing=True)
+    # guard_receipt precedes final root/operator_terminal writes on failure.
+    # Do not freeze the report until that exact guard identity has exited.
+    terminal=bool(terminal_record and not process['live'])
+    emit('guard_process_observation',observation=process,terminal_record_present=terminal_record)
     # Retain full guard resource history only in the one final report copy;
     # repeated observation returns selected identity/terminal scalars.
     keys=('status','exit_code','first_limit','guard_pid','worker_pid','elapsed_seconds',
           'sampled_peak_RSS','sampled_output_bytes','source','finish_utc')
     summary={key:guard[key] for key in keys if key in guard} if guard is not None else None
-    return dict(status='MONITOR_OK',terminal=terminal,launch=launch_receipt,guard=summary,
+    return dict(status='MONITOR_OK',terminal=terminal,launch=launch_receipt,guard=summary,guard_process=process,
                 guard_receipt_path=str(receipt_path),operator_terminal=json.loads((ROOT/'operator_terminal.json').read_text()) if (ROOT/'operator_terminal.json').exists() else None)
 
 
