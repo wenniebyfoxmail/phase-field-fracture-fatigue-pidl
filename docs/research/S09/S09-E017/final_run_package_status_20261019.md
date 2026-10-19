@@ -2,7 +2,7 @@
 
 Date: 2026-10-19
 
-Status: `REVIEW_CANDIDATE__NO_EXECUTION`
+Status: `REVISE__NO_EXECUTION`
 
 ## Purpose
 
@@ -34,14 +34,29 @@ resolutions, zero model forwards, zero autograd collections, zero optimizer
 constructions and zero optimizer steps. Artificial fixture counters are test
 evidence for orchestration only and have no scientific meaning.
 
-## Remaining review question
+## Independent review result
 
-The exact package binds existing loader/model/physics/core symbols and defines
-the required adapter interface, but it does not silently choose a new
-trunk-to-amplitude/shape neural head that was not frozen in the reviewed card.
-Independent review must decide whether the package is Code Ready or whether a
-concrete real head adapter is a blocking missing implementation. Until then,
-the launch wrapper remains disabled and no run command is issued.
+ChatGPT Pro on the Haofan account reviewed exact commit
+`2a8e29937dacf02110303ce0d3365b98f50efad3` and returned
+`E017_FINAL_RUN_PACKAGE_REVISE`. The primary blocker is confirmed: declarations
+and an adapter protocol are not a real E017 implementation. The package cannot
+strictly load and map the B25 checkpoint into isolated damage heads, connect
+A/S/R/P gradients through PCGrad to real AdamW steps, or convert real model
+outputs into the complete reviewed evidence contract.
+
+Four additional blocker families cover parameter/freeze and budget enforcement,
+complete evidence and retrieval closure, first-stop preservation, and missing
+transitive review-package dependencies. The disabled boundary and artificial
+schedule remain valid local implementation evidence.
+
+## Next gate
+
+Prepare and independently review a narrow real-head-adapter design amendment.
+It must freeze the checkpoint-preserving D_DIRECT split, the shared latent
+feature and exact amplitude/shape head definitions, zero-step equivalence, the
+E017-to-Stage0A config bridge, real parameter inventories, operation-bound
+counters, full evidence streaming and retrieval verification. Do not implement
+or enable the real adapter until that architecture amendment is reviewed.
 
 ## Prohibited and not performed
 

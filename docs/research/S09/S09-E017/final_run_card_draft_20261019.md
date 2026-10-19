@@ -1,6 +1,12 @@
-# S09-E017 final run card (review candidate)
+# S09-E017 final run card (round-1 REVISE candidate)
 
-Status: `FINAL_RUN_PACKAGE_REVIEW_PENDING__NO_EXECUTION`
+Status: `FINAL_RUN_PACKAGE_REVISE__NO_EXECUTION`
+
+Round-1 independent review of commit
+`2a8e29937dacf02110303ce0d3365b98f50efad3` returned
+`E017_FINAL_RUN_PACKAGE_REVISE`. The card remains the frozen scientific
+contract, but the submitted package is not a runnable implementation of it.
+See `final_run_package_review_round1_20261019.md` for blockers B1–B5.
 
 This card binds one proposed future development-only three-arm pilot. It does
 not authorise configuration resolution, scientific asset access, SSH, GPU
