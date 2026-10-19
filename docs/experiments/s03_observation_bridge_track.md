@@ -428,3 +428,19 @@ ActiveD3: retainstructurecandidate,seeklocatedlocalopening/DICcorrespondence
 beforeinterpretingrealJascrack,notperfectwhole-maskprerequisite. Norepeat
 thresholdtuning,nonewforecastcomparison/referenceacquisitionexecuted;old
 observer/halfdepth/scoresandD01independentowneruntouched.
+
+### D3 local source/correspondence check completed — 2026-10-19
+
+Userapprovednextstep;[pre-execution protocol](../research/S03/S03-E049-MD03/local_correspondence_protocol.md)
+freezespriorcolumn-medianJmaxx2782andfixed2598/2750/2902,y1900.
+12rawcrops/8unchangedsixpatchmatchsetsretained,algorithm-informednotblind.
+Candidate132→175J1.57575imagepx,Q−.45738gray,minNCC.96543;rawsource
+coherentgapnotconfidentlyconfirmed. Negativedarkeningdoesnotruleoutcrack;
+reproducibleNCCdoesnotestablishmaterialtruthorphysicalaperture.
+Clean887ac0cd,2.893swall/2.841sCPU;481protectedhashesunchanged,
+8savedJexactreconstruction,selectionruleverified,all6PNG/sidecarQAcomplete.
+Evidenceparentlocal_archive/experiments/S03-E049-MD03/D3_local_correspondence_20261019/README_analysis.md.
+Localcheckcomplete;retainstructurecandidate,identifylocatedopening/DICreference
+availabilityandcoordinatesnext(noacquisitionperformed). Stoprepeatingsame-image
+selfvalidation,notglobalroutefailure;noMD03newforecastscores,oldobserver/
+halfdepth/5.81%kept,D01ownerunblocked.
