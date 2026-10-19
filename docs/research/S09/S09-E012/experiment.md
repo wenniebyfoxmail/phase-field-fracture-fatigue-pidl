@@ -31,6 +31,11 @@ fracture-PINO claims.
 - `S0`: E010 B25 update-500 checkpoint, the common E011 start.
 - `C500`: E011 control update-500 checkpoint.
 - `R500`: E011 ranking update-500 checkpoint.
+- Frozen SHA256 identities are `24bbea27...cf05` (S0),
+  `7a3f83e2...b057` (C500), `a3f2f83b...24c8d` (R500),
+  `2f38ead9...247e` (E010 per-cycle CSV), `8acc97ba...e52` (E011
+  per-cycle CSV), `be399942...2b4` (config), and `1658d2a2...2a6` (packet
+  manifest).  The implementation stores and compares the full values.
 - Reuse the existing S0 global-amplitude pair Jacobian and E011 zero-step/log
   evidence.  Do not recompute an unchanged broad global audit.
 - New autograd is one forward/gradient collection per unique cycle and state;

@@ -67,6 +67,17 @@ USABLE_RELATIVE_CONTRAST = 1.0e-4
 HELPFUL_COSINE = 1.0e-3
 NODE_DECODER_ENERGY_LIMIT = 1.0e-4
 STATE_ORDER = ("S0_B25_start", "C500_control", "R500_ranking")
+EXPECTED_INPUT_SHA256 = {
+    "start_checkpoint": "24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05",
+    "control_checkpoint": "7a3f83e23536f4b4ce560ca208c7fd607ab4bea5f7b698b9d288c584cd98b057",
+    "ranking_checkpoint": "a3f2f83bd2c86f8bc3a455c899ddc5ea0d5e394b8b6f5930950d4e5dbb024c8d",
+    "e010_per_cycle_csv": "2f38ead95c9596418f42a7d8aaaa2050fac938040ebd3804209f196c1ebc247e",
+    "e011_per_cycle_csv": "8acc97ba34aa3f936a949b49cb36a7ff4fde35015b06eb9d23868e062c37de52",
+    "config": "be399942c28d640da8e61a2f47f680433b546ce502c5791bb88ee7297a9542b4",
+}
+EXPECTED_PACKET_MANIFEST_SHA256 = (
+    "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6"
+)
 
 
 def sha256(path: Path) -> str:
@@ -772,6 +783,17 @@ def run(args: argparse.Namespace) -> None:
         )
 
     _require(not args.output_dir.exists(), "output directory must be fresh")
+    input_paths = {
+        "start_checkpoint": args.start_checkpoint,
+        "control_checkpoint": args.control_checkpoint,
+        "ranking_checkpoint": args.ranking_checkpoint,
+        "e010_per_cycle_csv": args.e010_per_cycle_csv,
+        "e011_per_cycle_csv": args.e011_per_cycle_csv,
+        "config": args.config,
+    }
+    for name, path in input_paths.items():
+        _require(path.is_file(), f"missing frozen input: {name}")
+        _require(sha256(path) == EXPECTED_INPUT_SHA256[name], f"input identity drift: {name}")
     args.output_dir.mkdir(parents=True)
     config = json.loads(args.config.read_text())
     torch.manual_seed(int(config["model"]["seed"]))
@@ -781,6 +803,10 @@ def run(args: argparse.Namespace) -> None:
         config_path=args.config,
         device=device,
         executable=False,
+    )
+    _require(
+        runtime.packet_identity["manifest_sha256"] == EXPECTED_PACKET_MANIFEST_SHA256,
+        "packet identity drift",
     )
     checkpoints = OrderedDict((
         (STATE_ORDER[0], (args.start_checkpoint, "B25_support_amplitude_beta0p25")),
@@ -865,6 +891,33 @@ def run(args: argparse.Namespace) -> None:
     require_deadline("after_figure")
     correct = [row for row in observed if row["initial_outcome"] == "WIN"]
     wrong = [row for row in observed if row["initial_outcome"] == "LOSS"]
+    pair_accounting = {
+        "original_wrong_pairs": 8,
+        "original_correct_pairs": 17,
+        "control_wrong_pairs_repaired": sum(
+            row["endpoint_global_outcome"] == "WIN" for row in wrong if row["arm"] == ARM_CONTROL
+        ),
+        "control_correct_pairs_lost": sum(
+            row["endpoint_global_outcome"] != "WIN" for row in correct if row["arm"] == ARM_CONTROL
+        ),
+        "ranking_wrong_pairs_repaired": sum(
+            row["endpoint_global_outcome"] == "WIN" for row in wrong if row["arm"] == ARM_RANK
+        ),
+        "ranking_correct_pairs_lost": sum(
+            row["endpoint_global_outcome"] != "WIN" for row in correct if row["arm"] == ARM_RANK
+        ),
+    }
+    _require(
+        pair_accounting == {
+            "original_wrong_pairs": 8,
+            "original_correct_pairs": 17,
+            "control_wrong_pairs_repaired": 8,
+            "control_correct_pairs_lost": 5,
+            "ranking_wrong_pairs_repaired": 0,
+            "ranking_correct_pairs_lost": 0,
+        },
+        "frozen realised-pair accounting drift",
+    )
     readme = f"""# S09-E012 analysis
 
 This is a read-only diagnostic on three frozen exposed-development states.  It
@@ -931,22 +984,7 @@ protection loss are reported together; no subset was selected after inspection.
             "e010_csv": {"path": str(args.e010_per_cycle_csv), "sha256": sha256(args.e010_per_cycle_csv)},
             "e011_csv": {"path": str(args.e011_per_cycle_csv), "sha256": sha256(args.e011_per_cycle_csv)},
         },
-        "pair_accounting": {
-            "original_wrong_pairs": 8,
-            "original_correct_pairs": 17,
-            "control_wrong_pairs_repaired": sum(
-                row["endpoint_global_outcome"] == "WIN" for row in wrong if row["arm"] == ARM_CONTROL
-            ),
-            "control_correct_pairs_lost": sum(
-                row["endpoint_global_outcome"] != "WIN" for row in correct if row["arm"] == ARM_CONTROL
-            ),
-            "ranking_wrong_pairs_repaired": sum(
-                row["endpoint_global_outcome"] == "WIN" for row in wrong if row["arm"] == ARM_RANK
-            ),
-            "ranking_correct_pairs_lost": sum(
-                row["endpoint_global_outcome"] != "WIN" for row in correct if row["arm"] == ARM_RANK
-            ),
-        },
+        "pair_accounting": pair_accounting,
         "parameter_group_allocation": allocation,
         "artifacts": {},
     }
