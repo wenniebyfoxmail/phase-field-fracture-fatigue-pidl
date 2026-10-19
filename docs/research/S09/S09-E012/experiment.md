@@ -187,3 +187,8 @@ mean parameter-group energy fractions across the 25 valid local contrasts.
 This mean is a descriptive allocation summary and introduces no new validity
 criterion or route predicate.
 
+If all 25 local pair contrasts are exactly zero, their mean group-energy map is
+retained as an all-zero descriptive summary.  It is not normalised into an
+artificial composition and does not stop the otherwise valid weak-signal
+diagnostic.
+

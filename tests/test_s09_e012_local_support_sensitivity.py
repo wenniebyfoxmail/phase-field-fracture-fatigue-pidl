@@ -161,6 +161,16 @@ def test_mean_group_allocation_survives_zero_component_medians() -> None:
     assert sum(mean.values()) == pytest.approx(1.0)
 
 
+def test_group_allocation_preserves_valid_all_zero_contrast_summary() -> None:
+    allocation = MODULE.normalise_fraction_map({"g0": 0.0, "g1": 0.0})
+    assert allocation == {"g0": 0.0, "g1": 0.0}
+
+
+def test_group_allocation_rejects_negative_fraction() -> None:
+    with pytest.raises(ValueError, match="invalid allocation fraction value"):
+        MODULE.normalise_fraction_map({"g0": 1.0, "g1": -1.0})
+
+
 def _route_rows(*, raw_helpful: bool, later_helpful: bool) -> list[dict]:
     rows = []
     for state in MODULE.STATE_ORDER:

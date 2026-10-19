@@ -298,8 +298,14 @@ def group_dot(
 
 
 def normalise_fraction_map(values: Mapping[str, float]) -> dict[str, float]:
+    _require(
+        all(math.isfinite(float(value)) and float(value) >= 0 for value in values.values()),
+        "invalid allocation fraction value",
+    )
     total = float(sum(values.values()))
-    _require(math.isfinite(total) and total > 0, "invalid allocation fraction total")
+    _require(math.isfinite(total) and total >= 0, "invalid allocation fraction total")
+    if total == 0:
+        return {name: 0.0 for name in values}
     return {name: float(value) / total for name, value in values.items()}
 
 
