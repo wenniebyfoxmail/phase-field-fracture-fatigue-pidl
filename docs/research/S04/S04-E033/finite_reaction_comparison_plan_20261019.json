@@ -1,0 +1,213 @@
+{
+  "plan_id": "S04-E033-followup-finite-reaction-comparison-v1-20261019",
+  "status": "DESIGN_ONLY_FOR_HQ_EVALUATION",
+  "experiment_id": "UNASSIGNED_HQ_TO_REGISTER_NEW_PROTOCOL_BEFORE_IMPLEMENTATION",
+  "execution_authorized": false,
+  "code_implemented": false,
+  "independent_new_code_review_done": false,
+  "runtime_commit": null,
+  "resource_preflight_done": false,
+  "gpu_reserved": false,
+  "purpose": "Reach original raw-global finite RMSE reduction>=0.1% at actual E032 anchor while retaining eleven guards and separate top/bottom reaction protection; distinguish bounded coefficient-selection versus space effects without claiming global infeasibility.",
+  "claim": "single exposed synthetic c20s4/horizon0/seed1 state repair; no trajectory/generalization/physical teacher truth",
+  "anchor": "actual E032 accepted endpoint; not sequentially continue E033 endpoint",
+  "reference": {
+    "cycle": 20,
+    "substep": 4,
+    "load": 0.11999988,
+    "FEM_outer": 18,
+    "original_four_MATs": {
+      "mesh": {
+        "relative": "inputs/common_common_initial.mat",
+        "bytes": 32927359,
+        "sha256": "59a0f81368d0c46a698f94fdfcb32158e96361714d7547f00deed996d4a7c181"
+      },
+      "predecessor": {
+        "relative": "inputs/c0020_s003_post_commit.mat",
+        "bytes": 32000094,
+        "sha256": "c242202960ae1da66d234d8646b12f69e6bab3bd4a119daa1811391e2efc5683"
+      },
+      "case": {
+        "relative": "output/mcs/c20_s4/case.mat",
+        "bytes": 107596994,
+        "sha256": "315e2dc00cd57668bc287af6619b33846dc5273f21c124b6d6f84aa10ed62c48"
+      },
+      "reference": {
+        "relative": "output/mcs/c20_s4/outer_18.mat",
+        "bytes": 24195415,
+        "sha256": "31ab8a56c6485da0ead9b28abcb3f6e6f8973e7eadcd12b6acaed6ade5479483"
+      }
+    }
+  },
+  "frozen_inputs": {
+    "initializer_S1500": {
+      "relative": "S_1500.pt",
+      "bytes": 9009653,
+      "sha256": "ef2be905167b6e26be3de5778a42e5043ddebd96610e06b1f39f4106ffca8f0b"
+    },
+    "E032_control_payloads": {
+      "fields.npz": {
+        "relative": "fields.npz",
+        "bytes": 8845598,
+        "sha256": "0ac4b6a563d04e8a0f835240c5e7a17ed670eaef761d2f825c93fa7b4b190675"
+      },
+      "scores.json": {
+        "relative": "scores.json",
+        "bytes": 5008,
+        "sha256": "84debb19d39cac1f588f4292c645433852916c066318e139c1078a1480e8c8db"
+      },
+      "head_geometry.npz": {
+        "relative": "head_geometry.npz",
+        "bytes": 9152987,
+        "sha256": "a504d28c39a1bfb49fce59da5768cd616fc3909b422f334fbd6d64cfb0abec24"
+      },
+      "head_endpoint.npz": {
+        "relative": "head_endpoint.npz",
+        "bytes": 12604,
+        "sha256": "51f945bd2ac127b1765f11620a74b0173e329b5621f36ced60302ee668f9c9e5"
+      },
+      "receipt.json": {
+        "relative": "receipt.json",
+        "bytes": 1144,
+        "sha256": "483deb815c79af6ab445d9e6c07f24311611f2f8cbc8cf619fb385dacfa50670"
+      }
+    },
+    "E033_basis8": {
+      "relative": "head_geometry.npz",
+      "bytes": 10478058,
+      "sha256": "998109dee648dc741f1b1d03655682e09b6746116db8f7fcdd502843e0b82d8b"
+    },
+    "E033_full_start_gradients": {
+      "relative": "diagnostic_geometry.npz",
+      "bytes": 237251,
+      "sha256": "c40054ea6bd9f7b45e23de61928dd17a272d78637c7726ddd7d32567065103f7"
+    }
+  },
+  "head": {
+    "coordinates": 802,
+    "hidden": "original S1500 frozen",
+    "physical_damage": "actual E030 inherited bitwise in E032, never target FEM damage",
+    "radius_fraction": 0.02,
+    "radius": 0.039821608331992005
+  },
+  "arms": [
+    {
+      "name": "Z0",
+      "type": "existing baseline",
+      "new_search": false,
+      "scope": "E032 anchor"
+    },
+    {
+      "name": "H0",
+      "type": "archived historical comparator",
+      "new_search": false,
+      "scope": "E033 actual8 proxy/no reaction protection; not a matched causal algorithm ablation"
+    },
+    {
+      "name": "F8",
+      "type": "planned new search",
+      "variables": 8,
+      "objective": "exact nonlinear relative raw-global squared RMSE",
+      "reaction_protection": "top and bottom separately",
+      "start": "zero normalized delta at E032",
+      "solver": "SLSQP exact Jacobians",
+      "max_major_iterations": 60,
+      "max_unique_physical_evaluations": 120,
+      "wall_seconds_cap": 600
+    },
+    {
+      "name": "F802",
+      "type": "planned new search",
+      "variables": 802,
+      "objective": "identical to F8",
+      "reaction_protection": "identical to F8",
+      "start": "zero normalized delta at E032, no warm start from F8",
+      "solver": "identical to F8",
+      "max_major_iterations": 60,
+      "max_unique_physical_evaluations": 120,
+      "wall_seconds_cap": 600
+    }
+  ],
+  "constraints": {
+    "original_eleven_actual_ratios_max": 1.0,
+    "global_UV_RMS_ratio_strict_max": 0.99999999,
+    "raw_global_RMSE_ratio_max": 0.999,
+    "raw_global_squared_ratio_max": 0.998001,
+    "raw_global_RMSE_absolute_threshold": 49.00038280557454,
+    "normalized_head_delta_L2_max": 1.0,
+    "top_absolute_reaction_error_max": 0.0011225085198861562,
+    "bottom_absolute_reaction_error_max": 0.008833500834452057,
+    "top_allowed_interval": [
+      0.07088716389867888,
+      0.0731321809384512
+    ],
+    "bottom_allowed_interval": [
+      -0.08084317325301768,
+      -0.06317617158411357
+    ],
+    "legacy_eleven_frozen_cone_kappa": 0.04418604213300339,
+    "cone_common_scaling": "R*g802 / norm(R*g802 projected onto lockedB8), same positive denominators in both arms; F8 embeds exactly into F802",
+    "actual_acceptance_slack": 0.0,
+    "identity_physical_forward_tolerance": 1e-10,
+    "damage_history_fatigue_nonUV_parameters": "bitwise unchanged",
+    "BC_damage_lower_upper_notch": "original physical checks unchanged"
+  },
+  "selection": {
+    "objective_minimized": "Q_raw(z)/Q_raw(0), actual native Q4 error not tangent epigraph",
+    "initialization": "one deterministic zero point, no random starts, no witness-ray micro run",
+    "termination_success": "first fully reverified candidate meeting raw target and all guards",
+    "if_no_target": "no accepted correction; exact cached E032 endpoint, all visited diagnostics retained; no best-tiny-gain deployment",
+    "solver_options": {
+      "maxiter": 60,
+      "ftol": 1e-12,
+      "exact_autograd_jacobians": true,
+      "finite_difference_optimization": false
+    },
+    "accepted_writes_max_per_arm": 1,
+    "restarts": 0,
+    "optimizer_or_weight_sweeps": 0,
+    "fixed_tangent_cones_retained": true
+  },
+  "budget_proposed": {
+    "additional_GPU_hours_cap": 0.5,
+    "whole_package_seconds_cap": 1800,
+    "outer_timeout_TERM_seconds": 1790,
+    "kill_after_seconds": 5,
+    "shared_admission_replay_export_seconds_cap": 480,
+    "each_arm_wall_seconds_cap": 600,
+    "nominal_phase_sum_seconds": 1680,
+    "unused_phase_budget_reallocated": false,
+    "previous_receipt_GPU_hours": 1.1064511414254983,
+    "previous_conservative_GPU_hours_bound": 1.108339654581623,
+    "worst_cumulative_GPU_hours_bound": 1.608339654581623,
+    "original_total_GPU_hours_cap": 2,
+    "RAM_GiB_cap": 32,
+    "outputs_GiB_cap": 2,
+    "GPU_rule": "one GPU5 exact UUID, live>=20GiB free/SM0/no compute apps, allocator<=free-1GiB and keep>=1GiB headroom",
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "current_use_GPU_hours": 0
+  },
+  "stop": {
+    "first_unexpected_identity_numeric_gradient_resource_physical_failure": "stop entire package; no auto retry/card switch/solver fallback",
+    "normal_primary_miss": "finite valid status0 or predefined status9 iteration limit; finish arm and do the separately planned comparison, not a retry",
+    "wall_or_evaluation_cap_before_normal_termination": "resource stop entire package, partial evidence only",
+    "missing_feasible_success": "retain baseline, no weight replacement",
+    "GPU_status_now": "not queried; no reservation"
+  },
+  "outcomes": {
+    "F8_success": "existing8 suffices for bounded finite target; whole selection redesign supported, no dimension expansion needed",
+    "F8_miss_F802_success": "larger-space bounded search has an actual witness; outside8 diagnostic separates representability from search, not a proof that8 is globally infeasible",
+    "both_success": "prefer8 by simplicity unless a new predeclared question justifies802",
+    "F8_success_F802_miss": "8 suffices; larger bounded search not automatically better",
+    "both_miss": "stop this frozen-head recipe under this budget/constraint set; do not automatically expand radius/damage/steps or declare full NN capacity failure",
+    "engineering_stop": "no interpretable complete comparison; preserve diagnostics, HQ decides without auto rerun"
+  },
+  "next_authority": "HQ reviews design and registers new experiment/protocol; code preparation and exact review then separate explicit final execution authorization. No new computation authorized by this design.",
+  "representation_identity_check": {
+    "when": "only F802 reaches actual target and normalized outside_B8 norm<=1e-12",
+    "max_projected_reproduction_evaluations": 1,
+    "budget": "shared480seconds, not extra GPU allowance",
+    "acceptance": "projected8 point must independently satisfy original actual guards and raw target without slack; otherwise classify representation as unresolved",
+    "new_optimization_or_F8_retry": false
+  }
+}

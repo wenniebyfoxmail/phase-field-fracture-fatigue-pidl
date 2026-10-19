@@ -75,3 +75,8 @@ Saved-field native-Q4 stress/force reassembly (no model, head gradients, solve, 
 ### 2026-10-19 — authorized saved8 reaction-safe local reachability complete
 
 At actual E032 anchor only, one12-row LP finds all original11 metrics plus top-reaction error strictly decreasing; original tangent-cone margin retained. Primal/dual gap5.55e-17, worst unit slope−.0650054. No model/NN gradient/physical candidate/GPU. One-ray exact u_Z curvature limits alpha.0006094; linearized raw gain at limit.00021835%, not original.1%. Finite amplitude not proved and whole8D finite ceiling not tested. Check complete; next producer execution unauthorized. HQ should decide a finite-amplitude reaction-protected design/comparison rather than launching another tiny sign-witness step. [Result](S04-E033/offline_reachability_20261019.md).
+
+
+### 2026-10-19 — finite-amplitude reaction-protected comparison designed, not run
+
+Hypothesis-led redesign targets actual rawRMSE>=.1% reduction with original eleven finite and legacy cone guards plus separate top/bottom reaction guards. Two proposed arms: locked8 versus original802, identical E032 start,2%physical head ball, solver/iterations/evaluations/time; existing E033 and zero baseline reused. Both-arm actual finite metrics and fields decide, not common-descent signs. Larger-space success after8miss is an outside-space witness, not8D global infeasibility; optional single identity projection within shared budget distinguishes representable solutions from search failure. Proposed package<=.5GPUh,worst cumulative1.60834<2; numerical/resource fault stops all, no retry or card switch. Design only, new protocol/code/review/final authorization pending. [Plan](S04-E033/finite_reaction_comparison_plan_20261019.md).
