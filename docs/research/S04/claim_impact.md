@@ -277,3 +277,20 @@ field error, teacher truth and trajectory generalisation stay separate.
 Outcome branches and authority boundaries are in main readback section15.
 No new run/card/code or cross-chat dispatch was created here; coupling keeps
 producer ownership and main updates only its records and shared task milestone.
+
+### 2026-10-19 — FN776-r2 control diff reviewed, main readback ready for human decision
+
+Coupling completed preparation once (turn01a1542a, record8fa7e76f):
+Devde0a6514/Producer722788c7/Card-planadbf0b9d. Main verified no diff in
+mechanics/worker/square_root versusf1ed1ed9; old/new contract is identical
+apart from Run/control/preparation metadata. Read the exact independent
+control-only review receipt and checked its fixes in source, without a
+second review or test: SIGTERM cleanup, guard/worker identity exit before
+freeze, and corrected CUDA_VISIBLE_DEVICES card text. Plan hash and controller
+blob agree. Science/data/criteria/25424units/900s/8GiB/4GiB rules stay frozen.
+One conservative change is explicit:100MiB now reserves1MiB control plus
+1MiB terminal, with normal producer sampled stop98MiB instead of99MiB.
+New Run has not launched; no SSH, arrays, mock, resource or numeric tests.
+Review does not establish restored connectivity or convergence. Main readback
+section17 and shared Obsidian put the exact new single-attempt card before
+the user; no execution authority inferred and no old attempt restarted.

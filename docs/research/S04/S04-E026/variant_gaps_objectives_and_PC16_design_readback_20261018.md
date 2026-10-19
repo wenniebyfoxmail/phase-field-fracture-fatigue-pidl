@@ -402,4 +402,44 @@ owner已有完整776维平方根Newton实现、自包含包及独立静审：Dev
 
 owner只在自己的工作树准备并在该聊天交付，不写共享residual主题／Roadmap或发额外回信；主对话只读核对后统一同步。当前active D3＝新控制交接准备，科学问题与旧结论未变。主工作树base69c23898，只写本记录／Obsidian，不实现重复代码；本轮无SSH、数组读取或计算。
 
-来源：E021/run_result.md，E025-R002和E026-R001既有summary.json，r2结果fd8f3588及现有源码定义，PC16提案52d24088；新增FN776来源见§15，准备授权交接见§16。
+## 17. 2026-10-19：FN776-r2完成，主对话核对后交人方审批
+
+目的：跟进§16唯一owner，不另做实现／独立审核。耦合turn `01a1542a-dbeb-7751-bcae-e403e674fc88`已completed、error=null；最终消息 `msg_0dc5ef36970fd720016ad61433f6cc8191819a5aedee0ce7cf`说明准备完成、等待批准。owner记录提交 `8fa7e76f`，其工作树干净。本对话主工作树base `0f466e01`，只追加核对／claim-impact及统一Obsidian，不修改owner文件。
+
+### 最终身份及审核采用范围
+
+| 项目 | 核对后的身份 |
+|---|---|
+| Card / 批准索引 | S04-E011-UVH-C1-FN776-CARD-r2 / S04-E011-FN776-r2-A1 |
+| Dev / Producer | de0a651435c83b548510f22134ab416b38151471 / 722788c74377c4f247b521d1e8cf14eb454902a3 |
+| 已审卡／plan提交 | adbf0b9d48070a236f409b3b5a979da5e863e542；与当前owner HEAD之间卡／plan无差异 |
+| plan SHA256 | 68fb14b435dd9f9c1cbdb6f82843e9d94cff8b47362530277a0e3fbdb32a31fc；主对话对这份小型控制JSON复核一致 |
+| 新Run | pf_s04e011_uvh_c1_fn776_r2_20261019；全新data2 root／pidl_archives路径，旧r1不动 |
+| 独立差异审核 | REVIEW_PASS_CONTROL_DIFF_ONLY，独立只读Codex /root/uvh_static_review，未独立暴露后台模型身份 |
+
+owner回执为 `uv_head_c1_solver_d3_20261019/static_review_fn776_r2.md`及本地preparation根的`independent_diff_review.json`；主对话已读回执与实际修改位置，不重复委派审核或重跑其检查。回执绑定上述Dev／Producer／Card／plan、控制器blob `41e4634d792b777fa6f622fe8c12438cddab442d`，主对话用Git核对该blob一致。最终bundle198817字节，包SHA／stdin身份由精确plan和既有审核回执固定；主对话未重新物化或重跑verifier。owner报告51文件、652098选定字节、22个本地模块闭包，不把它当数值成功。
+
+### 逐项核对与已处理意见
+
+| 核对项 | 本对话实际检查 / 结论 |
+|---|---|
+| 科学代码不变 | 对f1ed1ed9—de0a6514的source/、SENS_tensile/、worker.py、square_root.py做Git差异检查，均无变化。worker blob adb8c050b5330026cc120f47f14244ab040af028；square_root blob 0f485e08d39a55e4ee53f88d8e2652372a388a30 |
+| 数据／数学／科学判据 | 旧新输入JSON去除run_id、control_plane、preparation_authority后逐字段比较相同：五源路径／大小／hash／字段、c1s4／outer9、damage／隐藏层／基底、z=0、预算／work_ledger／fn776参数／GPU策略不变。未读真实payload，仍仅transform，不重评基线 |
+| SIGTERM清理 | 差异审核指出默认SIGTERM可绕过finally；最终control在任何Popen前安装异常处理，经自有本地进程组清理和terminal回执收尾。主对话已核对代码位置；SIGKILL／断电／写盘失败仍可能无回执，记未知而不重发 |
+| 终态冻结竞态 | 最终guard在worker Popen前保存spawn_requested，Popen后保存PID/start_ticks且将回执写入纳入清理try。报告冻结要求原guard及已知worker的PID/start_ticks身份已退出并有终态记录；spawn_requested但身份缺失保持unknown，不取回仍在写入的集合 |
+| 卡内环境变量 | 主对话发现CUDA_VISIBLE_DEVICES文字被Dev占位符替换污染并反馈owner，已在同一差异审核中修正。最终卡／remote launch使用完整正确变量名及固定GPU UUID |
+| 输出空间例外 | 总额仍100MiB，但不是所有停止阈值逐字未变：从旧99MiB正常产物＋1MiB终止回执，收紧为98MiB正常产物＋1MiB控制诊断＋1MiB终止回执。它是总额内的保守分配，不扩大预算；卡中明示，提请人方随新卡批准 |
+
+科学预算仍25424代理单位＝24832曲率＋64控制＋512trial＋16最终，不跨类借用；16步／每步32trial。guard900秒、600秒不新增优化、840秒不再科学运算、890秒停自有worker并留10秒清理，RSS／Torch reserved／自身NVML各8GiB、运行空闲至少4GiB不变。GPU7精确UUID及历史服务身份只是既有准入契约，不是今日资源观测。
+
+新卡明确单次只读preflight60秒单列（56秒等待＋4秒本地清理）；部署、上传、取回有各自控制阶段上限，不把全端到端时间称900秒。唯一launch、排他claim、前置成功依赖、失败terminal禁止后续、不自动重连／换GPU／加预算／重试保持。monitor只允许前次成功后的计划只读观察，间隔至少60秒、最多16次；任何观察失败也终止当前控制尝试，SSH掉线不等同guard停止，不再次launch。
+
+### 当前决定与审批范围
+
+核对结论：无剩余静态阻断，可将**adbf0b9d卡／plan、Dev de0a6514、Producer722788c7、批准索引S04-E011-FN776-r2-A1**交用户审批；并非已经获执行许可。拟执行范围是卡内只读检查、全新root部署、既定五文件读取、唯一FN776求解及报告取回／冻结核验，仍由耦合owner独占。本对话只核对结果和统一Obsidian，不启动第二计算。
+
+本轮仅Git／小型控制JSON及文本核对；没有控制入口运行、SSH／网络测试、资源检查、mock、科学数组读取、数值计算或新审核。准备回执execution_authorized=false，实际Run目录未创建。r1超时根因和缺失输出仍未知；静审不证明连接恢复、控制运行时有效性、收敛或900秒／8GiB可行。active D3＝等待此精确新卡的人方执行决定；原科学负结果与确认数据边界均不变。
+
+运行卡与审核位于耦合工作树的 `docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/run_card_fn776_r2.md`／`static_review_fn776_r2.md`；原始准备回执位于主项目 `local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/`。
+
+来源：E021/run_result.md，E025-R002和E026-R001既有summary.json，r2结果fd8f3588及现有源码定义，PC16提案52d24088；FN776来源见§15、准备授权见§16、新卡核对见§17。
