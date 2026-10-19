@@ -343,10 +343,12 @@ def _save_vector_archive(path: Path, bundle: Mapping[str, Any],
 
 
 def _validate_json_artifact(path: Path, expected: Mapping[str, Any]) -> dict[str, Any]:
+    expected_bytes = canonical_json(expected)
+    _require(path.read_bytes() == expected_bytes,
+             f"JSON artifact bytes drift: {path.name}")
     observed = _load_json(path)
     _require(path.read_bytes() == canonical_json(observed),
              f"noncanonical JSON artifact: {path.name}")
-    _require(observed == expected, f"JSON artifact content drift: {path.name}")
     return observed
 
 
@@ -409,6 +411,45 @@ def _validate_csv_coverage(path: Path, states: tuple[str, ...], cycles: tuple[in
     expected = [(state, str(cycle)) for state in states for cycle in cycles]
     observed = [(row.get("state"), row.get("cycle")) for row in rows]
     _require(observed == expected, "per-cycle CSV coverage drift")
+
+
+def _render_per_cycle_csv(
+        evaluations: Mapping[str, Mapping[str, Any]],
+        scores: Mapping[str, list[dict[str, Any]]]) -> str:
+    csv_fields = (
+        "state", "cycle", "global_amplitude", "local_support_contrast",
+        "support_positive_increment_mean", "background_positive_increment_mean",
+        "damage_increment_mae", "false_growth", "L_P", "L_judge",
+    )
+    stream = io.StringIO(newline="")
+    writer = csv.DictWriter(stream, fieldnames=csv_fields)
+    writer.writeheader()
+    for state in ("B25_step0", *ARM_ORDER):
+        _require_score_evaluation_alignment(scores[state], evaluations[state], state)
+        for index in range(16):
+            score_row = scores[state][index]
+            eval_row = evaluations[state]["per_cycle"][index]
+            writer.writerow({
+                "state": state, "cycle": score_row["cycle"],
+                "global_amplitude": score_row["global_amplitude"],
+                "local_support_contrast": score_row["local_support_contrast"],
+                "support_positive_increment_mean": score_row["support_mean"],
+                "background_positive_increment_mean": score_row["background_mean"],
+                "damage_increment_mae": eval_row["damage_increment_mae"],
+                "false_growth": eval_row["false_growth"],
+                "L_P": eval_row["grouped_losses"]["L_P"],
+                "L_judge": eval_row["L_judge"],
+            })
+    return stream.getvalue()
+
+
+def _validate_csv_content(
+        path: Path, evaluations: Mapping[str, Mapping[str, Any]],
+        scores: Mapping[str, list[dict[str, Any]]]) -> None:
+    expected = _render_per_cycle_csv(evaluations, scores)
+    with path.open(encoding="utf-8", newline="") as stream:
+        observed = stream.read()
+    _require(observed == expected, "per-cycle CSV content drift")
 
 
 def _validate_field_archive(path: Path,
@@ -496,7 +537,10 @@ def _validate_success_artifacts(
         audit: Mapping[str, Any], step0_evaluation: Mapping[str, Any],
         results: Mapping[str, Mapping[str, Any]], decision: Mapping[str, Any],
         fields: Mapping[str, Mapping[str, np.ndarray]], bundle: Mapping[str, Any],
-        displacements: Mapping[str, torch.Tensor], deadline: float) -> dict[str, str]:
+        displacements: Mapping[str, torch.Tensor],
+        evaluations: Mapping[str, Mapping[str, Any]],
+        scores: Mapping[str, list[dict[str, Any]]],
+        deadline: float) -> dict[str, str]:
     _check_resources(deadline, "completion_validation:before")
     _validate_json_artifact(output / "zero_step_common_direction_audit.json", audit)
     step0_disk = _validate_json_artifact(
@@ -518,6 +562,7 @@ def _validate_success_artifacts(
     cycles = tuple(int(value) for value in fields["B25_step0"]["cycles"])
     _validate_csv_coverage(output / "per_cycle_metrics.csv",
                            ("B25_step0", *ARM_ORDER), cycles)
+    _validate_csv_content(output / "per_cycle_metrics.csv", evaluations, scores)
     _validate_field_archive(output / "field_arrays_step0_step1.npz", fields)
     for name in ("delta_d_fields_all_cycles.png", "README_analysis.md"):
         _require((output / name).is_file() and (output / name).stat().st_size > 0,
@@ -693,32 +738,14 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
             results[ARM_CANDIDATE]["metrics"], valid=valid)
         _require(classification["status"] != "EXECUTION_INVALID",
                  "invalid evidence cannot be classified")
-        csv_fields = (
-            "state", "cycle", "global_amplitude", "local_support_contrast",
-            "support_positive_increment_mean", "background_positive_increment_mean",
-            "damage_increment_mae", "false_growth", "L_P", "L_judge",
-        )
         evaluation_by_state = {"B25_step0": step0_evaluation,
                                **{arm: results[arm]["evaluation"] for arm in ARM_ORDER}}
         scores_by_state = {"B25_step0": step0_score_rows,
                            **{arm: results[arm]["score_rows"] for arm in ARM_ORDER}}
-        with (output_dir / "per_cycle_metrics.csv").open("x", newline="") as stream:
-            writer = csv.DictWriter(stream, fieldnames=csv_fields)
-            writer.writeheader()
-            for state in ("B25_step0", *ARM_ORDER):
-                for score_row, eval_row in zip(
-                        scores_by_state[state], evaluation_by_state[state]["per_cycle"]):
-                    writer.writerow({
-                        "state": state, "cycle": score_row["cycle"],
-                        "global_amplitude": score_row["global_amplitude"],
-                        "local_support_contrast": score_row["local_support_contrast"],
-                        "support_positive_increment_mean": score_row["support_mean"],
-                        "background_positive_increment_mean": score_row["background_mean"],
-                        "damage_increment_mae": eval_row["damage_increment_mae"],
-                        "false_growth": eval_row["false_growth"],
-                        "L_P": eval_row["grouped_losses"]["L_P"],
-                        "L_judge": eval_row["L_judge"],
-                    })
+        with (output_dir / "per_cycle_metrics.csv").open(
+                "x", encoding="utf-8", newline="") as stream:
+            stream.write(_render_per_cycle_csv(
+                evaluation_by_state, scores_by_state))
         decision = {"schema_version": SCHEMA_VERSION, "run_id": RUN_ID,
                     "classification": classification,
                     "step0": {"global_pairs": step0_global_pair,
@@ -736,7 +763,8 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
             vector_sha256=vector_sha, audit=audit,
             step0_evaluation=step0_evaluation, results=results,
             decision=decision, fields=fields, bundle=bundle,
-            displacements=displacements, deadline=deadline)
+            displacements=displacements, evaluations=evaluation_by_state,
+            scores=scores_by_state, deadline=deadline)
         completion = {"schema_version": SCHEMA_VERSION, "run_id": RUN_ID,
                       "execution_status": "SUCCEEDED", "scientific_status": classification["status"],
                       "total_optimizer_steps_completed": steps, "total_update_cap": 2,

@@ -71,6 +71,11 @@ def test_zero_denominator_does_not_default_to_protected_pass() -> None:
     assert result["level"] == 4
     assert result["protected_ratios"]["G"] is None
 
+    both_zero = {**candidate, "G": 0.0}
+    result_both_zero = classify(True, control, both_zero, valid=True)
+    assert result_both_zero["level"] == 4
+    assert result_both_zero["protected_ratios"]["G"] is None
+
 
 def test_classifier_rejects_hard_constraint_even_if_valid_flag_is_true() -> None:
     control = {"local_pair_score": 34, "global_pair_score": 34,

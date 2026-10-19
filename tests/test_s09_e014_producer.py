@@ -35,6 +35,9 @@ def test_json_success_artifact_must_be_canonical_and_match_expected(tmp_path: Pa
     path.write_bytes(b'{"evaluation":')
     with pytest.raises(Exception):
         producer._validate_json_artifact(path, expected)
+    path.write_bytes(canonical_json({"evaluation": {"finite": True}, "value": 1.0}))
+    with pytest.raises(ValueError, match="bytes drift"):
+        producer._validate_json_artifact(path, expected)
 
 
 def test_checkpoint_must_exist_and_preserve_endpoint_identity(tmp_path: Path) -> None:
@@ -84,6 +87,35 @@ def test_csv_coverage_rejects_silent_zip_truncation(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="coverage drift"):
         producer._validate_csv_coverage(
             path, ("step0", "control", "candidate"), (1, 2))
+
+
+def test_csv_content_requires_all_scientific_values(tmp_path: Path) -> None:
+    states = ("B25_step0", *producer.ARM_ORDER)
+    evaluations = {}
+    scores = {}
+    for state in states:
+        evaluations[state] = {"per_cycle": [
+            {"cycle": cycle, "damage_increment_mae": cycle + .1,
+             "false_growth": cycle + .2, "L_judge": cycle + .3,
+             "grouped_losses": {"L_P": cycle + .4}}
+            for cycle in range(16)]}
+        scores[state] = [
+            {"cycle": cycle, "global_amplitude": cycle + .5,
+             "local_support_contrast": cycle + .6, "support_mean": cycle + .7,
+             "background_mean": cycle + .8}
+            for cycle in range(16)]
+    path = tmp_path / "per_cycle.csv"
+    path.write_text(producer._render_per_cycle_csv(evaluations, scores))
+    producer._validate_csv_content(path, evaluations, scores)
+    with path.open() as stream:
+        rows = list(csv.DictReader(stream))
+    with path.open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=("state", "cycle"))
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({"state": row["state"], "cycle": row["cycle"]})
+    with pytest.raises(ValueError, match="content drift"):
+        producer._validate_csv_content(path, evaluations, scores)
 
 
 def test_canonical_path_rejects_symlinked_parent(tmp_path: Path) -> None:

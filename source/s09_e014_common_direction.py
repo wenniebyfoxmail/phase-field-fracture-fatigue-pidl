@@ -236,8 +236,6 @@ def classify(common_secondary: bool, control: Mapping[str, Any],
         numerator = float(candidate[name])
         if denominator > 0.0:
             protected_ratios[name] = numerator / denominator
-        elif denominator == 0.0 and numerator == 0.0:
-            protected_ratios[name] = 1.0
         else:
             protected_ratios[name] = None
     protected = all(value is not None and value <= 1.10
