@@ -1,3 +1,17 @@
+# S01-E028 execution status — 2026-10-19 13:50 BST
+
+**R001 stopped before any model forward; no scientific qualification result.**
+
+User explicitly authorised GPU0 or Taobo. GPU0 placement amendment80d6f665 passed gpt-6.1-sol / High independent review with50-Werror checks and actual CUDA UUID metadata. Public branch44a9a0f2 was pushed and read back; new source27bindings/28members, nine original private inputs and338 source identities verified. Realtek was neither admitted nor closed. The original GPU1 block remains in the historical record below.
+
+R001 wrapper20920 / Python12048 launched13:49:54.885BST and stopped13:49:57.185BST; guard elapsed2.218seconds. Installed Pillow11.3.0 violates pinned12.3.0. 0 source-image decodes, cached/native forwards, fits or reference evaluations; actual model not loaded. This was a missing complete runtime preflight in our preparation, not a model failure. No retry started or authorised.
+
+Fixed stopped package:12members/6669bytes, SHA256595a20414628a91d940a3cfd360a4d5c2ad13c08fcdff9b7840cefba7069cace, C:\Users\xw436\pavetrack_runs\S01-E028-R001-fixed-stop-v1.tar.gz. Retrieval pending. Resource and wrapper logs are fixed inside; original Run/source remain intact.
+
+Prospective repair is local only: a fresh task-owned Pillow12.3.0 overlay, exact wheel/library hashes and Python/native origin checks, a complete metadata/synthetic preflight before producer Run creation. Keep shared pavetrack_env untouched. Prepare one fresh R002 with3590seconds so aggregate producer budget stays below original3600; independent Code Ready review passed on a5a8f465; exact new execution authorisation still required. See runtime_repair_R002.md. E003/criteria/caps/abstention/intersection/no-threshold-sweep/sealed sites unchanged; no selector/OOF, retention/netGT null.
+
+## Historical GPU1 admission record (superseded placement only)
+
 # S01-E028 执行状态 — 2026-10-19 13:29 BST
 
 **传送、指定公开分支推送与部署核验完成；R001尚未启动。**

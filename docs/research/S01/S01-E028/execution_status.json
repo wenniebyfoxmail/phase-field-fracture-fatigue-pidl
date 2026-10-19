@@ -1,43 +1,52 @@
 {
   "experiment": "S01-E028",
-  "planned_run": "S01-E028-R001",
-  "reviewed_commit": "b045170988b3f2a8fc641b7a7b89c617bb6c9e41",
+  "run": "S01-E028-R001",
+  "reviewed_commit": "80d6f665a447bf9531132bdfc0615731e6ee5da4",
   "public_branch": "codex/s01-e028-target-spatial-qualification-20261019",
-  "public_commit": "f3d40994e8d8305940e26d8bc5570d441e3d1ff6",
-  "source_deployment_verified": true,
-  "source_bindings": 24,
-  "source_members": 25,
-  "private_inputs_verified": 9,
-  "native_sources_verified": 338,
-  "producer_runs_started": 0,
-  "real_model_forwards": 0,
-  "source_image_decodes": 0,
-  "reference_evaluations": 0,
-  "admission": "blocked_shared_compute_and_unapproved_desktop",
-  "latest_admission_state": {
-    "run_exists": false,
-    "wrapper_logs_exist": false,
-    "timestamp": "2026-10-19T13:29:02.4519334+01:00",
-    "python_pids": [
-      45532,
-      52060
-    ],
-    "realtek": [
-      {
-        "type": "C+G",
-        "pid": "4656"
-      }
-    ],
-    "launch_request_exists": false,
-    "cpu": 82
+  "public_commit": "44a9a0f2eac262864158f2b6c4e54dc5a3011421",
+  "producer": "gpu-server/D-26-09",
+  "gpu_physical": 0,
+  "gpu_uuid": "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+  "producer_runs_started": 1,
+  "state": "stopped_before_model",
+  "wrapper_pid": 20920,
+  "python_pid": 12048,
+  "start": "2026-10-19T13:49:54.8854448+01:00",
+  "stop": "2026-10-19T13:49:57.1853771+01:00",
+  "reason": "Pillow11.3.0 installed; required12.3.0",
+  "counts": {
+    "source_image_decodes": 0,
+    "native_tiles": 0,
+    "cached_forwards": 0
   },
-  "shared_task": "HQ-ROAD-UQ-MATRIX-001-R001",
-  "desktop_process": "Realtek Audio Control in another Windows account",
-  "budget_seconds": 3600,
-  "producer_budget_consumed_seconds": 0,
+  "model_fits": 0,
+  "updates": 0,
+  "elapsed_seconds": 2.2179999998770654,
+  "source_bindings": 27,
+  "source_members": 28,
+  "private_inputs_verified": 9,
+  "native_sources_identity_verified": 338,
+  "scientific_verdict": null,
   "OOF": null,
   "retention": null,
   "net_GT": null,
-  "scientific_verdict": null,
+  "archive": {
+    "bytes": 6669,
+    "timestamp": "2026-10-19T13:51:45.0265794+01:00",
+    "archive": "C:\\Users\\xw436\\pavetrack_runs\\S01-E028-R001-fixed-stop-v1.tar.gz",
+    "sha256": "595a20414628a91d940a3cfd360a4d5c2ad13c08fcdff9b7840cefba7069cace",
+    "state": "fixed_stop_package",
+    "members": 12
+  },
+  "retrieval": "pending",
+  "proposed_repair": {
+    "run": "S01-E028-R002",
+    "wall_seconds": 3590,
+    "shared_environment_modified": false,
+    "authorised": false,
+    "source_commit": "a5a8f46510885f585fc1b84f004662e09309413d",
+    "review": "gpt-6.1-sol High REVIEW_PASS",
+    "approval_version": "approval_R002.md"
+  },
   "private_logs": "owner local_archive/experiments/S01-E028/execution_R001/"
 }

@@ -345,3 +345,10 @@ Future uniqueR001 GPU1CPU1/3600s/each4GiBRSSCUDA/6GiBoutputarchive/16GiBtemporar
 User authorized exactb0451709 source/private9 transfer, publicbranch and unique3600sR001. Publicf3d40994 readback andserver24bindings/25members/private9/native338SHAsverified. NoRun/wrapperlogs/launchrequest exists,0forward/0training/0RGBdecode/0referenceevaluation;noRunbudgetspent. Frozen source remains unchanged.
 
 Prelaunch environment has another-account RealtekAudioControl C+G outside approveddesktopidentity plus parallelHQ-ROAD-UQ-MATRIX-001-R001 Python45532/52060,CPU82%latest. Nootherprocesskill/selfallowlist/thresholdorbudgetrelaxation. ActiveD7stillpendingrealqualification;science/OOF/retention/netnull,notnegativeor0. Preparedoriginalcommand;resumeafteractualenvironmentcompliance orprepareexplicitreviewed/userapprovedenvironmentamendment. Privatefullprocessidentity/logs archived;seeS01-E028/execution_status.md. E003/caps/abstention/sealedsitesintact.
+
+
+## 2026-10-19 — E028 GPU0 R001 stopped before model; isolated runtime repair proposed
+
+User authorisedGPU0/Taobo; reviewedGPU0 source80d6f665/public44a9a0f2 deployed with27bindings/private9/native338identityverified. ActualR001 stopped2.218seconds atPillow11.3vsrequired12.3, beforemodel/RGB/reference;0forwards/fits/evaluations. This is our incomplete runtimepreflight, no localisation verdict; no automaticretry. Fixed12member/6669byte stoppackage remainsremote/retrievalpending; execution_status.md/json carriesidentity.
+
+ActiveD7stilltargetqualification. Proposedrepair usesfreshPillow12.3overlay/exact121libraryfiles/completeversion-origin-GPUUUID plusdatafreesyntheticpreflight, sharedvenvunchanged; newR0023590s withinoriginalaggregate3600budget needs independentreview/exact humanauthorisation. Science/data/E003/caps/abstention/intersection/sealedsitesunchanged; noselector/OOF/retention/netclaim.

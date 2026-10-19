@@ -18,3 +18,7 @@ PASS的范围始终是设计/工程，不是目标域定位成功、OOF检测收
 - fdf11452bc6770b75229e13ee79e226dc1c2caf3：**Code Ready REVIEW_PASS**，实际gpt-6.1-sol / High。逻辑0 UUID必须等于GPU0 UUID，错误/空/缺失拒绝且先于模型加载；独立49-Werror1.28秒通过，工作树干净，27绑定一致。manifest f6a975a67a88b7882ee8cfe9f9f61f688ce9788baf99eb222c77f3baa2bfa1e5。
 科学协议、输入、评分、预算不变；历史helper未改，Realtek未放行；新E028 GPU0基线仅冻结经有效签名核实的7个exe路径/hash，未知/C类型/hash/UUID/利用率不符仍停止。PASS只覆盖执行准备，实时资源仍须核验。
 - 80d6f665a447bf9531132bdfc0615731e6ee5da4：**Code Ready REVIEW_PASS**，实际gpt-6.1-sol / High。服务器纯硬件metadata暴露Torch2.11返回_CUuuid对象且无GPU前缀；现用规范UUID解析严格匹配设备身份，正确GPU0可通过，GPU1/缺失/空/畸形继续拒绝。独立50-Werror1.34秒通过，27绑定一致；manifest aabf21422bbae979ff5eddbdc7cab289feecb2b35d37fd5ac401085f10f8f57f。fdf版本未部署/执行；R001仍未启动。此项只修类型表示差异。
+
+## R001 stop / prospective R002 runtime repair
+
+R001在Pillow11.3vs冻结12.3处停止，2.218s/0forward/0源图/0参考，原始停止记录保留。a5a8f46510885f585fc1b84f004662e09309413d：**Code Ready REVIEW_PASS**，实际gpt-6.1-sol / High，manifest eba54f07032bc8fa03ef00b02ecf51074b08290254db2ad5db692468a1cefff3。独立51-Werror1.13秒及Pillow12.3合成fixture通过；31绑定和wheel大小/SHA/121文件清单及hash一致。fresh任务overlay不改共享venv，完整版本/来源/GPUUUID前检早于Run/log创建，producer私有输入前亦核。新R0023590秒/路径/监督一致，按R0012.218秒合计不超原3600秒；science/data lock/封存未改。实际Windows overlay资格待批准后核验，尚未传送/推送此修复或执行R002；PASS不能替代新运行批准。
