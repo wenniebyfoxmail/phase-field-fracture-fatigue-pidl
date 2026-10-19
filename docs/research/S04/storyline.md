@@ -70,3 +70,8 @@ Historical admission stop preserved; one user-authorized freshGPU5 attempt at un
 ### 2026-10-19 — E033 read-only reaction-cost attribution
 
 Saved-field native-Q4 stress/force reassembly (no model, head gradients, solve, candidates or GPU) reproduces FEM full force to8.61e-17. All27top vertical DOFs are prescribed/excluded from free-force guard. Top-layer strain/stress errors worsen9.41%/12.07% despite global stress error declining.163%; accepted old7 contribution+.006261 is partly offset by new-axis−.003788, net top+.002474. Both saved strict11 directions also have positive reaction slopes, without proving all directions infeasible. D8 execution and this analysis complete; no execution active D. HQ selects raw-amplitude versus reaction-degradation discriminator and returns scope/budget first; recommend saved8 reaction-safe reachability, proposedCPU<=5min/0GPU, not executed. Original raw0.1% miss unchanged, no new ledger/review. [Analysis](S04-E033/reaction_analysis_20261019.md).
+
+
+### 2026-10-19 — authorized saved8 reaction-safe local reachability complete
+
+At actual E032 anchor only, one12-row LP finds all original11 metrics plus top-reaction error strictly decreasing; original tangent-cone margin retained. Primal/dual gap5.55e-17, worst unit slope−.0650054. No model/NN gradient/physical candidate/GPU. One-ray exact u_Z curvature limits alpha.0006094; linearized raw gain at limit.00021835%, not original.1%. Finite amplitude not proved and whole8D finite ceiling not tested. Check complete; next producer execution unauthorized. HQ should decide a finite-amplitude reaction-protected design/comparison rather than launching another tiny sign-witness step. [Result](S04-E033/offline_reachability_20261019.md).
