@@ -10,3 +10,10 @@
 最终manifest SHA256 `11c67539cadac809aa22efc8b74689fd3f54fe5b719be93c1f5df4b400d5a76b`。没有剩余必要代码阻断；512tile真实显存/3600秒吞吐未实测，未读取真实源图/polygon或计算新法真实分数。
 
 PASS的范围始终是设计/工程，不是目标域定位成功、OOF检测收益或运行许可。
+
+## GPU0 placement-only amendment
+
+用户明确授权GPU0或Taobo后选择同Windows GPU0；R001仍未启动、预算未用。
+- 8efb4c66：MODIFY_AND_REREVIEW。独立48-Werror及Pillow12.3合成fixture通过，27绑定一致；但两卡同型号，须额外验证实际torch逻辑0 UUID。
+- fdf11452bc6770b75229e13ee79e226dc1c2caf3：**Code Ready REVIEW_PASS**，实际gpt-6.1-sol / High。逻辑0 UUID必须等于GPU0 UUID，错误/空/缺失拒绝且先于模型加载；独立49-Werror1.28秒通过，工作树干净，27绑定一致。manifest f6a975a67a88b7882ee8cfe9f9f61f688ce9788baf99eb222c77f3baa2bfa1e5。
+科学协议、输入、评分、预算不变；历史helper未改，Realtek未放行；新E028 GPU0基线仅冻结经有效签名核实的7个exe路径/hash，未知/C类型/hash/UUID/利用率不符仍停止。PASS只覆盖执行准备，实时资源仍须核验。
