@@ -1,0 +1,21 @@
+{
+  "autograd_performed": false,
+  "classification_issue": "The frozen eight-pair cohort is defined by predicted global-amplitude LOSS, but the E013 classifier selected predicted local-support LOSS before comparing identities; those cohorts contain 8 and 17 complementary pairs.",
+  "initial_predicted_global_local_same_sign_count": 0,
+  "initial_predicted_global_win_count": 17,
+  "initial_predicted_local_win_count": 8,
+  "model_forward_performed": false,
+  "optimizer_steps_performed": 0,
+  "schema_version": "s09-e013-observable-semantics-v1",
+  "scientific_interpretation": "Target global and local scores agree on all 25 pair labels and stagnant supports are nonempty. The sign inversion is a property of the current B25 prediction and objective geometry, not an inherent contradiction in the two target observables.",
+  "source_packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+  "source_receipt_sha256": "ec52d61d0872d2a618faa64cd438946c03f13f88c6b41d5f2d16bc9c86779784",
+  "stagnant_support_node_count_max": 5374,
+  "stagnant_support_node_count_min": 4795,
+  "stagnant_support_weight_fraction_max": 0.021127939508761438,
+  "stagnant_support_weight_fraction_min": 0.018796330338440546,
+  "target_background_mean_max": 0.0,
+  "target_global_local_same_sign_count": 25,
+  "target_global_win_count": 25,
+  "target_local_win_count": 25
+}
