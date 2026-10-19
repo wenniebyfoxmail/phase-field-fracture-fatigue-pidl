@@ -1,0 +1,87 @@
+{
+  "task": "BRIDGE-PS-20261019",
+  "base_commit": "389f618b7a042e0a4e4d11a3ab24a7164f6902cc",
+  "branch": "codex/cross-track-predictive-state-20261019",
+  "map_snapshot_local": "2026-10-19 16:54 Europe/London",
+  "HQ_state_read_only": "/Users/wenxiaofang/.codex/automations/automation-4/hq_state.json",
+  "thread_reads": {
+    "B": "last 2 turns; latest direct user approves R002 only",
+    "A": "last 3 turns plus original HQ latest performance v3 handoff",
+    "D": "last 3 turns; static integration commentary does not replace final review",
+    "E": "last 1 turn; F01 first-stop retained"
+  },
+  "sources": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/hq/research_system_map_20261019/mindmap.md",
+      "exists": true,
+      "sha256": "784d13f5fc11eb254d043b73638db82a4990c5f66b9699f8e19834099b15af58"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-RESPONSE-STATE-20261019-R002/final_package.json",
+      "exists": true,
+      "sha256": "6213bc2c5854484b31c2c3edcd834a6be944e7b39257449c8da2fb9b444d01bd"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-RESPONSE-STATE-20261019-R002/analysis.json",
+      "exists": true,
+      "sha256": "eec5545b1609c1b3a29001e2196e08fa79b80725e69a379766914a130d18bc26"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-RESPONSE-STATE-20261019-R002/retrieved/code/runner.py",
+      "exists": true,
+      "sha256": "262b8ddb79f81896e6dcb6717e4722f479a6bca65a3dc84e33a322097e555d1a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-RESPONSE-STATE-20261019-R002/retrieved/code/config.json",
+      "exists": true,
+      "sha256": "832ee3d3d6167bda0d90deb925b968783e2cbe111dd41bca2ab4d9b5dbf80517"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-RESPONSE-STATE-20261019-R002/metadata_preflight/manifest.json",
+      "exists": true,
+      "sha256": "19a75f76d68d63294744031b9369864185bb3da313f520699242132a5b7ae553"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-RESPONSE-STATE-20261019-R002/retrieved/outputs/origin_feature_evidence.npz",
+      "exists": true,
+      "sha256": "07b65075c77082372c6278820df579991b896aa60dc1d999fd7520b6c0bcf005"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/published_pipeline_repro_audit_20261019/REPRODUCIBILITY_AUDIT.md",
+      "exists": true,
+      "sha256": "99c47f5fbdde0b11aff75f7c1b7583a0c1258aeab44329351e3796e4d610a585"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/open_pipeline_search_20261019/RESEARCH_HANDOFF.md",
+      "exists": true,
+      "sha256": "49b28ad137784404fb3fec5e30721ea002d9305b9cf827c6485f0c5aa352219f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/experiment_design_v0.1.md",
+      "exists": true,
+      "sha256": "eb6665ebfca80fc0a1b9e41f53d1ebda654738a8cafd8157e547e0fe25c09d97"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/hybrid_constrained_design_20261019/performance_handoff_v3.md",
+      "exists": true,
+      "sha256": "f4c52e778a8e17f337e3a03848c00b3d15a881fb8e44875e5a21365944cd6e0c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/hybrid_constrained_design_20261019/performance_review_v3.md",
+      "exists": true,
+      "sha256": "92b1c2ba5ffcfacff29c56d2587f646057306bfb95f92f527c58331bd84ddf37"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012/docs/research/S09/S09-E017/next_gate_execution_contract_20261019.md",
+      "exists": true,
+      "sha256": "ff6fca10d2b4511811a5d518efc35c489bb1594b1438804b1101deffc9261da6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/analysis/README_analysis.md",
+      "exists": true,
+      "sha256": "b165e64bc719aeb98d4bac72e5ae5093ed99c28300330471d71d7f90f0803496"
+    }
+  ],
+  "scientific_arrays_interpreted_this_task": false,
+  "note": "Hashing bytes of an existing saved evidence archive is not scientific model I/O; no arrays loaded or scores recomputed."
+}

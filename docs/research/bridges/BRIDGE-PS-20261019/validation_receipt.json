@@ -1,0 +1,31 @@
+{
+  "version": "BRIDGE-PS-v1.0",
+  "checked_at_utc": "2026-10-19T17:19:49.370481+00:00",
+  "checks": "17 hand-authored interface/algebra tests",
+  "unit_exit_code": 0,
+  "unit_output": "test_candidate_current_block_is_exact_raw_baseline (test_interface_fixture.InterfaceFixtures.test_candidate_current_block_is_exact_raw_baseline) ... ok\ntest_cross_group_rejected (test_interface_fixture.InterfaceFixtures.test_cross_group_rejected) ... ok\ntest_current_cannot_see_past_response (test_interface_fixture.InterfaceFixtures.test_current_cannot_see_past_response) ... ok\ntest_cycle_requires_unit_and_phase (test_interface_fixture.InterfaceFixtures.test_cycle_requires_unit_and_phase) ... ok\ntest_function_invariance_and_pulled_penalty (test_interface_fixture.InterfaceFixtures.test_function_invariance_and_pulled_penalty) ... ok\ntest_future_is_rejected (test_interface_fixture.InterfaceFixtures.test_future_is_rejected) ... ok\ntest_history_shape_and_no_mutation (test_interface_fixture.InterfaceFixtures.test_history_shape_and_no_mutation) ... ok\ntest_mask_cannot_be_phase_damage (test_interface_fixture.InterfaceFixtures.test_mask_cannot_be_phase_damage) ... ok\ntest_mixed_clocks_are_rejected (test_interface_fixture.InterfaceFixtures.test_mixed_clocks_are_rejected) ... ok\ntest_out_of_order_duplicate_and_missing_current_rejected (test_interface_fixture.InterfaceFixtures.test_out_of_order_duplicate_and_missing_current_rejected) ... ok\ntest_phase_unit_and_clock_values_cannot_silently_change (test_interface_fixture.InterfaceFixtures.test_phase_unit_and_clock_values_cannot_silently_change) ... ok\ntest_plan_rejects_execution_and_count_change (test_interface_fixture.InterfaceFixtures.test_plan_rejects_execution_and_count_change) ... ok\ntest_reference_or_support_change_rejected (test_interface_fixture.InterfaceFixtures.test_reference_or_support_change_rejected) ... ok\ntest_release_is_not_physical_independence (test_interface_fixture.InterfaceFixtures.test_release_is_not_physical_independence) ... ok\ntest_reversible_response_coordinates (test_interface_fixture.InterfaceFixtures.test_reversible_response_coordinates) ... ok\ntest_schema_and_finite (test_interface_fixture.InterfaceFixtures.test_schema_and_finite) ... ok\ntest_translation_invariant_relative_block_preserves_global (test_interface_fixture.InterfaceFixtures.test_translation_invariant_relative_block_preserves_global) ... ok\n\n----------------------------------------------------------------------\nRan 17 tests in 0.000s\n\nOK\n",
+  "plan_check": {
+    "preparation_only": true,
+    "predictor_solves": 912
+  },
+  "wikilinks_checked": [
+    "科研系统知识图谱",
+    "Deep Research - 跨主线连接与预测状态突破设计",
+    "跨主线连接与第一性原理突破设计",
+    "科研系统知识图谱",
+    "Littman Sutton Singh - 2001 - Predictive Representations of State.pdf",
+    "Auger Methe et al - 2016 - State-space models dirty little secrets - publisher.pdf",
+    "Sueki et al - 2026 - Data assimilation for parameter estimation of the phase-field fracture model from full-field strain data - A virtual DIC study toward fatigue applications.pdf",
+    "相场断裂反演 - 从观测到状态、参数与预测",
+    "Zhai and Zhang - 2026 - Scalable dynamical inference of phase-field fracture from sparse and partial measurements.pdf",
+    "SCB 观测不确定性与未来预测实验方案"
+  ],
+  "roadmap_task_links": 1,
+  "real_scientific_model_forward": 0,
+  "real_fit": 0,
+  "autograd": 0,
+  "FEM_solve": 0,
+  "SSH": 0,
+  "private_or_fresh_holdout_access": 0,
+  "scope": "implementing-owner artificial fixtures and document/link checks only; no independent production review or scientific result"
+}

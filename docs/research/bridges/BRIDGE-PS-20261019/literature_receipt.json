@@ -1,0 +1,36 @@
+{
+  "pdfs": [
+    {
+      "path": "/Users/wenxiaofang/obsidian/01 Research Tracks/Paper Reading/1 paper 原稿/Littman Sutton Singh - 2001 - Predictive Representations of State.pdf",
+      "sha256": "0d9199d40bab3dc468fb95e52d5e4bf9a78e07c6a63250397d336bda215d17b8",
+      "pages": "14",
+      "characters_extracted": 21872,
+      "identity_and_body_checked": true,
+      "completeness": "body_and_reference_end_present"
+    },
+    {
+      "path": "/Users/wenxiaofang/obsidian/01 Research Tracks/Paper Reading/1 paper 原稿/Auger Methe et al - 2016 - State-space models dirty little secrets - publisher.pdf",
+      "sha256": "a8bd59f4fa9622ac54fccbaf34d62e1bff08f728bed0672ff5dd100236037320",
+      "pages": "10",
+      "characters_extracted": 53278,
+      "identity_and_body_checked": true,
+      "completeness": "body_and_reference_end_present"
+    }
+  ],
+  "scope": "local reuse and bounded conceptual-claim audit; not systematic review or novelty claim",
+  "query": "Predictive Representations of State",
+  "index_outcomes": {
+    "openalex": "results",
+    "arxiv": "results",
+    "crossref": "parser NoneType error; incomplete"
+  },
+  "official_sources": [
+    "https://papers.neurips.cc/paper/1983-predictive-representations-of-state.pdf",
+    "https://www.nature.com/articles/srep26677.pdf"
+  ],
+  "manual_download_pending": [],
+  "roadmap_task_wikilink_count": 1,
+  "report_roadmap_link": "same task entry, direct Markdown report link",
+  "production_actions": 0,
+  "updated_at_utc": "2026-10-19T17:18:14.239168+00:00"
+}
