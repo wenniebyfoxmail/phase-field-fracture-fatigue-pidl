@@ -1,0 +1,307 @@
+{
+  "analysis_script": {
+    "path": "/mnt/data2/drtao/wennie/S09-E012-R001-local-support-sensitivity-8cb5bc36/code/scripts/analyse_s09_e012_local_support_sensitivity.py",
+    "sha256": "11f173a6ce3acde5add599cc1713c95359cadb00c53a4b300e8663d8ecd82132"
+  },
+  "artifacts": {
+    "README_analysis.md": {
+      "sha256": "f7958e149bcdc5ad516a9431ab50c9b58c67baad5f1866cb90b1a9203b54955c"
+    },
+    "decision_figure.pdf": {
+      "sha256": "6611aa8796644f0b21a0381e09db93fdfd9b362e88b99917a14ba024b1a9d784"
+    },
+    "decision_figure.png": {
+      "sha256": "e1d3b1fe3563e0950270fe82604e16a805b1b208681092ccbb043b23c2000745"
+    },
+    "observed_endpoint_changes.csv": {
+      "sha256": "12e893b51e231a4f2b66dd64f8558b4cee405cacb7a4a79be849b0cc1bdc752c"
+    },
+    "pair_direction_decomposition.csv": {
+      "sha256": "44a3ffc1e5991bda83137c2337c1b8f838a927fcf7aa8597a669f691797aa7a7"
+    },
+    "support_definition.csv": {
+      "sha256": "8ab8c89c3cb5d5877a967cfed3c12bec07beff678073aea6c150f0364a64d968"
+    }
+  },
+  "checkpoints": {
+    "C500_control": {
+      "parameter_state_sha256": "2e522a6f2b24eed2fc44b8af3348dbd7b4ef63beb9976dbe55248388d4b75626",
+      "path": "/mnt/data2/drtao/wennie/S09-E011-R001-objective-only-ranking/run/C25_pair_batched_B25_continuation/checkpoint_update500.pt",
+      "sha256": "7a3f83e23536f4b4ce560ca208c7fd607ab4bea5f7b698b9d288c584cd98b057"
+    },
+    "R500_ranking": {
+      "parameter_state_sha256": "58e1073c476ae33e078f6b9bb2ebdecddd106963bdc732113e77a549ee76cf31",
+      "path": "/mnt/data2/drtao/wennie/S09-E011-R001-objective-only-ranking/run/R25_pairwise_ranking_beta0p25/checkpoint_update500.pt",
+      "sha256": "a3f2f83bd2c86f8bc3a455c899ddc5ea0d5e394b8b6f5930950d4e5dbb024c8d"
+    },
+    "S0_B25_start": {
+      "parameter_state_sha256": "4d353f6ed1f0c3ce097d15ec61b078c34554e794ee264f44fcc0f5e8aaab684f",
+      "path": "/mnt/data2/drtao/wennie/S09-E010-R001-support-amplitude-three-arm/B25_support_amplitude_beta0p25/checkpoint_update500.pt",
+      "sha256": "24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05"
+    }
+  },
+  "endpoint_sign_accounting": {
+    "C25_pair_batched_B25_continuation": {
+      "LOSS": {
+        "LOSS": 0,
+        "TIE": 0,
+        "WIN": 8
+      },
+      "TIE": {
+        "LOSS": 0,
+        "TIE": 0,
+        "WIN": 0
+      },
+      "WIN": {
+        "LOSS": 5,
+        "TIE": 0,
+        "WIN": 12
+      }
+    },
+    "R25_pairwise_ranking_beta0p25": {
+      "LOSS": {
+        "LOSS": 8,
+        "TIE": 0,
+        "WIN": 0
+      },
+      "TIE": {
+        "LOSS": 0,
+        "TIE": 0,
+        "WIN": 0
+      },
+      "WIN": {
+        "LOSS": 0,
+        "TIE": 0,
+        "WIN": 17
+      }
+    }
+  },
+  "execution": {
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "elapsed_seconds": 25.820126364938915,
+    "fresh_holdout_accessed": false,
+    "hostname": "GPUServer8",
+    "optimizer_constructed": false,
+    "optimizer_steps_performed": 0,
+    "pairwise_autograd_evaluations": 0,
+    "unique_cycle_autograd_evaluations": 48,
+    "wall_seconds_limit": 900.0
+  },
+  "frozen_amplitude_replay": {
+    "e010_csv": {
+      "path": "/mnt/data2/drtao/wennie/S09-E010-R001-support-amplitude-three-arm/per_cycle_metrics.csv",
+      "sha256": "2f38ead95c9596418f42a7d8aaaa2050fac938040ebd3804209f196c1ebc247e"
+    },
+    "e011_csv": {
+      "path": "/mnt/data2/drtao/wennie/S09-E011-R001-objective-only-ranking/run/per_cycle_metrics.csv",
+      "sha256": "8acc97ba34aa3f936a949b49cb36a7ff4fde35015b06eb9d23868e062c37de52"
+    },
+    "maximum_absolute_error_by_state": {
+      "C500_control": 5.421010862427522e-20,
+      "R500_ranking": 1.0842021724855044e-19,
+      "S0_B25_start": 3.8116482626443515e-21
+    },
+    "tolerance": 1e-12
+  },
+  "inputs": {
+    "base_config": {
+      "path": "/mnt/data2/drtao/wennie/S09-E008-P1-STAGING-20261016/transfer/p1_memorisation_run_config_20261016.json",
+      "role": "executable P1 architecture, data, and normaliser contract",
+      "sha256": "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b"
+    },
+    "packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+    "resolved_config": {
+      "path": "/mnt/data2/drtao/wennie/S09-E010-R001-support-amplitude-three-arm/config_resolved.json",
+      "role": "frozen E010 arm and execution provenance",
+      "sha256": "be399942c28d640da8e61a2f47f680433b546ce502c5791bb88ee7297a9542b4"
+    }
+  },
+  "next_adamw_pair_accounting": {
+    "C500_control": {
+      "C25_pair_batched_B25_continuation": {
+        "current_correct_pairs_already_lost": 5,
+        "current_wrong_pairs": 0,
+        "next_adamw_correct_pair_crossings": 0,
+        "next_adamw_wrong_pair_repairs": 0,
+        "next_outcome_counts": {
+          "LOSS": 10,
+          "TIE": 0,
+          "WIN": 15
+        },
+        "original_correct_pairs": 17,
+        "original_wrong_pairs": 8
+      },
+      "R25_pairwise_ranking_beta0p25": {
+        "current_correct_pairs_already_lost": 5,
+        "current_wrong_pairs": 0,
+        "next_adamw_correct_pair_crossings": 0,
+        "next_adamw_wrong_pair_repairs": 0,
+        "next_outcome_counts": {
+          "LOSS": 7,
+          "TIE": 0,
+          "WIN": 18
+        },
+        "original_correct_pairs": 17,
+        "original_wrong_pairs": 8
+      }
+    },
+    "R500_ranking": {
+      "C25_pair_batched_B25_continuation": {
+        "current_correct_pairs_already_lost": 0,
+        "current_wrong_pairs": 8,
+        "next_adamw_correct_pair_crossings": 0,
+        "next_adamw_wrong_pair_repairs": 0,
+        "next_outcome_counts": {
+          "LOSS": 8,
+          "TIE": 0,
+          "WIN": 17
+        },
+        "original_correct_pairs": 17,
+        "original_wrong_pairs": 8
+      },
+      "R25_pairwise_ranking_beta0p25": {
+        "current_correct_pairs_already_lost": 0,
+        "current_wrong_pairs": 8,
+        "next_adamw_correct_pair_crossings": 0,
+        "next_adamw_wrong_pair_repairs": 0,
+        "next_outcome_counts": {
+          "LOSS": 8,
+          "TIE": 0,
+          "WIN": 17
+        },
+        "original_correct_pairs": 17,
+        "original_wrong_pairs": 8
+      }
+    },
+    "S0_B25_start": {
+      "C25_pair_batched_B25_continuation": {
+        "current_correct_pairs_already_lost": 0,
+        "current_wrong_pairs": 8,
+        "next_adamw_correct_pair_crossings": 2,
+        "next_adamw_wrong_pair_repairs": 0,
+        "next_outcome_counts": {
+          "LOSS": 10,
+          "TIE": 0,
+          "WIN": 15
+        },
+        "original_correct_pairs": 17,
+        "original_wrong_pairs": 8
+      },
+      "R25_pairwise_ranking_beta0p25": {
+        "current_correct_pairs_already_lost": 0,
+        "current_wrong_pairs": 8,
+        "next_adamw_correct_pair_crossings": 0,
+        "next_adamw_wrong_pair_repairs": 8,
+        "next_outcome_counts": {
+          "LOSS": 0,
+          "TIE": 0,
+          "WIN": 25
+        },
+        "original_correct_pairs": 17,
+        "original_wrong_pairs": 8
+      }
+    }
+  },
+  "pair_accounting": {
+    "control_correct_pairs_finite_displacement_crossings": 0,
+    "control_correct_pairs_lost": 5,
+    "control_wrong_pairs_repaired": 8,
+    "original_correct_pairs": 17,
+    "original_wrong_pairs": 8,
+    "ranking_correct_pairs_finite_displacement_crossings": 0,
+    "ranking_correct_pairs_lost": 0,
+    "ranking_wrong_pairs_repaired": 0
+  },
+  "parameter_group_allocation": {
+    "control displacement": {
+      "coarse_block": 0.07009024295599453,
+      "gp_decoder": 0.1995999054451139,
+      "gp_encoder": 0.17959008443872634,
+      "local_blocks": 0.19241190962160643,
+      "node_decoder": 0.10836606910601032,
+      "node_encoder": 0.10033697521227916,
+      "node_fusion": 0.14960481322026917
+    },
+    "mean local Jdiff": {
+      "coarse_block": 6.700367319934381e-07,
+      "gp_decoder": 0.0,
+      "gp_encoder": 6.3584732383640555e-06,
+      "local_blocks": 7.455729053822692e-05,
+      "node_decoder": 0.9999003328320161,
+      "node_encoder": 1.940631084640932e-06,
+      "node_fusion": 1.614073639068971e-05
+    },
+    "ranking displacement": {
+      "coarse_block": 0.11975433990532362,
+      "gp_decoder": 0.10925410842371953,
+      "gp_encoder": 0.24305391949181948,
+      "local_blocks": 0.10863637563266834,
+      "node_decoder": 0.11848099958916679,
+      "node_encoder": 0.060574230452957845,
+      "node_fusion": 0.2402460265043442
+    }
+  },
+  "route": {
+    "action_candidates": [
+      "LOCALISATION_AWARE_OBJECTIVE_PROBE"
+    ],
+    "per_state": {
+      "C500_control": {
+        "adamw_rank_locally_helpful_count": 8,
+        "mechanism_labels": [
+          "RAW_OBSERVABLE_MISMATCH"
+        ],
+        "merged_rank_locally_helpful_count": 0,
+        "projected_rank_locally_helpful_count": 0,
+        "raw_rank_locally_helpful_count": 0,
+        "reasons": {
+          "RAW_OBSERVABLE_MISMATCH": "usable wrong pairs 8/8; raw helpful 0/8"
+        },
+        "usable_wrong_pair_count": 8
+      },
+      "R500_ranking": {
+        "adamw_rank_locally_helpful_count": 8,
+        "mechanism_labels": [
+          "RAW_OBSERVABLE_MISMATCH"
+        ],
+        "merged_rank_locally_helpful_count": 0,
+        "projected_rank_locally_helpful_count": 0,
+        "raw_rank_locally_helpful_count": 0,
+        "reasons": {
+          "RAW_OBSERVABLE_MISMATCH": "usable wrong pairs 8/8; raw helpful 0/8"
+        },
+        "usable_wrong_pair_count": 8
+      },
+      "S0_B25_start": {
+        "adamw_rank_locally_helpful_count": 0,
+        "mechanism_labels": [
+          "RAW_OBSERVABLE_MISMATCH"
+        ],
+        "merged_rank_locally_helpful_count": 0,
+        "projected_rank_locally_helpful_count": 0,
+        "raw_rank_locally_helpful_count": 0,
+        "reasons": {
+          "RAW_OBSERVABLE_MISMATCH": "usable wrong pairs 8/8; raw helpful 0/8"
+        },
+        "usable_wrong_pair_count": 8
+      }
+    },
+    "route": "LOCALISATION_AWARE_OBJECTIVE_PROBE",
+    "selected_action": "LOCALISATION_AWARE_OBJECTIVE_PROBE",
+    "selection_basis": "fixed minimum-change and discriminability priority; not an exclusive causal verdict",
+    "thresholds": {
+      "locally_helpful_cosine_ge": 0.001,
+      "node_decoder_energy_fraction_lt": 0.0001,
+      "usable_relative_contrast_ge": 0.0001
+    }
+  },
+  "run_id": "S09-E012-R001-local-support-sensitivity",
+  "schema_version": "s09-e012-local-support-sensitivity-v1",
+  "status": "COMPLETED",
+  "support": {
+    "definition": "target_damage_increment > 1e-15",
+    "role": "exposed-development diagnostic oracle; not a deployable input",
+    "threshold": 1e-15
+  }
+}
