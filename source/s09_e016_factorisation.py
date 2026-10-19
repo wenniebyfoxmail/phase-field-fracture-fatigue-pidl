@@ -22,6 +22,7 @@ ZERO_AMPLITUDE_TOL = 0.0
 FIELD_VALIDITY_TOL = 1.0e-12
 ROUNDTRIP_RTOL = 64.0 * np.finfo(np.float64).eps
 ROUNDTRIP_ATOL = 0.0
+CLIPPING_EVALUATION_SLACK_FACTOR = 2.0 * np.finfo(np.float64).eps
 SUPPORT_THRESHOLD = 1.0e-15
 
 
@@ -50,6 +51,8 @@ class Factorisation:
     reconstructed_increment: np.ndarray
     residual: np.ndarray
     clipping_residual: np.ndarray
+    clipping_analytic_upper: np.ndarray
+    clipping_roundoff_slack: np.ndarray
     weighted_mean_increment: float
     maximum_increment: float
     positive_node_count: int
@@ -58,7 +61,10 @@ class Factorisation:
     maximum_roundtrip_error: float
     maximum_roundtrip_relative_error: float
     weighted_roundtrip_error: float
+    minimum_clipping_residual: float
     maximum_clipping_residual: float
+    maximum_clipping_analytic_bound: float
+    maximum_clipping_evaluation_slack: float
     clipping_bound_valid: bool
 
 
@@ -84,17 +90,13 @@ def factorise_increment(
     _require(
         np.isfinite(pre).all() and np.isfinite(peak).all(), "nonfinite damage field"
     )
-    _require(
-        capacity_eps >= 0.0 and math.isfinite(capacity_eps), "invalid capacity epsilon"
-    )
+    _require(capacity_eps == CAPACITY_EPS, "capacity epsilon must remain strict zero")
     _require(
         0.0 < fraction_eps < 1.0 and math.isfinite(fraction_eps),
         "invalid fraction epsilon",
     )
-    _require(
-        zero_amplitude_tol >= 0.0 and math.isfinite(zero_amplitude_tol),
-        "invalid zero tolerance",
-    )
+    _require(fraction_eps == FRACTION_EPS, "fraction epsilon contract drift")
+    _require(zero_amplitude_tol == ZERO_AMPLITUDE_TOL, "zero tolerance must be exact")
 
     if (
         float(pre.min()) < -field_validity_tol
@@ -124,11 +126,10 @@ def factorise_increment(
     saturated = int(np.count_nonzero(q >= q_max))
     encoded_increment = capacity * q
     clipping_residual = increment - encoded_increment
-    clipping_bound = capacity * (1.0 - q_max)
-    clipping_bound_with_roundoff = (
-        clipping_bound + 2.0 * np.finfo(np.float64).eps * capacity
-    )
-    clipping_lower_with_roundoff = -2.0 * np.finfo(np.float64).eps * capacity
+    clipping_analytic_upper = capacity * (1.0 - q_max)
+    clipping_roundoff_slack = CLIPPING_EVALUATION_SLACK_FACTOR * capacity
+    clipping_bound_with_roundoff = clipping_analytic_upper + clipping_roundoff_slack
+    clipping_lower_with_roundoff = -clipping_roundoff_slack
     clipping_bound_valid = bool(
         np.all(clipping_residual >= clipping_lower_with_roundoff)
         and np.all(clipping_residual <= clipping_bound_with_roundoff)
@@ -178,6 +179,8 @@ def factorise_increment(
         reconstructed_increment=reconstructed,
         residual=residual,
         clipping_residual=clipping_residual,
+        clipping_analytic_upper=clipping_analytic_upper,
+        clipping_roundoff_slack=clipping_roundoff_slack,
         weighted_mean_increment=float(np.dot(weights, increment)),
         maximum_increment=float(increment.max(initial=0.0)),
         positive_node_count=int(np.count_nonzero(increment > 0.0)),
@@ -186,7 +189,14 @@ def factorise_increment(
         maximum_roundtrip_error=float(np.max(np.abs(residual), initial=0.0)),
         maximum_roundtrip_relative_error=float(relative.max(initial=0.0)),
         weighted_roundtrip_error=float(np.dot(weights, np.abs(residual))),
+        minimum_clipping_residual=float(clipping_residual.min(initial=0.0)),
         maximum_clipping_residual=float(clipping_residual.max(initial=0.0)),
+        maximum_clipping_analytic_bound=float(
+            clipping_analytic_upper.max(initial=0.0)
+        ),
+        maximum_clipping_evaluation_slack=float(
+            clipping_roundoff_slack.max(initial=0.0)
+        ),
         clipping_bound_valid=clipping_bound_valid,
     )
 
@@ -209,15 +219,16 @@ def shape_metrics(
     ref = reference.shape
     pred = candidate.shape
     half_l1 = 0.5 * float(np.dot(weights, np.abs(pred - ref)))
-    numerator = float(np.dot(weights, pred * ref))
-    denominator = math.sqrt(
-        float(np.dot(weights, pred * pred)) * float(np.dot(weights, ref * ref))
-    )
-    cosine = numerator / denominator if denominator > 0.0 else math.nan
+    weighted_pred = np.sqrt(weights) * pred
+    weighted_ref = np.sqrt(weights) * ref
+    weighted_pred /= np.max(np.abs(weighted_pred))
+    weighted_ref /= np.max(np.abs(weighted_ref))
+    denominator = float(np.linalg.norm(weighted_pred) * np.linalg.norm(weighted_ref))
+    cosine = float(np.dot(weighted_pred, weighted_ref) / denominator)
     captured = float(np.dot(weights * mask, pred))
     ref_centroid = np.sum((weights * ref)[:, None] * coordinates, axis=0)
     pred_centroid = np.sum((weights * pred)[:, None] * coordinates, axis=0)
-    return {
+    result = {
         "weighted_half_l1": half_l1,
         "weighted_cosine": cosine,
         "target_support_capture": captured,
@@ -228,6 +239,11 @@ def shape_metrics(
         "candidate_centroid_x": float(pred_centroid[0]),
         "candidate_centroid_y": float(pred_centroid[1]),
     }
+    _require(
+        all(math.isfinite(value) for value in result.values()),
+        "nonfinite shape metric",
+    )
+    return result
 
 
 def support_contrast(
@@ -321,7 +337,7 @@ def numerical_readiness(
         "no_positive_increment_hidden_by_capacity_mask": all(
             item.masked_capacity_positive_count == 0 for item in fem + b25
         ),
-        "all_metrics_finite": all(
+        "all_factorisation_metrics_finite": all(
             math.isfinite(value)
             for item in fem + b25
             for value in (
@@ -331,21 +347,33 @@ def numerical_readiness(
                 item.maximum_roundtrip_error,
                 item.maximum_roundtrip_relative_error,
                 item.weighted_roundtrip_error,
+                item.minimum_clipping_residual,
                 item.maximum_clipping_residual,
+                item.maximum_clipping_analytic_bound,
+                item.maximum_clipping_evaluation_slack,
             )
         ),
         "all_clipping_bounds_valid": all(
             item.clipping_bound_valid for item in fem + b25
         ),
     }
-    ready = all(flags.values())
+    audit_valid = all(
+        value
+        for name, value in flags.items()
+        if name != "at_least_one_fem_shape_target"
+    )
+    shape_target_ready = audit_valid and flags["at_least_one_fem_shape_target"]
+    if not audit_valid:
+        status = "AUDIT_INVALID_REPAIR_FIRST"
+    elif not shape_target_ready:
+        status = "AUDIT_VALID_NO_FEM_SHAPE_TARGET"
+    else:
+        status = "FACTORISATION_READY_FOR_PILOT_CARD"
     return {
-        "ready": ready,
-        "status": (
-            "FACTORISATION_READY_FOR_PILOT_CARD"
-            if ready
-            else "DATA_OR_REPRESENTATION_REPAIR_FIRST"
-        ),
+        "audit_valid": audit_valid,
+        "shape_target_ready": shape_target_ready,
+        "ready": shape_target_ready,
+        "status": status,
         "flags": flags,
         "roundtrip_rtol": roundtrip_rtol,
         "roundtrip_atol": ROUNDTRIP_ATOL,

@@ -27,9 +27,12 @@ sys.path.insert(0, str(ROOT / "source"))
 
 from s09_e016_factorisation import (  # noqa: E402
     CAPACITY_EPS,
+    CLIPPING_EVALUATION_SLACK_FACTOR,
     EXPECTED_CYCLES,
     FIELD_VALIDITY_TOL,
     FRACTION_EPS,
+    GROWTH_CYCLES,
+    NEAR_STAGNANT_CYCLES,
     ROUNDTRIP_ATOL,
     ROUNDTRIP_RTOL,
     SUPPORT_THRESHOLD,
@@ -115,6 +118,11 @@ def _load_a25(path: Path) -> dict[int, dict[str, float]]:
             ),
             "fem_weighted_mean_increment": float(row["true_damage_increment_abs_mean"]),
         }
+        for name, value in values[cycle].items():
+            _require(
+                math.isfinite(value) and value >= 0.0,
+                f"invalid A25 scalar amplitude: cycle {cycle}, {name}",
+            )
     _require(
         tuple(sorted(values)) == tuple(sorted(EXPECTED_CYCLES)),
         "A25 cycle identity drift",
@@ -136,12 +144,12 @@ def _finite_ratio(numerator: float, denominator: float) -> float | None:
 def _finite_log_ratio(numerator: float, denominator: float) -> float | None:
     if numerator <= 0.0 or denominator <= 0.0:
         return None
-    value = math.log(numerator / denominator)
+    value = math.log(numerator) - math.log(denominator)
     return value if math.isfinite(value) else None
 
 
 def _optional_pair_score(values: dict[int, float | None]) -> dict[str, Any]:
-    required = set(EXPECTED_CYCLES)
+    required = set(GROWTH_CYCLES + NEAR_STAGNANT_CYCLES)
     missing = sorted(cycle for cycle in required if values.get(cycle) is None)
     if missing:
         return {
@@ -153,8 +161,70 @@ def _optional_pair_score(values: dict[int, float | None]) -> dict[str, Any]:
     return {"available": True, **score}
 
 
+def _amplitude_scale(fem: list) -> float | None:
+    positive = [item.amplitude for item in fem if item.shape_valid]
+    return float(np.median(positive)) if positive else None
+
+
+def _scaled_hazard(value: float, scale: float | None) -> float | None:
+    if scale is None:
+        return None
+    if value == 0.0:
+        return 0.0
+    log_ratio = math.log(value) - math.log(scale)
+    value = (
+        log_ratio + math.log1p(math.exp(-log_ratio))
+        if log_ratio > 0.0
+        else math.log1p(math.exp(log_ratio))
+    )
+    return value if math.isfinite(value) else None
+
+
+def _set_log_scale_when_positive(axis: Any, series: list[list[float]]) -> None:
+    if any(value > 0.0 for values in series for value in values):
+        axis.set_yscale("log")
+
+
 def _metric_text(value: Any) -> str:
     return "NA" if value is None else f"{float(value):.3f}"
+
+
+def _frozen_fem_support(raw_fem_increment: np.ndarray) -> np.ndarray:
+    """Return the inherited support mask from the raw FEM increment."""
+    return np.asarray(raw_fem_increment, dtype=np.float64) > SUPPORT_THRESHOLD
+
+
+def _validate_saved_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+    with path.open(newline="") as stream:
+        reread_rows = list(csv.DictReader(stream))
+    _require(len(reread_rows) == len(rows), "CSV row count drift")
+    _require(
+        tuple(int(row["cycle"]) for row in reread_rows)
+        == tuple(int(row["cycle"]) for row in rows),
+        "CSV cycle identity drift",
+    )
+    for expected, observed in zip(rows, reread_rows):
+        for key, value in expected.items():
+            rendered_value = "" if value is None else str(value)
+            _require(observed[key] == rendered_value, f"CSV value drift: {key}")
+
+
+def _validate_saved_arrays(path: Path, payload: dict[str, np.ndarray]) -> None:
+    with np.load(path, allow_pickle=False) as saved_arrays:
+        _require(set(saved_arrays.files) == set(payload), "saved array schema drift")
+        _require(
+            all(np.isfinite(saved_arrays[key]).all() for key in payload),
+            "nonfinite saved factorisation array",
+        )
+        _require(
+            all(
+                saved_arrays[key].dtype == value.dtype
+                and saved_arrays[key].shape == value.shape
+                and np.array_equal(saved_arrays[key], value)
+                for key, value in payload.items()
+            ),
+            "saved factorisation array value drift",
+        )
 
 
 def _plot_summary(
@@ -178,7 +248,7 @@ def _plot_summary(
     }
     for label, values in bridge.items():
         ax_bridge.plot(cycles, values, marker="o", linewidth=1.6, label=label)
-    ax_bridge.set_yscale("log")
+    _set_log_scale_when_positive(ax_bridge, list(bridge.values()))
     ax_bridge.set_ylabel(r"weighted mean absolute $\Delta d$")
     ax_bridge.set_title("Same-unit amplitude bridge (A25 is scalar-only evidence)")
     ax_bridge.grid(alpha=0.25)
@@ -190,7 +260,13 @@ def _plot_summary(
     ax_hazard.plot(
         cycles, [item.amplitude for item in b25], marker="o", label="B25 hazard A"
     )
-    ax_hazard.set_yscale("log")
+    _set_log_scale_when_positive(
+        ax_hazard,
+        [
+            [item.amplitude for item in fem],
+            [item.amplitude for item in b25],
+        ],
+    )
     ax_hazard.set_xlabel("cycle")
     ax_hazard.set_ylabel("weighted hazard amplitude A")
     ax_hazard.set_title("Exact factorised amplitude (raw A25 node field unavailable)")
@@ -220,9 +296,12 @@ def _plot_summary(
             ax.set_aspect("equal")
             ax.set_xticks([])
             ax.set_yticks([])
-            ax.set_title(
+            title = (
                 f"cycle {cycle} | {label} normalised shape\n(displayed as S/max(S))"
+                if maximum > 0.0
+                else f"cycle {cycle} | {label} shape undefined\n(zero event sentinel)"
             )
+            ax.set_title(title)
             figure.colorbar(image, ax=ax, fraction=0.046, pad=0.02)
         metric = row_by_cycle[cycle]
         ax_text = figure.add_subplot(grid[plot_row, 2])
@@ -309,9 +388,7 @@ def main() -> None:
         factorise_increment(pre, peak, weights) for pre, peak in zip(d_pre, predicted)
     ]
     readiness = numerical_readiness(fem, b25)
-    positive_fem_amplitudes = [item.amplitude for item in fem if item.shape_valid]
-    _require(positive_fem_amplitudes, "no positive FEM hazard amplitude")
-    amplitude_scale = float(np.median(positive_fem_amplitudes))
+    amplitude_scale = _amplitude_scale(fem)
 
     rows: list[dict[str, Any]] = []
     fem_hazard = {}
@@ -324,7 +401,8 @@ def main() -> None:
     normalised_weight = weights / weights.sum(dtype=np.float64)
     for index, cycle_raw in enumerate(cycles):
         cycle = int(cycle_raw)
-        support = fem[index].increment > SUPPORT_THRESHOLD
+        raw_fem_increment = target[index] - d_pre[index]
+        support = _frozen_fem_support(raw_fem_increment)
         metrics = (
             shape_metrics(fem[index], b25[index], weights, xy, support)
             if fem[index].shape_valid and b25[index].shape_valid
@@ -333,10 +411,12 @@ def main() -> None:
         support_has_both_classes = bool(np.any(support) and np.any(~support))
         if support_has_both_classes:
             fem_local[cycle] = support_contrast(
-                fem[index].increment, fem[index].increment, weights
+                np.maximum(raw_fem_increment, 0.0), raw_fem_increment, weights
             )
             b25_local[cycle] = support_contrast(
-                b25[index].increment, fem[index].increment, weights
+                np.maximum(predicted[index] - d_pre[index], 0.0),
+                raw_fem_increment,
+                weights,
             )
         else:
             fem_local[cycle] = None
@@ -366,11 +446,11 @@ def main() -> None:
                 "b25_hazard_log_ratio": _finite_log_ratio(
                     b25[index].amplitude, fem[index].amplitude
                 ),
-                "fem_log1p_scaled_hazard": math.log1p(
-                    fem[index].amplitude / amplitude_scale
+                "fem_log1p_scaled_hazard": _scaled_hazard(
+                    fem[index].amplitude, amplitude_scale
                 ),
-                "b25_log1p_scaled_hazard": math.log1p(
-                    b25[index].amplitude / amplitude_scale
+                "b25_log1p_scaled_hazard": _scaled_hazard(
+                    b25[index].amplitude, amplitude_scale
                 ),
                 "fem_shape_valid": fem[index].shape_valid,
                 "b25_shape_valid": b25[index].shape_valid,
@@ -413,6 +493,24 @@ def main() -> None:
                 "b25_maximum_saturation_clipping_residual": b25[
                     index
                 ].maximum_clipping_residual,
+                "fem_minimum_saturation_clipping_residual": fem[
+                    index
+                ].minimum_clipping_residual,
+                "b25_minimum_saturation_clipping_residual": b25[
+                    index
+                ].minimum_clipping_residual,
+                "fem_maximum_clipping_analytic_bound": fem[
+                    index
+                ].maximum_clipping_analytic_bound,
+                "b25_maximum_clipping_analytic_bound": b25[
+                    index
+                ].maximum_clipping_analytic_bound,
+                "fem_maximum_clipping_evaluation_slack": fem[
+                    index
+                ].maximum_clipping_evaluation_slack,
+                "b25_maximum_clipping_evaluation_slack": b25[
+                    index
+                ].maximum_clipping_evaluation_slack,
                 "fem_saturated_fraction_nodes": fem[index].saturated_fraction_count,
                 "b25_saturated_fraction_nodes": b25[index].saturated_fraction_count,
                 "b25_shape_na_reason": (
@@ -440,6 +538,35 @@ def main() -> None:
             }
         )
 
+    computed_shape_metric_keys = (
+        "b25_shape_half_l1",
+        "b25_shape_cosine",
+        "b25_target_support_capture",
+        "b25_background_spill",
+        "b25_centroid_offset",
+    )
+    shape_metrics_finite = all(
+        value is None or math.isfinite(float(value))
+        for row in rows
+        for value in (row[key] for key in computed_shape_metric_keys)
+    )
+    readiness["flags"]["all_computed_shape_metrics_finite"] = shape_metrics_finite
+    readiness["audit_valid"] = bool(readiness["audit_valid"] and shape_metrics_finite)
+    readiness["shape_target_ready"] = bool(
+        readiness["audit_valid"]
+        and readiness["flags"]["at_least_one_fem_shape_target"]
+    )
+    readiness["ready"] = readiness["shape_target_ready"]
+    readiness["status"] = (
+        "FACTORISATION_READY_FOR_PILOT_CARD"
+        if readiness["shape_target_ready"]
+        else (
+            "AUDIT_VALID_NO_FEM_SHAPE_TARGET"
+            if readiness["audit_valid"]
+            else "AUDIT_INVALID_REPAIR_FIRST"
+        )
+    )
+
     csv_path = args.output / "factorisation_cycle_table.csv"
     with csv_path.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
@@ -463,30 +590,42 @@ def main() -> None:
     }
 
     arrays_path = args.output / "factorisation_arrays.npz"
-    np.savez_compressed(
-        arrays_path,
-        cycles=cycles,
-        fem_amplitude=np.asarray([item.amplitude for item in fem]),
-        b25_amplitude=np.asarray([item.amplitude for item in b25]),
-        fem_shape=np.stack([item.shape for item in fem]),
-        b25_shape=np.stack([item.shape for item in b25]),
-        fem_source_increment=np.stack([item.increment for item in fem]),
-        b25_source_increment=np.stack([item.increment for item in b25]),
-        fem_encoded_increment=np.stack([item.encoded_increment for item in fem]),
-        b25_encoded_increment=np.stack([item.encoded_increment for item in b25]),
-        fem_reconstructed_increment=np.stack(
+    array_payload = {
+        "cycles": cycles,
+        "fem_amplitude": np.asarray([item.amplitude for item in fem]),
+        "b25_amplitude": np.asarray([item.amplitude for item in b25]),
+        "fem_shape": np.stack([item.shape for item in fem]),
+        "b25_shape": np.stack([item.shape for item in b25]),
+        "fem_source_increment": np.stack([item.increment for item in fem]),
+        "b25_source_increment": np.stack([item.increment for item in b25]),
+        "fem_encoded_increment": np.stack([item.encoded_increment for item in fem]),
+        "b25_encoded_increment": np.stack([item.encoded_increment for item in b25]),
+        "fem_reconstructed_increment": np.stack(
             [item.reconstructed_increment for item in fem]
         ),
-        b25_reconstructed_increment=np.stack(
+        "b25_reconstructed_increment": np.stack(
             [item.reconstructed_increment for item in b25]
         ),
-        fem_residual=np.stack([item.residual for item in fem]),
-        b25_residual=np.stack([item.residual for item in b25]),
-        fem_clipping_residual=np.stack([item.clipping_residual for item in fem]),
-        b25_clipping_residual=np.stack([item.clipping_residual for item in b25]),
-        fem_shape_valid=np.asarray([item.shape_valid for item in fem]),
-        b25_shape_valid=np.asarray([item.shape_valid for item in b25]),
-    )
+        "fem_residual": np.stack([item.residual for item in fem]),
+        "b25_residual": np.stack([item.residual for item in b25]),
+        "fem_clipping_residual": np.stack([item.clipping_residual for item in fem]),
+        "b25_clipping_residual": np.stack([item.clipping_residual for item in b25]),
+        "fem_clipping_analytic_upper": np.stack(
+            [item.clipping_analytic_upper for item in fem]
+        ),
+        "b25_clipping_analytic_upper": np.stack(
+            [item.clipping_analytic_upper for item in b25]
+        ),
+        "fem_clipping_roundoff_slack": np.stack(
+            [item.clipping_roundoff_slack for item in fem]
+        ),
+        "b25_clipping_roundoff_slack": np.stack(
+            [item.clipping_roundoff_slack for item in b25]
+        ),
+        "fem_shape_valid": np.asarray([item.shape_valid for item in fem]),
+        "b25_shape_valid": np.asarray([item.shape_valid for item in b25]),
+    }
+    np.savez_compressed(arrays_path, **array_payload)
 
     figure_path = args.output / "factorisation_readiness.png"
     _plot_summary(figure_path, cycles, xy, fem, b25, a25, rows)
@@ -521,11 +660,12 @@ def main() -> None:
         "median": float(np.median(fem_pairwise)) if fem_pairwise else None,
         "maximum": float(np.max(fem_pairwise)) if fem_pairwise else None,
     }
-    route = (
-        "SEPARATE_AMPLITUDE_AND_SPATIAL_HEADS_WITH_AMPLITUDE_ONLY_ABLATION"
-        if readiness["ready"]
-        else "REPAIR_NUMERICAL_REPRESENTATION_BEFORE_PILOT"
-    )
+    if readiness["shape_target_ready"]:
+        route = "SEPARATE_AMPLITUDE_AND_SPATIAL_HEADS_WITH_AMPLITUDE_ONLY_ABLATION"
+    elif readiness["audit_valid"]:
+        route = "NO_FACTORISED_PILOT_NO_FEM_SHAPE_TARGET"
+    else:
+        route = "REPAIR_NUMERICAL_REPRESENTATION_BEFORE_PILOT"
     decision = {
         "run_id": RUN_ID,
         "analysis_commit": commit,
@@ -542,6 +682,13 @@ def main() -> None:
             "dual-head candidate therefore tests the binding representation hypothesis at "
             "decision scale; amplitude-only is retained as the strong ablation. This route "
             "does not use a post-hoc shape-distance threshold."
+            if readiness["shape_target_ready"]
+            else (
+                "The numerical audit is valid, but there is no nonzero FEM shape target on "
+                "this exposed slice."
+                if readiness["audit_valid"]
+                else "A numerical or data-integrity condition invalidates the audit."
+            )
         ),
         "amplitude_scale_rule": "median positive FEM hazard amplitude on the exposed 16-cycle set",
         "amplitude_scale": amplitude_scale,
@@ -555,6 +702,7 @@ def main() -> None:
             "field_validity_tol": FIELD_VALIDITY_TOL,
             "roundtrip_atol": ROUNDTRIP_ATOL,
             "roundtrip_rtol": ROUNDTRIP_RTOL,
+            "clipping_evaluation_slack_factor": CLIPPING_EVALUATION_SLACK_FACTOR,
             "support_threshold": SUPPORT_THRESHOLD,
         },
         "claim_boundary": (
@@ -565,6 +713,29 @@ def main() -> None:
     }
     _json_dump(args.output / "factorisation_decision.json", decision)
 
+    if readiness["shape_target_ready"]:
+        readiness_sentence = (
+            "The capacity-aware hazard factorisation is numerically ready for an E017 "
+            "pilot card."
+        )
+    elif readiness["audit_valid"]:
+        readiness_sentence = (
+            "The factorisation audit is valid, but the exposed FEM data contain no nonzero "
+            "shape target, so an E017 factorised-head pilot is not prepared."
+        )
+    else:
+        readiness_sentence = (
+            "The factorisation audit is invalid; repair the reported numerical or data "
+            "condition before preparing an E017 pilot card."
+        )
+    route_sentence = (
+        "The recommended decision-scale pilot uses **separate amplitude and spatial heads**, "
+        "with amplitude-only as the strong ablation. This follows the user-authorised "
+        "representation hypothesis and the already measured E015 amplitude-plus-localisation "
+        "bottleneck; it is not selected by a post-hoc E016 shape threshold."
+        if readiness["shape_target_ready"]
+        else "No factorised-head pilot is recommended from this result."
+    )
     decision_md = f"""# S09-E016 factorisation decision
 
 Run: `{RUN_ID}`
@@ -575,9 +746,9 @@ Status: `{readiness['status']}`
 
 ## Decision
 
-The capacity-aware hazard factorisation is numerically ready for an E017 pilot card when the validity record below passes. Zero events remain valid amplitude observations with undefined shape; FEM shape supervision is defined on `C_F`, and B25-vs-FEM shape diagnostics only on `C_J`. Numerical round-trip is checked against the encoded increment with `rtol={ROUNDTRIP_RTOL:.3e}`, `atol=0`; saturation-clipping residual is reported separately.
+{readiness_sentence} Zero events remain valid amplitude observations with undefined shape; FEM shape supervision is defined on `C_F`, and B25-vs-FEM shape diagnostics only on `C_J`. Numerical round-trip is checked against the encoded increment with `rtol={ROUNDTRIP_RTOL:.3e}`, `atol=0`; saturation-clipping residual is reported separately with evaluation slack factor `{CLIPPING_EVALUATION_SLACK_FACTOR:.3e}` times local capacity.
 
-The recommended decision-scale pilot uses **separate amplitude and spatial heads**, with amplitude-only as the strong ablation. This follows the user-authorised representation hypothesis and the already measured E015 amplitude-plus-localisation bottleneck; it is not selected by a post-hoc E016 shape threshold. FEM pairwise shape variation is reported continuously (valid pairs `{fem_pairwise_summary['valid_pair_count']}`, half-L1 min/median/max = `{_metric_text(fem_pairwise_summary['minimum'])}` / `{_metric_text(fem_pairwise_summary['median'])}` / `{_metric_text(fem_pairwise_summary['maximum'])}`).
+{route_sentence} FEM pairwise shape variation is reported continuously (valid pairs `{fem_pairwise_summary['valid_pair_count']}`, half-L1 min/median/max = `{_metric_text(fem_pairwise_summary['minimum'])}` / `{_metric_text(fem_pairwise_summary['median'])}` / `{_metric_text(fem_pairwise_summary['maximum'])}`).
 
 ## What the baseline says
 
@@ -589,10 +760,25 @@ Poor A25/B25 agreement is a measured baseline and does not invalidate the factor
 
 ## Claim boundary and next action
 
-This is exposed-development representation readiness only. It does not establish training success, holdout generalisation, rollout stability, damage stationarity, history complementarity, or physical-teacher truth. Prepare an E017 short-pilot final run card with separate amplitude/spatial objectives, bounded reconstruction, beta=0.25 equilibrium as limited PINO physics, and explicit multi-objective gradient diagnostics. Do not launch training from this result alone.
+This is exposed-development representation readiness only. It does not establish training success, holdout generalisation, rollout stability, damage stationarity, history complementarity, or physical-teacher truth. {"Prepare an E017 short-pilot final run card with separate amplitude/spatial objectives, bounded reconstruction, beta=0.25 equilibrium as limited PINO physics, and explicit multi-objective gradient diagnostics." if readiness['shape_target_ready'] else "Do not prepare the E017 factorised-head pilot from this result."} Do not launch training from this result alone.
 """
     (args.output / "factorisation_decision.md").write_text(decision_md)
 
+    if readiness["shape_target_ready"]:
+        allowed_conclusion = (
+            "the representation is numerically well posed on the 16 exposed cycles, so a "
+            "separate amplitude/spatial-head pilot can be prepared"
+        )
+    elif readiness["audit_valid"]:
+        allowed_conclusion = (
+            "the numerical audit is valid, but this data slice contains no nonzero FEM shape "
+            "target and therefore does not support preparing the factorised-head pilot"
+        )
+    else:
+        allowed_conclusion = (
+            "the reported numerical or data condition makes this audit invalid and must be "
+            "repaired before the factorised-head pilot is prepared"
+        )
     readme = f"""# S09-E016 analysis reading guide
 
 ## Scientific question
@@ -610,11 +796,11 @@ Source fields: `{args.fields}`. A25 scalar evidence: `{args.a25_table}`. Both ar
 
 ## How to read the figure
 
-The first plot is the only direct three-arm amplitude comparison because all three values share the weighted-mean positive-increment unit. The second plot uses the new hazard amplitude and therefore contains FEM and B25 only. Shape panels show weighted-normalised `S`, displayed as `S/max(S)` for legibility; the table retains the exact weighted half-L1, cosine, support capture and centroid metrics.
+The first plot is the only direct three-arm amplitude comparison because all three values share the weighted-mean absolute-increment unit. The second plot uses the new hazard amplitude and therefore contains FEM and B25 only. Shape panels show weighted-normalised `S`, displayed as `S/max(S)` for legibility; zero events are marked as undefined shapes. The table retains the exact weighted half-L1, cosine, support capture and centroid metrics, which use weighted hazard-shape mass rather than physical-increment mass.
 
 ## Allowed and blocked conclusions
 
-Allowed: the representation is numerically well posed on the 16 exposed cycles, and the observed shape variation supports preparing a separate amplitude/spatial-head pilot. Blocked: A25 nodewise shape quality, any training or generalisation claim, rollout stability, and full phase-field physics closure.
+Allowed: {allowed_conclusion}. Blocked: A25 nodewise shape quality, any training or generalisation claim, rollout stability, and full phase-field physics closure.
 
 ## Storyline impact
 
@@ -622,40 +808,27 @@ E016 replaces another loss-weight scan with a representation-level repair: separ
 """
     (args.output / "README_analysis.md").write_text(readme)
 
-    with csv_path.open(newline="") as stream:
-        reread_rows = list(csv.DictReader(stream))
-    _require(len(reread_rows) == len(EXPECTED_CYCLES), "CSV row count drift")
-    _require(
-        tuple(int(row["cycle"]) for row in reread_rows) == EXPECTED_CYCLES,
-        "CSV cycle identity drift",
-    )
+    _validate_saved_csv(csv_path, rows)
     parsed_decision = json.loads((args.output / "factorisation_decision.json").read_text())
-    _require(parsed_decision["readiness"]["ready"] == readiness["ready"], "decision reread drift")
-    with np.load(arrays_path, allow_pickle=False) as saved_arrays:
-        required_arrays = {
-            "cycles",
-            "fem_shape",
-            "b25_shape",
-            "fem_source_increment",
-            "b25_source_increment",
-            "fem_encoded_increment",
-            "b25_encoded_increment",
-            "fem_reconstructed_increment",
-            "b25_reconstructed_increment",
-            "fem_residual",
-            "b25_residual",
-        }
-        _require(required_arrays <= set(saved_arrays.files), "saved array schema drift")
-        _require(
-            all(np.isfinite(saved_arrays[key]).all() for key in required_arrays - {"cycles"}),
-            "nonfinite saved factorisation array",
-        )
+    expected_decision = json.loads(json.dumps(decision, allow_nan=False))
+    _require(parsed_decision == expected_decision, "decision reread drift")
+    _validate_saved_arrays(arrays_path, array_payload)
     rendered = plt.imread(figure_path)
     _require(rendered.size > 0 and np.isfinite(rendered).all(), "invalid rendered figure")
-    _require((args.output / "factorisation_decision.md").stat().st_size > 0, "empty decision")
-    _require((args.output / "README_analysis.md").stat().st_size > 0, "empty reading guide")
+    _require(
+        (args.output / "factorisation_decision.md").read_text() == decision_md,
+        "decision markdown reread drift",
+    )
+    _require(
+        (args.output / "README_analysis.md").read_text() == readme,
+        "reading guide reread drift",
+    )
 
     generated = sorted(path for path in args.output.iterdir() if path.is_file())
+    fields_hash = _sha256(args.fields)
+    a25_hash = _sha256(args.a25_table)
+    _require(fields_hash == EXPECTED_FIELDS_SHA256, "field source drift at closure")
+    _require(a25_hash == EXPECTED_A25_TABLE_SHA256, "A25 source drift at closure")
     receipt = {
         "run_id": RUN_ID,
         "execution_status": "SUCCEEDED",
@@ -664,11 +837,11 @@ E016 replaces another loss-weight scan with a representation-level repair: separ
         "source_files": {
             str(args.fields): {
                 "size": args.fields.stat().st_size,
-                "sha256": _sha256(args.fields),
+                "sha256": fields_hash,
             },
             str(args.a25_table): {
                 "size": args.a25_table.stat().st_size,
-                "sha256": _sha256(args.a25_table),
+                "sha256": a25_hash,
             },
         },
         "generated_file_count_before_receipt": len(generated),
