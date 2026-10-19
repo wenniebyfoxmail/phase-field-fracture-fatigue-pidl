@@ -24,6 +24,8 @@ import torch
 from s09_code_identity import current_commit
 from s09_e009_four_arm import (
     LOSS_ORDER,
+    NORM_EPSILON,
+    _stable_l2_norm,
     atomic_losses,
     flattened_objective_gradients,
     flattened_parameters,
@@ -72,6 +74,7 @@ EXPECTED_BASE_CONFIG_SHA256 = "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f
 EXPECTED_PACKET_MANIFEST_SHA256 = "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6"
 EXPECTED_B25_CHECKPOINT_SHA256 = "24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05"
 EXPECTED_E011_DECISION_SHA256 = "520c2e475cd40a9ebe9d9b8c9c666358ca65fd891766edf248610d1e1889e433"
+EXPECTED_E011_RANKING_CHECKPOINT_SHA256 = "a3f2f83bd2c86f8bc3a455c899ddc5ea0d5e394b8b6f5930950d4e5dbb024c8d"
 EVALUATION_UPDATES = (0, 16, 64, 128, 256, 496, 500)
 EXPECTED_HOSTNAME = "GPUServer8"
 EXPECTED_CUDA_VISIBLE_DEVICES = "5"
@@ -82,8 +85,8 @@ EXPECTED_ARCHIVE_ROOT = "/mnt/data2/drtao/pidl_archives/S09-E013-R001-localisati
 EXPECTED_CODE_ROOT = EXPECTED_REMOTE_ROOT + "/code"
 WALL_TIME_CAP_SECONDS = 3600.0
 # Filled from the canonical files and checked again by the entry point.
-EXPECTED_RUN_CONFIG_SHA256 = "92f3b7d39e89af8190e52561c7cdb210cf5e57bfa72522cf27300d63276ac6dc"
-EXPECTED_PROTOCOL_SHA256 = "2352330a7fd92d61c51feb5932b4a91a125e5e48f0ff763d6ec206c0e2a619ab"
+EXPECTED_RUN_CONFIG_SHA256 = "a901780781038000a5a2b514c4946d44d23dede1ab2d091363f9e87922eceb1e"
+EXPECTED_PROTOCOL_SHA256 = "bd7d8535d39fab8c8ccab8bc99de0df14797d188c9daf4b18f3208f98439e209"
 PRODUCER_FILES = (
     # The complete source tree is a deliberately conservative transitive
     # dependency closure for the runtime/model/physics/evaluator imports.
@@ -382,7 +385,73 @@ def _adamw_displacement(
     return displacement
 
 
-def zero_step_audit(runtime: Any, optimizer: torch.optim.AdamW) -> dict[str, Any]:
+def _classify_zero_step_records(records: list[dict[str, Any]]) -> dict[str, Any]:
+    wrong = [row for row in records if row["initial_local_outcome"] == "LOSS"]
+    correct_global = [row for row in records if row["initial_global_outcome"] == "WIN"]
+    expected_wrong = {
+        (growth, stagnant) for growth in (58, 60, 69, 70) for stagnant in (3, 4)
+    }
+    expected_correct_global = set(PAIR_ORDER) - expected_wrong
+    observed_wrong = {(row["growth_cycle"], row["stagnant_cycle"]) for row in wrong}
+    observed_correct_global = {
+        (row["growth_cycle"], row["stagnant_cycle"]) for row in correct_global
+    }
+    usable_wrong = [row for row in wrong if row["local_contrast_gradient_usable"]]
+    wrong_positive = {
+        arm: sum(row["arms"][arm]["predicted_adamw_local_margin_change"] > 0
+                 for row in wrong)
+        for arm in ARM_ORDER
+    }
+    correct_flips = sum(
+        row["initial_global_margin"]
+        + row["arms"][ARM_LOCAL]["predicted_adamw_global_margin_change"] <= 0
+        for row in correct_global
+    )
+    wrong_rank = [row["arms"][ARM_LOCAL]["predicted_adamw_local_margin_change"]
+                  for row in wrong]
+    wrong_control = [row["arms"][ARM_GLOBAL]["predicted_adamw_local_margin_change"]
+                     for row in wrong]
+    finite = all(math.isfinite(value) for value in wrong_rank + wrong_control)
+    gate = (
+        len(records) == len(PAIR_ORDER)
+        and len(wrong) == 8
+        and len(usable_wrong) == 8
+        and len(correct_global) == 17
+        and observed_wrong == expected_wrong
+        and observed_correct_global == expected_correct_global
+        and wrong_positive[ARM_LOCAL] >= 1
+        and wrong_positive[ARM_LOCAL] > wrong_positive[ARM_GLOBAL]
+        and correct_flips <= 3
+        and finite
+    )
+    return {
+        "passed": gate,
+        "wrong_pair_count": len(wrong),
+        "usable_wrong_local_pair_count": len(usable_wrong),
+        "correct_global_pair_count": len(correct_global),
+        "wrong_local_pair_identity_matches_frozen": observed_wrong == expected_wrong,
+        "correct_global_pair_identity_matches_frozen": (
+            observed_correct_global == expected_correct_global
+        ),
+        "predicted_adamw_increases_wrong_local_margin_count": wrong_positive,
+        "local_arm_predicted_adamw_flips_correct_global_margin_count": int(correct_flips),
+        "wrong_margin_changes_finite": finite,
+        "directional_tier": (
+            "COMPLETE_8_OF_8" if wrong_positive[ARM_LOCAL] == 8 else
+            "STRONG_6_OR_7" if wrong_positive[ARM_LOCAL] >= 6 else
+            "DIRECTIONAL_1_TO_5" if wrong_positive[ARM_LOCAL] >= 1 else "NONE"
+        ),
+        "median_wrong_margin_change": {
+            ARM_GLOBAL: None if not wrong_control else float(np.median(wrong_control)),
+            ARM_LOCAL: None if not wrong_rank else float(np.median(wrong_rank)),
+        },
+    }
+
+
+def zero_step_audit(
+    runtime: Any, optimizer: torch.optim.AdamW, *, deadline: float,
+    progress_stream: io.BufferedWriter | None = None,
+) -> dict[str, Any]:
     cycles = [int(value) for value in runtime.arrays["cycles"].tolist()]
     cycle_to_index = {cycle: index for index, cycle in enumerate(cycles)}
     before_hash = parameter_state_sha256(runtime.model)
@@ -391,6 +460,8 @@ def zero_step_audit(runtime: Any, optimizer: torch.optim.AdamW) -> dict[str, Any
     for growth_cycle, stagnant_cycle in PAIR_ORDER:
         arm_records = {}
         for arm in ARM_ORDER:
+            stage = f"zero_step:{growth_cycle}_{stagnant_cycle}:{arm}"
+            _check_deadline(deadline, f"{stage}:before")
             objectives, global_margin, local_margin, rank_record, _ = _pair_objectives(
                 runtime, cycle_to_index[growth_cycle], cycle_to_index[stagnant_cycle], arm
             )
@@ -410,6 +481,10 @@ def zero_step_audit(runtime: Any, optimizer: torch.optim.AdamW) -> dict[str, Any
             displacement = _adamw_displacement(
                 runtime.model, optimizer, direction, layout["parameter_order"]
             )
+            local_gradient_norm = float(
+                _stable_l2_norm(gradients["local_margin"]).detach().cpu())
+            local_gradient_finite = bool(
+                torch.isfinite(gradients["local_margin"]).all().item())
             arm_records[arm] = {
                 "selected_observable": rank_record["observable"],
                 "initial_global_margin": float(global_margin.detach().cpu()),
@@ -431,8 +506,29 @@ def zero_step_audit(runtime: Any, optimizer: torch.optim.AdamW) -> dict[str, Any
                 ),
                 "direction_norm": float(torch.linalg.vector_norm(direction).cpu()),
                 "rank_projected_norm": diagnostic["rank"]["projected_norm"],
+                "local_margin_gradient_norm": local_gradient_norm,
+                "local_margin_gradient_finite": local_gradient_finite,
+                "local_margin_gradient_usable": (
+                    local_gradient_finite and local_gradient_norm > NORM_EPSILON
+                ),
                 "clip_applied": diagnostic["clip_applied"],
             }
+            if progress_stream is not None:
+                _append_jsonl(progress_stream, {
+                    "growth_cycle": growth_cycle,
+                    "stagnant_cycle": stagnant_cycle,
+                    "arm": arm,
+                    "record": arm_records[arm],
+                })
+            _check_deadline(deadline, f"{stage}:after")
+        _require(math.isclose(
+            arm_records[ARM_GLOBAL]["initial_global_margin"],
+            arm_records[ARM_LOCAL]["initial_global_margin"], rel_tol=0.0, abs_tol=0.0),
+            "arm-specific initial global margin drift")
+        _require(math.isclose(
+            arm_records[ARM_GLOBAL]["initial_local_margin"],
+            arm_records[ARM_LOCAL]["initial_local_margin"], rel_tol=0.0, abs_tol=0.0),
+            "arm-specific initial local margin drift")
         records.append({
             "growth_cycle": growth_cycle,
             "stagnant_cycle": stagnant_cycle,
@@ -440,47 +536,23 @@ def zero_step_audit(runtime: Any, optimizer: torch.optim.AdamW) -> dict[str, Any
             "initial_local_outcome": "WIN" if arm_records[ARM_GLOBAL]["initial_local_margin"] > 0 else "LOSS",
             "initial_global_margin": arm_records[ARM_GLOBAL]["initial_global_margin"],
             "initial_local_margin": arm_records[ARM_GLOBAL]["initial_local_margin"],
+            "local_contrast_gradient_usable": all(
+                arm_records[arm]["local_margin_gradient_usable"] for arm in ARM_ORDER
+            ),
             "arms": arm_records,
         })
-    wrong = [row for row in records if row["initial_local_outcome"] == "LOSS"]
-    correct_global = [row for row in records if row["initial_global_outcome"] == "WIN"]
-    wrong_positive = {arm: sum(row["arms"][arm]["predicted_adamw_local_margin_change"] > 0 for row in wrong) for arm in ARM_ORDER}
-    correct_flips = sum(
-        row["initial_global_margin"] + row["arms"][ARM_LOCAL]["predicted_adamw_global_margin_change"] <= 0
-        for row in correct_global
-    )
-    wrong_rank = [row["arms"][ARM_LOCAL]["predicted_adamw_local_margin_change"] for row in wrong]
-    wrong_control = [row["arms"][ARM_GLOBAL]["predicted_adamw_local_margin_change"] for row in wrong]
-    gate = (
-        len(wrong) == 8
-        and wrong_positive[ARM_LOCAL] >= 1
-        and wrong_positive[ARM_LOCAL] > wrong_positive[ARM_GLOBAL]
-        and correct_flips <= 3
-        and all(math.isfinite(value) for value in wrong_rank + wrong_control)
-    )
+    _check_deadline(deadline, "zero_step:before_admission_publication")
+    summary = _classify_zero_step_records(records)
     _require(parameter_state_sha256(runtime.model) == before_hash,
              "zero-step audit changed model")
     _require(_optimizer_state_sha256(optimizer) == optimizer_hash,
              "zero-step audit changed optimizer")
     return {
-        "status": "ZERO_STEP_DIRECTION_READY" if gate else "ZERO_STEP_DIRECTION_STOP",
-        "passed": gate,
+        "status": "ZERO_STEP_DIRECTION_READY" if summary["passed"] else "ZERO_STEP_DIRECTION_STOP",
+        **summary,
         "optimizer_steps_performed": 0,
         "initial_model_state_sha256": before_hash,
         "initial_optimizer_state_sha256": optimizer_hash,
-        "wrong_pair_count": len(wrong),
-        "correct_global_pair_count": len(correct_global),
-        "predicted_adamw_increases_wrong_local_margin_count": wrong_positive,
-        "local_arm_predicted_adamw_flips_correct_global_margin_count": int(correct_flips),
-        "directional_tier": (
-            "COMPLETE_8_OF_8" if wrong_positive[ARM_LOCAL] == 8 else
-            "STRONG_6_OR_7" if wrong_positive[ARM_LOCAL] >= 6 else
-            "DIRECTIONAL_1_TO_5" if wrong_positive[ARM_LOCAL] >= 1 else "NONE"
-        ),
-        "median_wrong_margin_change": {
-            ARM_GLOBAL: float(np.median(wrong_control)),
-            ARM_LOCAL: float(np.median(wrong_rank)),
-        },
         "records": records,
         "interpretation": (
             "First-order replay of the exact merged/projected direction through the next "
@@ -680,20 +752,25 @@ def _pair_outcomes(rows: list[dict[str, Any]]) -> dict[tuple[int, int], str]:
     return outcomes
 
 
-def _local_support_metrics(runtime: Any) -> dict[str, Any]:
+def _local_support_metrics(
+    fields: Mapping[str, np.ndarray], *, deadline: float, arm: str,
+) -> dict[str, Any]:
     values = {}
     rows = []
-    runtime.model.eval()
     with torch.no_grad():
-        for index, cycle_raw in enumerate(runtime.arrays["cycles"]):
-            _, context = atomic_losses(runtime, index)
+        for index, cycle_raw in enumerate(fields["cycles"]):
+            stage = f"endpoint_local_metrics:{arm}:cycle_{int(cycle_raw)}"
+            _check_deadline(deadline, f"{stage}:before")
             score, record = local_support_score(
-                context["output"]["d_peak"], context["d_pre"],
-                context["target"]["d_peak"], context["output"]["nodal_weight"],
+                torch.as_tensor(fields["predicted_peak"][index], dtype=torch.float64).reshape(-1),
+                torch.as_tensor(fields["d_pre"][index], dtype=torch.float64).reshape(-1),
+                torch.as_tensor(fields["target_peak"][index], dtype=torch.float64).reshape(-1),
+                torch.as_tensor(fields["nodal_weight"], dtype=torch.float64).reshape(-1),
             )
             cycle = int(cycle_raw)
             values[cycle] = float(score.detach().cpu())
             rows.append({"cycle": cycle, **record})
+            _check_deadline(deadline, f"{stage}:after")
     wins = ties = losses = 0
     outcomes = {}
     for growth, stagnant in PAIR_ORDER:
@@ -790,13 +867,85 @@ def _validate_arm_on_disk(result: ArmRunResult) -> ArmRunResult:
     return ArmRunResult(result.arm, arm_dir, receipt, evaluations)
 
 
-def _collect_fields(runtime: Any) -> dict[str, np.ndarray]:
+def _require_nested_exact(left: Any, right: Any, label: str) -> None:
+    if torch.is_tensor(left) or torch.is_tensor(right):
+        _require(torch.is_tensor(left) and torch.is_tensor(right)
+                 and left.dtype == right.dtype and left.shape == right.shape
+                 and torch.equal(left.cpu(), right.cpu()), f"{label} tensor drift")
+    elif isinstance(left, Mapping) or isinstance(right, Mapping):
+        _require(isinstance(left, Mapping) and isinstance(right, Mapping)
+                 and list(left) == list(right), f"{label} mapping drift")
+        for key in left:
+            _require_nested_exact(left[key], right[key], f"{label}.{key}")
+    elif isinstance(left, (list, tuple)) or isinstance(right, (list, tuple)):
+        _require(type(left) is type(right) and len(left) == len(right),
+                 f"{label} sequence drift")
+        for index, (lvalue, rvalue) in enumerate(zip(left, right)):
+            _require_nested_exact(lvalue, rvalue, f"{label}[{index}]")
+    else:
+        _require(type(left) is type(right) and left == right, f"{label} scalar drift")
+
+
+def _verify_global_replay(
+    *, result: ArmRunResult, e011_ranking_checkpoint: Path,
+) -> dict[str, Any]:
+    _require(result.arm == ARM_GLOBAL, "global replay verification arm drift")
+    result = _validate_arm_on_disk(result)
+    _require(sha256_file(e011_ranking_checkpoint) ==
+             EXPECTED_E011_RANKING_CHECKPOINT_SHA256,
+             "E011 ranking checkpoint identity mismatch")
+    observed_path = result.arm_dir / "checkpoint_update500.pt"
+    observed = torch.load(observed_path, map_location="cpu", weights_only=False)
+    reference = torch.load(
+        e011_ranking_checkpoint, map_location="cpu", weights_only=False)
+    _require(reference.get("update") == 500
+             and reference.get("arm") == "R25_pairwise_ranking_beta0p25"
+             and reference.get("source_run") == "S09-E011-R001-objective-only-ranking",
+             "E011 ranking checkpoint semantic drift")
+    _require_nested_exact(observed["model"], reference["model"], "global_replay.model")
+    _require_nested_exact(
+        observed["optimizer"], reference["optimizer"], "global_replay.optimizer")
+    return {
+        "status": "EXACT_E011_REPLAY_CONFIRMED",
+        "model_state_exact": True,
+        "optimizer_state_exact": True,
+        "observed_checkpoint_sha256": sha256_file(observed_path),
+        "reference_checkpoint_sha256": EXPECTED_E011_RANKING_CHECKPOINT_SHA256,
+    }
+
+
+def _e011_reference_summary(decision: Mapping[str, Any]) -> dict[str, Any]:
+    realized = decision.get("realized_pair_changes", {})
+    summary = {
+        "status": decision.get("status"),
+        "continuation_repairs": realized.get("control_repairs_of_initially_wrong"),
+        "continuation_losses": realized.get("control_losses_of_initially_correct"),
+        "ranking_repairs": realized.get("ranking_repairs_of_initially_wrong"),
+        "ranking_losses": realized.get("ranking_losses_of_initially_correct"),
+    }
+    _require(summary["status"] == "NO_REALISED_RANKING_REPAIR"
+             and all(isinstance(summary[name], list) for name in summary if name != "status")
+             and len(summary["continuation_repairs"]) == 8
+             and len(summary["continuation_losses"]) == 5
+             and len(summary["ranking_repairs"]) == 0
+             and len(summary["ranking_losses"]) == 0,
+             "E011 reference result drift")
+    return summary
+
+
+def _collect_fields(
+    runtime: Any, *, deadline: float, arm: str,
+) -> dict[str, np.ndarray]:
     predicted = []
     runtime.model.eval()
     with torch.no_grad():
         for index in range(len(runtime.arrays["cycles"])):
+            cycle = int(runtime.arrays["cycles"][index])
+            stage = f"endpoint_field_replay:{arm}:cycle_{cycle}"
+            _check_deadline(deadline, f"{stage}:before")
             _, context = atomic_losses(runtime, index)
             predicted.append(context["output"]["d_peak"].detach().cpu().numpy())
+            _check_deadline(deadline, f"{stage}:after")
     return {
         "predicted_peak": np.stack(predicted),
         "d_pre": np.asarray(runtime.arrays["d_pre"]),
@@ -807,50 +956,65 @@ def _collect_fields(runtime: Any) -> dict[str, np.ndarray]:
     }
 
 
+def _reconstruct_saved_endpoint(
+    *, result: ArmRunResult, runtime: Any, deadline: float,
+) -> dict[str, np.ndarray]:
+    """Load the validated update-500 checkpoint before any endpoint decision."""
+    arm = result.arm
+    _check_deadline(deadline, f"checkpoint_endpoint_replay:{arm}:before")
+    checkpoint = torch.load(
+        result.arm_dir / "checkpoint_update500.pt",
+        map_location="cpu",
+        weights_only=False,
+    )
+    _require(set(checkpoint) == {"model", "optimizer", "update", "arm", "source_run"}
+             and checkpoint["update"] == UPDATES_PER_ARM
+             and checkpoint["arm"] == arm
+             and checkpoint["source_run"] == RUN_ID,
+             f"checkpoint endpoint-replay structure drift: {arm}")
+    runtime.model.load_state_dict(checkpoint["model"], strict=True)
+    _check_deadline(deadline, f"checkpoint_endpoint_replay:{arm}:loaded")
+    fields = _collect_fields(runtime, deadline=deadline, arm=arm)
+    _check_deadline(deadline, f"checkpoint_endpoint_replay:{arm}:after")
+    return fields
+
+
+def _validate_endpoint_amplitudes(
+    *, fields: Mapping[str, np.ndarray], result: ArmRunResult,
+) -> None:
+    weights = np.asarray(fields["nodal_weight"]).reshape(-1)
+    _require(np.all(np.isfinite(weights)) and np.all(weights >= 0) and weights.sum() > 0,
+             f"field reconstruction weight drift: {result.arm}")
+    reconstructed = []
+    for predicted, pre in zip(fields["predicted_peak"], fields["d_pre"]):
+        increment = np.abs(np.asarray(predicted).reshape(-1) - np.asarray(pre).reshape(-1))
+        _require(len(increment) == len(weights),
+                 f"field reconstruction node-count drift: {result.arm}")
+        reconstructed.append(float(np.dot(increment, weights) / weights.sum()))
+    recorded = [
+        row["predicted_damage_increment_abs_mean"]
+        for row in result.evaluations[500]["per_cycle"]
+    ]
+    _require(np.allclose(reconstructed, recorded, rtol=1e-9, atol=1e-12),
+             f"checkpoint/evaluation amplitude drift: {result.arm}")
+
+
 def _write_required_figures(
     *, output: Path, results: Mapping[str, ArmRunResult],
-    runtimes: Mapping[str, Any], deadline: float,
+    fields: Mapping[str, Mapping[str, np.ndarray]], deadline: float,
 ) -> tuple[str, ...]:
     _check_deadline(deadline, "figures_before")
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fields = {}
-    for arm in ARM_ORDER:
-        runtime = runtimes[arm]
-        device = next(runtime.model.parameters()).device
-        checkpoint = torch.load(
-            results[arm].arm_dir / "checkpoint_update500.pt",
-            map_location=device,
-            weights_only=False,
-        )
-        _require(set(checkpoint) == {"model", "optimizer", "update", "arm", "source_run"},
-                 f"checkpoint field-replay structure drift: {arm}")
-        runtime.model.load_state_dict(checkpoint["model"], strict=True)
-        fields[arm] = _collect_fields(runtime)
     common = fields[ARM_GLOBAL]
     _require(np.array_equal(common["cycles"], fields[ARM_LOCAL]["cycles"]) and
              np.array_equal(common["d_pre"], fields[ARM_LOCAL]["d_pre"]) and
-             np.array_equal(common["target_peak"], fields[ARM_LOCAL]["target_peak"]),
+             np.array_equal(common["target_peak"], fields[ARM_LOCAL]["target_peak"]) and
+             np.array_equal(common["nodal_weight"], fields[ARM_LOCAL]["nodal_weight"]) and
+             np.array_equal(common["xy"], fields[ARM_LOCAL]["xy"]),
              "field reconstruction support drift")
-    weights = np.asarray(common["nodal_weight"]).reshape(-1)
-    _require(np.all(np.isfinite(weights)) and np.all(weights > 0),
-             "field reconstruction weight drift")
-    for arm in ARM_ORDER:
-        reconstructed = []
-        for predicted, pre in zip(fields[arm]["predicted_peak"], common["d_pre"]):
-            increment = np.abs(np.asarray(predicted).reshape(-1) -
-                               np.asarray(pre).reshape(-1))
-            _require(len(increment) == len(weights),
-                     f"field reconstruction node-count drift: {arm}")
-            reconstructed.append(float(np.dot(increment, weights) / weights.sum()))
-        recorded = [
-            row["predicted_damage_increment_abs_mean"]
-            for row in results[arm].evaluations[500]["per_cycle"]
-        ]
-        _require(np.allclose(reconstructed, recorded, rtol=1e-9, atol=1e-12),
-                 f"checkpoint/evaluation amplitude drift: {arm}")
     arrays_path = output / "field_arrays_update500.npz"
     with arrays_path.open("xb") as stream:
         np.savez_compressed(
@@ -891,6 +1055,7 @@ def _write_required_figures(
         len(cycles), 3, figsize=(12, 2.15 * len(cycles)), constrained_layout=True)
     image = None
     for row, cycle in enumerate(cycles):
+        _check_deadline(deadline, f"field_figure:cycle_{cycle}:before")
         for column, (array, title) in enumerate((
             (reference, "FEM reference Δd"),
             (control, "global-amplitude ranking replay Δd"),
@@ -902,6 +1067,7 @@ def _write_required_figures(
                 cmap="viridis", vmin=vmin, vmax=vmax)
             axis.set_title(f"cycle {cycle}: {title}", fontsize=8)
             axis.set_aspect("equal"); axis.set_xticks([]); axis.set_yticks([])
+        _check_deadline(deadline, f"field_figure:cycle_{cycle}:after")
     fig.colorbar(image, ax=axes.ravel().tolist(), shrink=.35,
                  label=f"Δd, shared physical scale [{vmin:.3e}, {vmax:.3e}]")
     fig.savefig(output / "delta_d_fields_all_cycles.png", dpi=150, facecolor="white")
@@ -917,11 +1083,22 @@ def _write_evidence(
     *, output: Path, results: Mapping[str, ArmRunResult],
     runtimes: Mapping[str, Any], zero_audit: Mapping[str, Any],
     environment: Mapping[str, Any], source: Mapping[str, Any], elapsed: float,
-    deadline: float,
+    deadline: float, e011_reference: Mapping[str, Any],
+    replay_verification: Mapping[str, Any],
 ) -> dict[str, Any]:
     _check_deadline(deadline, "shared_evidence_before_validation")
     validated = {arm: _validate_arm_on_disk(results[arm]) for arm in ARM_ORDER}
-    local_metrics = {arm: _local_support_metrics(runtimes[arm]) for arm in ARM_ORDER}
+    fields = {
+        arm: _reconstruct_saved_endpoint(
+            result=validated[arm], runtime=runtimes[arm], deadline=deadline)
+        for arm in ARM_ORDER
+    }
+    for arm in ARM_ORDER:
+        _validate_endpoint_amplitudes(fields=fields[arm], result=validated[arm])
+    local_metrics = {
+        arm: _local_support_metrics(fields[arm], deadline=deadline, arm=arm)
+        for arm in ARM_ORDER
+    }
     final = {}
     for arm in ARM_ORDER:
         final[arm] = dict(validated[arm].evaluations[500]["aggregate"])
@@ -967,6 +1144,18 @@ def _write_evidence(
                     (row["growth_cycle"], row["stagnant_cycle"]) == pair)["initial_local_outcome"] == "LOSS"
             and outcome == "WIN"
         ],
+        "local_arm_losses_of_initially_correct_local": [
+            list(pair) for pair, outcome in local_metrics[ARM_LOCAL]["outcomes"].items()
+            if next(row for row in zero_audit["records"] if
+                    (row["growth_cycle"], row["stagnant_cycle"]) == pair)["initial_local_outcome"] == "WIN"
+            and outcome != "WIN"
+        ],
+        "global_arm_losses_of_initially_correct_local": [
+            list(pair) for pair, outcome in local_metrics[ARM_GLOBAL]["outcomes"].items()
+            if next(row for row in zero_audit["records"] if
+                    (row["growth_cycle"], row["stagnant_cycle"]) == pair)["initial_local_outcome"] == "WIN"
+            and outcome != "WIN"
+        ],
     }
     decision = {
         "schema_version": SCHEMA_VERSION,
@@ -979,24 +1168,28 @@ def _write_evidence(
         "local_support_per_cycle": {
             arm: local_metrics[arm]["rows"] for arm in ARM_ORDER
         },
+        "global_replay_verification": dict(replay_verification),
+        "prior_E011_reference": dict(e011_reference),
         "claim_boundary": (
             "objective-only repair on the same exposed 16-cycle synthetic development "
             "trajectory; no holdout, rollout, transfer, FEM-truth or real-road claim"
         ),
     }
     _write_json(output / "decision_metrics.json", decision)
-    fields = [
+    csv_fields = [
         "arm", "update", "cycle", "group", "predicted_damage_increment_abs_mean",
         "true_damage_increment_abs_mean", "damage_increment_mae", "false_growth",
         "predicted_target_spatial_correlation", "L_judge",
     ]
     with (output / "per_cycle_metrics.csv").open("x", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer = csv.DictWriter(stream, fieldnames=csv_fields)
         writer.writeheader()
         for arm in ARM_ORDER:
             for update in EVALUATION_UPDATES:
                 for row in validated[arm].evaluations[update]["per_cycle"]:
-                    writer.writerow({"arm": arm, **{key: row[key] for key in fields[1:]}})
+                    writer.writerow({"arm": arm, **{
+                        key: row[key] for key in csv_fields[1:]
+                    }})
     with (output / "decision_table.csv").open("x", newline="") as stream:
         fields2 = ["arm", "global_pair_score", "global_AUC", "local_pair_score",
                    "local_AUC", "G", "F", "L_P", "L_judge", "spatial"]
@@ -1015,7 +1208,7 @@ def _write_evidence(
                 "spatial": metrics["spatial"]["primary_median"],
             })
     figure_artifacts = _write_required_figures(
-        output=output, results=validated, runtimes=runtimes, deadline=deadline)
+        output=output, results=validated, fields=fields, deadline=deadline)
     _check_deadline(deadline, "shared_evidence_before_completion")
     completion = {
         "schema_version": SCHEMA_VERSION,
@@ -1032,8 +1225,10 @@ def _write_evidence(
         "arms": {arm: validated[arm].receipt for arm in ARM_ORDER},
         "shared_artifacts": {},
     }
-    for name in ("zero_step_audit.json", "decision_metrics.json", "decision_table.csv",
+    for name in ("zero_step_audit.json", "zero_step_progress.jsonl",
+                 "decision_metrics.json", "decision_table.csv",
                  "per_cycle_metrics.csv", "environment.json", "source_identity.json",
+                 "global_replay_verification.json",
                  *figure_artifacts):
         completion["shared_artifacts"][name] = sha256_file(output / name)
     _check_deadline(deadline, "shared_evidence_after_hashes")
@@ -1042,7 +1237,8 @@ def _write_evidence(
 
 def run_producer(
     *, packet_dir: Path, base_config: Path, initial_checkpoint: Path,
-    e011_decision: Path, output_dir: Path, archive_dir: Path, repo_root: Path,
+    e011_decision: Path, e011_ranking_checkpoint: Path,
+    output_dir: Path, archive_dir: Path, repo_root: Path,
     expected_commit: str, run_config: Path, protocol: Path,
 ) -> dict[str, Any]:
     start = time.time()
@@ -1069,6 +1265,7 @@ def run_producer(
         "base_config_sha256": EXPECTED_BASE_CONFIG_SHA256,
         "source_B25_checkpoint_sha256": EXPECTED_B25_CHECKPOINT_SHA256,
         "source_E011_decision_sha256": EXPECTED_E011_DECISION_SHA256,
+        "source_E011_ranking_checkpoint_sha256": EXPECTED_E011_RANKING_CHECKPOINT_SHA256,
         "run_id": RUN_ID,
     }
     _write_json(output_dir / "source_identity.json", source)
@@ -1080,6 +1277,7 @@ def run_producer(
     })
     results: dict[str, ArmRunResult] = {}
     audit: dict[str, Any] | None = None
+    replay_verification: dict[str, Any] | None = None
     try:
         _check_deadline(deadline, "input_identity_before")
         _require(sha256_file(base_config) == EXPECTED_BASE_CONFIG_SHA256,
@@ -1091,6 +1289,10 @@ def run_producer(
                  "B25 checkpoint identity mismatch")
         _require(sha256_file(e011_decision) == EXPECTED_E011_DECISION_SHA256,
                  "E011 reference identity mismatch")
+        e011_reference = _e011_reference_summary(_load_strict_json(e011_decision))
+        _require(sha256_file(e011_ranking_checkpoint) ==
+                 EXPECTED_E011_RANKING_CHECKPOINT_SHA256,
+                 "E011 ranking checkpoint identity mismatch")
         _check_deadline(deadline, "runtime_build_before")
         device = torch.device("cuda:0")
         runtime = build_runtime(
@@ -1110,7 +1312,11 @@ def run_producer(
         }
         runtimes = {arm: replace(runtime, model=models[arm]) for arm in ARM_ORDER}
         _check_deadline(deadline, "zero_step_before")
-        audit = zero_step_audit(runtimes[ARM_LOCAL], optimizers[ARM_LOCAL])
+        with (output_dir / "zero_step_progress.jsonl").open("xb") as progress_stream:
+            audit = zero_step_audit(
+                runtimes[ARM_LOCAL], optimizers[ARM_LOCAL], deadline=deadline,
+                progress_stream=progress_stream,
+            )
         _write_json(output_dir / "zero_step_audit.json", audit)
         _check_deadline(deadline, "zero_step_after")
         _require(audit["passed"], "ZERO_STEP_DIRECTION_STOP")
@@ -1126,10 +1332,23 @@ def run_producer(
             results[arm] = result
             _require(result.receipt["terminal_state"] == "COMPLETED",
                      f"ARM_EXECUTION_FAILED:{arm}")
+            if arm == ARM_GLOBAL:
+                replay_verification = _verify_global_replay(
+                    result=result,
+                    e011_ranking_checkpoint=e011_ranking_checkpoint,
+                )
+                _write_json(
+                    output_dir / "global_replay_verification.json",
+                    replay_verification,
+                )
+        _require(replay_verification is not None,
+                 "global replay verification missing")
         completion = _write_evidence(
             output=output_dir, results=results, runtimes=runtimes,
             zero_audit=audit, environment=environment, source=source,
             elapsed=time.time() - start, deadline=deadline,
+            e011_reference=e011_reference,
+            replay_verification=replay_verification,
         )
         completion["elapsed_seconds"] = time.time() - start
         _check_deadline(deadline, "archive_success_before")

@@ -1,8 +1,8 @@
 ---
 storyline_id: S09
 experiment_id: S09-E013
-protocol_revision: v1-local-support-ranking-two-arm
-status: code-ready-awaiting-focused-review
+protocol_revision: v2-local-support-ranking-two-arm
+status: revised-code-awaiting-focused-rereview
 primary_storyline: S09
 related_experiments: [S09-E010, S09-E011, S09-E012]
 ---
@@ -54,14 +54,14 @@ input, conditioning channel, inference mask or output correction.
 ## Admission and budget
 
 The read-only zero-step audit performs no optimizer step. Admission requires:
-all eight initially wrong local pairs usable and finite; the actual next-AdamW
+all eight initially wrong local pairs have finite local-contrast gradients above the frozen numerical epsilon; the actual next-AdamW
 local arm improves at least one and strictly more wrong local margins than the
-global replay; no more than three of the 17 initially correct global margins
+global replay; the protected global cohort is exactly 17 pairs and no more than three of those margins
 cross zero. Directional tiers are 1--5, 6--7 and 8 helpful wrong-local pairs.
 
 If admitted, run exactly 500 updates per arm, total cap 1000 and wall cap one
 GPU-hour on Taobo GPU5. No retry, weight/temperature scan, fresh holdout,
-checkpoint selection, architecture change or unused-budget transfer.
+checkpoint selection, architecture change or unused-budget transfer. The global arm must finish with model and AdamW state exactly equal to the frozen E011 ranking checkpoint; otherwise execution stops before the local arm.
 
 ## Result definition
 
@@ -70,8 +70,14 @@ global replay. A gain of at least 4 with `G`, `F`, `L_P` and `L_judge` ratios
 all no greater than 1.10 is a robust local-objective repair tier. All component
 metrics, local/global AUC, per-cycle amplitudes, wrong-pair repairs,
 correct-pair losses and equal-scale fields remain visible even when the primary
-threshold is missed.
+threshold is missed. Endpoint decisions are computed only after strict reload
+of each validated update-500 checkpoint. The same reconstructed fields feed
+the local score, decision, CSV/NPZ evidence and figures.
 
 This run can establish only exposed-state objective fit. It cannot establish
 holdout generalisation, rollout stability, physical-teacher truth, transfer or
 real-road validity.
+
+## Review repair closure
+
+The v2 implementation hard-stops unless the eight wrong local contrasts are all gradient-usable and the global protection cohort contains exactly 17 pairs. It durably records each completed pair/arm audit item, checks the absolute wall deadline before and after every independent pair/arm zero-step collection and every endpoint cycle replay, and publishes READY only after a final deadline check. A saved-checkpoint reconstruction test covers the prior failure mode in which live memory fields could disagree with the checkpoint while retaining the same global amplitude.

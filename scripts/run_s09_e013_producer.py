@@ -20,6 +20,7 @@ def main() -> None:
     parser.add_argument("--base-config", type=Path, required=True)
     parser.add_argument("--initial-checkpoint", type=Path, required=True)
     parser.add_argument("--e011-decision", type=Path, required=True)
+    parser.add_argument("--e011-ranking-checkpoint", type=Path, required=True)
     parser.add_argument("--run-config", type=Path, required=True)
     parser.add_argument("--protocol", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -34,6 +35,7 @@ def main() -> None:
         base_config=args.base_config,
         initial_checkpoint=args.initial_checkpoint,
         e011_decision=args.e011_decision,
+        e011_ranking_checkpoint=args.e011_ranking_checkpoint,
         output_dir=args.output_dir,
         archive_dir=args.archive_dir,
         repo_root=ROOT,

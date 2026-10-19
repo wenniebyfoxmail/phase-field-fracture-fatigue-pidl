@@ -112,6 +112,7 @@ def local_support_score(
     _require(len({tuple(value.shape) for value in tensors}) == 1, "local field shape drift")
     _require(all(torch.isfinite(value).all() for value in tensors), "nonfinite local input")
     _require(math.isfinite(support_threshold) and support_threshold >= 0, "invalid support threshold")
+    _require(torch.all(nodal_weight >= 0).item(), "negative nodal weight")
     support = (target_peak - damage_pre) > support_threshold
     background = ~support
     support_weight = nodal_weight * support.to(nodal_weight.dtype)
