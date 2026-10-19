@@ -14,7 +14,9 @@ def direction(torch, basis, cells, B, weights, rho, gu, gv, scale, bulk, shear,
     gp_count = weights.numel()
     bins = {}
     zero_correction = torch.zeros_like(gradient)
-    signs = (gu[:, :, 0] + gv[:, :, 1]).reshape(-1) < 0
+    trace_all = (gu[:, :, 0] + gv[:, :, 1]).reshape(-1)
+    tensile_branch = trace_all > 0  # EXACT zero belongs to compression tangent.
+    negative_count = int((trace_all < 0).sum())
     zero_count = 0
 
     def qr(matrix):
@@ -80,7 +82,7 @@ def direction(torch, basis, cells, B, weights, rho, gu, gv, scale, bulk, shear,
         gradient_tolerance = config['derivative_abs_tolerance'] + config['derivative_relative_tolerance'] * max(
             float(analytic_gradient.abs().max()), float(gradient.abs().max()))
         record = dict(stage='factor_controls', exact_zero_trace_count=zero_count,
-                      negative_trace_count=int(signs.sum()), gp_count=gp_count,
+                      negative_trace_count=negative_count, gp_count=gp_count,
                       raw_energy_abs_error=abs(analytic_value-value)*scale,
                       analytic_gradient_maxabs_error=gradient_error,
                       analytic_gradient_tolerance=gradient_tolerance,
@@ -143,9 +145,9 @@ def direction(torch, basis, cells, B, weights, rho, gu, gv, scale, bulk, shear,
         slope = float(gradient @ step)
         assert bool(torch.isfinite(step).all()) and slope < 0, 'non-descent Newton direction'
         info = dict(stage='direction_complete', zero_trace_count=zero_count,
-                    negative_trace_count=int(signs.sum()), raw_spectrum=spectrum(eig_raw),
+                    negative_trace_count=negative_count, raw_spectrum=spectrum(eig_raw),
                     equilibrated_spectrum=spectrum(eig_scaled), symmetry_scaled_error=symmetry,
                     linear_residuals=residuals, refinements=refinements, slope=slope,
                     augmented_rhs='root[:776,776]; transformed jointly with A')
         log(info)
-        return step, info, R, rhs, signs
+        return step, info, R, rhs, tensile_branch

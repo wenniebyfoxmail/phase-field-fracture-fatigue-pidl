@@ -270,7 +270,7 @@ def run(contract, out, start):
     assert bool(torch.all((dg >= 0) & (dg <= 1)))
     bulk, shear = mat.mat_lmbda + 2.*mat.mat_mu/3., mat.mat_mu
     last_z, last_value, last_gradient = zero.clone(), initial_value, initial_g.clone()
-    previous_signs = None
+    previous_branches = None
     completed_directions = 0
     stop = 'initial_original_z_stationary'
     optimize_start = elapsed()
@@ -291,13 +291,13 @@ def run(contract, out, start):
                 with torch.no_grad():
                     cu, cv = physical(last_z)
                     gu, gv = q4_gradient(cu, cells, B), q4_gradient(cv, cells, B)
-                step, detail, R, rhs, signs = direction(
+                step, detail, R, rhs, branches = direction(
                     torch, basis, cells, B, weights, rho, gu, gv, scale, bulk, shear,
                     last_value, last_gradient, direction_probe, opt_check,
                     lambda vector: hvp(last_z, vector), log_control, capture_factor, pc)
                 completed_directions += 1
-                detail['branch_sign_changes'] = None if previous_signs is None else int((signs != previous_signs).sum())
-                previous_signs = signs.clone()
+                detail['stiffness_branch_changes'] = None if previous_branches is None else int((branches != previous_branches).sum())
+                previous_branches = branches.clone()
                 log_control(detail)
                 del R, rhs, gu, gv
                 slope = detail['slope']

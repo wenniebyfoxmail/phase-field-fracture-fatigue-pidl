@@ -110,6 +110,11 @@ requires relative gain>=1e-4 AND raw gap>10 times the frozen/reconstruction
 uncertainty. It cannot substitute for stationarity, and stationarity alone does
 not establish that energy witness. No old verdict is overwritten.
 
+Record stiffness_branch_changes using the actual tau>0 mask; exact zero and
+negative trace share the compression branch. Record negative/zero GP counts
+independently, so zero-to-positive changes are included and zero-to-negative
+changes are not falsely counted as stiffness-branch changes.
+
 Preserve paid work ledger, accepted/trial/gradient traces, control errors,
 initial/latest factors, terminal states, guard resource samples and source/input
 identities. On completion retain actual network/basis gradient readouts, fields,
