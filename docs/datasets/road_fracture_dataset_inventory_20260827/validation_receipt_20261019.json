@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-19",
+  "ids_in_order": 18,
+  "notes": 18,
+  "official_snapshots": 18,
+  "missing_links": [],
+  "ambiguous_basenames": [],
+  "historical_files_match": {
+    "dataset_inventory.csv": true,
+    "route_test_audit.csv": true,
+    "report-source.md": true
+  },
+  "image_embeds": 2,
+  "new_raw_sample_pairs": 1,
+  "scientific_qualification": "not upgraded by documentation checks",
+  "new_model_experiments": 0
+}
