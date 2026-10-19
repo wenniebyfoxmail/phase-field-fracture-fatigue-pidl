@@ -1,0 +1,85 @@
+{
+  "verdict": "REVIEW_PASS",
+  "readiness": "DEVELOPMENT_LIBRARY_API_REVIEWED_READY",
+  "review_type": "focused exact-snapshot R1-R4 code rereview",
+  "commit": "a76825eb2fdc750557b5a4c0bb2d542d2ee11c60",
+  "reviewer": "independent Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-19T12:35:32.442799+00:00",
+  "material_manifest": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/hybrid_constrained_design_20261019/implementation_snapshot_v2.json",
+  "manifest_sha256": "990670701f4e9ba805e35b83389db7965b41048b46a216e9b7a550106c4e12cf",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "8ba755546220b30922b26ad2d89080bfe2ec1589cab68fbdb5d682e4692c5d80",
+    "source/hybrid_incremental.py": "773b6a30145f517627c36f058ea56a05f197c1cb9467e882fc85c79cc05ac2da",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tests/test_hybrid_incremental.py": "5a8b24ae0ae1a33c65ea60e593131b8cf4d3a8757f57a9c0509014c8995b4a3e",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/implementation_v2.md": "c07912a3aacde2543935c0e24509fe7bfe24d2548914b256d3fbdfba889e603c",
+    "docs/research/S04/hybrid_constrained_design_20261019/implementation_checks_v2.json": "ccddf638dbed011b658890956d3b028a1acf31d3c14d570b2aaf229f3db6e81b",
+    "docs/research/S04/hybrid_constrained_design_20261019/existing_label_audit_v2.json": "5e71eb0606786974f627fe3adf0ffd053683191733e18171e9a8bc459b28e8c5",
+    "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v2.md": "512d8e8be9cdf1465d8c31bd2d05e61af30f5e8dc573cda7e13544f3a7d69603",
+    "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v2.json": "2be4fa0adf43af2297442b77ca921beb98098dc5f9cf78ac5c8a52732f5ef5ff",
+    "docs/research/S04/hybrid_constrained_design_20261019/design_v1.md": "ca50ad0e4913308165745311ece5ff1226f93b8c5c3b5e17512e7df240531b0d"
+  },
+  "scope": "Supported development library/API correctness plus corrected inventory/budget documentation. Reuse unchanged v1 core/design findings; no producer execution or scientific validity approval.",
+  "decisive_blockers": [],
+  "resolved_findings": [
+    {
+      "id": "R1",
+      "status": "resolved",
+      "location": "source/hybrid_incremental.py:216",
+      "evidence": "DOFs are first converted to int64, then passed via immutable bytes-backed int64 view. New indexing test asserts dtype/read-only and actually indexes u[dofs]."
+    },
+    {
+      "id": "R2",
+      "status": "resolved",
+      "location": "source/hybrid_incremental.py:186-190,206-227,277-279",
+      "evidence": "Nonempty string model identity is required before common mechanics; None/empty/non-string negative tests assert no work. Receipt distinguishes attempted_model_id, actual model_id and initialization_source, including NN_OFF after fallback with attempted identity retained."
+    },
+    {
+      "id": "R3",
+      "status": "resolved",
+      "location": "validation_budget_v2.md/json",
+      "evidence": "Explicit GPU-host12wall/192core-hour allowance;120numerical+4setup+12host=136wall hours,1920+64+192=2176core hours. One shared <=16core pool;GPU remains12h. Unprofiled, unapproved and hard-watchdog/capacity limits remain explicit."
+    },
+    {
+      "id": "R4",
+      "status": "resolved",
+      "location": "tools/audit_hybrid_labels.py:62-67,existing_label_audit_v2.json",
+      "evidence": "Generator/CLI/JSON now say5candidate transitions,1seen sequence,0certified labels,0qualified complete trajectories. All five old audit rows are unchanged; no arrays re-read or silent recertification."
+    }
+  ],
+  "checks": {
+    "snapshot_clean_before_review": true,
+    "manifest_files_checked_against_worktree_and_exact_commit": 17,
+    "unchanged_core_design_file_hashes_confirmed": 7,
+    "audit_rows_unchanged": true,
+    "command": "PYTHONPATH=source:. /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python -m pytest -q tests/test_hybrid_incremental.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py",
+    "result": "33 passed in0.63s; exit0",
+    "scientific_precision_changes": false
+  },
+  "carry_forward": [
+    "design_v1.md/review_v1.json: coherent constrained incremental/fixed-f-plus-fatigue-map framework, explicit stronger nodal feasible domain and strong matched direct-FEM/classical comparator.",
+    "code_review_v1.json: nodalK/fixed elimination/active release, Gc/ell/thickness, final same-u/d/f fresh KKT/force, immutable accepted-based history, proposal/CAS/unknown-outcome semantics checked without additional decisive core findings."
+  ],
+  "not_executed": [
+    "No new scientific or holdout array read",
+    "No model/checkpoint load or training",
+    "No new project FEM/scientific solve",
+    "No SSH/GPU/producer or new inventory scan"
+  ],
+  "not_producer_ready": [
+    "No authorized execution card or reviewed producer runner yet.",
+    "Need exact admissible state0/mesh/load/splits, native operator parity and physical residual/scientific criterion scales.",
+    "Need actual CPU/GPU/RAM/storage capacity admission, external hard watchdog, complete cost runner and durable uncertain-commit/crash-lock recovery.",
+    "Zero certified new-backend labels and no qualified trained model; metadata attestations and random structural forwards are not label/model qualification.",
+    "Current support remains displacement-control/no body force or traction/eta0 reject-on-degeneracy.",
+    "No demonstrated full-trajectory numerical convergence, FEM agreement, speedup, generalization or physical-teacher status."
+  ],
+  "conclusion": "All four v1 review findings are resolved. Exact a76825eb development library/API is reviewed ready within its declared supported contract. This does not authorize training/new FEM/producer execution or establish scientific improvement."
+}

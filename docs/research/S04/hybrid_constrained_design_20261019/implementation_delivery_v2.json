@@ -1,0 +1,40 @@
+{
+  "schema": "hybrid-implementation-delivery-v2",
+  "date": "2026-10-19",
+  "goal": "substantive PIDL/FEM agreement through complete constrained hybrid method",
+  "reviewed_code_commit": "a76825eb2fdc750557b5a4c0bb2d542d2ee11c60",
+  "readiness": "DEVELOPMENT_LIBRARY_API_REVIEWED_READY",
+  "producer_ready": false,
+  "review_receipt_sha256": "146a6963d4152df0ae0a538643e62cfb19e405933d363c0dd873a14bc07093ce",
+  "implemented": [
+    "nodal constrained Q4 damage solve",
+    "full mechanical/damage/fatigue coupled audit",
+    "immutable accepted/trial Carrara history",
+    "durable versioned state transactions",
+    "native mesh/ell graph frozen network interface",
+    "seen-data candidate audit"
+  ],
+  "unit_checks_passed": 33,
+  "seen_c1_candidates": 5,
+  "certified_new_framework_labels": 0,
+  "training_updates": 0,
+  "new_project_fem_solves": 0,
+  "gpu_hours_used": 0,
+  "heldout_reads": 0,
+  "future_budget": {
+    "status": "proposal_only",
+    "gpu_hours_cap": 12,
+    "cpu_wall_hours_cap": 136,
+    "cpu_core_hours_cap": 2176,
+    "cpu_core_pool_cap": 16,
+    "primary_storage_gib_cap": 128,
+    "archive_storage_gib_cap": 128
+  },
+  "remaining_for_execution": [
+    "qualified labels/model and exact state/load/operator parity",
+    "frozen scientific criterion and physical normalization",
+    "producer hardware capacity, watchdog/recovery/cost runner",
+    "exact producer snapshot review and user execution authorization"
+  ],
+  "scope": "Current implementation/review/budget task complete; scientific execution not authorized."
+}
