@@ -30,6 +30,11 @@ def physical_gpu(info,cfg):
     return gpu
 
 
+def logical_gpu(torch,cfg):
+    if torch.cuda.device_count()!=1 or torch.cuda.get_device_name(0)!=cfg['producer']['gpu_name']:raise ValueError('logical GPU mapping')
+    if getattr(torch.cuda.get_device_properties(0),'uuid',None)!=placement(cfg)['gpu_uuid']:raise ValueError('logical GPU UUID mapping')
+
+
 def production_checks(cfg,guard,desktop_inventory,sha):
     production_environment(cfg)
     ps_script="Get-CimInstance Win32_Process|Where-Object {$_.Name -like 'python*'}|Select-Object ProcessId,CommandLine|ConvertTo-Json -Compress"
@@ -48,6 +53,6 @@ def production_checks(cfg,guard,desktop_inventory,sha):
     torch.set_num_threads(1);torch.set_float32_matmul_precision('highest')
     torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
     torch.backends.cudnn.benchmark=False;torch.backends.cudnn.deterministic=True
-    if torch.cuda.device_count()!=1 or torch.cuda.get_device_name(0)!=cfg['producer']['gpu_name']:raise ValueError('logical GPU mapping')
+    logical_gpu(torch,cfg)
     guard.gpu=lambda:(torch.cuda.max_memory_allocated(0),torch.cuda.max_memory_reserved(0));guard.check()
     return torch,dict(hostname=socket.gethostname(),account=subprocess.check_output(['whoami'],text=True).strip(),pid=os.getpid(),torch=torch.__version__,torchvision=torchvision.__version__,physical_GPU=gpu,CUDA_VISIBLE_DEVICES=os.environ['CUDA_VISIBLE_DEVICES'],logical_GPU=0,desktop_baseline_sha256=sha(baseline_path),desktop=desktop)
