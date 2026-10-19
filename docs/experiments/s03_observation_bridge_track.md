@@ -393,3 +393,20 @@ Anytexturecancellationorlocalisablestructureiscomponentprogress;inseparable
 texturemeansmeasurementinterfacegapandpauseMD03predictorcomparison,noglobal
 routefailure. D01owner/geometrypredictionuntouched. Nopixelsread,numerics,
 inference,registration,downloads,runsorreviewsperformedbythisrecordupdate.
+
+### D3 residual component executed — 2026-10-19
+
+Userapprovedexactcard,clean21d4b414,R0011.870swall/1.770sCPU. Savedmatrices,
+3sameimages,nofits/segmentation/forecastcomparison. Samevalid180000pixels/pair:
+89→132raw/compMAE6.31617/6.79278gray(+7.55%);132→17513.93984/8.85141
+(−36.50%). Renderwholebandfixed±255: dispersedtextureremains,noreliably
+separatednew/openingcrack. Partialmotion-explanationretained;pauseMD03
+predictorcomparison,notglobalroutefailure.425oldhashesunchanged;separate
+array/matrix/441pointinterpolationauditandPNG/sidecarQAcomplete. Evidence:
+parentlocal_archive/experiments/S03-E049-MD03/D3_20261019/README_analysis.md.
+ActiveD3now[observability grouped proposal](../research/S03/S03-E049-MD03/results.md):
+oldobserver/globalmotion/texture-correspondenceandopening-evidence, nuisance
+negative/structure-preservationpositivecontrolsandreal-imagecorrespondence,
+samefixedsupport;89/132design,175exposeddevelopment. Onlyplanned,notexecuted;
+ifrealopeningunidentifiable,identifyneededlocalindependentopening/DICevidence
+orproposeobservationredirectratherthanthresholdmicrorepairs. D01untouched.
