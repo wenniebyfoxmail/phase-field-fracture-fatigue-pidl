@@ -1,8 +1,16 @@
 # S09-E016 factorised damage-increment readiness audit
 
-Status: `DESIGN_READY_IMPLEMENTATION_AWAITING_EXACT_REVIEW_NO_EXECUTION`
+Status: `COMPLETED__FACTORISATION_READY_FOR_PILOT_CARD`
 
 Protocol revision: `v2-strict-zero-effective-increment`.
+
+Execution closure: the exact implementation at commit
+`f9db7db49dee5d88914a2ea22e38a2c9249b3a48` received
+`E016_IMPLEMENTATION_READY_PASS`, and the no-training run
+`S09-E016-R001-factorisation-readiness` received
+`E016_RESULT_REVIEW_PASS`. The run used zero optimiser steps, zero model
+forwards and no new-data access. This closes only factorisation readiness; it
+does not authorise or establish E017 training success.
 
 Primary storyline: S09 Neural Operator fracture-development representation.
 
