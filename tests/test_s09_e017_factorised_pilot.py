@@ -1,7 +1,10 @@
 from collections import OrderedDict
+import math
 
 import pytest
 import torch
+
+import s09_e017_factorised_pilot as core
 
 from s09_e017_factorised_pilot import (
     ACTIVE_GROUPS,
@@ -98,6 +101,29 @@ def test_zero_effective_field_has_defined_amplitude_and_undefined_shape():
     assert decision == (1.0,) * 6
 
 
+def test_positive_increment_cannot_underflow_to_legal_zero_event():
+    tiny = torch.nextafter(f64(0.0), f64(1.0))
+    with pytest.raises(ValueError, match="positive event lost"):
+        effective_factorisation(f64([0.0, 0.0]), f64([tiny, 0.0]), f64([1.0, 1.0]))
+
+
+def test_positive_amplitude_requires_weight_normalised_effective_shape():
+    tiny = torch.nextafter(f64(0.0), f64(1.0))
+    with pytest.raises(ValueError, match="weighted shape normalisation drift"):
+        effective_factorisation(
+            f64([0.0, 0.0]), f64([2.0 * tiny, 0.0]), f64([2.0, 1.0])
+        )
+
+
+def test_ordinary_tiny_positive_event_still_round_trips():
+    amplitude, shape, valid = effective_factorisation(
+        f64([0.0, 0.0]), f64([1.0e-300, 0.0]), f64([1.0, 1.0])
+    )
+    assert valid
+    assert amplitude.item() > 0.0
+    assert torch.dot(f64([0.5, 0.5]), shape).item() == pytest.approx(1.0)
+
+
 def test_amplitude_objective_preserves_signed_reverse_pair():
     target = f64([1.0, 3.0])
     predicted_good = f64([1.0, 3.0])
@@ -118,6 +144,13 @@ def test_objective_helpers_are_finite_and_zero_at_exact_match():
     fields = f64([[0.1, 0.0], [0.0, 0.2]])
     reconstruction = reconstruction_objective(fields, fields, weights, f64([0.1, 0.2]))
     assert reconstruction.item() == 0.0
+
+
+def test_objective_helpers_reject_derived_nonfinite_values():
+    with pytest.raises(ValueError, match="nonfinite reconstruction objective"):
+        reconstruction_objective(f64([[1.0]]), f64([[0.0]]), f64([1.0]), f64([1e-200]))
+    with pytest.raises(ValueError, match="nonfinite amplitude decision error"):
+        decision_amplitude_error(f64([1.0]), f64([1.0]), 1e-320)
 
 
 def test_pcgrad_keeps_beta_after_scale_normalisation_and_uses_active_mean():
@@ -177,12 +210,23 @@ def test_pcgrad_projects_conflict_and_skips_near_zero_reference():
         )
 
 
+def test_gradient_geometry_overflow_fails_closed_before_clipping():
+    gradients = OrderedDict(
+        (name, f64([1e200, 0.0])) for name in ("A", "R", "P")
+    )
+    with pytest.raises(ValueError, match="nonfinite frozen gradient norm"):
+        freeze_gradient_scales(gradients)
+    scales = OrderedDict((name, 1.0) for name in gradients)
+    with pytest.raises(ValueError, match="nonfinite PCGrad pairwise geometry"):
+        pcgrad_merge(gradients, scales, seed=0, update=0)
+
+
 def _errors():
     template = {
         "A": (2.0, 5.0),
         "S": (0.0, 0.8, 0.8, 0.8, 0.8, 0.8),
         "R": (2.0, 2.0),
-        "P": (2.0, 2.0),
+        "P": (2.0, 2.0, 2.0, 2.0),
     }
     return OrderedDict(
         (
@@ -206,6 +250,53 @@ def test_all_tie_is_no_separation_not_mixed_tradeoff():
     assert flags["VALID_NO_HEAD_SEPARATION"]
     assert not flags["VALID_MIXED_TRADEOFF"]
     assert not flags["INVALID_EXECUTION"]
+
+
+def test_float64_tie_comparator_uses_explicit_difference():
+    right = 1.0 + 1.0e-12
+    assert abs(1.0 - right) > 1.0e-12
+    assert core._signs((1.0,), (right,), set()) == (-1,)
+    assert core._signs((right,), (1.0,), set()) == (1,)
+    adjacent = math.nextafter(1.0, math.inf)
+    assert core._signs((1.0,), (adjacent,), set()) == (0,)
+
+
+def test_float64_boundary_profile_does_not_create_factorisation_signal():
+    errors = _errors()
+    errors[ARM_DIRECT][0]["A"] = errors[ARM_DIRECT][64]["A"] = (1.0, 5.0)
+    errors[ARM_AMPLITUDE][0]["A"] = errors[ARM_AMPLITUDE][64]["A"] = (1.0, 5.0)
+    errors[ARM_AMPLITUDE_SHAPE][0]["A"] = (1.0 + 3.0e-12, 5.0)
+    errors[ARM_AMPLITUDE_SHAPE][64]["A"] = (1.0 + 1.0e-12, 5.0)
+    errors[ARM_AMPLITUDE_SHAPE][0]["S"] = (0.0, 0.8, 0.8, 0.8, 0.8, 0.8)
+    errors[ARM_AMPLITUDE_SHAPE][64]["S"] = (0.0, 0.7, 0.7, 0.7, 0.7, 0.7)
+    flags = classify_profiles(errors, execution_valid=True)
+    assert not flags["VALID_FACTORISATION_SIGNAL"]
+    assert not flags["VALID_SHAPE_OBJECTIVE_SIGNAL"]
+    assert flags["VALID_NO_HEAD_SEPARATION"]
+
+
+def test_classifier_rejects_missing_protected_component():
+    errors = _errors()
+    errors[ARM_AMPLITUDE_SHAPE][64]["P"] = (2.0, 2.0, 3.0, 2.0)
+    for arm in errors:
+        for update in (0, 64):
+            errors[arm][update]["P"] = errors[arm][update]["P"][:2]
+    with pytest.raises(ValueError, match="metric component width drift: P"):
+        classify_profiles(errors, execution_valid=True)
+
+
+@pytest.mark.parametrize(
+    ("group", "value"),
+    (("A", 0.5), ("A", -1.0), ("A", 26.0), ("S", 0.5), ("S", 17.0)),
+)
+def test_classifier_rejects_impossible_discrete_counts(group, value):
+    errors = _errors()
+    component = 1 if group == "A" else 0
+    values = list(errors[ARM_DIRECT][0][group])
+    values[component] = value
+    errors[ARM_DIRECT][0][group] = tuple(values)
+    with pytest.raises(ValueError, match="decision count"):
+        classify_profiles(errors, execution_valid=True)
 
 
 def test_crossed_change_gap_is_mixed_tradeoff():

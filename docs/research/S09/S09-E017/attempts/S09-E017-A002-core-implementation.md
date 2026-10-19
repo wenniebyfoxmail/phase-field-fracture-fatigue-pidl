@@ -17,19 +17,19 @@ E017 is design-ready, but no independently reviewed numerical core exists.
 
 ## GPT Pro Advice
 - Required: True
-- Advice path: `/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012/docs/research/S09/S09-E017/design_review_round2_20261019.md`
-- Advice sha256: `b83a7341f40af74fbd6adb9f805d53730d682b003882f71fa181b0000b516d44`
+- Advice path: `/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012/docs/research/S09/S09-E017/core_review_round1_20261019.md`
+- Advice sha256: `46a273cd1d07582ed348a127e6908276cee56e4166d95e0a296651348e6b0f03`
 
-E017_DESIGN_READY_PASS bound to commit 07b66e1d after closing all-tie mixed-tradeoff and zero-amplitude decision counterexamples.
+E017_CORE_CODE_REVISE bound to 0fa5ca33: repair tie arithmetic, A2/S6/R2/P4 evidence validation, strict-zero factorisation postconditions and derived nonfinite checks; design remains closed.
 
 ## Adopted Decision
-Implement and review only the reusable float64 numerical core before any neural-operator integration.
+Adopt all four minimal implementation repairs and add the supplied counterexamples as regressions.
 
 ## Rejected Or Modified Advice
-No design-review finding was rejected; implementation-specific choices are exposed in the review request.
+No blocking advice rejected. The reviewer NumPy counterexample using the minimum subnormal and weights [2,1] becomes a strict-zero underflow in native Torch; the native regression therefore uses the minimum subnormal for lost-positive detection and twice that value for non-normalised positive-amplitude shape detection.
 
 ## Decision Rationale
-This is the smallest layer that can verify the factorised decoder, multi-objective arithmetic and graded classifier while keeping execution and scientific claims closed.
+Each finding demonstrates an implementation path that could change a graded verdict or return invalid arithmetic while leaving the approved scientific design unchanged.
 
 ## Success Criteria
 - The exact pure core matches the reviewed design
@@ -50,6 +50,9 @@ This is the smallest layer that can verify the factorised decoder, multi-objecti
 - add: `tests/test_s09_e017_factorised_pilot.py` - Add deterministic constraint, objective, gradient and decision regressions
 - add: `docs/research/S09/S09-E017/core_implementation_status_20261019.md` - Record purpose, verification, limitations and open review points
 - add: `docs/research/S09/S09-E017/core_review_request_20261019.md` - Freeze exact core-review questions and authority boundary
+- modify: `source/s09_e017_factorised_pilot.py` - Close B1-B4 with exact comparator, schema/count checks, E016 factorisation postconditions and finite derived-arithmetic guards
+- modify: `tests/test_s09_e017_factorised_pilot.py` - Add complete tie profile, malformed evidence, subnormal factorisation and overflow regressions
+- add: `docs/research/S09/S09-E017/core_review_round1_20261019.md` - Persist exact-commit review evidence and accepted repair scope
 
 ## Input Assets
 - `docs/research/S09/S09-E017/first_principles_pilot_card_draft_20261019.md` (design-approved protocol; exists)
@@ -63,6 +66,8 @@ This is the smallest layer that can verify the factorised decoder, multi-objecti
 ## Tests
 - pass: factorised core and inherited E016 regressions - 36 passed in 0.57s; seed sensitivity, decoder bounds, round trip, zero semantics, objectives, PCGrad geometry and classifier edges pass.
 - pass: static checks - Syntax, lint and whitespace checks passed.
+- pass: revised factorised core and inherited E016 regressions - 49 passed in 0.58s; all four review counterexample families now fail closed or classify under the frozen rule.
+- pass: revised static checks - Syntax, Ruff and whitespace checks passed after B1-B4 repairs.
 
 ## Result Interpretation
 Not recorded.

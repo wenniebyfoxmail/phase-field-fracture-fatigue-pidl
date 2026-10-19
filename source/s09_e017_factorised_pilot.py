@@ -33,6 +33,8 @@ GLOBAL_CLIP_NORM = 1.0
 FLOAT64_EPSILON = torch.finfo(torch.float64).eps
 
 DISCRETE_COMPONENTS = {"A": (1,), "S": (0,), "R": (), "P": ()}
+GROUP_COMPONENT_COUNTS = {"A": 2, "S": 6, "R": 2, "P": 4}
+ROUNDTRIP_RTOL = 64.0 * FLOAT64_EPSILON
 
 
 def _require(condition: bool, message: str) -> None:
@@ -214,10 +216,39 @@ def effective_factorisation(
         torch.isfinite(amplitude).item() and amplitude >= 0,
         "invalid effective amplitude",
     )
+    positive_event = bool(torch.any(delta > 0).detach().cpu())
     valid = bool(amplitude.detach().cpu() > 0)
-    shape = hazard / amplitude if valid else torch.zeros_like(hazard)
-    if valid:
-        _require(torch.isfinite(shape).all().item(), "invalid effective shape")
+    if not valid:
+        _require(not positive_event, "positive event lost by numerical factorisation")
+        shape = torch.zeros_like(hazard)
+    else:
+        shape = hazard / amplitude
+        _require(
+            torch.isfinite(shape).all().item() and torch.all(shape >= 0).item(),
+            "invalid effective shape",
+        )
+        shape_mass = torch.dot(weights, shape)
+        _require(
+            torch.isfinite(shape_mass).item()
+            and torch.abs(shape_mass - 1.0) <= ROUNDTRIP_RTOL,
+            "weighted shape normalisation drift",
+        )
+
+    reconstructed = capacity * (-torch.expm1(-amplitude * shape))
+    encoded = capacity * q
+    residual = reconstructed - encoded
+    positive_encoded = encoded > 0
+    _require(
+        torch.all(residual[~positive_encoded] == 0).item(),
+        "zero encoded increment did not round trip exactly",
+    )
+    if positive_encoded.any():
+        relative = torch.abs(residual[positive_encoded]) / encoded[positive_encoded]
+        _require(
+            torch.isfinite(relative).all().item()
+            and torch.all(relative <= ROUNDTRIP_RTOL).item(),
+            "effective factorisation round-trip drift",
+        )
     return amplitude, shape, valid
 
 
@@ -303,7 +334,9 @@ def reconstruction_objective(
     weights = normalised_weights(nodal_weight)
     _require(weights.shape == (predicted_increment.shape[1],), "weight shape drift")
     error = (predicted_increment - target_increment) / scales[:, None]
-    return (error.square() * weights[None, :]).sum(dim=1).mean()
+    value = (error.square() * weights[None, :]).sum(dim=1).mean()
+    _require(torch.isfinite(value).item(), "nonfinite reconstruction objective")
+    return value
 
 
 def freeze_gradient_scales(
@@ -323,7 +356,9 @@ def freeze_gradient_scales(
     scales: OrderedDict[str, float] = OrderedDict()
     zero_scale: dict[str, bool] = {}
     for name, value in gradients.items():
-        norm = float(torch.linalg.vector_norm(value).detach().cpu())
+        norm_tensor = torch.linalg.vector_norm(value)
+        _require(torch.isfinite(norm_tensor).item(), "nonfinite frozen gradient norm")
+        norm = float(norm_tensor.detach().cpu())
         zero = norm <= epsilon
         scales[name] = 1.0 if zero else norm
         zero_scale[name] = zero
@@ -364,7 +399,9 @@ def pcgrad_merge(
     for name, gradient in gradients.items():
         scale = float(scales[name])
         _require(math.isfinite(scale) and scale > 0, "invalid frozen gradient scale")
-        scaled[name] = GROUP_WEIGHTS[name] * gradient / scale
+        scaled_value = GROUP_WEIGHTS[name] * gradient / scale
+        _require(torch.isfinite(scaled_value).all().item(), "nonfinite scaled gradient")
+        scaled[name] = scaled_value
 
     pairwise: list[dict[str, Any]] = []
     for first_index, first_name in enumerate(names):
@@ -374,9 +411,15 @@ def pcgrad_merge(
                 first = collection[first_name]
                 second = collection[second_name]
                 dot = torch.dot(first, second)
-                denominator = (
-                    torch.linalg.vector_norm(first)
-                    * torch.linalg.vector_norm(second)
+                first_norm = torch.linalg.vector_norm(first)
+                second_norm = torch.linalg.vector_norm(second)
+                denominator = first_norm * second_norm
+                _require(
+                    torch.isfinite(dot).item()
+                    and torch.isfinite(first_norm).item()
+                    and torch.isfinite(second_norm).item()
+                    and torch.isfinite(denominator).item(),
+                    "nonfinite PCGrad pairwise geometry",
                 )
                 cosine = (
                     None
@@ -402,11 +445,23 @@ def pcgrad_merge(
                 continue
             reference = scaled[reference_name]
             denominator = torch.dot(reference, reference)
+            _require(
+                torch.isfinite(denominator).item(),
+                "nonfinite PCGrad projection geometry",
+            )
             skipped = bool(torch.sqrt(denominator).detach().cpu() <= epsilon)
             dot_before = torch.dot(working, reference)
+            _require(
+                torch.isfinite(dot_before).item(),
+                "nonfinite PCGrad projection geometry",
+            )
             applied = False
             if not skipped and dot_before < 0:
                 working = working - dot_before / denominator * reference
+                _require(
+                    torch.isfinite(working).all().item(),
+                    "nonfinite projected gradient",
+                )
                 applied = True
             entries.append(
                 {
@@ -420,10 +475,37 @@ def pcgrad_merge(
         logs[name] = entries
 
     merged = torch.stack(tuple(projected.values())).mean(dim=0)
+    _require(torch.isfinite(merged).all().item(), "nonfinite PCGrad direction")
     preclip_norm = torch.linalg.vector_norm(merged)
+    _require(torch.isfinite(preclip_norm).item(), "nonfinite PCGrad preclip norm")
     if preclip_norm > clip_norm:
         merged = merged * (clip_norm / preclip_norm)
     _require(torch.isfinite(merged).all().item(), "nonfinite PCGrad direction")
+    postclip_norm = torch.linalg.vector_norm(merged)
+    _require(torch.isfinite(postclip_norm).item(), "nonfinite PCGrad postclip norm")
+
+    diagnostic_norms: dict[str, dict[str, float]] = {}
+    for label, collection in (
+        ("raw", gradients),
+        ("scaled", scaled),
+        ("projected", projected),
+    ):
+        values: dict[str, float] = {}
+        for name, value in collection.items():
+            norm = torch.linalg.vector_norm(value)
+            _require(
+                torch.isfinite(norm).item(), f"nonfinite {label} diagnostic norm"
+            )
+            values[name] = float(norm.detach().cpu())
+        diagnostic_norms[label] = values
+
+    raw_dot_merged: dict[str, float] = {}
+    for name, value in gradients.items():
+        dot = torch.dot(value, merged)
+        _require(
+            torch.isfinite(dot).item(), "nonfinite raw-group merged-direction dot"
+        )
+        raw_dot_merged[name] = float(dot.detach().cpu())
     return merged, {
         "seed": seed,
         "update": update,
@@ -432,25 +514,13 @@ def pcgrad_merge(
         "weights": {name: GROUP_WEIGHTS[name] for name in names},
         "active_group_count": len(names),
         "preclip_norm": float(preclip_norm.detach().cpu()),
-        "postclip_norm": float(torch.linalg.vector_norm(merged).detach().cpu()),
+        "postclip_norm": float(postclip_norm.detach().cpu()),
         "projection_log": logs,
         "pairwise_geometry": pairwise,
-        "raw_norms": {
-            name: float(torch.linalg.vector_norm(value).detach().cpu())
-            for name, value in gradients.items()
-        },
-        "scaled_norms": {
-            name: float(torch.linalg.vector_norm(value).detach().cpu())
-            for name, value in scaled.items()
-        },
-        "projected_norms": {
-            name: float(torch.linalg.vector_norm(value).detach().cpu())
-            for name, value in projected.items()
-        },
-        "raw_group_dot_merged_direction": {
-            name: float(torch.dot(value, merged).detach().cpu())
-            for name, value in gradients.items()
-        },
+        "raw_norms": diagnostic_norms["raw"],
+        "scaled_norms": diagnostic_norms["scaled"],
+        "projected_norms": diagnostic_norms["projected"],
+        "raw_group_dot_merged_direction": raw_dot_merged,
     }
 
 
@@ -463,9 +533,11 @@ def decision_amplitude_error(
     _require(pred.shape == truth.shape, "amplitude decision shape drift")
     _require(torch.all((pred >= 0) & (truth >= 0)).item(), "negative amplitude")
     _require(math.isfinite(amplitude_scale) and amplitude_scale > 0, "invalid A_scale")
-    return torch.abs(
+    value = torch.abs(
         torch.log1p(pred / amplitude_scale) - torch.log1p(truth / amplitude_scale)
     )
+    _require(torch.isfinite(value).all().item(), "nonfinite amplitude decision error")
+    return value
 
 
 def decision_shape_values(
@@ -504,8 +576,9 @@ def _signs(
             math.isfinite(left) and math.isfinite(right), "nonfinite decision metric"
         )
         tolerance = _tolerance(left, right, discrete=index in discrete)
+        difference = left - right
         result.append(
-            -1 if left < right - tolerance else 1 if left > right + tolerance else 0
+            -1 if difference < -tolerance else 1 if difference > tolerance else 0
         )
     return tuple(result)
 
@@ -558,6 +631,26 @@ def classify_profiles(
             _require(
                 tuple(errors[arm][update]) == GROUP_ORDER, "metric group order drift"
             )
+            for group in GROUP_ORDER:
+                values = errors[arm][update][group]
+                _require(
+                    len(values) == GROUP_COMPONENT_COUNTS[group],
+                    f"metric component width drift: {group}",
+                )
+                for index in DISCRETE_COMPONENTS[group]:
+                    count = values[index]
+                    _require(
+                        isinstance(count, (int, float))
+                        and not isinstance(count, bool)
+                        and math.isfinite(float(count))
+                        and float(count).is_integer(),
+                        f"noninteger decision count: {group}",
+                    )
+                    upper = 25 if group == "A" else 16
+                    _require(
+                        0 <= int(count) <= upper,
+                        f"decision count outside range: {group}",
+                    )
 
     start: dict[str, dict[str, tuple[float, ...]]] = {}
     end: dict[str, dict[str, tuple[float, ...]]] = {}

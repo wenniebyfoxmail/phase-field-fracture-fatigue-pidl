@@ -1,6 +1,6 @@
 # S09-E017 factorised core implementation status
 
-Status: `CORE_IMPLEMENTATION_CANDIDATE__AWAITING_EXACT_COMMIT_REVIEW`
+Status: `CORE_IMPLEMENTATION_REVISED__AWAITING_EXACT_COMMIT_REREVIEW`
 Date: 2026-10-19
 Scope: local float64 numerical core and synthetic tests only
 
@@ -51,7 +51,25 @@ PYTHONPATH=source /Users/wenxiaofang/miniconda3/bin/python3 -m pytest -q \
 git diff --check
 ```
 
-Result: `36 passed in 0.57s`; syntax, lint and whitespace checks passed.
+Initial candidate result: `36 passed in 0.57s`; syntax, lint and whitespace
+checks passed.
+
+ChatGPT Pro returned `E017_CORE_CODE_REVISE` for exact commit `0fa5ca33` and
+identified four implementation blockers without reopening the design.  The
+revision now:
+
+- applies the frozen comparator to one explicit float64 difference;
+- validates exact `A2/S6/R2/P4` evidence widths and the two bounded integer
+  count components;
+- enforces E016 strict-zero, weighted shape-mass and round-trip postconditions;
+  and
+- fails closed on nonfinite derived objectives, decision errors, gradient
+  scales, PCGrad geometry and clipping diagnostics.
+
+The supplied tie-boundary profile, malformed evidence, subnormal positive
+events and finite-input overflow examples are now regression tests.  The
+revised local result is `49 passed in 0.58s`; syntax, Ruff and whitespace checks
+pass.  The exact revised commit still requires focused rereview.
 
 The first attempted test command used the shell's active `agent-reach` Python,
 which lacked pytest and stopped before collection.  The project-pinned Python
