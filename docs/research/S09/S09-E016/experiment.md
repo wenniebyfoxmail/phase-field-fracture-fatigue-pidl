@@ -1,14 +1,16 @@
 # S09-E016 factorised damage-increment readiness audit
 
-Status: `DRAFT_CARD_COMPLETE_NO_EXECUTION`
+Status: `DESIGN_AMENDED_AWAITING_NARROW_REREVIEW_NO_EXECUTION`
+
+Protocol revision: `v2-strict-zero-effective-increment`.
 
 Primary storyline: S09 Neural Operator fracture-development representation.
 
-This document completes the current active D-step planning delivery. It defines
-a read-only audit against already retrieved exposed-development arrays. Closing
-this card needs no additional review. The card itself does not execute or
-authorise analysis, a checkpoint forward, training, new data access, FEM work,
-a new holdout, or producer use.
+This document defines a read-only audit against already retrieved
+exposed-development arrays. Revision v2 incorporates the two blocking findings
+from the first ChatGPT Pro design review and awaits a narrow rereview. The card
+itself does not execute or authorise a checkpoint forward, training, new data
+access, FEM work, a new holdout, or producer use.
 
 ## One mechanism question
 
@@ -74,15 +76,16 @@ c_i = clip(1 - d_pre_i, 0, 1)
 r_i = clip(d_peak_i - d_pre_i, 0, c_i)
 ```
 
-On nodes with `c_i > epsilon_c`, transform the bounded increment to a
+On nodes with `c_i > 0`, transform the bounded increment to a
 nonnegative hazard field:
 
 ```text
-q_i = clip(r_i / c_i, 0, 1 - epsilon_q)
+q_max = nextafter(float64(1), float64(0))
+q_i = clip(r_i / c_i, 0, q_max)
 h_i = -log(1 - q_i)
 ```
 
-Set `h_i=0` where capacity is numerically zero. Normalise the supplied nodal
+Set `h_i=0` only where capacity is exactly zero. Normalise the supplied nodal
 weights once as `wbar_i = w_i / sum_j w_j`, then define
 
 ```text
@@ -91,7 +94,13 @@ S_i = h_i / A
 ```
 
 for a nonzero event. Thus `A >= 0`, `S_i >= 0`, and
-`sum_i wbar_i S_i = 1`. Exact reconstruction is
+`sum_i wbar_i S_i = 1`. The finite representation encodes
+
+```text
+r_eff_i = c_i q_i
+```
+
+and reconstructs that encoded increment as
 
 ```text
 h_i = A S_i
@@ -105,7 +114,8 @@ would provide `d_pre <= d_peak <= 1` by construction.
 
 ### Zero-increment rule
 
-If `A` is zero at numerical precision, record
+Use strict float64 zero semantics. If and only if `A == 0.0`, require every
+clipped source increment `r_i == 0.0` and record
 
 ```text
 amplitude = 0
@@ -118,17 +128,31 @@ zero/nonzero accounting but is excluded from shape loss, shape correlation,
 centroid and support-capture summaries. Growth-versus-stagnant pairs involving
 an undefined target shape remain usable for amplitude ranking only.
 
-`epsilon_c`, `epsilon_q`, and the zero-amplitude numerical tolerance must be
-fixed by the implementation review from float64 reconstruction stability; they
-are not scientific support thresholds.
+There is no positive capacity cutoff and no amplitude epsilon. All nodal
+quadrature weights must be finite and strictly positive, with a finite positive
+sum. The saturated fraction is frozen by `q_max`, equivalent to
+`epsilon_q=2^-53`. Evaluate hazard and reconstruction with `log1p` and `expm1`.
+If any positive event maps to `A==0`, the representation is invalid rather than
+being relabelled as a zero event.
+
+Keep three arrays separate: source clipped increment `r`, encoded increment
+`r_eff`, and numerical reconstruction `r_hat`. Check the numerical round trip
+`r_hat` versus `r_eff` with `rtol=64*eps_float64` and `atol=0`; require exact
+zero reconstruction where `r_eff==0`. Separately report the saturation-clipping
+residual `r-r_eff`, its maximum, and the analytic bound
+`0 <= r-r_eff <= c*(1-q_max)`. Do not let an absolute round-trip tolerance
+erase a positive event. A direct float64 check of the analytic clipping bound
+may use at most `2*eps_float64*c` evaluation slack and must report that slack.
 
 ## Read-only comparison table
 
 For FEM target and every available baseline, report one row per cycle with:
 
 - `A`, `log1p(A / A_scale)`, `shape_valid`, positive-node count, weighted mean
-  `Delta d`, and maximum `Delta d`;
-- amplitude ratio and log-amplitude error for A25 and B25 versus FEM;
+  positive `Delta d`, weighted mean absolute `Delta d`, and maximum `Delta d`;
+- hazard-amplitude ratio/log error for B25 versus FEM, and separately the
+  like-for-like weighted-mean absolute-increment ratio/log error for A25 and
+  B25 versus FEM;
 - the existing 25-pair amplitude outcomes and `2W+T`;
 - for B25, and for A25 only after an authorised node-field export, weighted
   half-L1 shape distance
@@ -210,27 +234,41 @@ true:
   identities are complete, and the existing A25 scalar rows align to them;
 - every nonzero field has finite `A` and a normalised `S`, while every zero
   field follows the explicit undefined-shape rule;
-- float64 factorisation round trips reproduce the clipped source increments
-  to the reviewed numerical tolerance;
+- float64 factorisation round trips reproduce the encoded increments under the
+  frozen relative tolerance, while saturation clipping remains a separate
+  bounded residual;
 - the amplitude, shape, support-capture and centroid objectives are computable
   on enough nonzero cycles to form the existing growth/stagnant comparisons.
 
 The pilot is still justified when A25/B25 is poor; poor amplitude or location
-is the baseline the pilot is meant to repair. The audit should route the pilot
-as follows:
+is the baseline the pilot is meant to repair. Define the applicability sets
+without a performance threshold:
 
-- materially varying FEM shapes: separate amplitude and spatial heads;
-- nearly invariant FEM shapes with varying amplitude: shared/template shape
-  plus amplitude head as the smaller pilot;
-- a mixture of zero and nonzero cycles: retain the explicit event/amplitude
-  branch and condition shape loss only on valid shapes.
+```text
+C_F = {cycles with FEM A > 0}
+C_B = {cycles with B25 A > 0}
+C_J = C_F intersect C_B
+```
+
+Audit validity requires complete identities and valid factorisation/zero rules
+on all 16 cycles. Shape-target readiness requires `C_F` to be nonempty and all
+FEM shape targets on `C_F` to be computable. B25-vs-FEM shape metrics are
+defined only on `C_J`; elsewhere record the fixed NA reason. A legal B25 zero
+event retains amplitude and pair evidence and cannot make the audit invalid.
+
+When the audit is ready, prepare a decision-scale E017 candidate with separate
+amplitude and spatial heads and an amplitude-only ablation. This route is
+frozen from the user-authorised representation hypothesis and E015's already
+measured amplitude-plus-localisation bottleneck; it does not use an E016
+shape-distance threshold. Any mixture of zero and nonzero targets retains an
+explicit event/amplitude branch and conditions shape loss on `C_F`.
 
 ### Repair data or representation first
 
 Do not prepare training if cycle/state identities are inconsistent, nodal
 weights are invalid, target increments materially violate irreversibility or
-capacity, factorisation cannot round trip, most required comparison shapes are
-undefined, or a few near-zero-capacity nodes dominate the normalised shape.
+capacity, factorisation cannot round trip, a positive event is lost, or `C_F`
+is empty.
 These outcomes request a state-semantics, weighting, or transform repair; they
 are not evidence that neural operators cannot learn crack development.
 
