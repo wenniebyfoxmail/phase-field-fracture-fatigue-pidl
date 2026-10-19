@@ -1,0 +1,78 @@
+{
+  "reviewer": "/root/bridge_exact_review",
+  "status": "SAVED_OUTPUT_CHECKS_PASSED_WITH_STOP_CONTRACT_BREACH",
+  "report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/independent_evidence_review_R003.md",
+  "producer_native_score_recompute": {
+    "rows": 22880,
+    "max_discrepancy": 0.0,
+    "independent_reviewer_reopened_native_targets": false
+  },
+  "independent_checks": {
+    "runtime_and_archive_hashes": true,
+    "prediction_archives": 266,
+    "unique_score_rows": 22880,
+    "selectors": 38,
+    "donor_memberships": 84656,
+    "png_integrity": 115,
+    "visual_examples": 4,
+    "saved_pullback_coarse_max_difference": 2.7755575615628914e-17
+  },
+  "primary_losses": {
+    "B_STAR": 0.8962911578134599,
+    "C_RAW": 0.8803479927996656,
+    "C_REL": 0.8958092395607629,
+    "H_DONOR": 0.8717999271652851,
+    "H_INNOV": 0.8236020662849026,
+    "H_RAW": 0.9215860786327561,
+    "H_RAW_PULLBACK": 0.9215860786327561,
+    "H_REL": 0.8736247593749481,
+    "P": 1.03609215378382,
+    "S": 1.4322450161833773
+  },
+  "contrasts": {
+    "B_STAR": {
+      "mean_reduction": 0.07268909152855735,
+      "relative_error_reduction_pct": 8.109986458628626,
+      "groups_improved": 15,
+      "groups_worse": 4
+    },
+    "C_RAW": {
+      "mean_reduction": 0.056745926514763005,
+      "relative_error_reduction_pct": 6.445851751680676,
+      "groups_improved": 14,
+      "groups_worse": 5
+    },
+    "C_REL": {
+      "mean_reduction": 0.0722071732758602,
+      "relative_error_reduction_pct": 8.060552413063427,
+      "groups_improved": 16,
+      "groups_worse": 3
+    },
+    "H_RAW": {
+      "mean_reduction": 0.09798401234785353,
+      "relative_error_reduction_pct": 10.63210638915253,
+      "groups_improved": 15,
+      "groups_worse": 4
+    },
+    "H_REL": {
+      "mean_reduction": 0.05002269309004548,
+      "relative_error_reduction_pct": 5.7258785941272095,
+      "groups_improved": 14,
+      "groups_worse": 5
+    },
+    "H_DONOR": {
+      "mean_reduction": 0.04819786088038243,
+      "relative_error_reduction_pct": 5.528546100835429,
+      "groups_improved": 15,
+      "groups_worse": 4
+    },
+    "P": {
+      "mean_reduction": 0.21249008749891737,
+      "relative_error_reduction_pct": 20.508801917175145,
+      "groups_improved": 17,
+      "groups_worse": 2
+    }
+  },
+  "no_retry": true,
+  "obsidian_update_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/obsidian_update_receipt.json"
+}

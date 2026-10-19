@@ -1,0 +1,19 @@
+{
+  "run_id": "IU-BRIDGE-PS-20261019-R003",
+  "observed_at_utc": "2026-10-19T18:30:41Z",
+  "original_controller_status": "COMPLETE",
+  "original_worker_status": "COMPLETE",
+  "original_receipts_preserved": true,
+  "execution_audit_status": "COMPLETED_WITH_UNRAISABLE_WARNING_STOP_CONTRACT_BREACH",
+  "warning": "ResourceWarning: unclosed per_case_scores.csv file in verify.py line 9; warnings-as-errors was emitted as Exception ignored in FileIO destructor",
+  "first_warning_stop_enforced": false,
+  "no_retry": true,
+  "scientific_validity": "Independent saved-output checks found no numerical inconsistency; permitted as explicitly caveated exploratory component evidence only, not clean contract compliance",
+  "fits_completed": 912,
+  "input_fits_completed": 76,
+  "scores_rescored": 22880,
+  "max_score_discrepancy": 0.0,
+  "archive_sha256": "52605db78b36cd17ffbefd76a9dd6680081b4cf0940f22d560e2717f458f7a76",
+  "scope": "No original receipt edited; preserve completed numerical evidence and log; do not rerun",
+  "independent_review": "independent_evidence_review_R003.md"
+}
