@@ -1,0 +1,42 @@
+{
+  "status": "passed",
+  "reviewer": "b0_route_inventory",
+  "review_type": "independent_focused_Code_Ready",
+  "reviewed_utc": "2026-10-19T11:28:16.549948+00:00",
+  "commit": "f72434af30f40582067bdfd3f0bd4e91924f2396",
+  "worker_blob": "209e08d714d68f2ed26f637b42a49aa9689ab57f",
+  "tests_blob": "ed9232c51eae788619fb139edbdb770313e947d3",
+  "launcher_sha256": "b20764612ad632ca47a9e282e9bfb7cf9058e8d7b6f06d39e37012216c7cc124",
+  "protocol_sha256": "ace80b38732ce6790e982c8d5708711c802ee6fdc080799e164d08bac9083fcc",
+  "monitor_sha256": "9388d2049c1225f7de467a797a1eb6e62cddde1c31d3a115f26e5d8ebd2f84a2",
+  "checks": {
+    "skills": "Current installed research-decision-core, agent_bootstrap, road-fracture adapter, physics/PIDL/Hard5 references read; one existing E011 D4 continuation, no new experiment scope.",
+    "tiny_fixtures": "17 independently passed in0.67s:5 new persisted-Phi +5 readout-audit +7 prior learned-hidden admission/rollback fixtures; no real network forward or training.",
+    "compile": "new worker/tests/launcher/monitor py_compile passed;7 embedded remote Python snippets independently syntax-compiled after placeholder substitution, no execution.",
+    "actual_initial_Phi": "load-only exact saved float64 source Phi86756x386/T401x386, no initial design multiplication or SVD; bytes copied to initial basis and bound to hidden/full-weight digests. Unique accepted e2dc61d source network, unchanged native-Q4 input/source fields/UV boundary/FEM damage/B0 damage parameterization and own state preserved.",
+    "initial_attempts": "3 full-network probe force/raw-head-gradient/projected-vector/field observations saved before GTOL/source assertions; all3 must meet original field1e-12, energy1e-10 and actual Phi-gradient1e-10; no extra repeat-spread threshold. Production reopens same Phi, no source-g backfill.",
+    "dynamic_basis": "only after hidden changes, full current401 mass SVD at unchanged cutoff; no forced old rank/span/ridge. Increment about current raw head, discarded coefficients retained. Actual Phi/T persisted once per hidden state with explicit basis refs, hidden-state mismatch detected after attempt persistence.",
+    "rollback": "whole last actually verified state AND matching space restored on global budget/deadline/reconstruction interruption; hard inner failures not installed, actual energy rise or UV realization>1e-10 restores verified state; conditioned inner accepted trials never substitute actual endpoint.",
+    "budget": "prior35 + probe40 + production325 <=400; current attempt60+540sec only, no cumulative600sec claim. Main-entry timer includes checks/CUDA/I/O; all contracts, closures, failed trials, stage reads and reserved final call count. Original2x40 hidden,10Newton/head,50dense/1000explicit products/default optimizer unchanged.",
+    "launcher": "reviewed clean exact source, archive and contract bytes, all6 input SHA/size staging, GPU5/UUID >=12GiB/util<10/no compute apps before/after staging and immediate pre-Popen, task-owned data2 dirs/caches, atomic launch claim, exclusive log, detachedPID/receipt, no process disturbance.",
+    "probe_binding_fix": "production now verifies local probe-contract SHA to package, remote probe contract SHA plus launchreceipt runid/commit/phase identity, exited probe, original source+all_three_same_Phi_readouts_passed, finite/tangent/solve/VRAM budget result before production.",
+    "retrieval": "selective <=32MiB files only, complete remote count/size manifest and selected count/size checks, large matrices explicitly remote-only; no SHA/full-local-mirror claim from size-only retrieval.",
+    "scientific_scope": "actual E decrease with hidden change is bounded main observable; FEM UV/H1/active are separate secondary field metrics. Actual retained-gradient closure not full-network convergence or physical teacher qualification."
+  },
+  "blockers": [],
+  "limitations": [
+    "Code Ready only, no SSH or actual model calculation performed by reviewer."
+  ],
+  "package_manifest_sha256": "64cbcda860b29498fd72a3e219f224793e440b2e9bc1e8e8f91482ede5770298",
+  "code_bundle_sha256": "f5f864f32e2ba764f80e672368d0bb509258c96a3b63052667170076267756ea",
+  "contracts_sha256": {
+    "probe": "362c69b037168e4a014bc16c69c5c6260fa3dfb60c2b9873b37fdc038851b939",
+    "production": "4f2b9972a84a7364c69c5f54ad7b9c5c2a1add000707ae3aab9b746ef08628a4"
+  },
+  "run_ids": {
+    "probe": "pf_s04e011_persistphi_f72434a_20261019T112844Z_probe",
+    "production": "pf_s04e011_persistphi_f72434a_20261019T112844Z_production"
+  },
+  "exact_package_binding_utc": "2026-10-19T11:29:09.038606+00:00",
+  "package_binding_checks": "clean exact commit; final worker archive bytes and reviewed launcher/protocol/monitor unchanged; bundle/manifest/phase SHA verified; same six role SHA identities across phases; initial actualPhi/T SHA matches independently audited raw-capture manifest; phase40/60 and325/540 plus prior35 exact."
+}

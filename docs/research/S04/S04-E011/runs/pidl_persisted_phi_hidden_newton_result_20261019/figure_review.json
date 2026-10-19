@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "figures": [
+    {
+      "figure": "c20_learned_hidden_errors.png",
+      "sidecar": "c20_learned_hidden_errors.md",
+      "visual_inspection": "root viewed full figure on2026-10-19; labels/scales visible; no cropping; stage figure zoomed axes requires small-effect caption"
+    },
+    {
+      "figure": "c20_learned_hidden_fields.png",
+      "sidecar": "c20_learned_hidden_fields.md",
+      "visual_inspection": "root viewed full figure on2026-10-19; labels/scales visible; no cropping; stage figure zoomed axes requires small-effect caption"
+    },
+    {
+      "figure": "learned_hidden_gradient_spaces.png",
+      "sidecar": "learned_hidden_gradient_spaces.md",
+      "visual_inspection": "root viewed full figure on2026-10-19; labels/scales visible; no cropping; stage figure zoomed axes requires small-effect caption"
+    },
+    {
+      "figure": "learned_hidden_stage_decision.png",
+      "sidecar": "learned_hidden_stage_decision.md",
+      "visual_inspection": "root viewed full figure on2026-10-19; labels/scales visible; no cropping; stage figure zoomed axes requires small-effect caption"
+    }
+  ],
+  "main": "learned_hidden_stage_decision.png",
+  "scope": "saved arrays only; all stage observations, not new computation"
+}

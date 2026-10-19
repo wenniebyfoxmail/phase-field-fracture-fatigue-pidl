@@ -1,0 +1,208 @@
+{
+  "status": "passed",
+  "method": "read-only saved arrays/tensors CPU single thread; no NNforward/SVD/solve/new physical operator",
+  "phase": "production",
+  "run_id": "pf_s04e011_persistphi_f72434a_20261019T112844Z_production",
+  "producer_commit": "f72434af30f40582067bdfd3f0bd4e91924f2396",
+  "evaluations": 156,
+  "cap": 325,
+  "deadline_seconds": 540,
+  "producer_elapsed_seconds": 66.83944020513445,
+  "all_trace_completed": true,
+  "actual_basis_count": 3,
+  "bases": {
+    "/mnt/data2/drtao/pidl_archives/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/output/c20_s4/bases/hidden_2": {
+      "retained_rank": 386,
+      "phi_sha256": "069ecb55175e5b72701744b9cd8df5309e59404224b7bbf40200df86365e0edd",
+      "transform_sha256": "f24768b2d51721fc29713ccab4112980c5a654d70747693ad16ab1afd7c026ee",
+      "bound_hidden_sha256": "9cc8e125632351b0a0d73624bc20f4cc7536ed8a86495313185f2b5918d6f2f3",
+      "originating_weights_sha256": "b54d8b46f4ab20bedc344506beb99119ea9033dc90e4641dccd81dbf125f6a68",
+      "initial_SVD_calls": null
+    },
+    "/mnt/data2/drtao/pidl_archives/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/output/c20_s4/bases/hidden_1": {
+      "retained_rank": 386,
+      "phi_sha256": "c57c63b6912619e7c158df663d89da54c5be0c586c4e43eafe021807517f9178",
+      "transform_sha256": "f36c6f3b31534a973d9b557bf6670ba326e756e7165b2872cdc11a80435fe632",
+      "bound_hidden_sha256": "a278957f44e68b9bd3e4a6987fdee7e7638453174d1d367a781afc41cbb81b80",
+      "originating_weights_sha256": "7ab7a149f3a9cd2c5fd643cf0b929c848f3a161c29fb1f31351ffcf546603077",
+      "initial_SVD_calls": null
+    },
+    "/mnt/data2/drtao/pidl_archives/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/output/c20_s4/bases/initial": {
+      "retained_rank": 386,
+      "phi_sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b",
+      "transform_sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149",
+      "bound_hidden_sha256": "4ac4184626f19670efb864b277e010e2996605f8655dbaaeb7a0a13cdd34e8a4",
+      "originating_weights_sha256": "599c9b2d12dbcc66b558a750bc46e1463b1243b90bc6fbee2a72755e0f80e592",
+      "initial_SVD_calls": 0
+    }
+  },
+  "actual_projection_readouts": [
+    {
+      "label": "final",
+      "basis": "hidden_2",
+      "rank": 386,
+      "saved_g_inf": 4.893260839924918e-11,
+      "numpy_g_inf": 4.893235968353551e-11,
+      "maxabs_vector_difference": 1.2115741828286084e-15,
+      "saved_label": true,
+      "numpy_label": true,
+      "field_maxabs_vs_unique_initial": {
+        "u": 2.632928012448986e-05,
+        "v": 0.0006775849696268182,
+        "d": 0.0
+      }
+    },
+    {
+      "label": "head_correction_1",
+      "basis": "hidden_1",
+      "rank": 386,
+      "saved_g_inf": 3.3773749096889516e-11,
+      "numpy_g_inf": 3.377330233288197e-11,
+      "maxabs_vector_difference": 8.534440337529497e-16,
+      "saved_label": true,
+      "numpy_label": true,
+      "field_maxabs_vs_unique_initial": {
+        "u": 1.2469270445296995e-05,
+        "v": 0.0006504688174908124,
+        "d": 0.0
+      }
+    },
+    {
+      "label": "head_correction_2",
+      "basis": "hidden_2",
+      "rank": 386,
+      "saved_g_inf": 4.893260839924918e-11,
+      "numpy_g_inf": 4.893235968353551e-11,
+      "maxabs_vector_difference": 1.2115741828286084e-15,
+      "saved_label": true,
+      "numpy_label": true,
+      "field_maxabs_vs_unique_initial": {
+        "u": 2.632928012448986e-05,
+        "v": 0.0006775849696268182,
+        "d": 0.0
+      }
+    },
+    {
+      "label": "hidden_block_1",
+      "basis": "hidden_1",
+      "rank": 386,
+      "saved_g_inf": 0.018976281037422445,
+      "numpy_g_inf": 0.01897628103742267,
+      "maxabs_vector_difference": 1.3042952135000618e-15,
+      "saved_label": false,
+      "numpy_label": false,
+      "field_maxabs_vs_unique_initial": {
+        "u": 4.17850665819855e-05,
+        "v": 0.0005200414443399179,
+        "d": 0.0
+      }
+    },
+    {
+      "label": "hidden_block_2",
+      "basis": "hidden_2",
+      "rank": 386,
+      "saved_g_inf": 0.022928340925818975,
+      "numpy_g_inf": 0.02292834092581932,
+      "maxabs_vector_difference": 1.925543058334256e-15,
+      "saved_label": false,
+      "numpy_label": false,
+      "field_maxabs_vs_unique_initial": {
+        "u": 5.1201589965469124e-05,
+        "v": 0.0008338451272565939,
+        "d": 0.0
+      }
+    },
+    {
+      "label": "initial_learned_head",
+      "basis": "initial",
+      "rank": 386,
+      "saved_g_inf": 3.3665696098916786e-11,
+      "numpy_g_inf": 3.3665509333339994e-11,
+      "maxabs_vector_difference": 1.0192239457610221e-15,
+      "saved_label": true,
+      "numpy_label": true,
+      "field_maxabs_vs_unique_initial": {
+        "u": 0.0,
+        "v": 0.0,
+        "d": 0.0
+      }
+    }
+  ],
+  "checkpoint_weights": [
+    {
+      "stage": "initial",
+      "weight_digest": "599c9b2d12dbcc66b558a750bc46e1463b1243b90bc6fbee2a72755e0f80e592",
+      "hidden_digest": "4ac4184626f19670efb864b277e010e2996605f8655dbaaeb7a0a13cdd34e8a4",
+      "E_el": 0.005268400005223913,
+      "actual_g_inf": 3.3665696098916786e-11,
+      "basis_ref": "/mnt/data2/drtao/pidl_archives/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/output/c20_s4/bases/initial"
+    },
+    {
+      "stage": "hidden_1",
+      "weight_digest": "7ab7a149f3a9cd2c5fd643cf0b929c848f3a161c29fb1f31351ffcf546603077",
+      "hidden_digest": "a278957f44e68b9bd3e4a6987fdee7e7638453174d1d367a781afc41cbb81b80",
+      "E_el": 0.005267958906321068,
+      "actual_g_inf": 0.018976281037422445,
+      "basis_ref": "/mnt/data2/drtao/pidl_archives/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/output/c20_s4/bases/hidden_1"
+    },
+    {
+      "stage": "head_1",
+      "weight_digest": "07ba8af512676de60a9aa02537177674bcf79a1226f92824cf89a11e087324ce",
+      "hidden_digest": "a278957f44e68b9bd3e4a6987fdee7e7638453174d1d367a781afc41cbb81b80",
+      "E_el": 0.005267646631177401,
+      "actual_g_inf": 3.3773749096889516e-11,
+      "basis_ref": "/mnt/data2/drtao/pidl_archives/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/output/c20_s4/bases/hidden_1"
+    },
+    {
+      "stage": "hidden_2",
+      "weight_digest": "b54d8b46f4ab20bedc344506beb99119ea9033dc90e4641dccd81dbf125f6a68",
+      "hidden_digest": "9cc8e125632351b0a0d73624bc20f4cc7536ed8a86495313185f2b5918d6f2f3",
+      "E_el": 0.005267301957309119,
+      "actual_g_inf": 0.022928340925818975,
+      "basis_ref": "/mnt/data2/drtao/pidl_archives/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/output/c20_s4/bases/hidden_2"
+    },
+    {
+      "stage": "head_2",
+      "weight_digest": "48307179edf89a906d7c625b0c3c12d211a061920e936dc361324c97ff7d78bb",
+      "hidden_digest": "9cc8e125632351b0a0d73624bc20f4cc7536ed8a86495313185f2b5918d6f2f3",
+      "E_el": 0.005267089573071509,
+      "actual_g_inf": 4.893260839924918e-11,
+      "basis_ref": "/mnt/data2/drtao/pidl_archives/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/output/c20_s4/bases/hidden_2"
+    }
+  ],
+  "hidden_changed_tensor_names": [
+    "input_layer.weight",
+    "input_layer.bias",
+    "hidden_layers.0.weight",
+    "hidden_layers.0.bias",
+    "hidden_layers.1.weight",
+    "hidden_layers.1.bias",
+    "hidden_layers.2.weight",
+    "hidden_layers.2.bias",
+    "hidden_layers.3.weight",
+    "hidden_layers.3.bias",
+    "hidden_layers.4.weight",
+    "hidden_layers.4.bias",
+    "hidden_layers.5.weight",
+    "hidden_layers.5.bias",
+    "hidden_layers.6.weight",
+    "hidden_layers.6.bias",
+    "activations.0.coeff",
+    "activations.1.coeff",
+    "activations.2.coeff",
+    "activations.3.coeff",
+    "activations.4.coeff",
+    "activations.5.coeff",
+    "activations.6.coeff",
+    "activations.7.coeff"
+  ],
+  "hidden_changed_count": 24,
+  "dhead_exact_all_checkpoints": true,
+  "mechanical_FEM_damage_exact_all_observations": true,
+  "original_UV_boundary_maxabs_tolerance": 1e-12,
+  "history_commits": 0,
+  "rollout_steps": 0,
+  "anchor_independent_before_after_tensor_available": false,
+  "anchor_evidence": "reviewed unchanged construction/no-mutation source plus producer frozen-check flag; no separately saved anchor tensor snapshot",
+  "review_elapsed_seconds": 2.3002815851941705
+}
