@@ -1,12 +1,14 @@
 # S09-E017 static runner integration status
 
-Status: `RUNNER_CONFIG_EVIDENCE_REVISED_R2__NO_SCIENCE_IO__AWAITING_REREVIEW`
+Status: `RUNNER_CONFIG_EVIDENCE_CODE_READY__NO_EXECUTION`
 Date: 2026-10-19
 Reviewed numerical core: `5ac6b7955b56309ac8ff2fda50b16b2e1669110a`
 Round-1 candidate: `1d30506e25fa990460e97c5b9376abee24c4bc92`
 Round-1 verdict: `E017_RUNNER_INTEGRATION_REVISE`
 Round-2 candidate: `c14ed37b871840f309be8e82d448412aa62c9886`
 Round-2 verdict: `E017_RUNNER_INTEGRATION_REVISE`
+Final reviewed candidate: `3a5a2020c7b16555e9ecd9ec19377bf87a52d5c5`
+Final verdict: `E017_RUNNER_INTEGRATION_CODE_READY_PASS`
 
 ## What this gate implements
 
@@ -85,5 +87,6 @@ and no update was performed.
 
 The later 192-update experiment still lacks an exact authorised config and
 launch wrapper, live producer/GPU/resource checks, real asset reads and hash
-verification, model/loader binding, runtime counters and evidence writers,
-exact-commit rereview closure, and specific execution authority.
+verification, model/loader binding, runtime counters and evidence writers, and
+specific execution authority.  The present PASS allows preparation of that
+final package only.
