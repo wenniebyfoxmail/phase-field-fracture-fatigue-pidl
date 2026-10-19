@@ -1,0 +1,49 @@
+{
+  "status": "LOCAL_CONTROL_REPAIR_REVIEWED_NO_EXECUTION_AUTHORITY",
+  "reviewed_source_commit": "fbdfb0a77529cc940194bc2a29d13b29a082f935",
+  "base_commit": "6823b2f395fd5dbd07717f02adbdf6117ea53cd7",
+  "package_sha256": "37ebd77995d2201d36692804c9e4c6a6da8a2ff729ae14f30039da83779113d4",
+  "locked_files": 20,
+  "review_verdict": "REVIEW_PASS_BOUNDED_LOCAL_CONTROL_REPAIR",
+  "independent_review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/reviews/BRIDGE-PS-20261019/control_repair/independent_control_repair_review.md",
+  "owner_checks": {
+    "artificial_lifetime_tests_per_runtime": 22,
+    "runtimes": [
+      "local Python3.12",
+      "local Python3.14"
+    ],
+    "existing_boundary_guards": 4
+  },
+  "independent_checks": {
+    "artificial_lifetime_tests_per_runtime": 22,
+    "runtimes": [
+      "local Python3.12",
+      "local Python3.14"
+    ]
+  },
+  "logs": {
+    "guard_py312.txt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/reviews/BRIDGE-PS-20261019/control_repair/guard_py312.txt",
+    "guard_py314.txt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/reviews/BRIDGE-PS-20261019/control_repair/guard_py314.txt",
+    "existing_contract_guards.txt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/reviews/BRIDGE-PS-20261019/control_repair/existing_contract_guards.txt",
+    "artificial_trace_py312": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/reviews/BRIDGE-PS-20261019/control_repair/artificial_trace_py312",
+    "artificial_trace_py314": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/reviews/BRIDGE-PS-20261019/control_repair/artificial_trace_py314"
+  },
+  "access": {
+    "ssh": false,
+    "resource_admission": false,
+    "scientific_arrays": false,
+    "fresh_holdout": false,
+    "scientific_fit_or_forward": false,
+    "producer_attempt": false,
+    "rerun": false
+  },
+  "R003_status_unchanged": "Original completed artifacts and first-warning contract breach preserved; caveated exploratory evidence only",
+  "remaining_limits": [
+    "Producer Linux/proc/RLIMIT integration not tested",
+    "Producer Python3.10 and actual scientific dependencies not tested",
+    "Real-pipeline cost and shutdown not measured",
+    "Filesystem/power failure may prevent durable JSON; stderr/nonzero exit is rejection fallback",
+    "Future retrieval must include post-exit controller receipt, clean seal, all fatal events and stderr; worker archive alone insufficient"
+  ],
+  "future_execution_authority": false
+}
