@@ -1,6 +1,8 @@
 # S01-E027 实现状态 — 2026-10-19
 
-**Code Ready；真实空间能力尚未测量。** 设计 v1.1 与代码经 gpt-6.1-sol / Medium 独立审查通过。已审代码为 `97db708e19d7eb9f5340bf18c6b57840887a09c7`，source_manifest 绑定14个成员，SHA256 `6fc70870bcf9d3b3814e9c6db32fe82c4ebf96337f5a77ea900dfa89387c35a5`。
+**当前：唯一R001已完成并取回；来源12/12通过，目标资格/OOF未执行。** 结果见 [R001结果](runs/S01-E027-R001/result.md)。以下为运行前Code Ready记录，保留历史准备状态。
+
+**运行前Code Ready；当时真实空间能力尚未测量。** 设计 v1.1 与代码经 gpt-6.1-sol / Medium 独立审查通过。已审代码为 `97db708e19d7eb9f5340bf18c6b57840887a09c7`，source_manifest 绑定14个成员，SHA256 `6fc70870bcf9d3b3814e9c6db32fe82c4ebf96337f5a77ea900dfa89387c35a5`。
 
 新增信息轴是外部 CrackTree260 裂缝像素监督预训练表示；不继续更换现有缓存压缩器、像素头或平移配方。与 E023–E026 的对照见 experiment.md 与 source_audit.md。作者报告训练来源不等于完整训练身份已独立核实；官方 PyTorch 发布模型与论文 Caffe+BN 实现不同，本轮不声称复现论文表现。
 
