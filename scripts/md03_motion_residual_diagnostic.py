@@ -122,7 +122,7 @@ def run(out):
         check()
         summary=dict(rows=rows,old_files_verified=len(protected),frozen_observer_and_scores_unchanged=True,
               no_new_masks_or_widths=True,no_source_outside_89_132_175=True,
-              conclusion_requires_visual_inspection=True,175_role='exposed development, not blind validation')
+              conclusion_requires_visual_inspection=True,target175_role='exposed development, not blind validation')
         save(out/'summary.json',summary)
         receipt.update(execution='succeeded',retrieval='verified_local',protected_files_verified=len(protected))
         print(json.dumps(summary,indent=2))
