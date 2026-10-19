@@ -1,6 +1,6 @@
 # S09-E017 first-principles factorised-head pilot card (draft)
 
-Status: `DESIGN_READY__IMPLEMENTATION_PLANNING_ONLY__NO_EXECUTION`
+Status: `CORE_CODE_READY__RUNNER_CONFIG_EVIDENCE_NOT_IMPLEMENTED__NO_EXECUTION`
 Owner: Mac-PIDL
 Date: 2026-10-19
 
@@ -306,6 +306,8 @@ shape trajectories, hard-constraint audit, checkpoints, exact config, and a
 signed completion receipt. The E016 decision, authoritative table, receipt and
 figure are the design inputs.
 
-This draft authorises only design review and local no-training implementation
-planning. It does not authorise model forward, autograd, optimiser mutation,
-GPU launch, SSH execution, new data access, or holdout access.
+The isolated numerical core received `E017_CORE_CODE_READY_PASS` at exact commit
+`5ac6b7955b56309ac8ff2fda50b16b2e1669110a`. Current authority extends only to
+a separately reviewed no-training runner/config/evidence integration. It does
+not authorise model forward, scientific packet access, autograd, optimiser
+mutation, GPU launch, SSH execution, new data access or holdout access.

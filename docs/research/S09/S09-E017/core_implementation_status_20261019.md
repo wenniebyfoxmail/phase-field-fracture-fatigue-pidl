@@ -1,6 +1,6 @@
 # S09-E017 factorised core implementation status
 
-Status: `CORE_IMPLEMENTATION_REVISED__AWAITING_EXACT_COMMIT_REREVIEW`
+Status: `CORE_CODE_READY__RUNNER_CONFIG_EVIDENCE_NOT_IMPLEMENTED__NO_EXECUTION`
 Date: 2026-10-19
 Scope: local float64 numerical core and synthetic tests only
 
@@ -69,7 +69,11 @@ revision now:
 The supplied tie-boundary profile, malformed evidence, subnormal positive
 events and finite-input overflow examples are now regression tests.  The
 revised local result is `49 passed in 0.58s`; syntax, Ruff and whitespace checks
-pass.  The exact revised commit still requires focused rereview.
+pass.  ChatGPT Pro then returned `E017_CORE_CODE_READY_PASS` for exact commit
+`5ac6b7955b56309ac8ff2fda50b16b2e1669110a`.  It verified the 27,894-byte
+archive, SHA-256 `ab999c0f...e803`, manifest commit and 8/8 content hashes, and
+independently closed B1--B4.  This authorises only a separately reviewed
+no-training runner/config/evidence integration.
 
 The first attempted test command used the shell's active `agent-reach` Python,
 which lacked pytest and stopped before collection.  The project-pinned Python
@@ -96,7 +100,8 @@ Three choices are explicit review targets rather than hidden assumptions:
 
 ## Allowed conclusion
 
-The exact candidate can be submitted for core code review.  Even a PASS would
-mean only that this isolated arithmetic is ready to serve as the base for a
-separate no-training runner/config/evidence integration.
+The isolated arithmetic is Code Ready and may serve as the base for a separate
+no-training runner/config/evidence integration.  No neural-operator forward,
+scientific packet access, autograd, optimiser mutation, training, producer
+launch, holdout, rollout or scientific result occurred in this gate.
 
