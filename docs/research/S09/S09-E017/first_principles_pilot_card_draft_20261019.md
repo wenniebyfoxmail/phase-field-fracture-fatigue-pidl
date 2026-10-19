@@ -224,8 +224,12 @@ The performance decision uses update 64 only; intermediate points remain
 descriptive and cannot be selected post hoc.
 
 Convert each primary metric to an error orientation where lower is better:
-amplitude uses median absolute hazard log-ratio plus exact mismatch count
-against the 25 FEM hazard pair outcomes; shape uses half-L1, `1-cosine`,
+amplitude uses the median absolute scaled-log error
+`abs(log1p(A_eff/A_scale)-log1p(A_FEM/A_scale))` plus exact mismatch count
+against the 25 FEM hazard pair outcomes. This decision quantity is finite when
+`A_eff=0`; retain the ordinary absolute hazard log-ratio only as a raw
+diagnostic with a fixed `predicted_zero` NA reason, and do not let that expected
+diagnostic NA trigger `INVALID_EXECUTION`. Shape uses half-L1, `1-cosine`,
 `1-capture`, spill and centroid offset; reconstruction and limited physics use
 their reported nonnegative errors. For a continuous metric, values tie when
 their difference is no larger than
@@ -279,9 +283,12 @@ which is exclusive:
   within 64 updates; it does not imply state/trunk insufficiency.
 - `VALID_MIXED_TRADEOFF`: at least one arm both improves and worsens primary
   components in its concatenated `Delta_(A,S,R,P)`, or at least one pair of
-  valid arms has mutually non-dominating concatenated change vectors. Terminal
-  gaps are reported but do not vote for this descriptive flag. Preserve the
-  Pareto evidence and do not relabel it as failure.
+  valid arms has a concatenated change-gap vector with at least one component
+  strictly below zero and at least one component strictly above zero under the
+  frozen component comparator. This is genuine incomparability and excludes
+  all-tie change vectors. Terminal gaps are reported but do not vote for this
+  descriptive flag. Preserve the Pareto evidence and do not relabel it as
+  failure.
 - `INVALID_EXECUTION`: identity, evidence, finite-value or hard-constraint
   failure. Repair implementation only; do not interpret optimisation.
 
