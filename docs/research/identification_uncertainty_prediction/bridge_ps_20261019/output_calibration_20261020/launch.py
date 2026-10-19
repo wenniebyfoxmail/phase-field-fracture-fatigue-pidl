@@ -58,12 +58,18 @@ def main(argv=None):
   trigger_monotonic=getattr(exc,'trigger_monotonic',time.monotonic());trigger_unix=getattr(exc,'trigger_unix',time.time())
   reason=reason or type(exc).__name__+': '+str(exc);cleanup_error=None;cleanup=None
   if not outcome:outcome={k:context.get(k) for k in ('members','peak_combined_hwm_bytes','last_observation_monotonic','last_observation_unix')}
+  clocks={'started_monotonic':started,'started_unix':started_unix,'trigger_monotonic':trigger_monotonic,'trigger_unix':trigger_unix,'trigger_elapsed_seconds':trigger_monotonic-started}
+  # Durable exclusive primary evidence BEFORE teardown; secondary cleanup failure cannot erase it.
+  primary_persistence_error=None
+  try:
+   first_stop(root,reason,{'clocks':clocks,'controller_pid':None if child is None else child.pid,'package_sha256':digest,'observed_members':context.get('members',()),'cleanup_status':'NOT_STARTED','last_case_context':'last_context.json; last observed context only, not a numerical cause'})
+  except BaseException as persistence:
+   primary_persistence_error=type(persistence).__name__+': '+str(persistence) # Never skip teardown because evidence I/O failed.
   try:
    if child is not None:cleanup=stop_group(child,context.get('members',()))
   except BaseException as failure:cleanup_error=type(failure).__name__+': '+str(failure)
-  clocks={'started_monotonic':started,'started_unix':started_unix,'trigger_monotonic':trigger_monotonic,'trigger_unix':trigger_unix,'trigger_elapsed_seconds':trigger_monotonic-started,'cleanup_finished_monotonic':time.monotonic(),'cleanup_finished_unix':time.time()}
-  first_stop(root,reason,{'clocks':clocks,'controller_pid':None if child is None else child.pid,'package_sha256':digest,'cleanup':cleanup,'cleanup_error':cleanup_error,'last_case_context':'last_context.json; last observed context only, not a numerical cause'})
-  atomic(root/'watchdog_receipt.json',{'status':'STOPPED_NO_RETRY','reason':reason,'clocks':clocks,'cleanup':cleanup,'cleanup_error':cleanup_error,'resources':outcome,'wall_seconds':time.monotonic()-started,'controller_pid':None if child is None else child.pid,'package_sha256':digest,'scope':auth['scope']})
+  clocks.update(cleanup_finished_monotonic=time.monotonic(),cleanup_finished_unix=time.time())
+  atomic(root/'watchdog_receipt.json',{'status':'STOPPED_NO_RETRY','reason':reason,'primary_persistence_error':primary_persistence_error,'clocks':clocks,'cleanup':cleanup,'cleanup_error':cleanup_error,'resources':outcome,'wall_seconds':time.monotonic()-started,'controller_pid':None if child is None else child.pid,'package_sha256':digest,'scope':auth['scope']})
 
   flag[0]=True # A stopped attempt also needs its final callback seal; status stays STOPPED.
   return 1

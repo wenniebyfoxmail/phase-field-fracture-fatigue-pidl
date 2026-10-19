@@ -353,4 +353,40 @@ class InterruptedCleanupTests(unittest.TestCase):
    self.assertEqual(p.returncode,0,p.stderr);seal=json.loads((root/'logs/watchdog_exit.json').read_text())
    self.assertLessEqual(cleanup_m,seal['time_monotonic']);self.assertLessEqual(cleanup_u,seal['time_unix'])
 
+class PrimaryStopPersistenceTests(unittest.TestCase):
+ def test_actual_launch_persists_primary_before_secondary_cleanup_failure(self):
+  self.exercise_launch(False)
+ def test_primary_write_failure_still_attempts_cleanup(self):
+  self.exercise_launch(True)
+ def exercise_launch(self,persistence_failure):
+  import launch as l
+  with tempfile.TemporaryDirectory() as t:
+   root=Path(t);code=root/'code';code.mkdir();cfg={'run_root':str(root)};flag=[False]
+   member=dict(pid=42,start_ticks=17,pgid=41,sid=41,state='S',rss=12,hwm=20)
+   class Child:pid=41
+   def interrupted(child,root_arg,started,*,state):
+    state['members']=[member];raise RuntimeError('ARTIFICIAL_PRIMARY_MONITOR')
+   def failing_cleanup(child,members):
+    if persistence_failure:
+     self.assertFalse((root/'watchdog_first_stop.json').exists());raise RuntimeError('ARTIFICIAL_SECONDARY_CLEANUP')
+    first=json.loads((root/'watchdog_first_stop.json').read_text())
+    self.assertIn('ARTIFICIAL_PRIMARY_MONITOR',first['reason']);self.assertEqual(first['observed_members'],[member]);self.assertEqual(first['cleanup_status'],'NOT_STARTED')
+    self.assertIn('trigger_monotonic',first['clocks']);self.assertNotIn('cleanup_finished_monotonic',first['clocks'])
+    raise RuntimeError('ARTIFICIAL_SECONDARY_CLEANUP')
+   from contextlib import ExitStack
+   with ExitStack() as stack:
+    for target,value in [('__file__',str(code/'launch.py')),('arm_deadline',lambda seconds:None),('install',lambda *a,**kw:flag),('watch_process',interrupted),('stop_group',failing_cleanup)]:stack.enter_context(patch.object(l,target,value))
+    stack.enter_context(patch.object(l.package,'load_config',return_value=cfg));stack.enter_context(patch.object(l.package,'approval',return_value=('artificial-digest',{'source_commit':'a'*40,'scope':'ARTIFICIAL_ONLY','human_approved':False})))
+    if persistence_failure:stack.enter_context(patch.object(l,'first_stop',side_effect=OSError('ARTIFICIAL_PRIMARY_WRITE_FAILURE')))
+    stack.enter_context(patch.object(l.sys,'platform','linux'))
+    stack.enter_context(patch.object(l.os,'sched_getaffinity',return_value={0},create=True));stack.enter_context(patch.object(l.os,'sched_setaffinity',create=True));stack.enter_context(patch.object(l.resource,'setrlimit'));stack.enter_context(patch.object(l.subprocess,'Popen',return_value=Child()))
+    self.assertEqual(l.main(['--config',str(code/'config.json'),'--approval-receipt',str(root/'ARTIFICIAL_ONLY.json')]),1)
+   final=json.loads((root/'watchdog_receipt.json').read_text())
+   if persistence_failure:
+    self.assertIn('ARTIFICIAL_PRIMARY_WRITE_FAILURE',final['primary_persistence_error']);self.assertIn('ARTIFICIAL_SECONDARY_CLEANUP',final['cleanup_error']);self.assertEqual(final['status'],'STOPPED_NO_RETRY');return
+   first=json.loads((root/'watchdog_first_stop.json').read_text())
+   self.assertIn('ARTIFICIAL_PRIMARY_MONITOR',first['reason']);self.assertNotIn('ARTIFICIAL_SECONDARY_CLEANUP',first['reason'])
+   self.assertIn('ARTIFICIAL_SECONDARY_CLEANUP',final['cleanup_error']);self.assertEqual(final['status'],'STOPPED_NO_RETRY');self.assertTrue(flag[0])
+   self.assertLessEqual(first['clocks']['trigger_monotonic'],final['clocks']['cleanup_finished_monotonic'])
+
 if __name__=='__main__':unittest.main()
