@@ -256,5 +256,37 @@ class FiniteComparisonTests(unittest.TestCase):
             self.assertEqual((out/'completion.json').read_bytes(), (archive/'output/completion.json').read_bytes())
             budget.close.assert_called_once()
 
+    def test_finalization_secondary_metadata_failure_preserves_primary(self):
+        from unittest.mock import Mock
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)/'output'; out.mkdir(); (out/'completion.json').write_text('stale synthetic marker')
+            archive = Path(tmp)/'archive'
+            budget = SimpleNamespace(started=0., shared=0., phase='shared', phase_started=0., cap=None,
+                                     guard=Mock(side_effect=TimeoutError('first quota fault')), close=Mock())
+            receipt = dict(status='stopped_no_retry', error='ValueError: original fixture error')
+            with patch.object(Path, 'exists', side_effect=PermissionError('secondary metadata fault')):
+                error = runner.finalize(out, dict(archive_root=str(archive)), receipt, budget, ValueError('original fixture error'))
+            self.assertIsInstance(error, TimeoutError)
+            self.assertEqual(receipt['error'], 'ValueError: original fixture error')
+            self.assertFalse((out/'completion.json').exists())
+            budget.close.assert_called_once()
+
+    def test_close_then_archive_metadata_fault_clears_both_markers(self):
+        from unittest.mock import Mock
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)/'output'; out.mkdir()
+            archive = Path(tmp)/'archive'; (archive/'output').mkdir(parents=True)
+            budget = SimpleNamespace(started=0., shared=0., phase='shared', phase_started=0., cap=None,
+                                     guard=Mock(), close=Mock(side_effect=OSError('primary close fault')))
+            receipt = dict(status='computed_pending_finalization')
+            with patch.object(Path, 'exists', side_effect=[True, True, PermissionError('secondary metadata fault')]):
+                error = runner.finalize(out, dict(archive_root=str(archive)), receipt, budget, None)
+            self.assertIsInstance(error, OSError)
+            self.assertEqual(str(error), 'primary close fault')
+            self.assertFalse((out/'completion.json').exists())
+            self.assertFalse((archive/'output/completion.json').exists())
+            self.assertEqual(receipt['status'], 'stopped_no_retry')
+            budget.close.assert_called_once()
+
 
 if __name__ == '__main__': unittest.main()

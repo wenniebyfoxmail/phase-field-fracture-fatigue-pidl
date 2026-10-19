@@ -54,29 +54,34 @@ def finalize(out, grant, receipt, budget, primary_error):
         receipt['status'] = 'stopped_no_retry'
         receipt.setdefault('error', f'{type(primary_error).__name__}: {primary_error}')
     archived = Path(grant['archive_root'])/'output'
+    def diagnostic(message):
+        try:
+            print(message, file=sys.stderr, flush=True)
+        except BaseException:
+            pass  # A broken log sink must not replace the scientific/run error.
     def invalidate_completion():
         for folder in (out, archived):
             try:
                 (folder/'completion.json').unlink(missing_ok=True)
-            except OSError as error:
-                print('E034 completion invalid (nonzero exit required): '+repr(error), file=sys.stderr, flush=True)
+            except BaseException as error:
+                diagnostic('E034 completion invalid (nonzero exit required): '+repr(error))
     def record_failure(error):
         nonlocal final_error
         if final_error is None: final_error = error
         receipt['status'] = 'stopped_no_retry'
         receipt.setdefault('finalization_errors', []).append(f'{type(error).__name__}: {error}')
         try:
-            dump(out/'receipt.json', receipt)
-        except BaseException as write_error:
-            # Disk failure can prevent receipts; the nonzero outer process exit
-            # remains authoritative and no completion marker is emitted.
-            print('E034 FINALIZATION STOP: '+repr(error)+'; receipt write: '+repr(write_error), file=sys.stderr, flush=True)
-        if archived.exists():
             try:
-                dump(archived/'receipt.json', receipt)
+                dump(out/'receipt.json', receipt)
             except BaseException as write_error:
-                print('E034 archived receipt invalid: '+repr(write_error), file=sys.stderr, flush=True)
-        invalidate_completion()
+                # Disk failure can prevent receipts; outer nonzero exit rules.
+                diagnostic('E034 FINALIZATION STOP: '+repr(error)+'; receipt write: '+repr(write_error))
+            try:
+                if archived.exists(): dump(archived/'receipt.json', receipt)
+            except BaseException as write_error:
+                diagnostic('E034 archived receipt invalid: '+repr(write_error))
+        finally:
+            invalidate_completion()
     try:
         budget.guard()
         receipt.update(elapsed_seconds=time.monotonic()-budget.started, end_unix=time.time(),
