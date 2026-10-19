@@ -1,0 +1,17 @@
+{
+  "experiment_id": "HQ-ROAD-UQ-MATRIX-001",
+  "status": "PREPARED_NOT_EXECUTION_AUTHORIZED",
+  "purpose": "complete old/new checkpoint by CFD/GAPS paired mechanism matrix under one inference and scoring backend",
+  "models": ["D1 scratch U-Net frozen checkpoint", "D2 ResNet18UNet repair-package frozen checkpoint"],
+  "sources": ["CFD 118 published nonempty labels", "GAPS384 382 nonempty plus 2 empty labels reported separately"],
+  "acceptance_fraction": 0.25,
+  "scores": ["U_LC", "U_H", "U_Z fitted separately from the same frozen CRACK500 A validation cohort"],
+  "overlap_diagnostics_pixels": [0, 2, 4],
+  "paired_bootstrap_replicates": 5000,
+  "bootstrap_seed": 20261019,
+  "training_steps": 0,
+  "proposed_gpu_budget_hours": 2,
+  "retry": false,
+  "road420_access": false,
+  "diagonal_verdicts": "reuse frozen D1 and D2 outputs; diagnostic recomputation cannot change their primary verdicts"
+}
