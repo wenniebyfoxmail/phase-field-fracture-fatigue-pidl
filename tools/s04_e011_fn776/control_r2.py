@@ -45,6 +45,10 @@ def bytes_used(folder):
             sum(p.stat().st_size for p in CASE.iterdir() if p.is_file() and p.name!='retrieved.tar'))
 
 
+def interrupt(signum, frame):
+    raise KeyboardInterrupt('control received signal '+str(signum))
+
+
 def cleanup_owned(child):
     result = dict(pid=child.pid, already_exited=child.poll() is not None, actions=[])
     if child.poll() is None:
@@ -174,6 +178,9 @@ def main():
              plan_sha256=args.plan_sha256, utc=stamp(), one_attempt=True))
     approval = json.loads((folder/'approval.json').read_text())
     assert approval['plan_sha256'] == args.plan_sha256 and not (folder/'terminal.json').exists()
+    # Default SIGTERM would bypass Python finally blocks and orphan the SSH
+    # client. Convert it into the same cleanup/terminal path as SIGINT.
+    signal.signal(signal.SIGTERM, interrupt)
     state_path = folder/'state.json'
     state = json.loads(state_path.read_text()) if state_path.exists() else {}
     step = plan['steps'][args.step]

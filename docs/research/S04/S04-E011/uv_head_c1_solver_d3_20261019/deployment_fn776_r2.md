@@ -29,6 +29,9 @@ Guard差异仅为新Run/Card/清单路径与控制日志预留。原25424分账�
 逐阶段排他claim受核验。stdout/stderr自Popen起直接写入文件，持续保留部分字节，
 并保存异常自带的非空或已知空缓冲、开始/结束/时间/子PID/exit/超时/清理记录。
 只清理start_new_session建立的自有本地子进程组，不动共享SSH master或其他进程。
+批准绑定后、任何Popen前安装SIGTERM处理，将其转为异常，和SIGINT一样走清理及
+终态路径。SIGKILL、断电或无法写盘不能保证回执落盘；缺回执时状态未知，不能
+把它当作未启动并自动重发。现有排他claim也不能冒充断电后的完整状态证据。
 任一失败落terminal.json，后续阶段拒绝执行；未知远端完成状态不写成“已停止”。
 
 新增remote_control_r2.py作为未来固定SSH stdin：输出阶段及每个子命令begin/end，
