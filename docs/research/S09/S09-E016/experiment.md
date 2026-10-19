@@ -1,6 +1,6 @@
 # S09-E016 factorised damage-increment readiness audit
 
-Status: `DESIGN_AMENDED_AWAITING_NARROW_REREVIEW_NO_EXECUTION`
+Status: `DESIGN_READY_IMPLEMENTATION_AWAITING_EXACT_REVIEW_NO_EXECUTION`
 
 Protocol revision: `v2-strict-zero-effective-increment`.
 
@@ -8,7 +8,9 @@ Primary storyline: S09 Neural Operator fracture-development representation.
 
 This document defines a read-only audit against already retrieved
 exposed-development arrays. Revision v2 incorporates the two blocking findings
-from the first ChatGPT Pro design review and awaits a narrow rereview. The card
+from the first ChatGPT Pro design review and received a narrow
+`E016_DESIGN_READY_PASS` bound to commit
+`68e47e543630efea45c67690e8842baed219500c`. The card
 itself does not execute or authorise a checkpoint forward, training, new data
 access, FEM work, a new holdout, or producer use.
 
