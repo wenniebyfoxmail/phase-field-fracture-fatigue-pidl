@@ -1,0 +1,119 @@
+{
+  "proposal_id": "S04-E011-UVH-C1-FN776-PROPOSAL-v1",
+  "status": "design_and_budget_for_user_review",
+  "execution_authorized": false,
+  "code_ready": false,
+  "numerical_work_performed_this_turn": false,
+  "scientific_arrays_read_this_turn": false,
+  "old_runs_immutable": true,
+  "science_reference_protocol": "S04-E011-UVH-C1-PC16-v1; solver-only prospective change",
+  "starting_point": "original network z=0; no r2/PC16 fitted z warm start",
+  "dimension": 776,
+  "basis_rank": 388,
+  "primary_stationarity_inf_threshold": 1e-08,
+  "primary_stationarity_readouts": [
+    "basis original-z AD",
+    "actual-network force pulled back to original-z"
+  ],
+  "algorithm": "full-coordinate square-root branch Newton with balanced TSQR and original-function Armijo",
+  "max_outer_steps": 16,
+  "max_backtracking_trials_per_step": 32,
+  "max_linear_refinements_per_step": 3,
+  "armijo_c1": 0.0001,
+  "alpha_sequence": "2**(-j),j=0..31",
+  "gp_chunk": 4096,
+  "curvature_units_per_complete_step": 1552,
+  "work_categories": {
+    "complete_curvature_factor_and_solve": 24832,
+    "controls": 64,
+    "true_function_trials": 512,
+    "final_readouts": 16
+  },
+  "work_total": 25424,
+  "work_definition": "Conservative prospective proxy: one full 776-coordinate curvature step costs776*2; not measured runtime equivalence. Controls HVP=2/E or gradient=1. No cross-category transfer. All TSQR/numeric construction/factor/refinement time is included.",
+  "wall_seconds": 900,
+  "no_new_optimizer_work_after_seconds": 600,
+  "no_new_science_after_seconds": 840,
+  "guard_stop_seconds": 890,
+  "cleanup_seconds": 10,
+  "rss_bytes": 8589934592,
+  "torch_reserved_bytes": 8589934592,
+  "own_nvml_bytes": 8589934592,
+  "minimum_initial_free_MiB": 12288,
+  "minimum_runtime_free_MiB": 4096,
+  "generated_output_bytes": 104857600,
+  "final_receipt_reserve_bytes": 1048576,
+  "candidate_producer": "Taobo physicalGPU7, subject to fresh exact identity/resource/duplicate checks in future card; no live check this turn",
+  "max_new_producer_runs": 1,
+  "retry_allowed": false,
+  "fallback_optimizer_allowed": false,
+  "rank_truncation_allowed": false,
+  "new_material_residual_stiffness_allowed": false,
+  "scientific_files_prospective_only": [
+    {
+      "role": "state",
+      "path": "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/inputs/c1_peak.npz",
+      "local_reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_block_preparation_20261017_v1/inputs/c1_peak.npz",
+      "bytes": 15183163,
+      "sha256": "ac63ba676376179f0539c156e3fd49f8e74c5eba386f684c71a617bb637b7fdd",
+      "decode_fields": [
+        "nodes",
+        "cells",
+        "freeu",
+        "u_fem",
+        "v_fem",
+        "d_fem"
+      ]
+    },
+    {
+      "role": "model",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_4.pt",
+      "bytes": 4510165,
+      "sha256": "9c4ebbe4bcf1d4bc6b4997f1072a6a5f68e0c94783d0365b0224a7175ed12d1b",
+      "decode_fields": [
+        "weights_only state_dict"
+      ]
+    },
+    {
+      "role": "frozen_transform",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvh_c1_r2_20261018/head.npz",
+      "bytes": 1204696,
+      "sha256": "deaf3fea860a4563df84f7909afbde49d76430b633bce542b4896ef9526e8d65",
+      "decode_fields": [
+        "transform"
+      ]
+    },
+    {
+      "role": "frozen_summary",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvh_c1_r2_20261018/summary.json",
+      "bytes": 2527,
+      "sha256": "ee4062e4e9d990bee7b5c7507301894b53c88f57c833c67ea092cbdbcafaa877",
+      "decode_fields": [
+        "protocol",
+        "run_id",
+        "original",
+        "saved_PBD",
+        "head",
+        "retained_gradient_l2",
+        "full_head_gradient_l2",
+        "full_head_gradient_inf",
+        "numerical_energy_uncertainty",
+        "stationarity_screen"
+      ]
+    },
+    {
+      "role": "frozen_basis",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvh_c1_r2_20261018/basis.json",
+      "bytes": 11038,
+      "sha256": "f6d6c38ddb75460e7490f96b8a0743659cfad52117fd3455b30580228c5ccda3",
+      "decode_fields": [
+        "rank",
+        "columns",
+        "rcond",
+        "retained_condition",
+        "omitted_directions"
+      ]
+    }
+  ],
+  "risk": "Full-rank, runtime, precision and stationarity feasibility unmeasured; original-z tolerance not relaxed."
+}
