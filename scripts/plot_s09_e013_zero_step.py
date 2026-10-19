@@ -48,7 +48,9 @@ def main() -> None:
     ])
 
     summary = {
-        "schema_version": "s09-e013-zero-step-analysis-v1",
+        "schema_version": "s09-e013-zero-step-analysis-v2-pair-specific",
+        "assay_type": "PAIR_SPECIFIC_DIAGONAL_DIRECTIONAL_ASSAY",
+        "shared_parameter_direction_across_pairs": False,
         "source_receipt": str(args.receipt.resolve()),
         "source_receipt_sha256": sha256(args.receipt),
         "status": audit["status"],
@@ -75,8 +77,9 @@ def main() -> None:
             np.logical_and(~global_win, global_after_g > 0).sum()
         ),
         "interpretation_boundary": (
-            "Exact first-order margin changes through the next frozen AdamW state; "
-            "no optimizer step or post-step forward evaluation was performed."
+            "Each row uses its own pair-specific exact next-AdamW displacement. "
+            "Counts are diagonal tallies, not one shared update. No optimizer step "
+            "or post-step forward evaluation was performed."
         ),
     }
     summary_path = args.output_dir / "zero_step_analysis.json"
@@ -112,7 +115,7 @@ def main() -> None:
     ax.set_ylim(lo - pad, hi + pad)
     ax.set_xlabel(r"Initial global margin ($\times 10^{-6}$)")
     ax.set_ylabel(r"Linearised margin after one L25 step ($\times 10^{-6}$)")
-    ax.set_title("B  L25 sacrifices protected global ordering", loc="left", fontweight="bold")
+    ax.set_title("B  Pair-own L25 directions regress global rows", loc="left", fontweight="bold")
     ax.text(0.03, 0.03, "15/17 protected wins flip\n0/8 losses are repaired",
             transform=ax.transAxes, fontsize=10,
             bbox={"facecolor": "white", "edgecolor": "#d1d5db", "alpha": 0.9})
@@ -120,16 +123,16 @@ def main() -> None:
     ax = axes[2]
     values = [int(global_win.sum()), int((global_after_g > 0).sum()),
               int((global_after_l > 0).sum())]
-    labels = ["Initial\nB25", "After G25\n(linearised)", "After L25\n(linearised)"]
+    labels = ["Initial\nB25", "Pair-own G25\n(diagonal)", "Pair-own L25\n(diagonal)"]
     bars = ax.bar(labels, values, color=["#64748b", "#2a9d8f", "#d97706"], width=0.65)
     ax.axhline(17, color="#64748b", linestyle="--", linewidth=1)
     ax.set_ylim(0, 26)
     ax.set_ylabel("Global-amplitude WIN pairs (of 25)")
-    ax.set_title("C  Exact next-step audit", loc="left", fontweight="bold")
+    ax.set_title("C  Pair-specific next-step tally", loc="left", fontweight="bold")
     for bar, value in zip(bars, values):
         ax.text(bar.get_x() + bar.get_width() / 2, value + 0.5, str(value),
                 ha="center", va="bottom", fontweight="bold")
-    ax.text(0.5, -0.22, "Zero optimiser steps were executed",
+    ax.text(0.5, -0.22, "25 different hypothetical updates; zero optimiser steps",
             transform=ax.transAxes, ha="center", fontsize=10, color="#374151")
 
     for ax in axes:
@@ -138,7 +141,7 @@ def main() -> None:
         ax.set_axisbelow(True)
 
     fig.suptitle(
-        "S09-E013 stopped before training: current B25 ranking directions conflict",
+        "S09-E013 stopped before training: pair-specific directions conflict",
         fontsize=15, fontweight="bold",
     )
     figure_path = args.output_dir / "zero_step_global_local_conflict.png"

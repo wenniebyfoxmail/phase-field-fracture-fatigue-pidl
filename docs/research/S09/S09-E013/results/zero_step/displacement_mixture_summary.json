@@ -1,17 +1,23 @@
 {
   "all_breakpoint_event_count": 55,
+  "assay_type": "PAIR_SPECIFIC_DIAGONAL_DIRECTIONAL_ASSAY",
   "autograd_performed": false,
-  "baseline_count_preserving_interval_exists": true,
-  "baseline_count_preserving_open_lambda_max": 0.232740643526109,
-  "baseline_count_preserving_open_lambda_min": 0.2186957629804058,
   "common_initial_model_state_sha256": "4d353f6ed1f0c3ce097d15ec61b078c34554e794ee264f44fcc0f5e8aaab684f",
   "common_initial_optimizer_state_sha256": "c7a4b497e6d51089fc386c0868c7a33a867f21f60d4c6d3753788016b08b1e64",
-  "first_open_interval_boundary_with_local_count_gain_over_G25": 0.09782925602211034,
+  "common_scalar_mixture_direction_ruled_out": false,
+  "diagonal_baseline_count_interval_exists": true,
+  "diagonal_baseline_count_open_lambda_max": 0.232740643526109,
+  "diagonal_baseline_count_open_lambda_min": 0.2186957629804058,
+  "diagonal_count_improvement_over_initial_exists": false,
+  "diagonal_first_boundary_with_local_count_gain_over_G25": 0.09782925602211034,
+  "diagonal_last_boundary_with_any_global_loss_crossing": 0.0686942444990416,
+  "diagonal_local_count_gain_while_any_global_loss_crosses_exists": false,
+  "diagonal_maximum_global_plus_local_win_count": 32,
   "initial_B25_counts": {
     "global_wins": 17,
     "local_wins": 8
   },
-  "interpretation": "Along this recorded displacement segment there is no count-level Pareto improvement over the initial B25 global/local win counts, and no local-count gain over G25 while retaining any of G25's predicted global-loss repairs. A narrow interval only recovers both initial count totals. This conclusion is limited to this first-order segment.",
+  "interpretation": "The pair-specific diagonal tally shows an adverse trade-off within each source pair's own G25/L25 displacement segment. Because no common parameter direction is evaluated across all pairs, it cannot establish a joint Pareto frontier or exclude a shared constrained direction.",
   "lambda_0_G25_counts": {
     "global_wins": 25,
     "local_wins": 2
@@ -20,15 +26,12 @@
     "global_wins": 2,
     "local_wins": 21
   },
-  "last_open_interval_boundary_with_any_global_loss_repair": 0.0686942444990416,
-  "local_count_gain_over_G25_while_any_global_loss_is_repaired_exists": false,
   "margin_breakpoint_count_including_endpoints": 44,
-  "maximum_global_plus_local_win_count": 32,
-  "mixture_definition": "delta(lambda)=(1-lambda)*delta_G25+lambda*delta_L25",
+  "mixture_definition": "For each pair p independently: delta_p(lambda)=(1-lambda)*delta_G25,p+lambda*delta_L25,p",
   "model_forward_performed": false,
   "optimizer_step_performed": false,
-  "proxy_boundary": "Recorded first-order inner products for a linear mixture of two known next-AdamW parameter displacements. This is not a newly merged loss passed through AdamW and is not a post-step field evaluation.",
-  "schema_version": "s09-e013-displacement-mixture-v1",
-  "source_receipt_sha256": "ec52d61d0872d2a618faa64cd438946c03f13f88c6b41d5f2d16bc9c86779784",
-  "strict_joint_count_improvement_over_initial_exists": false
+  "proxy_boundary": "Each pair has its own two recorded next-AdamW displacements. Counts tally 25 different hypothetical updates, each evaluated only on its source pair. They are not jointly achievable by one parameter update, do not rule out a common mixture direction, are not a newly merged loss passed through AdamW, and are not post-step field evaluations.",
+  "schema_version": "s09-e013-pair-specific-diagonal-mixture-v2",
+  "shared_parameter_direction_across_pairs": false,
+  "source_receipt_sha256": "ec52d61d0872d2a618faa64cd438946c03f13f88c6b41d5f2d16bc9c86779784"
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Piecewise-linear audit of the recorded E013 G25/L25 displacements."""
+"""Pair-specific diagonal audit of recorded E013 G25/L25 displacements."""
 from __future__ import annotations
 
 import argparse
@@ -228,18 +228,25 @@ def main() -> None:
         if row["local_total_predicted_wins"] > int(dense_local_wins[0])
     ]
     summary = {
-        "schema_version": "s09-e013-displacement-mixture-v1",
+        "schema_version": "s09-e013-pair-specific-diagonal-mixture-v2",
         "source_receipt_sha256": sha256(args.receipt),
         "common_initial_model_state_sha256": identity["model_state_sha256"],
         "common_initial_optimizer_state_sha256": identity["optimizer_state_sha256"],
         "model_forward_performed": False,
         "autograd_performed": False,
         "optimizer_step_performed": False,
-        "mixture_definition": "delta(lambda)=(1-lambda)*delta_G25+lambda*delta_L25",
+        "assay_type": "PAIR_SPECIFIC_DIAGONAL_DIRECTIONAL_ASSAY",
+        "mixture_definition": (
+            "For each pair p independently: delta_p(lambda)="
+            "(1-lambda)*delta_G25,p+lambda*delta_L25,p"
+        ),
+        "shared_parameter_direction_across_pairs": False,
         "proxy_boundary": (
-            "Recorded first-order inner products for a linear mixture of two known "
-            "next-AdamW parameter displacements. This is not a newly merged loss "
-            "passed through AdamW and is not a post-step field evaluation."
+            "Each pair has its own two recorded next-AdamW displacements. Counts "
+            "tally 25 different hypothetical updates, each evaluated only on its "
+            "source pair. They are not jointly achievable by one parameter update, "
+            "do not rule out a common mixture direction, are not a newly merged "
+            "loss passed through AdamW, and are not post-step field evaluations."
         ),
         "margin_breakpoint_count_including_endpoints": len(margin_breakpoints),
         "all_breakpoint_event_count": len(breakpoint_rows),
@@ -255,30 +262,30 @@ def main() -> None:
             "global_wins": dense_global_wins[-1],
             "local_wins": dense_local_wins[-1],
         },
-        "strict_joint_count_improvement_over_initial_exists": bool(strict_joint),
-        "local_count_gain_over_G25_while_any_global_loss_is_repaired_exists": bool(
+        "diagonal_count_improvement_over_initial_exists": bool(strict_joint),
+        "diagonal_local_count_gain_while_any_global_loss_crosses_exists": bool(
             local_gain_with_any_global_repair
         ),
-        "baseline_count_preserving_interval_exists": bool(baseline_preserving_local),
-        "baseline_count_preserving_open_lambda_min": baseline_lambda_min,
-        "baseline_count_preserving_open_lambda_max": baseline_lambda_max,
-        "last_open_interval_boundary_with_any_global_loss_repair": (
+        "diagonal_baseline_count_interval_exists": bool(baseline_preserving_local),
+        "diagonal_baseline_count_open_lambda_min": baseline_lambda_min,
+        "diagonal_baseline_count_open_lambda_max": baseline_lambda_max,
+        "diagonal_last_boundary_with_any_global_loss_crossing": (
             None if not global_repair_intervals
             else max(float(row["lambda_right_open"]) for row in global_repair_intervals)
         ),
-        "first_open_interval_boundary_with_local_count_gain_over_G25": (
+        "diagonal_first_boundary_with_local_count_gain_over_G25": (
             None if not local_gain_intervals
             else min(float(row["lambda_left_open"]) for row in local_gain_intervals)
         ),
-        "maximum_global_plus_local_win_count": int(max(
+        "diagonal_maximum_global_plus_local_win_count": int(max(
             gw + lw for gw, lw in zip(dense_global_wins, dense_local_wins)
         )),
+        "common_scalar_mixture_direction_ruled_out": False,
         "interpretation": (
-            "Along this recorded displacement segment there is no count-level "
-            "Pareto improvement over the initial B25 global/local win counts, and "
-            "no local-count gain over G25 while retaining any of G25's predicted "
-            "global-loss repairs. A narrow interval only recovers both initial "
-            "count totals. This conclusion is limited to this first-order segment."
+            "The pair-specific diagonal tally shows an adverse trade-off within "
+            "each source pair's own G25/L25 displacement segment. Because no common "
+            "parameter direction is evaluated across all pairs, it cannot establish "
+            "a joint Pareto frontier or exclude a shared constrained direction."
         ),
     }
     summary_path = args.output_dir / "displacement_mixture_summary.json"
@@ -290,7 +297,7 @@ def main() -> None:
     ax.step(dense_lambda, dense_global_repairs, where="post", label="old 8 losses crossed", color="#2a9d8f", linewidth=1.8)
     ax.step(dense_lambda, dense_global_flips, where="post", label="old 17 wins flipped", color="#d1495b", linewidth=1.8)
     ax.axhline(17, color="#64748b", linestyle="--", linewidth=1)
-    ax.set(title="A  Global-amplitude trade-off", xlabel=r"Mixture $\lambda$ (G25 $\rightarrow$ L25)", ylabel="Pair count")
+    ax.set(title="A  Pair-specific global tally", xlabel=r"Within-pair $\lambda$ (G25 $\rightarrow$ L25)", ylabel="Diagonal hypothetical count")
     ax.set_ylim(-0.5, 25.8)
     ax.legend(frameon=False, fontsize=9)
 
@@ -304,7 +311,7 @@ def main() -> None:
             baseline_lambda_min, baseline_lambda_max,
             color="#a7c957", alpha=0.18, label="initial totals recovered",
         )
-    ax.set(title="B  Local-support trade-off", xlabel=r"Mixture $\lambda$ (G25 $\rightarrow$ L25)", ylabel="Pair count")
+    ax.set(title="B  Pair-specific local tally", xlabel=r"Within-pair $\lambda$ (G25 $\rightarrow$ L25)", ylabel="Diagonal hypothetical count")
     ax.set_ylim(-0.5, 25.8)
     ax.legend(frameon=False, fontsize=9)
 
@@ -312,7 +319,7 @@ def main() -> None:
     ax.plot(dense_lambda, dense_ld_median, label=r"median $\Delta L_D$", color="#264653", linewidth=2)
     ax.plot(dense_lambda, dense_lp_median, label=r"median $\Delta L_P$", color="#e76f51", linewidth=2)
     ax.axhline(0, color="#64748b", linewidth=1)
-    ax.set(title="C  Recorded linearised side effects", xlabel=r"Mixture $\lambda$ (G25 $\rightarrow$ L25)", ylabel="Median predicted change")
+    ax.set(title="C  Pair-specific linearised side effects", xlabel=r"Within-pair $\lambda$ (G25 $\rightarrow$ L25)", ylabel="Median predicted change")
     ax.ticklabel_format(axis="y", style="sci", scilimits=(-2, 2))
     ax.legend(frameon=False, fontsize=9)
 
@@ -321,8 +328,13 @@ def main() -> None:
         ax.grid(color="#e5e7eb", linewidth=0.65, alpha=0.8)
         ax.set_axisbelow(True)
     fig.suptitle(
-        "S09-E013 recorded displacement segment: no joint count-level improvement",
+        "S09-E013 pair-specific diagonal assay: not one shared parameter update",
         fontsize=15, fontweight="bold",
+    )
+    fig.text(
+        0.5, -0.01,
+        "Each pair uses its own recorded AdamW displacement; counts are not jointly achievable.",
+        ha="center", fontsize=10, color="#374151",
     )
     figure_path = args.output_dir / "displacement_mixture_tradeoff.png"
     fig.savefig(figure_path, dpi=220, bbox_inches="tight")

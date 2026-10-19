@@ -31,11 +31,13 @@ signs for all 25 pairs, with Pearson correlation `-0.8693`.  The 17 pairs that
 are global wins are local-support losses; the eight global losses are
 local-support wins.
 
-Panel B propagates the proposed L25 direction through the exact next AdamW
-state and uses the first-order global-margin change.  Fifteen of the 17
-protected global wins cross to loss, while none of the eight global losses
-cross to win.  Panel C compares the resulting global-win counts: 17 initially,
-25 under the exact G25 global-ranking replay direction, and two under L25.
+Panel B propagates each pair's own proposed L25 direction through the exact
+next AdamW state and uses that pair's first-order global-margin change.
+Fifteen of the 17 protected rows cross to loss, while none of the eight
+global-loss rows cross to win.  Panel C is a diagonal tally across 25 distinct
+hypothetical updates: 17 initial wins, 25 source-pair wins under each pair's
+own G25 direction, and two under each pair's own L25 direction.  It is not one
+shared update.
 
 ## Interpretation
 
@@ -65,13 +67,15 @@ incompatible.
 
 ## Allowed conclusion
 
-Do not train the reviewed L25 objective.  At this checkpoint, the exact
-first-order G25 direction repairs all eight global losses and flips none of the
-17 global wins, whereas L25 repairs none and flips 15.  This does not establish
-finite-step superiority: E011 already showed that a favourable one-step G25
-prediction did not become a realised repair after 500 updates.  A later
-localisation term should keep global amplitude ranking primary and expose its
-trade-off as a constrained secondary objective or within-cycle spatial loss.
+Do not train the reviewed L25 objective.  At this checkpoint, the
+pair-specific diagonal G25 directions cross all eight global-loss rows and
+flip none of the 17 global-win rows, whereas the corresponding L25 directions
+cross none and flip 15.  These are 25 distinct directions and do not establish
+a common-update result or finite-step superiority.  E011 already showed that a
+favourable one-step G25 prediction did not become a realised repair after 500
+updates.  A later localisation term should keep a common global amplitude
+ranking gradient primary and expose its trade-off as a constrained secondary
+objective or within-cycle spatial loss.
 
 ## Blocked conclusion
 
@@ -92,38 +96,38 @@ pair improvements, protected-pair flips, and spatial gain--under a new,
 prospectively reviewed staged criterion.  The observed `8/8` and `17/17`
 counts are diagnostics, not a newly imposed all-or-nothing scientific gate.
 
-## Recorded displacement-mixture decision
+## Correction: pair-specific diagonal directional assay
 
-A final receipt-only audit tested the line segment
+Source inspection after the first plot showed that E013 recomputed
+`_pair_objectives`, `merge_ranking_gradients`, and `_adamw_displacement` inside
+the pair loop.  The receipt therefore contains 25 different displacement
+pairs, `delta_G25,p` and `delta_L25,p`, rather than one shared G25 displacement
+and one shared L25 displacement.
 
-`delta(lambda) = (1-lambda) delta_G25 + lambda delta_L25`, `lambda in [0,1]`.
+The corrected receipt-only assay is
 
-The two arms share the same model state
-`4d353f6e...ab684f` and AdamW state `c7a4b497...b1e64`.  The audit interpolates
-the recorded parameter-displacement inner products; it does not interpolate
-losses and pass them through AdamW, execute an optimiser, or evaluate a new
-field.
+`delta_p(lambda) = (1-lambda) delta_G25,p + lambda delta_L25,p`,
+`lambda in [0,1]`, evaluated only on the same source pair `p`.
 
-All global wrong-pair directions improve and all global protected-pair
-directions regress throughout the segment; the categorical result is governed
-by their relative magnitudes.  The last interval with any of G25's eight
-predicted global repairs ends at `lambda=0.0686942444990416`.  The first
-interval where local total wins exceed the G25 endpoint begins only at
-`lambda=0.09782925602211034`.  These intervals do not overlap.
+The model and AdamW starting identities are shared, but the directions are
+not.  Consequently, tallies such as 25 global wins at `lambda=0` or 21 local
+wins at `lambda=1` combine 25 different hypothetical parameter updates.  They
+are not jointly achievable by one update and are not a common Pareto frontier.
 
-There is one narrow open interval,
-`0.2186957629804058 < lambda < 0.232740643526109`, that recovers the initial
-B25 totals of 17 global wins and eight local wins.  It does so by repairing six
-local losses while flipping six different local wins; it repairs none of the
-eight global losses.  No interval improves both global and local win counts
-over the initial B25 counts.
+The 55 crossing events remain valid as a **pair-specific diagonal diagnostic**.
+Within that diagnostic, the last source-pair global crossing occurs at
+`lambda=0.0686942444990416`, the first local-count change beyond the G25
+diagonal tally occurs at `lambda=0.09782925602211034`, and the open interval
+`(0.2186957629804058, 0.232740643526109)` reproduces the two initial diagonal
+totals.  These facts describe within-pair trade-offs only.
 
-The decision is therefore negative for this specific first-order segment:
-there is no count-level local gain while retaining any predicted G25 global
-repair.  This does not bound the operator's capacity and does not reject other
-constrained directions.  The next intervention must change the direction
-construction rather than select a scalar mixture of these two recorded
-displacements.
+The earlier statement that this ruled out a common scalar mixture is
+withdrawn.  E013 did not persist the flattened displacement or gradient vectors
+needed to construct one shared direction and cross-evaluate it on all 25 pairs.
+The assay cannot exclude a common mixture or a new constrained common
+direction.  No rerun is needed to correct the interpretation; the original
+`ZERO_STEP_DIRECTION_STOP`, initial 25/25 predicted sign disagreement, target
+25/25 agreement, and cohort-classifier error remain unchanged.
 
 ## Files
 
@@ -135,12 +139,13 @@ displacements.
 - `pair_observable_audit.csv`: complete 25-pair truth, prediction, and
   first-order table.
 - `zero_step_global_local_conflict.png`: three-panel diagnostic figure.
-- `displacement_mixture_summary.json`: exact segment-level decision and
-  identities.
-- `displacement_mixture_breakpoints.csv`: all 55 recorded zero-crossing events.
-- `displacement_mixture_intervals.csv`: exact piecewise-constant count table.
-- `displacement_mixture_tradeoff.png`: global/local count trade-off and
-  recorded `L_D/L_P` side effects.
+- `displacement_mixture_summary.json`: corrected pair-specific assay boundary
+  and identities.
+- `displacement_mixture_breakpoints.csv`: all 55 pair-specific zero-crossing
+  events.
+- `displacement_mixture_intervals.csv`: exact piecewise-constant diagonal tally.
+- `displacement_mixture_tradeoff.png`: explicitly labelled pair-specific
+  diagonal tally and recorded `L_D/L_P` side effects.
 - `scripts/plot_s09_e013_zero_step.py`: reproducible receipt-only analysis.
 - `scripts/analyse_s09_e013_observable_semantics.py`: reproducible packet and
   receipt-only semantic audit.
