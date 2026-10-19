@@ -19,7 +19,7 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S04 method direction (2026-10-19, user-directed):** retain completed negative gamma result; primary work now first-principles reconstruction of constrained incremental problem, function-space solver and crack-local trial representation, with FEM–neural hybrid prioritized when field agreement is the goal. Four-source synthesis delivered; no new computation. [Goal anchor and source report](experiments/s04_fem_pidl_field_alignment_track.md).
+- **S04 hybrid design (2026-10-19, user-directed):** complete constrained incremental variational + FEM–neural hybrid specification independently reviewed PASS (design only). NN supplies one next-state damage initial guess; full-space FEM/damage and accepted-state fatigue determine fresh joint acceptance and single commit. New nodal K, matched direct-FEM/classical-predictor comparisons and all-in cost are explicit. No source/array/model/compute change or measured gain. [Design and review](research/S04/hybrid_constrained_design_20261019/README.md); [goal anchor](experiments/s04_fem_pidl_field_alignment_track.md).
 
 - **S04-E011 gamma-only fixed200 (2026-10-18):** strict9-component arithmetic diagnostic repaired at unchanged tolerance; reviewed W0/W25 completed400 updates. W0 repeats C bitwise, W25 joint FEM error31.157% higher despite GP-bound improvements; retain gamma16875. Single seen c1s1, no trajectory or newFEM. Historical offline hard-map next suggestion is superseded as the main route by the2026-10-19 method redesign. [Canonical track and result](experiments/s04_fem_pidl_field_alignment_track.md).
 

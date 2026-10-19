@@ -1,0 +1,24 @@
+{
+  "created_utc": "2026-10-19T11:21:34.820622+00:00",
+  "scope": "design/review only",
+  "scientific_execution": {
+    "training": 0,
+    "FEM_solves": 0,
+    "model_loads": 0,
+    "closed_array_reads": 0,
+    "SSH": 0
+  },
+  "main_design": {
+    "path": "design_v1.md",
+    "sha256": "ca50ad0e4913308165745311ece5ff1226f93b8c5c3b5e17512e7df240531b0d"
+  },
+  "source_reads": [
+    "source/native_q4_damage_qp.py:84-159",
+    "SENS_tensile/run_native_q4_direct_reference.py:180-240",
+    "tools/run_loss_weight_pair.py:90-113,216-231",
+    "GRIPHFiTH/Sources/+phase_field/+mex/Modules/fem/assembly/pf/at1_penalty_fatigue.f90:85-115",
+    "source/fatigue_history.py:36-158"
+  ],
+  "reused_literature_report": "/Users/wenxiaofang/obsidian/05 Knowledge/deep research report/Deep Research - PIDL接近FEM的第一性原理重构路线.md",
+  "authority": "direct user requested complete plan and review, no execution"
+}

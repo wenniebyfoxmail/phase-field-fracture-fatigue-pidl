@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-19",
+  "owner_step": "S04 D6 complete constrained variational FEM-neural design",
+  "user_authority": "Prepare complete plan and review only; no training or new FEM",
+  "channel": "independent read-only Codex, continuation of existing physical_parity_review lane",
+  "reviewer": "/root/physical_parity_review",
+  "artifact": "design_v1.md",
+  "sha256": "ca50ad0e4913308165745311ece5ff1226f93b8c5c3b5e17512e7df240531b0d",
+  "review_questions": [
+    "Does the selected nodal feasible set and same-problem FEM comparator avoid relabelling the old GP penalty problem?",
+    "Are the variational subproblems and fatigue fixed point mathematically distinct and consistently coupled?",
+    "Do final fresh Ru and damage KKT refer to identical final fields and immutable accepted predecessor?",
+    "Can NN actives be released and does numerical correction cover every feasible direction?",
+    "Are eta0 nullspaces, nonconvex branch choice and full rollback handled without a silent model change?",
+    "Does the once-per-increment learned initial state offer a testable benefit over classical warmstarts, with all training and correction costs included?",
+    "Are proposed trajectory validation, data availability and no-execution boundaries honest?"
+  ],
+  "allowed_work": "read-only documents/source/retained method literature; review receipts only",
+  "new_training": 0,
+  "new_FEM": 0,
+  "SSH": 0,
+  "closed_arrays_or_models": "not permitted",
+  "blocked_conclusions": ["Code Ready", "Run Ready", "speedup proven", "field accuracy improved", "physical teacher qualified"]
+}
