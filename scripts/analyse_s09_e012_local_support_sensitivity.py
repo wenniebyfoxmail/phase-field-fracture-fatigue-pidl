@@ -315,6 +315,29 @@ def normalised_response(contrast: torch.Tensor, change: torch.Tensor) -> float:
     return value
 
 
+def margin_outcome(margin: float) -> str:
+    _require(math.isfinite(margin), "nonfinite margin outcome")
+    return "WIN" if margin > 0 else "LOSS" if margin < 0 else "TIE"
+
+
+def next_step_pair_evidence(current_margin: float, change: float) -> dict[str, Any]:
+    _require(
+        math.isfinite(current_margin) and math.isfinite(change),
+        "nonfinite next-step pair evidence",
+    )
+    next_margin = current_margin + change
+    return {
+        "adamw_next_global_margin": next_margin,
+        "adamw_next_global_outcome": margin_outcome(next_margin),
+        "adamw_next_global_crossing": bool(
+            current_margin > 0 and next_margin <= 0
+        ),
+        "adamw_next_global_repair": bool(
+            current_margin < 0 and next_margin > 0
+        ),
+    }
+
+
 def stable_numpy_norm(vector: np.ndarray) -> float:
     _require(np.isfinite(vector).all(), "nonfinite norm vector")
     scale = float(np.max(np.abs(vector))) if vector.size else 0.0
@@ -479,6 +502,12 @@ def analyse_pairs(
             displacement = adamw_displacement_from_state_dict(
                 postclip, named_parameters, data["optimizer"]
             )
+            adamw_global_change = float(
+                global_contrast.dot(displacement).detach().cpu()
+            )
+            next_step = next_step_pair_evidence(
+                global_margin, adamw_global_change
+            )
             arm_metrics[arm] = {
                 "projected_rank_local_derivative": float(
                     local_contrast.dot(-q_rank).detach().cpu()
@@ -522,12 +551,11 @@ def analyse_pairs(
                 "adamw_local_cosine": normalised_response(
                     local_contrast, displacement
                 ),
-                "adamw_global_change": float(
-                    global_contrast.dot(displacement).detach().cpu()
-                ),
+                "adamw_global_change": adamw_global_change,
                 "adamw_global_cosine": normalised_response(
                     global_contrast, displacement
                 ),
+                **next_step,
                 "clip_applied": bool(diagnostic["clip_applied"]),
                 "clip_scale": (
                     float(diagnostic["norm_after_clip"] / diagnostic["norm_before_clip"])
@@ -573,7 +601,7 @@ def analyse_pairs(
                     global_contrast_np, displacement.detach().cpu().numpy(), slices
                 ),
             }
-        outcome = "WIN" if global_margin > 0 else "LOSS" if global_margin < 0 else "TIE"
+        outcome = margin_outcome(global_margin)
         initial_outcome = outcome if start_outcomes is None else start_outcomes[(growth, stagnant)]
         rows.append({
             "state": state_name,
@@ -697,10 +725,10 @@ def observed_changes(
             "linearised_global_change_along_finite_displacement": linearised_global_change,
             "linearised_local_change_along_finite_displacement": linearised_local_change,
             "linearised_global_margin": linearised_global_margin,
-            "prospective_global_crossing": bool(
+            "linearised_finite_displacement_global_crossing": bool(
                 start_global > 0 and linearised_global_margin <= 0
             ),
-            "endpoint_global_outcome": "WIN" if end_global > 0 else "LOSS" if end_global < 0 else "TIE",
+            "endpoint_global_outcome": margin_outcome(end_global),
             "endpoint_local_margin": end_local,
         })
     return rows
@@ -1032,12 +1060,15 @@ def run(args: argparse.Namespace) -> None:
             states[STATE_ORDER[0]]["gradients"]["local"][gi]
             - states[STATE_ORDER[0]]["gradients"]["local"][si]
         )
-    median_local_allocation = normalise_fraction_map({
-            group: float(np.median([group_energy(v, slices)[group] for v in start_local_contrasts]))
-            for group in slices
-        })
+    mean_local_allocation = normalise_fraction_map({
+        group: float(np.mean([
+            group_energy(vector, slices)[group]
+            for vector in start_local_contrasts
+        ]))
+        for group in slices
+    })
     allocation: dict[str, dict[str, float]] = {
-        "median local Jdiff": median_local_allocation,
+        "mean local Jdiff": mean_local_allocation,
         "control displacement": group_energy(
             states[STATE_ORDER[1]]["model_vector"] - states[STATE_ORDER[0]]["model_vector"], slices
         ),
@@ -1073,11 +1104,13 @@ def run(args: argparse.Namespace) -> None:
         "ranking_correct_pairs_lost": sum(
             row["endpoint_global_outcome"] != "WIN" for row in correct if row["arm"] == ARM_RANK
         ),
-        "control_correct_pairs_prospective_crossings": sum(
-            row["prospective_global_crossing"] for row in correct if row["arm"] == ARM_CONTROL
+        "control_correct_pairs_finite_displacement_crossings": sum(
+            row["linearised_finite_displacement_global_crossing"]
+            for row in correct if row["arm"] == ARM_CONTROL
         ),
-        "ranking_correct_pairs_prospective_crossings": sum(
-            row["prospective_global_crossing"] for row in correct if row["arm"] == ARM_RANK
+        "ranking_correct_pairs_finite_displacement_crossings": sum(
+            row["linearised_finite_displacement_global_crossing"]
+            for row in correct if row["arm"] == ARM_RANK
         ),
     }
     _require(
@@ -1109,8 +1142,49 @@ def run(args: argparse.Namespace) -> None:
             }
             for initial in ("WIN", "TIE", "LOSS")
         }
+    next_adamw_accounting: dict[str, Any] = {}
+    for state in STATE_ORDER:
+        next_adamw_accounting[state] = {}
+        state_subset = [row for row in state_rows if row["state"] == state]
+        for arm in (ARM_CONTROL, ARM_RANK):
+            next_adamw_accounting[state][arm] = {
+                "original_wrong_pairs": sum(
+                    row["initial_outcome"] == "LOSS" for row in state_subset
+                ),
+                "original_correct_pairs": sum(
+                    row["initial_outcome"] == "WIN" for row in state_subset
+                ),
+                "current_wrong_pairs": sum(
+                    row["current_global_outcome"] != "WIN"
+                    for row in state_subset
+                    if row["initial_outcome"] == "LOSS"
+                ),
+                "current_correct_pairs_already_lost": sum(
+                    row["current_global_outcome"] != "WIN"
+                    for row in state_subset
+                    if row["initial_outcome"] == "WIN"
+                ),
+                "next_adamw_wrong_pair_repairs": sum(
+                    row["arms"][arm]["adamw_next_global_repair"]
+                    for row in state_subset
+                    if row["initial_outcome"] == "LOSS"
+                ),
+                "next_adamw_correct_pair_crossings": sum(
+                    row["arms"][arm]["adamw_next_global_crossing"]
+                    for row in state_subset
+                    if row["initial_outcome"] == "WIN"
+                ),
+                "next_outcome_counts": {
+                    outcome: sum(
+                        row["arms"][arm]["adamw_next_global_outcome"] == outcome
+                        for row in state_subset
+                    )
+                    for outcome in ("WIN", "TIE", "LOSS")
+                },
+            }
     require_finite_payload(pair_accounting, "pair_accounting")
     require_finite_payload(sign_accounting, "sign_accounting")
+    require_finite_payload(next_adamw_accounting, "next_adamw_accounting")
     for name, path in input_paths.items():
         _require(
             sha256(path) == EXPECTED_INPUT_SHA256[name],
@@ -1197,6 +1271,7 @@ protection loss are reported together; no subset was selected after inspection.
         },
         "pair_accounting": pair_accounting,
         "endpoint_sign_accounting": sign_accounting,
+        "next_adamw_pair_accounting": next_adamw_accounting,
         "parameter_group_allocation": allocation,
         "artifacts": {},
     }

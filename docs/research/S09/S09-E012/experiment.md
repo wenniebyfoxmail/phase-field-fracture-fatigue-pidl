@@ -175,3 +175,15 @@ the P1 base config constructs the runtime, while the E010 resolved config binds
 the analysed B25 experiment provenance.  No data, state, observable, threshold,
 pair, or decision rule changed.
 
+## 2026-10-19 implementation evidence clarification
+
+The diagnostic reports two distinct prospective quantities: the linearised
+response along each realised 500-update endpoint displacement, and the
+linearised response along the exact next AdamW displacement reconstructed at
+each saved state.  Pair crossings and repairs for the latter are computed from
+the current state margin plus that state/arm-specific next displacement; they
+are not inferred from the endpoint displacement.  The decision figure uses the
+mean parameter-group energy fractions across the 25 valid local contrasts.
+This mean is a descriptive allocation summary and introduces no new validity
+criterion or route predicate.
+

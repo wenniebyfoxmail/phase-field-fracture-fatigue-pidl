@@ -133,6 +133,34 @@ def test_amplitude_replay_rejects_nonfinite_value() -> None:
         MODULE.amplitude_replay_error(data, {1: 0.0, 2: 0.0})
 
 
+def test_next_adamw_crossing_is_distinct_from_endpoint_displacement() -> None:
+    evidence = MODULE.next_step_pair_evidence(7.0e-6, -1.3322578153409078e-5)
+    assert evidence == {
+        "adamw_next_global_margin": pytest.approx(-6.322578153409077e-6),
+        "adamw_next_global_outcome": "LOSS",
+        "adamw_next_global_crossing": True,
+        "adamw_next_global_repair": False,
+    }
+    repair = MODULE.next_step_pair_evidence(-2.0e-6, 3.0e-6)
+    assert repair["adamw_next_global_repair"] is True
+    assert repair["adamw_next_global_crossing"] is False
+
+
+def test_mean_group_allocation_survives_zero_component_medians() -> None:
+    rows = np.eye(7)
+    slices = {f"g{index}": np.asarray([index]) for index in range(7)}
+    median = {
+        group: float(np.median([MODULE.group_energy(row, slices)[group] for row in rows]))
+        for group in slices
+    }
+    assert sum(median.values()) == 0.0
+    mean = MODULE.normalise_fraction_map({
+        group: float(np.mean([MODULE.group_energy(row, slices)[group] for row in rows]))
+        for group in slices
+    })
+    assert sum(mean.values()) == pytest.approx(1.0)
+
+
 def _route_rows(*, raw_helpful: bool, later_helpful: bool) -> list[dict]:
     rows = []
     for state in MODULE.STATE_ORDER:
