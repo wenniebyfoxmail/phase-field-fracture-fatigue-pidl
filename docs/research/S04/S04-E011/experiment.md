@@ -220,3 +220,25 @@ authorized W0/W25 each200 is reported completed, field retrieval/verification
 ongoing. This chat launches no pair, reanalysis or new numerical evaluations,
 and makes no field-error claim. Existing earlier statements about training
 closed describe this chat's scope and historical state, not that owner's new run.
+
+### 2026-10-19 authorized saved-result reuse (D4 complete)
+
+Goal anchor: continue the gamma-only question of whether the fixed C package
+can improve matched FEM fields. The user now asks only to reuse original-owner
+W0/W25 each200, verify and compare with C; no repeated producer or supplemental
+FP64 run. The [reuse verification/report](runs/loss_weight_fixed200_reuse_result_20261019.md)
+checks29 compact file hashes and the original FEM/operator/output identities,
+then recomputes six saved0/200 field rows on CPU. Maximum difference from the
+owner table2.1684e-19. C/W0 arrays are bitwise equal at0/200.
+
+W25 J=.001842287484 vs C/W0 .001404643135 (+31.15698%); u/v/d and
+raw/active errors increase. Negative damage and GP retreat reduce, while
+maximum nodal retreat rises64.58074%. Native full-domain maps and boxed worst-node
+insets make the different spatial extrema explicit. Existing independent owner
+review is reused; no duplicated review/producer, NN, autograd, training, FEM,
+FP64 model replay or hard-map activation occurred. This single seen-state
+fixed-budget negative gamma25 outcome does not qualify a teacher or establish
+convergence/trajectory/generalization. D4 comparison is complete; original
+checkpoint/full-gradient/producer-GP payloads remain remote and are not
+claimed fully downloaded. Further method changes remain separate from this
+completed reporting request.

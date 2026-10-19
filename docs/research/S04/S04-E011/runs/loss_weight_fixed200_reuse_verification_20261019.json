@@ -1,0 +1,148 @@
+{
+  "run_id": "pf_s04e011_wpair_fix_8edc762_20261018T210743Z",
+  "producer_source": "8edc762a99bacfa6825ed413a148fbcccd09a921",
+  "reused_comparison_source": "982a2e4fe1625a482650d86c89a0dfd8eb63efc9",
+  "local_compact_files_verified": 29,
+  "remote_only_checkpoints_or_vectors": [
+    "W0/update000/checkpoint.pt",
+    "W0/update001/checkpoint.pt",
+    "W0/update200/checkpoint.pt",
+    "W25/update000/checkpoint.pt",
+    "W25/update001/checkpoint.pt",
+    "W25/update200/checkpoint.pt",
+    "initial_bundle.pt",
+    "preflight_origin_gradients.pt"
+  ],
+  "reference_and_operator_and_outputs_hash_verified": true,
+  "metric_rows_recomputed": 6,
+  "maximum_absolute_metric_discrepancy": 2.168404344971009e-19,
+  "mesh_nodes": 86756,
+  "Q4_cells": 86408,
+  "positive_mass_sum": 0.9999999999999996,
+  "same_FEM_state": "c1s1/post_commit; U=.02999988; frozen history",
+  "C_W0_bitwise_equal_at_0_200": true,
+  "pair_first_step_fields_bitwise_equal": true,
+  "same_initial_history_and_damage": true,
+  "hard_crack_line_nodes": 251,
+  "endpoint_metrics": {
+    "C": {
+      "arm": "C",
+      "updates": 200,
+      "J_field": 0.0014046431349562637,
+      "u_RMS_over_Uref": 0.0016185552458057664,
+      "v_RMS_over_Uref": 0.0017520760837476126,
+      "d_RMS": 0.00047914019114821403,
+      "nodal_d_min": -0.000163859614985995,
+      "GP_d_min": -0.00015759320870325727,
+      "nodal_retreat_max": 0.0018659234046936035,
+      "GP_retreat_max": 0.0005541627658500747,
+      "GP_negative_area_above_unit_epsilon": 0.9770239014959758,
+      "GP_retreat_positive_initial_area": 0.000340525010850361,
+      "raw_relative_L2": 0.33493621860805767,
+      "active_relative_L2": 0.24617179176121795
+    },
+    "W0": {
+      "arm": "W0",
+      "updates": 200,
+      "J_field": 0.0014046431349562637,
+      "u_RMS_over_Uref": 0.0016185552458057664,
+      "v_RMS_over_Uref": 0.0017520760837476126,
+      "d_RMS": 0.00047914019114821403,
+      "nodal_d_min": -0.000163859614985995,
+      "GP_d_min": -0.00015759320870325727,
+      "nodal_retreat_max": 0.0018659234046936035,
+      "GP_retreat_max": 0.0005541627658500747,
+      "GP_negative_area_above_unit_epsilon": 0.9770239014959758,
+      "GP_retreat_positive_initial_area": 0.000340525010850361,
+      "raw_relative_L2": 0.33493621860805767,
+      "active_relative_L2": 0.24617179176121795
+    },
+    "W25": {
+      "arm": "W25",
+      "updates": 200,
+      "J_field": 0.0018422874835388938,
+      "u_RMS_over_Uref": 0.0018152371025813138,
+      "v_RMS_over_Uref": 0.00253233088618825,
+      "d_RMS": 0.0006886828444802724,
+      "nodal_d_min": -5.5445198086090386e-05,
+      "GP_d_min": -5.253869349037024e-05,
+      "nodal_retreat_max": 0.0030709505081176758,
+      "GP_retreat_max": 0.00010365261349760084,
+      "GP_negative_area_above_unit_epsilon": 0.7418591293831679,
+      "GP_retreat_positive_initial_area": 0.00029312240445303225,
+      "raw_relative_L2": 0.40105520817365,
+      "active_relative_L2": 0.3337495784921184
+    }
+  },
+  "new_NN_forward": 0,
+  "new_autograd": 0,
+  "new_optimizer_steps": 0,
+  "new_FEM_solves": 0,
+  "new_producer_invocations": 0,
+  "supplemental_FP64_model_replay": false,
+  "limitation": "Only saved nodal fields and compact receipts verified locally. Checkpoints/full gradient vectors/raw GP arrays remain remote. Native float64 offline integration is the original scoring convention, not model FP64 replay.",
+  "plot_extrema": {
+    "W0_0": {
+      "node_index0": 55595,
+      "xy": [
+        0.02900106215008931,
+        -0.01136054690656263
+      ],
+      "value": 0.000163859614985995
+    },
+    "W25_0": {
+      "node_index0": 58031,
+      "xy": [
+        0.03494163265875372,
+        -0.02055383612226995
+      ],
+      "value": 5.5445198086090386e-05
+    },
+    "W0_1": {
+      "node_index0": 48904,
+      "xy": [
+        -0.2598831025285707,
+        0.001154195500710583
+      ],
+      "value": 0.0018659234046936035
+    },
+    "W25_1": {
+      "node_index0": 50066,
+      "xy": [
+        0.002487217141929412,
+        0.0002568318837673625
+      ],
+      "value": 0.0030709505081176758
+    }
+  },
+  "verification_date": "2026-10-19 Europe/London (client date)",
+  "analysis_script": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-loss-weight-prep-20261018/tools/reuse_saved_weight_result.py",
+    "sha256": "418464f1e523229a7a3c5bbf82f81e275eaadc664a5e1a6d484575f9bebca97a"
+  },
+  "existing_review": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/S04-E011/runs/loss_weight_fixed200_evidence_review_20261018.json",
+    "sha256": "f534cbda3e632305e5ce96afa01e2042213070f3ad2de805adfc9724f9bf6782",
+    "scope": "reused completed owner independent evidence review; not a newly repeated review"
+  },
+  "scoring_archive": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_fix_8edc762_20261018T210743Z/scoring.tar.xz",
+    "bytes": 5257996,
+    "sha256": "570b28361da4b27e4a3b36130d45b547d677eb7b65c260989c1a046c88df394f"
+  },
+  "reused_visuals": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_fix_8edc762_20261018T210743Z/comparison/FEM_C_W0_W25_fields.png",
+      "sha256": "a1abbb2161224e80a03d9589717d517be2583698d2a71b5df6278a0febc56888"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_fix_8edc762_20261018T210743Z/comparison/C_W0_W25_signed_errors.png",
+      "sha256": "d3a515ec348eb98380b4b95e863c05ded3f1428311b3a20e6806b26b2546091d"
+    }
+  ],
+  "new_visual": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/reuse_wpair_result_20261019/negative_damage_and_retreat.png",
+    "sha256": "1ad7704cfbfd0ee1aa850aa5426c575159c4b464268ab67b2324081c8ca7d8e5",
+    "QA": "opened and inspected; common row scales; full native mesh; isolated retreat insets visibly boxed/connected/labelled; sidecar validated"
+  }
+}
