@@ -105,4 +105,3 @@ counts are diagnostics, not a newly imposed all-or-nothing scientific gate.
 - `scripts/plot_s09_e013_zero_step.py`: reproducible receipt-only analysis.
 - `scripts/analyse_s09_e013_observable_semantics.py`: reproducible packet and
   receipt-only semantic audit.
-

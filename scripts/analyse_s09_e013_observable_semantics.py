@@ -122,12 +122,16 @@ def main() -> None:
 
     cycle_path = args.output_dir / "cycle_truth_scores.csv"
     with cycle_path.open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(cycle_rows[0]))
+        writer = csv.DictWriter(
+            stream, fieldnames=list(cycle_rows[0]), lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(cycle_rows)
     pair_path = args.output_dir / "pair_observable_audit.csv"
     with pair_path.open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(pair_rows[0]))
+        writer = csv.DictWriter(
+            stream, fieldnames=list(pair_rows[0]), lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(pair_rows)
 
