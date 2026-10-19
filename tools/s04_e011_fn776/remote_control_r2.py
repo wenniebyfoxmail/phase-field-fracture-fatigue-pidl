@@ -210,14 +210,26 @@ def monitor():
         process=dict(live=False,missing=True)
     # guard_receipt precedes final root/operator_terminal writes on failure.
     # Do not freeze the report until that exact guard identity has exited.
-    terminal=bool(terminal_record and not process['live'])
-    emit('guard_process_observation',observation=process,terminal_record_present=terminal_record)
+    worker=dict(live=False,spawn_requested=bool(guard and guard.get('worker_spawn_requested')))
+    if guard and guard.get('worker_pid'):
+        try:
+            raw=Path('/proc/'+str(guard['worker_pid'])+'/stat').read_text()
+            fields=raw[raw.rfind(')')+2:].split();ticks=int(fields[19])
+            expected=guard.get('worker_start_ticks')
+            worker.update(live=(expected is None or ticks==expected) and fields[0]!='Z',
+                          state=fields[0],start_ticks=ticks,expected_start_ticks=expected)
+        except FileNotFoundError:
+            worker.update(live=False,missing=True)
+    elif worker['spawn_requested']:
+        worker.update(live=True,identity_unknown=True)
+    terminal=bool(terminal_record and not process['live'] and not worker['live'])
+    emit('owned_process_observation',guard=process,worker=worker,terminal_record_present=terminal_record)
     # Retain full guard resource history only in the one final report copy;
     # repeated observation returns selected identity/terminal scalars.
     keys=('status','exit_code','first_limit','guard_pid','worker_pid','elapsed_seconds',
           'sampled_peak_RSS','sampled_output_bytes','source','finish_utc')
     summary={key:guard[key] for key in keys if key in guard} if guard is not None else None
-    return dict(status='MONITOR_OK',terminal=terminal,launch=launch_receipt,guard=summary,guard_process=process,
+    return dict(status='MONITOR_OK',terminal=terminal,launch=launch_receipt,guard=summary,guard_process=process,worker_process=worker,
                 guard_receipt_path=str(receipt_path),operator_terminal=json.loads((ROOT/'operator_terminal.json').read_text()) if (ROOT/'operator_terminal.json').exists() else None)
 
 

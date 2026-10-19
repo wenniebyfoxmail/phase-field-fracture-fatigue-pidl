@@ -18,7 +18,8 @@
 本说明、inputs_fn776_r2.json及最终卡/执行计划作为当前操作身份，不将旧输入
 清单当作可选契约。Guard的唯一活动CONTRACT指向r2清单。
 
-Guard差异仅为新Run/Card/清单路径与控制日志预留。原25424分账、16*32、900秒、
+Guard差异为新Run/Card/清单路径、控制日志预留及worker PID/start_ticks/启动请求
+记录；PID写入放入自有child的try/finally，保护启动后回执失败时的清理。原25424分账、16*32、900秒、
 600/840/890+10秒、RSS/CUDA各8GiB、GPU7 UUID/共享服务身份、4GiB运行余量、
 12GiB准入余量及失败不重试均不变。总100MiB内保留1MiB控制诊断，producer
 采样阈值从99MiB收紧为98MiB，再留1MiBproducer终止回执。无额外产物额度；
@@ -62,8 +63,9 @@ CardID、批准索引与计划hash；无这些精确参数不执行。未来操�
    重复准入后才读五个科学输入，单次900秒钟从guard开始。连接丢失后状态未知，
    不能重发launch或自动重连。
 6. monitor：仅成功读取后的后续观测，最多16次，每次15秒，名义间隔>=60秒；
-   无自动调度或失败重连。成功状态中guard终态/错误由原样回执表示，且确认guard PID/start_ticks身份已退出
-   才开放报告冻结，避免末尾回执写入竞态；不因数值失败
+   无自动调度或失败重连。成功状态中guard终态/错误由原样回执表示，且确认guard及已知worker的PID/start_ticks
+   身份已退出才开放报告冻结；worker启动已请求但身份缺失则保持unknown，不取回
+   live集合，避免末尾回执写入竞态；不因数值失败
    自动重跑。任何SSH控制失败停止并报告未知状态。
 7. manifest、archive、verify_retrieval：确认终态后各一次60/60/30秒，只处理自有
    已有产物，逐大小/hash验证，不解码科学数组或补算。缺回执如实报告；不可因为

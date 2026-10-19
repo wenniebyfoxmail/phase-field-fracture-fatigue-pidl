@@ -256,12 +256,19 @@ def main():
     # Includes all producer payload/log/cache/tmp/plot bytes. Reserve1MiB for
     # terminal receipts and1MiB for unique Mac control diagnostics within100MiB.
     with (OUT / 'worker.log').open('xb') as log:
+        record['worker_spawn_requested'] = True
+        save(OUT / 'guard_receipt.json', record)
         child = subprocess.Popen([sys.executable, '-B', str(Path(__file__).resolve()), '--worker'],
                                  cwd=CODE, env=env, stdout=log, stderr=subprocess.STDOUT,
                                  start_new_session=True)
-        record['worker_pid'] = child.pid
-        save(OUT / 'guard_receipt.json', record)
         try:
+            record['worker_pid'] = child.pid
+            try:
+                raw = Path('/proc/' + str(child.pid) + '/stat').read_text()
+                record['worker_start_ticks'] = int(raw[raw.rfind(')') + 2:].split()[19])
+            except FileNotFoundError:
+                record['worker_start_ticks'] = None
+            save(OUT / 'guard_receipt.json', record)
             while child.poll() is None:
                 rss = process_tree(child.pid)
                 peak = max(peak, rss)
