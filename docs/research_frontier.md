@@ -19,7 +19,7 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S04 fixed-damage UV reproduction (2026-10-19)** — D012 full-head same2% gain bound retained; D013 physical-field-budget design independently reviewed. Fixed3states/D/BC/window, no parameter cap,13 actual physics/background protections; relative error/cost and application limits remain separate. Design only, no newhead solve/training; next implementation/nontraining/Code Ready. [Owner](research/S04/S04-E024/experiment.md), [Design](research/S04/S04-E024/physical_field_budget_plan.md).
+- **S04 fixed-damage UV reproduction (2026-10-19)** — D013 physical-field-budget runner and fail-closed replay/summary independently CODE_READY_PASS at18d0e7cb: full568 head, real raw reconstruction, immutable E023 centre/13guards;70 synthetic checks +10 semantic probes. No real preflight/head solve/training or new gains. Next: concrete separately approved offline execution package; .001 historical/application unknown. [Owner](research/S04/S04-E024/experiment.md), [Implementation/review](research/S04/S04-E024/physical_field_budget_implementation.md).
 
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
 - c86 true diffuse damage 条件化可近闭合后续场，二值裂缝几何失败约 `100x` support area：缺失的是近核状态幅值，不只是裂缝位置。

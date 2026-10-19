@@ -5,7 +5,7 @@
   "test_cases_passed_final": 70,
   "new_field_budget_cases": 50,
   "reused_cases": 20,
-  "wall_seconds": 51.567363001101825,
+  "wall_seconds": 62.72054554206383,
   "pytest_attempts": [
     {
       "command": [
@@ -172,12 +172,44 @@
       "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_10.log",
       "real_model_or_FEM_forward_count": 0,
       "NN_optimizer_steps": 0
+    },
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "tests/test_s04_e024_field_budget.py",
+        "tests/test_s04_e024_full_head.py",
+        "tests/test_s04_e024_joint_head.py"
+      ],
+      "wall_seconds": 9.116429165995214,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_11.log",
+      "real_model_or_FEM_forward_count": 0,
+      "NN_optimizer_steps": 0
+    },
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "/tmp/test_d013_rereview_probes.py"
+      ],
+      "wall_seconds": 2.0367533749667928,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_12.log",
+      "real_model_or_FEM_forward_count": 0,
+      "NN_optimizer_steps": 0
     }
   ],
   "manual_synthetic_index_probe_wall_seconds": 0.112071375,
-  "final_full568_known_solution_wall_seconds": 1.0341318330029026,
+  "final_full568_known_solution_wall_seconds": 0.8145974589860998,
   "full568_iterations": 11,
-  "full568_observed_process_peak_RSS_bytes": 407568384,
+  "full568_observed_process_peak_RSS_bytes": 417513472,
   "full568_cost_scope": "one artificial case; includes eigenscaling/model/solver/KKT; observed process peak, not allocation delta or production cost",
   "warnings": "3 existing NumPy/SciPy NNLS matmul warnings retained, values checked with explicit contractions; backend cause not identified",
   "real_model_or_FEM_forward_count": 0,
@@ -193,6 +225,9 @@
     "SENS_tensile/summarize_s04_e024_field_budget.py": "b1eb52e16a82c46bf73bed82d331ced2bb77e83cb88b41619e4578f7292d51a2",
     "tests/test_s04_e024_field_budget.py": "36efa4f642ca8777cf718f9babfca845ca732bbeb2b40b7ecc195dc652cdda41"
   },
-  "snapshot_note": "Implementation nontraining snapshot; independent reviewer binds exact scientific tree. Tiny artificial Torch forwards only; no real endpoint or FEM reference loaded.",
-  "review_initial_verdict": "CHANGES_REQUIRED; malformed aggregate evidence and per-trial branch gaps reproduced and retained"
+  "snapshot_note": "70-case final scientific tree independently rerun at18d0e7cb; 10 further rehashed malformed semantic probes pass. Final receipt refreshed only with cumulative recorded check time/attempts; no scientific source change. Real model/FEM forwards0; tiny artificial Torch/native-Q4 fixtures only.",
+  "review_initial_verdict": "CHANGES_REQUIRED; malformed aggregate evidence and per-trial branch gaps reproduced and retained",
+  "reviewed_source_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "independent_semantic_probes_passed": 10,
+  "review_final_verdict": "CODE_READY_PASS; B1/B2/B3 repaired and independently corroborated"
 }

@@ -119,3 +119,14 @@ Same own E023 c20/c60/c83/D/BC/window/fullmass/seven actual protections/original
 本轮：同c20／c60／c83各自E023、固定D／BC／窗口／全部568头坐标；Q为UV／工程应变／瞬时弹性driver／原生自由力向量变化相对永久原态误差尺度的最大值，eta .1／.3／1。去除参数norm cap和ridge；主方案13项真实误差不增（旧7＋四域strain＋full/damage driver），背景区域平均UV／strain／driver增量预算0，非物理应用容差。中央档旧7消融只解释已访问候选代价，不证明最优前沿。
 结论：初审两个执行前阻塞已在ecf1cc9f修订，独立设计审查通过；producer dtype可表示头的raw重建场是Q／guard／收益权威，累计场预算中心永久原E023，parent硬deadline／资源监督、零分母／有限求解解释明确。未来最多12profile／36候选求解／324实际有限步、数值1800秒CPU2／0GPU；含检查／复核／绘图计算上限3120秒、RSS3GiB、输出1GiB。它们是未执行的上限，不保证全部行完成，也不构成当前运行授权。
 下一步仅待实现runner／汇总器、非训练检查和精确源码Code Ready；不自动启动离线求解或生产。`.001`历史、应用容差未定义、原严格Mac／警告／缺失history均保留。[方案](physical_field_budget_plan.md)、[独立设计审核](physical_field_budget_design_review.md)、[当前状态收据](physical_field_budget_design_receipt.json)。
+
+
+## 2026-10-19 — E024-D013：物理场预算完整头实现及Code Ready完成，未科学运行
+
+**目的：** 将已审的场变化预算方案落实为runner／汇总器，让后续比较真实回答全场与损伤收益、背景保留及计算代价；不再用2%头范数或历史`.001`决定路线。
+**本轮：** 同c20／c60／c83各自原E023、全部568头坐标、producer D／BC／窗口／history／fatigue／damage冻结。候选先量化到原dtype，经固定raw encoder重建，真实UV／工程应变／非线性瞬时driver／自由力向量决定Q和13项保护；仿射一致性容差不给实际保护让步。四项累计预算中心及误差尺度永久原E023，不随接受步重置。保存完整预条件T、谱／数值秩、全部已访问系数、拒绝原因及实际分支变化；独立汇总重放所有已访问头，不求新头。
+**检查／结论：** 首轮独审发现汇总层可接纳NaN／畸形计数／错源码及缺少逐候选分支记录，CHANGES_REQUIRED原件与探针保留。修订`18d0e7cb1153dc969c1ee0c21c77ada1297b2d89`经独立Codex复审**CODE_READY_PASS**：70项合成非训练检查及10项重新哈希的畸形语义探针通过，3条原NNLS警告保留。汇总需核验三态四profile顺序、真实报告／固定尺度、源码树／numeric receipt／文件清单哈希、整数计数与停止结构；缺失或未执行不得写成零收益／完整通过。累计已记录检查62.720546秒／300秒，非三态成本估计。
+**停止／边界：** 每profile最多3次代理求解、每次按0..8顺序二分取首个真实合格候选；无代理可行返回／九步全拒绝／求解异常仅停止该profile并保留最后合格头，身份／非有限／映射／资源异常停止余下任务，不重试。未来数值1800秒＋重放900秒＋非训练300秒＋绘图120秒，CPU2／0GPU、RSS3GiB／输出1GiB，原loader限制不改。主13保护与旧7消融分开，有限求解结果不是非线性全头上界。
+**当前及下一步：** 真实三态新头求解0、真实NN／FEM前向0、训练0、checkpoint写入0、远端操作0；没有新物理收益或演化结果。Code Ready不等于已运行或科学成功，下一步仅准备具体离线执行包另获人方批准。原严格Mac／历史负结果／缺失history保留，损伤／裂纹／疲劳用途仍需耦合与历史验证。
+
+[实现及边界](physical_field_budget_implementation.md) · [独立Code Ready](physical_field_budget_code_ready_review.md) · [检查收据](physical_field_budget_nontraining_checks.json)。

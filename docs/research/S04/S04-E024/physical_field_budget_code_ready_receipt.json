@@ -1,0 +1,28 @@
+{
+  "step": "E024-D013",
+  "verdict": "CODE_READY_PASS",
+  "reviewed_source_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "code_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "scientific_execution_authorized": false,
+  "real_three_state_head_solves": 0,
+  "real_model_or_FEM_forward_count": 0,
+  "NN_optimizer_steps": 0,
+  "original_checkpoint_writes": 0,
+  "history_fatigue_damage_updates": 0,
+  "remote_actions": 0,
+  "final_checks_passed": 70,
+  "independent_semantic_probes_passed": 10,
+  "nontraining_recorded_wall_seconds": 62.72054554206383,
+  "initial_verdict": "CHANGES_REQUIRED preserved; B1/B2/B3 resolved",
+  "next_action": "Prepare concrete final offline execution package for separate human approval; no scientific run authorized",
+  "files": {
+    "physical_field_budget_plan.md": "0441e6cc847c501b822c5bb1fbf0ed816bd8a97bc5c526178a0d88aa50280d32",
+    "physical_field_budget_contract.json": "8bc35175839dc69ee4fcab618903a5043401d871f45cdfc104c88f6527834236",
+    "physical_field_budget_implementation.md": "0c75bdabb69bb999f101f87ee48f68ff012ee6e93c8e3e71a47db62772013223",
+    "physical_field_budget_nontraining_checks.json": "3347211db188c7dd5bd8eb816df355d694edda96ab5ef75d484ab4ed9e74fb35",
+    "physical_field_budget_code_ready_review.md": "addf7fa7c869a2b0a5171f52aef166a2d9a1708a580b344a8c90c5123fe98fd5",
+    "physical_field_budget_code_ready_review.json": "5025606c8ee0b6e28c79e4bbf223af52bb3364a65de203bdb72a722e2635b725",
+    "physical_field_budget_initial_code_ready_review.md": "e3e6c5d102ade1b6b54c77ec6fab823207b18681d9d6941572bce62ccebe8e9d",
+    "physical_field_budget_initial_code_ready_review.json": "862957029a06f55eb08430b78bdfe4e0ea2bbba1bbfadccbe87c0ec9fa9c1f7b"
+  }
+}
