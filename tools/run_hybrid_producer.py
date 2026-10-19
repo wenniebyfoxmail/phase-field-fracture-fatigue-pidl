@@ -64,7 +64,7 @@ def bytes_under(path):
 
 def gpu_admission(card):
     command=["nvidia-smi","--query-gpu=index,uuid,memory.used,memory.total,utilization.gpu","--format=csv,noheader,nounits"]
-    rows=list(csv.reader(io.StringIO(subprocess.check_output(command,text=True,timeout=15))))
+    rows=list(csv.reader(io.StringIO(subprocess.check_output(command,text=True,timeout=2))))
     selected=next((r for r in rows if r[1].strip()==card["producer"]["gpu_uuid"]),None)
     if selected is None or int(selected[0])!=card["producer"]["gpu_index"]:
         raise RuntimeError("GPU index/UUID changed")
@@ -75,7 +75,7 @@ def gpu_admission(card):
 
 def gpu_usage(card, allowed_pids):
     text=subprocess.check_output(['nvidia-smi','--query-compute-apps=pid,gpu_uuid,used_memory',
-                                  '--format=csv,noheader,nounits'],text=True,timeout=15)
+                                  '--format=csv,noheader,nounits'],text=True,timeout=2)
     rows=list(csv.reader(io.StringIO(text)));used=0.
     for row in rows:
         if len(row)==3 and row[1].strip()==card['producer']['gpu_uuid']:
@@ -117,20 +117,22 @@ def stop_owned(proc):
 
 
 def supervise(proc,spec,card,runroot,archive,totals):
-    start=perf_counter();peak=0;last_scan=-1.;storage={};gpu_peak=0.;gpu_last=-10.
+    start=perf_counter();reserve=card['budget']['termination_reserve_seconds'];peak=0;last_scan=-1.;storage={};gpu_peak=0.;gpu_last=-10.
     try:
         while proc.poll() is None:
             elapsed=perf_counter()-start
-            if elapsed>spec['wall_seconds']:raise RuntimeError('phase hard wall cap')
-            if perf_counter()-totals['start_monotonic']>card['budget']['cpu_wall_hours']*3600:
+            if elapsed>spec['wall_seconds']-reserve:raise RuntimeError('phase hard wall cap')
+            if perf_counter()-totals['start_monotonic']>card['budget']['cpu_wall_hours']*3600-reserve:
                 raise RuntimeError('total allocated host wall cap')
-            if spec['gpu'] and totals['gpu_seconds']+elapsed>card['budget']['gpu_hours']*3600:
+            if spec['gpu'] and totals['gpu_seconds']+elapsed>card['budget']['gpu_hours']*3600-reserve:
                 raise RuntimeError('total GPU wall cap')
+            if spec['id'] in ('native_replay','analysis') and totals.get('shared_analysis_seconds',0.)+elapsed>card['budget']['replay_analysis_hours']*3600-reserve:
+                raise RuntimeError('shared replay and analysis wall cap')
             if spec['kind']=='trajectory':
                 marker=runroot/'active_step.json'
                 if marker.exists():
                     m=read_manifest(marker)
-                    if m.get('phase')==spec['id'] and time()-m['start_epoch']>card['solver']['wall_seconds']:
+                    if m.get('phase')==spec['id'] and perf_counter()-m['start_monotonic']>card['solver']['wall_seconds']:
                         raise RuntimeError('physical-substep hard wall cap')
             tree=[]
             try:
@@ -158,6 +160,21 @@ def supervise(proc,spec,card,runroot,archive,totals):
     except BaseException:
         stop_owned(proc)
         raise
+
+
+def run_owned_worker(command,code,env,log,spec,card,runroot,archive,totals):
+    """Guard every post-spawn action, including first receipt/IO and signals."""
+    proc=None
+    try:
+        with Path(log).open('w') as handle:
+            proc=subprocess.Popen(command,cwd=code,env=env,stdout=handle,stderr=subprocess.STDOUT,
+                                  stdin=subprocess.DEVNULL,start_new_session=True)
+            append_event(runroot/'phases.jsonl',dict(phase=spec['id'],pid=proc.pid,command=command,
+                                                    log=str(log),start_epoch=time()))
+            return supervise(proc,spec,card,runroot,archive,totals)
+    finally:
+        if proc is not None:
+            stop_owned(proc)
 
 
 def outcome(card,archive,totals):
@@ -210,7 +227,7 @@ def main():
     archive.mkdir(parents=True)
     for d in ['tmp','jitcache','cache','logs']:(runroot/d).mkdir(exist_ok=True)
     totals=dict(wall_seconds=0.,gpu_seconds=0.,numerical_seconds=0.,cpu_seconds=0.,phases={},
-                start_monotonic=job_started)
+                start_monotonic=job_started,shared_analysis_seconds=0.)
     write_json(runroot/'launch_receipt.json',dict(pid=os.getpid(),hostname=socket.gethostname(),
                                                 command=sys.argv,card_sha256=sha256(args.card),
                                                 artifact_id=package['artifact_id'],host_admission=host,
@@ -226,17 +243,14 @@ def main():
                        OMP_NUM_THREADS='16',OPENBLAS_NUM_THREADS='16',MKL_NUM_THREADS='16',NUMEXPR_NUM_THREADS='16',
                        TMPDIR=str(runroot/'tmp'),XDG_CACHE_HOME=str(runroot/'cache'),
                        TORCH_EXTENSIONS_DIR=str(runroot/'jitcache'),PIDL_ARCHIVE_DIR=str(archive))
+            env['HYBRID_SUPERVISOR_PID']=str(os.getpid())
             cmd=[sys.executable,'-u',str(code/'tools/hybrid_producer_worker.py'),'--card',str(args.card.resolve()),
                  '--phase',spec['id'],'--inputs',str(args.inputs.resolve()),'--out',str(runroot),'--archive',str(archive)]
             log=runroot/f"logs/{spec['id']}.log"
             phase_started=perf_counter();use_before=resource.getrusage(resource.RUSAGE_CHILDREN)
             usage={};phase_ok=False
             try:
-                with log.open('w') as handle:
-                    proc=subprocess.Popen(cmd,cwd=code,env=env,stdout=handle,stderr=subprocess.STDOUT,
-                                          stdin=subprocess.DEVNULL,start_new_session=True)
-                    append_event(runroot/'phases.jsonl',dict(phase=spec['id'],pid=proc.pid,command=cmd,log=str(log),start_epoch=time()))
-                    usage=supervise(proc,spec,card,runroot,archive,totals)
+                usage=run_owned_worker(cmd,code,env,log,spec,card,runroot,archive,totals)
                 phase_ok=True
             finally:
                 use_after=resource.getrusage(resource.RUSAGE_CHILDREN)
@@ -245,6 +259,7 @@ def main():
                              completed=phase_ok)
                 totals['phases'][spec['id']]=usage
                 totals['wall_seconds']+=usage['wall_seconds'];totals['cpu_seconds']+=usage['cpu_seconds']
+                if spec['id'] in ('native_replay','analysis'):totals['shared_analysis_seconds']+=usage['wall_seconds']
                 if spec['gpu']:totals['gpu_seconds']+=usage['wall_seconds']
                 if spec['kind']=='trajectory':totals['numerical_seconds']+=usage['wall_seconds']
                 # Failed/killed work is always charged, even without a worker result.

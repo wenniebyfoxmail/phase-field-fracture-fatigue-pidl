@@ -33,7 +33,7 @@
 
 保持AT1/Amor平面应变、E1/nu.3/Gc.01/ell.01、eta0、alphaT.5/p2、native86756节点/86408Q4/四GP，原预裂纹线d1。节点d_n≤d≤1，lower不随inner滚动，所有活跃集可释放。w1=Gc/ell，thickness1；无新对称/参数正则/gamma项。
 
-执行卡加强现库接受合同并保留旧严格联合条件：Ru自由DOF L2≤1e-8，同时Ru_L2+Rd_feasible_L2≤4e-6；另要求final KKT_Linf/固定梯度尺度≤1e-7、投影≤1e-7、界≤1e-10、f fixed-point≤1e-8、QP eps1e-10。force/gradient尺度固定为1，对应本无量纲E=t=L=1的全域标度；卸载不除近零载荷。数值核对仍1e-10，不放宽原raw或严格链检查容差。每步100outer/50mechanics/200000QP、120秒硬cap。
+执行卡加强现库接受合同并保留旧严格联合条件：Ru自由DOF L2≤1e-8，同时Ru_L2+Rd_feasible_L2≤4e-6；另要求final KKT_Linf/固定梯度尺度≤1e-7、投影≤1e-7、界≤1e-10、f fixed-point≤1e-8、QP eps1e-10。force/gradient尺度固定为1，对应本无量纲E=t=L=1的全域标度；卸载不除近零载荷。数值核对仍1e-10，不放宽原raw或严格链检查容差。每步100outer/50mechanics/200000QP、求解器120秒合作式deadline及外部watchdog触发；不是120.0秒精确OS终止保证。watchdog约1秒轮询，GPU查询超时2秒，TERM grace10秒；阶段、replay+analysis合计、总host/GPU预算的停止触发提前45秒预留清理。慢文件系统或OS调度可能延迟监督，实际超时与终止费用如实记账。
 
 探索性联合主判断：完整路径物理条件合格，NN相对同问题参考mean J≤.001/worst J≤.01（u/v除固定.108位移尺度，d原值），A/r相对GP RMS最坏≤5%（近零范数用1e-8固定floor）、f RMS最坏≤.01、反力相对L2最坏≤1%（1e-8floor），且完整在线wall至少比直接FEM和经典外推两者更快10%。这些是本新方法预先选择的实用目标，不是旧实验标准替换或统计置信界。单条匹配轨迹/1seed的结果只支持本合成家族探索，不声称可重复性或材料/几何泛化。质量与反力/历史任一回退不得仅凭raw或loss好看判成功。
 
@@ -52,3 +52,11 @@
 外层supervisor独立于worker，检查物理子步/phase/总wall、RAM、存储、GPU身份/占用；仅终止自己创建且PGID核对的worker group。SSH掉线不视作停止；detached launch并保存PID/命令/log。原子CAS保存接受态，写入后未知结果/崩溃锁由inspect_hybrid_run.py只读核实，禁止盲重试/自动删锁/重复提交。任何工作不能因Mac工具超时而重复启动。
 
 旧设计、开发复审、结果与预算v1/v2保留。本次producer review需绑定新core接受增强、inputs adapter、worker、supervisor、执行卡、原生回放与依赖合同；通过前没有科学任务启动。
+
+## 精确启动与只读恢复
+
+最终source manifest包含detached launcher、完整worker及依赖、卡片和测试；独立复审回执绑定artifact_id与card SHA。远端code来自冻结Mac commit的字节包，安装仅本Run依赖OSQP1.0.4。先执行同包`run_hybrid_producer.py --check`及纯算子回放并记录Linux身份；不得将Mac回放冒充Linux验收。
+
+从producer的code目录，用本Run deps/source/tools组成PYTHONPATH，唯一启动命令为`python3 tools/launch_hybrid_detached.py --card docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json --package ../producer_source_manifest.json --inputs ../inputs --review ../producer_review.json`。launcher在spawn之前独占创建launch_reservation.json，任何未知结果都先读reservation、PID/cmdline、launch/terminal/cost receipts，绝不再次执行该命令。Linux worker在数值模块导入前安装parent-death信号，supervisor异常退出时不遗留计算worker。
+
+恢复只读命令为`python3 tools/inspect_hybrid_run.py --archive /mnt/data2/drtao/pidl_archives/pf_hybrid_full_20261019_r1`。日志截断仅承认完整有效前缀，明确标出坏行及reconciliation_needed；损坏store单独列错，不掩盖其他phase。没有自动解锁、续算或重新提交入口。

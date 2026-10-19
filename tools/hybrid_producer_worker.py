@@ -13,6 +13,18 @@ import resource
 import shutil
 from time import perf_counter, time
 
+if __name__ == '__main__':
+    # Even an uncatchable watchdog death must not leave a computing orphan.
+    # Bind BEFORE heavy numerical imports; race is closed by checking PPID
+    # after installing the Linux parent-death signal.
+    if platform.system()!='Linux':raise RuntimeError('producer workers are Linux-only')
+    import ctypes
+    import signal
+    expected=int(os.environ['HYBRID_SUPERVISOR_PID'])
+    if ctypes.CDLL(None,use_errno=True).prctl(1,signal.SIGTERM,0,0,0)!=0:
+        raise RuntimeError('cannot install parent-death safeguard')
+    if os.getppid()!=expected:raise RuntimeError('supervisor changed before worker admission')
+
 import numpy as np
 
 from hybrid_inputs import load_backend, read_manifest, sha256
@@ -22,7 +34,7 @@ from hybrid_transaction import StateStore
 
 
 def marker(out, **values):
-    write_json(Path(out) / "active_step.json", dict(start_epoch=time(), **values))
+    write_json(Path(out) / "active_step.json", dict(start_epoch=time(),start_monotonic=perf_counter(), **values))
 
 
 def trajectory(card, spec, inputs, out, archive):

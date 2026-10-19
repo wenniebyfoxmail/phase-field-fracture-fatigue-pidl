@@ -9,19 +9,30 @@ from hybrid_transaction import StateStore
 def inspect(root):
     root=Path(root);rows=[]
     for path in sorted(root.glob('*/latest.npz')):
-        state,meta=StateStore(path).load()
+        row=dict(phase=path.parent.name,crash_lock_present=path.with_name(path.name+'.lock').exists(),
+                 action='inspect durable state/certificate; do not blindly retry or remove lock')
+        steps=[];errors=[]
         events=path.parent/'events.jsonl'
-        steps=[]
-        if events.exists():
-            for line in events.read_text().splitlines():
-                row=json.loads(line)
-                if 'step' in row:steps.append(row['step'])
-        rows.append(dict(phase=path.parent.name,version=state.version,load_index=state.load_index,
-                         state_id=state.fingerprint(),last_journal_step=max(steps,default=0),
-                         crash_lock_present=path.with_name(path.name+'.lock').exists(),
-                         snapshot_present=(path.parent/f'states/state{state.version:04d}.npz').exists(),
-                         reconciliation_needed=state.version!=max(steps,default=0),
-                         action='inspect durable state/certificate; do not blindly retry or remove lock'))
+        try:
+            if events.exists():
+                for number,line in enumerate(events.read_text().splitlines(),1):
+                    try:
+                        event=json.loads(line)
+                        if not isinstance(event,dict):raise ValueError('event is not an object')
+                        if 'step' in event:steps.append(int(event['step']))
+                    except (ValueError,TypeError) as exc:
+                        errors.append(dict(line=number,error=str(exc),kind='malformed_or_truncated_journal'))
+                        break  # only valid prefix is evidence; never skip to later "completion"
+        except OSError as exc:errors.append(dict(kind='journal_read_error',error=str(exc)))
+        row.update(last_journal_step=max(steps,default=0),journal_errors=errors)
+        try:
+            state,meta=StateStore(path).load()
+            row.update(version=state.version,load_index=state.load_index,state_id=state.fingerprint(),
+                       snapshot_present=(path.parent/f'states/state{state.version:04d}.npz').exists(),
+                       reconciliation_needed=bool(errors) or state.version!=max(steps,default=0))
+        except Exception as exc:
+            row.update(inspection_error=str(exc),reconciliation_needed=True)
+        rows.append(row)
     return rows
 
 

@@ -87,3 +87,61 @@ def test_history_mismatch_blocks_acceleration_even_if_field_and_time_pass(tmp_pa
     result=outcome(c,tmp_path,totals)
     assert result['online_speed_pass'] and not result['quality_pass']
     assert not result['supports_neural_online_acceleration']
+
+
+def test_detached_launcher_reservation_prevents_duplicate_spawn(tmp_path,monkeypatch):
+    import launch_hybrid_detached as launch
+    from types import SimpleNamespace
+    c=card();c['run_root']=str(tmp_path);c['archive_root']=str(tmp_path/'archive')
+    cp=tmp_path/'card.json';write_json(cp,c)
+    m=dict(files={},artifact_id=object_sha({}));mp=tmp_path/'package.json';write_json(mp,m)
+    rp=tmp_path/'review.json';write_json(rp,dict(verdict='REVIEW_PASS',card_sha256=sha256(cp),artifact_id=m['artifact_id']))
+    calls=[]
+    def fake_spawn(*args,**kwargs):
+        assert kwargs['start_new_session'] is True
+        calls.append(args);return SimpleNamespace(pid=12345)
+    monkeypatch.setattr(launch.platform,'system',lambda:'Linux')
+    monkeypatch.setattr(launch.subprocess,'Popen',fake_spawn)
+    monkeypatch.setattr(sys,'argv',['launch','--card',str(cp),'--package',str(mp),'--review',str(rp),'--inputs',str(tmp_path)])
+    launch.main()
+    with pytest.raises(FileExistsError):launch.main()
+    assert len(calls)==1
+
+
+def test_first_postspawn_event_write_failure_reaps_owned_worker(tmp_path,monkeypatch):
+    import run_hybrid_producer as run
+    archive=tmp_path/'archive';archive.mkdir()
+    processes=[];spawn=run.subprocess.Popen
+    def record_spawn(*args,**kwargs):
+        proc=spawn(*args,**kwargs);processes.append(proc);return proc
+    def fail_event(*args):raise OSError('injected first receipt IO fault')
+    monkeypatch.setattr(run.subprocess,'Popen',record_spawn)
+    monkeypatch.setattr(run,'append_event',fail_event)
+    with pytest.raises(OSError,match='receipt IO'):
+        run.run_owned_worker([sys.executable,'-c','import time;time.sleep(30)'],tmp_path,None,tmp_path/'worker.log',
+                             dict(id='unit',kind='replay',gpu=False,wall_seconds=30),card(),tmp_path,archive,
+                             dict(wall_seconds=0.,gpu_seconds=0.,start_monotonic=perf_counter()))
+    assert len(processes)==1 and processes[0].poll() is not None
+
+
+def test_recovery_inspection_reports_truncated_prefix_and_isolates_bad_store(tmp_path):
+    from inspect_hybrid_run import inspect
+    from hybrid_transaction import StateStore
+    good=tmp_path/'a';good.mkdir()
+    StateStore(good/'latest.npz').initialize(state())
+    (good/'events.jsonl').write_text('{"step":0}\n{"step":')
+    bad=tmp_path/'b';bad.mkdir();(bad/'latest.npz').write_bytes(b'corrupt')
+    rows=inspect(tmp_path)
+    assert len(rows)==2 and rows[0]['version']==0
+    assert rows[0]['last_journal_step']==0 and rows[0]['journal_errors'][0]['line']==2
+    assert rows[0]['reconciliation_needed'] and rows[1]['reconciliation_needed']
+    assert 'inspection_error' in rows[1]
+
+
+def test_shared_replay_analysis_budget_is_cumulative(tmp_path):
+    c=card();archive=tmp_path/'archive';archive.mkdir()
+    proc=subprocess.Popen([sys.executable,'-c','import time;time.sleep(30)'],start_new_session=True)
+    with pytest.raises(RuntimeError,match='shared replay and analysis'):
+        supervise(proc,dict(id='analysis',kind='analysis',gpu=False,wall_seconds=14400),c,tmp_path,archive,
+                  dict(wall_seconds=0.,gpu_seconds=0.,shared_analysis_seconds=14400.,start_monotonic=perf_counter()))
+    assert proc.poll() is not None
