@@ -1,0 +1,9 @@
+{
+  "source": "43af56d4",
+  "tests": 46,
+  "dev_seconds": 0.72,
+  "independent_seconds": 0.74,
+  "review": "producer_review_v4.json",
+  "Linux_actual_admission": "producer_delivery_v4.json",
+  "no_training_in_Mac_checks": true
+}

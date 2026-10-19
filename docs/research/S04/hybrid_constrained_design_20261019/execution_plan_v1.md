@@ -1,4 +1,4 @@
-# 完整混合求解 producer 执行方案 v1
+# 完整混合求解 producer 执行方案（当前卡v2）
 
 日期2026-10-19。延续同一S04场一致性目标；本轮按用户“完成独立复审后给我看可执行的完整方案，无误后开始运行”的条件指令准备。当前科学工作是完整方法探索性比较，不是逐个开关或最小验证。只有精确代码/卡独立复审及实时准入通过才执行；不把开发库复审当作producer复审。
 
@@ -57,8 +57,20 @@
 
 最终source manifest包含detached launcher、完整worker及依赖、卡片和测试；独立复审回执绑定artifact_id与card SHA。远端code来自冻结Mac commit的字节包，安装仅本Run依赖OSQP1.0.4。先执行同包`run_hybrid_producer.py --check`及纯算子回放并记录Linux身份；不得将Mac回放冒充Linux验收。
 
-从producer的code目录，用本Run deps/source/tools组成PYTHONPATH，唯一启动命令为`python3 tools/launch_hybrid_detached.py --card docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json --package ../producer_source_manifest.json --inputs ../inputs --review ../producer_review.json`。launcher在spawn之前独占创建launch_reservation.json，任何未知结果都先读reservation、PID/cmdline、launch/terminal/cost receipts，绝不再次执行该命令。Linux worker在数值模块导入前安装parent-death信号，supervisor异常退出时不遗留计算worker。
+从producer的code目录，用本Run deps/source/tools组成PYTHONPATH，唯一启动命令为`python3 tools/launch_hybrid_detached.py --card docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json --package ../producer_source_manifest.json --inputs ../inputs --review ../producer_review.json`。launcher在spawn之前独占创建launch_reservation.json，任何未知结果都先读reservation、PID/cmdline、launch/terminal/cost receipts，绝不再次执行该命令。Linux worker在数值模块导入前安装parent-death信号，supervisor异常退出时不遗留计算worker。
 
 恢复只读命令为`python3 tools/inspect_hybrid_run.py --archive /mnt/data2/drtao/pidl_archives/pf_hybrid_full_20261019_r1`。日志截断仅承认完整有效前缀，明确标出坏行及reconciliation_needed；损坏store单独列错，不掩盖其他phase。没有自动解锁、续算或重新提交入口。
 
-最终静态复审源为e4f5215e、artifact e96e3c0e，见producer_review_v3。Linux实际Python3.10.12已通过全部依赖导入/源包校验，OSQP仅本Run deps，实际worker-prefix父进程死亡保护测试通过。phase墙钟上限与replay+analysis合计4h相加为116h；136h仍为含监督开销的全作业独立总上限，2176coreh为16核占用保守上界，均非预测。初始Mac回放2.808秒为已测成本；正式全输入Linux回放/数值标签/训练/在线成本以各阶段真实收据更新。
+Python兼容修复阶段的静态复审源为e4f5215e、artifact e96e3c0e，见producer_review_v3；下述跨平台修复形成当前43af56d4/manifest_v4/card_v2新包，另用producer_review_v4，不将旧收据用于新包。Linux实际Python3.10.12已通过全部依赖导入/源包校验，OSQP仅本Run deps，实际worker-prefix父进程死亡保护测试通过。phase墙钟上限与replay+analysis合计4h相加为116h；136h仍为含监督开销的全作业独立总上限，2176coreh为16核占用保守上界，均非预测。初始Mac回放2.808秒为已测成本；正式全输入Linux回放/数值标签/训练/在线成本以各阶段真实收据更新。
+
+## 跨平台身份修复（实机发现，保留旧回执）
+
+首轮Linux源包导入通过后，严格state/backend身份拒绝执行。逐项SHA定位：points/cells/N/DOF/assembly/physics完全相同，只有LAPACK派生B/det不同，Mac旧mesh be91...、Linux旧5053...。没有放宽逐字节身份或仅编辑预期hash绕过；新增hybrid-only固定float64运算次序、显式2×2逆/行列式的Q4 kernel，原PIDL/native函数不改。新backend仍逐字节重建B/det并将完整系数纳入mesh hash。
+
+canonicalize_hybrid_inputs.py先核对全部旧输入字节，u/d/A/r/f/opaque逐字节保持，仅用新确定性几何显式重绑定派生mesh/state身份；原inputs/state/meshID保留于新manifest。mesh及五态NPZ原字节复用，不投影、不生产标签。当前卡v2绑定inputs SHA51776e2e...；新mesh f5c36127...、state0 fdedddad...。本变更使平台间同一严格身份可复现，不降低任何数值容差。Mac新五态回放5/5通过原1e-10，最大raw/history1.584e-12、Ru1.753e-16、Rd5.205e-18，纯后处理2.530秒，46项人工/kernel检查通过。科学运行仍需新精确复审和Linux全输入/回放准入。
+
+当前唯一执行版本：source43af56d4，manifest_v4 artifact6b0ef3bf36ffbedf3c33170b2f641c06873684276a18be3f6726537e4d7c4585；card_v2 SHA da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125。producer_review_v4独立复审通过，29文件核验/46项测试及人工身份迁移检查通过。Linux初始严格身份已完全一致；最终全资产、--check、五态回放另由实际执行收据确认。
+
+输入分片首批实际传输917.624秒（仅该批网络阶段，不含此前断连、准备/复审或后续补齐），171数据分片中1个需按远端hash证实损坏后补齐；另一客户端超时片已实际完整，不重传。传输不计GPU数值工作；仍单独列准备开销，不冒充标签/训练时间。
+
+正式启动已核验：pf_hybrid_full_20261019_r1，监督PID1054983，原生回放阶段8.29667墙钟秒/9.82828实际CPU秒通过后进入train_A。完整Linux预启动回放8.21175秒5/5通过，source/input/state/运行时/实时容量准入通过。执行回执producer_delivery_v4.json记录实时快照与确切身份；后续成本以远端cost_ledger/terminal为准。启动不是数值收敛或改善结论。

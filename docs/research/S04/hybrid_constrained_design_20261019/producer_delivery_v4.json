@@ -1,0 +1,273 @@
+{
+  "status": "SCIENTIFIC_PRODUCER_STARTED_NO_OUTCOME_YET",
+  "run_id": "pf_hybrid_full_20261019_r1",
+  "source_commit": "43af56d43150f4ae8cf8799ceec4669564d67ef0",
+  "artifact_id": "6b0ef3bf36ffbedf3c33170b2f641c06873684276a18be3f6726537e4d7c4585",
+  "card_sha256": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+  "independent_review": "producer_review_v4.json",
+  "engineering_tests": 46,
+  "full_live_admission": {
+    "passed": true,
+    "epoch": 1792417756.3404303,
+    "artifact_id": "6b0ef3bf36ffbedf3c33170b2f641c06873684276a18be3f6726537e4d7c4585",
+    "source_commit": "43af56d43150f4ae8cf8799ceec4669564d67ef0",
+    "card_sha256": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+    "inputs_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c",
+    "full_assets_verified": true,
+    "state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+    "mesh_id": "f5c36127a80a7d9f7c8eb037ef61507c46b20d1def2bf13eb31c7f04018c78d3",
+    "python": "3.10.12",
+    "runtime": {
+      "numpy": "1.24.4",
+      "scipy": "1.15.3",
+      "torch": "2.7.0+cu126",
+      "osqp": "1.0.4",
+      "h5py": "3.13.0",
+      "psutil": "7.0.0"
+    },
+    "host": {
+      "available_ram_bytes": 408457256960,
+      "available_disk_bytes": 654863679488,
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "load_average": [
+        1.18408203125,
+        1.23095703125,
+        1.29638671875
+      ]
+    },
+    "gpu": {
+      "index": 5,
+      "uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+      "used_mib": 4.0,
+      "total_mib": 24564.0
+    },
+    "replay": {
+      "schema": "hybrid-native-operator-replay-v1",
+      "rows": [
+        {
+          "step": 1,
+          "errors": {
+            "raw": 5.2651134320458315e-14,
+            "force": 2.992397996059992e-17,
+            "damage": 1.0842021724855044e-18,
+            "A": 5.2651134320458315e-14,
+            "r": 5.2651134320458315e-14,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.8438119506463408
+        },
+        {
+          "step": 2,
+          "errors": {
+            "raw": 4.370520872293282e-13,
+            "force": 8.413408858487514e-17,
+            "damage": 1.5178830414797062e-18,
+            "A": 1.7363866421093999e-13,
+            "r": 3.210304516812419e-13,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.5265900185331702
+        },
+        {
+          "step": 3,
+          "errors": {
+            "raw": 1.1280056749773948e-12,
+            "force": 1.1535911115245767e-16,
+            "damage": 3.903127820947816e-18,
+            "A": 6.346941201773593e-13,
+            "r": 7.772290617562634e-13,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.3903998276218772
+        },
+        {
+          "step": 4,
+          "errors": {
+            "raw": 1.5839627244378096e-12,
+            "force": 1.700029006457271e-16,
+            "damage": 4.336808689942018e-18,
+            "A": 1.5839627244378096e-12,
+            "r": 1.5839627244378096e-12,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.417766964994371
+        },
+        {
+          "step": 5,
+          "errors": {
+            "raw": 1.0021089340760001e-36,
+            "force": 2.953298013921163e-29,
+            "damage": 1.0842021724855044e-18,
+            "A": 0.0,
+            "r": 6.453764155355805e-39,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.3942895429208875
+        }
+      ],
+      "passed": true,
+      "tolerance": 1e-10,
+      "inputs_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c",
+      "state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+      "total_wall_seconds": 8.211748742498457,
+      "new_fem_solves": 0,
+      "training_updates": 0,
+      "scope": "known five c1 saved fields; coefficient/DOF/GP/accepted-base map parity only; no convergence/label promotion",
+      "source_identity": "native saved MEX outputs and captured source/binary manifest; not live Fortran byte identity"
+    },
+    "scientific_steps_before_launch": 0,
+    "training_updates_before_launch": 0,
+    "new_project_fem_solves_before_launch": 0,
+    "parent_death_test": {
+      "passed": true,
+      "test": "actual worker pre-numerical import prefix parent-death safeguard",
+      "own_test_pid": 1033968,
+      "no_scientific_work": true
+    }
+  },
+  "launch": {
+    "pid": 1054983,
+    "hostname": "GPUServer8",
+    "command": [
+      "/mnt/data2/drtao/wennie/pf_hybrid_full_20261019_r1/code/tools/run_hybrid_producer.py",
+      "--card",
+      "/mnt/data2/drtao/wennie/pf_hybrid_full_20261019_r1/code/docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json",
+      "--package",
+      "/mnt/data2/drtao/wennie/pf_hybrid_full_20261019_r1/producer_source_manifest.json",
+      "--inputs",
+      "/mnt/data2/drtao/wennie/pf_hybrid_full_20261019_r1/inputs",
+      "--review",
+      "/mnt/data2/drtao/wennie/pf_hybrid_full_20261019_r1/producer_review.json",
+      "--execute"
+    ],
+    "card_sha256": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+    "artifact_id": "6b0ef3bf36ffbedf3c33170b2f641c06873684276a18be3f6726537e4d7c4585",
+    "host_admission": {
+      "available_ram_bytes": 408460218368,
+      "available_disk_bytes": 654863671296,
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "load_average": [
+        2.640625,
+        1.53125,
+        1.3916015625
+      ]
+    },
+    "runtime": {
+      "numpy": "1.24.4",
+      "scipy": "1.15.3",
+      "torch": "2.7.0+cu126",
+      "osqp": "1.0.4",
+      "h5py": "3.13.0",
+      "psutil": "7.0.0"
+    },
+    "start_epoch": 1792417774.3182628
+  },
+  "snapshot_epoch": 1792417825.9602215,
+  "cost_so_far": {
+    "wall_seconds": 8.296667147427797,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 0.0,
+    "cpu_seconds": 9.828283,
+    "phases": {
+      "native_replay": {
+        "wall_seconds": 8.296667147427797,
+        "peak_rss_bytes": 447889408,
+        "peak_gpu_mib": 0.0,
+        "storage": {},
+        "cpu_seconds": 9.828283,
+        "completed": true
+      }
+    },
+    "start_monotonic": 5439855.607843576,
+    "shared_analysis_seconds": 8.296667147427797
+  },
+  "live_monitor": {
+    "phase": "train_A",
+    "pid": 1055156,
+    "elapsed": 42.813174648210406,
+    "rss_bytes": 961388544,
+    "peak_rss_bytes": 2813591552,
+    "storage": {
+      "primary_bytes": 277132346,
+      "archive_bytes": 26291301
+    },
+    "peak_gpu_mib": 0.0,
+    "totals_before_phase": {
+      "wall_seconds": 8.296667147427797,
+      "gpu_seconds": 0.0,
+      "numerical_seconds": 0.0,
+      "cpu_seconds": 9.828283,
+      "phases": {
+        "native_replay": {
+          "wall_seconds": 8.296667147427797,
+          "peak_rss_bytes": 447889408,
+          "peak_gpu_mib": 0.0,
+          "storage": {},
+          "cpu_seconds": 9.828283,
+          "completed": true
+        }
+      },
+      "start_monotonic": 5439855.607843576,
+      "shared_analysis_seconds": 8.296667147427797
+    }
+  },
+  "failure": null,
+  "terminal": null,
+  "budget": {
+    "numerical_substeps": 3600,
+    "gpu_hours": 12,
+    "cpu_wall_hours": 136,
+    "core_hours_upper": 2176
+  },
+  "measured_preparation": {
+    "Mac_final_saved_field_replay_seconds": 2.5300624999799766,
+    "Linux_prelaunch_saved_field_replay_seconds": 8.211748742498457,
+    "first_chunk_transfer_batch_seconds": 917.6237472919747,
+    "transfer_scope": "one measured batch; excludes earlier stalls and final one-part repair; not GPU scientific work"
+  },
+  "limitations": [
+    "no new certified training-label count or field/acceleration result yet",
+    "f<1 behavior not established by old five-state replay",
+    "failed numerical work charged; no retries/resume/tolerance changes",
+    "single synthetic mesh/material family; no physical/generalization claim"
+  ]
+}

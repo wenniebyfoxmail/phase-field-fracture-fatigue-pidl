@@ -1,0 +1,87 @@
+{
+  "verdict": "REVIEW_PASS",
+  "review_type": "independent focused physical-kernel/identity-migration/static producer-card rereview",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-19T13:45:28.491009+00:00",
+  "commit": "43af56d43150f4ae8cf8799ceec4669564d67ef0",
+  "artifact_id": "6b0ef3bf36ffbedf3c33170b2f641c06873684276a18be3f6726537e4d7c4585",
+  "card_sha256": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+  "manifest_sha256": "323e3be0f84f860b106d7a020d47678cff83310280be6cc62c6eba857ddf9541",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "cbf3fc8f20951a32534ca2f46fa020c0d80a932b0edfff4cfa08de72774cbc47",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "fa04844aa4afdeeaa75478508e49469cf72081e1126216216389c0f45db1043c",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "81f3f46d3c3c55c806258636cff3915cbb8ae5859dca4bf20a0634152b832549",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "b2971fe4c5a4807146bddde82ec8fb08a45620b2221162b4068ae2a8f9d9f83c",
+    "tools/run_hybrid_producer.py": "76e773f978704be0c7afe8a9e4762f8c2079983fc410ce721eb5ec013f70bd60",
+    "tools/inspect_hybrid_run.py": "cd3d9c94be866eb0b4453b8faec86cb36c8b147b6cb991e1ee77ada5828f3cbd",
+    "tests/test_hybrid_incremental.py": "c787673a144dbb49835a79c698bb097039b9badabfb9070d89e0fcda96462490",
+    "tests/test_hybrid_producer.py": "6201bd961cfdb138c0c88f8762edf2349214c89813393e929bad89ba865598e0",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "e0bdc3e911aea98ebda023d582f4822850f4b4cfce1c0f737d31e1110bd82101",
+    "tools/launch_hybrid_detached.py": "fb515b236551d441b4cfb11667c200dff61999b4c4119b965a9caac861e47730",
+    "source/hybrid_kinematics.py": "06197c9a1f02cb725f42903834301ba6265c80e8d0218672b8fa8463e45edfef",
+    "tools/canonicalize_hybrid_inputs.py": "e23a12b4d6cce6dd4560f06f5fc395c7bfafb9440b0119670b3b6d7db9bda643",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125"
+  },
+  "decisive_blockers": [],
+  "checks": [
+    {
+      "topic": "Physical kernel",
+      "result": "Reviewed fixed-order float64 J=sum_node dN_reference*x, positive explicit2x2 determinant/inverse, inverse-left-multiplied reference derivatives, native GP(++,-+,+-,--), interleaved engineering-shear B and unit GP quadrature. Same isoparametric Q4/AT1/Amor physics, no new interpolation/rounding-to-pass. Full B/det remain in mesh digest and NativeQ4Backend strictly rebuilds/compares them."
+    },
+    {
+      "topic": "Old code isolation",
+      "result": "Old PIDL/native q4/energy/mechanics functions unchanged; only hybrid builder imports switch to the new portable kernel. Native Q4 default and old experimental results are not overwritten."
+    },
+    {
+      "topic": "Identity migration",
+      "result": "canonicalize verifies every old asset SHA and old state fingerprint/physics, creates a fresh output, rebinds only mesh_id through AcceptedState replace and derived state_id, explicitly checks all field bytes unchanged, hardlinks other assets, preserves original inputs SHA/state ID/mesh ID and updates the state asset SHA. No projection, solve, label promotion or tolerance change."
+    },
+    {
+      "topic": "Independent artificial migration",
+      "result": "Distorted one-element source with nontrivial d/opaque: all six scientific arrays bitwise unchanged; old input manifest and assets unchanged; all derivation IDs retained; mesh/seen assets share inode; deliberate old-asset tamper rejected. B/det differ from independent LAPACK construction only1.11e-16/5.55e-17 in this fixture."
+    },
+    {
+      "topic": "Card and native parity receipt",
+      "result": "New cardv2 changes only input/state identity and explicit input-identity revision; physical settings/budgets/criteria remain. Existing Mac five-state native replayv2 receipt reports5/5 at original1e-10, max raw/history1.584e-12, no newFEM/training; reviewer inspected receipt/code, not reran project-array replay."
+    },
+    {
+      "topic": "Exact package regressions",
+      "result": "29exact git-object file SHA checks and canonical artifact hash pass. Exported frozen package:46tests passed in0.74s, exit0, including distorted-LAPACK comparison and linear patch strain[2,4,2]."
+    }
+  ],
+  "carry_forward": "Unchanged design/library/producer v2-v3 lifecycle, labels/test isolation, cost, budget, launcher and operational-deadline findings remain in force.",
+  "runtime_admission": {
+    "initial_identity": "HQ reports Linux strict mesh_id f5c36127a80a7d9f7c8eb037ef61507c46b20d1def2bf13eb31c7f04018c78d3 and state0 fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1 match Mac with strict B/det rebuild. Not independently executed by reviewer.",
+    "full_status": "PENDING_FULL_ASSETS_CHECK_AND_LINUX_FIVE_STATE_REPLAY",
+    "required": [
+      "Complete all input asset byte/hash checks for cardv2 inputs SHA51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c.",
+      "Exact Linux --check and five-saved-field replay at retained1e-10; no tolerance/identity relaxation.",
+      "Actual runtime/dependency/host/account/CPU/RAM/disk and fresh GPUUUID/process admission, final concrete package display under existing conditional human instruction.",
+      "Final CLI must select execution_card_v2.json,new inputs path,manifest_v4 and this review_v4. The old plan cardv1 command is not admitted by this new-card receipt."
+    ]
+  },
+  "limits": [
+    "This is static code/physical-equivalence/identity-contract review, not proof of platform-independent bytes on every architecture or Linux full replay completion.",
+    "Artificial-state migration verification does not claim independent full real-state-array comparison; code checks and existing native replay receipt define actual reviewed scope.",
+    "Numerical floating-point route may alter nonconvex solver paths even when operators agree to roundoff; no old trajectory/result is reclassified. New NN-off/classical/NN arms use the same portable backend.",
+    "No model/label/FEM training or scientific field/acceleration/generalization/teacher outcome established.",
+    "No scientific arrays/holdouts/model/checkpoint loaded by reviewer in this round; no SSH,GPU,training or new project FEM. Only exact unit regressions and artificial geometry/state/hash probes."
+  ],
+  "conclusion": "Exact43af56d4/6b0ef3bf portable hybrid kernel and explicit state0 identity migration pass focused static rereview without relaxing physical/operator tolerances. Full Linux input/replay/resource and retained conditional execution requirements remain mandatory."
+}

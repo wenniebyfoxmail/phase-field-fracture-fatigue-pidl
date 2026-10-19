@@ -1,0 +1,41 @@
+{
+  "status": "Mac and Linux full input/source/state identities matched; Linux five-field replay5/5 passed unchanged1e-10",
+  "old_platform_mismatch": {
+    "Mac_mesh_id": "be91f91a84426d6a560aa4cb4c51e678bb1235c1ee2abbdcea73349590f5fc65",
+    "Linux_mesh_id": "50536fc842f8ed45ed60195ac4d9c856e51a35b4361f8092cd3c5f2b5e168e29",
+    "identical": [
+      "points",
+      "cells",
+      "shape_values",
+      "element_dofs",
+      "assembly_rows",
+      "assembly_cols",
+      "physics_id"
+    ],
+    "different": [
+      "b_matrices",
+      "det_jacobians"
+    ],
+    "cause": "derived LAPACK inverse/determinant last-bit platform arithmetic"
+  },
+  "repair": {
+    "source": "43af56d4",
+    "kernel": "hybrid-only float64 fixed-order explicit2x2 inverse/determinant",
+    "strict_full_derived_byte_identity_retained": true,
+    "old_PIDL_and_native_functions_unchanged": true,
+    "scientific_state_arrays_bitwise_unchanged": true,
+    "new_mesh_id": "f5c36127a80a7d9f7c8eb037ef61507c46b20d1def2bf13eb31c7f04018c78d3",
+    "new_state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1"
+  },
+  "Mac_replay": "native_operator_replay_v2.json",
+  "Mac_replay_pass": true,
+  "tolerance": 1e-10,
+  "new_scientific_solves": 0,
+  "training_updates": 0,
+  "Linux_replay_measured_seconds": 8.211748742498457,
+  "Linux_replay_max_errors": {
+    "raw_history": 1.5839627244378096e-12,
+    "force": 1.700029006457271e-16,
+    "damage": 4.336808689942018e-18
+  }
+}
