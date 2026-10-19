@@ -4,7 +4,16 @@ Purpose: improve PIDL agreement with the existing FEM numerical comparator while
 
 Authoritative scientific protocol and dated amendments: [S04-E011 experiment](../research/S04/S04-E011/experiment.md). Earlier physical-u/v, precrack A/B/C and weight designs retain their source records; no old result is overwritten.
 
-## Decision ladder (continued 2026-10-18)
+
+## Current goal anchor — user-directed method redesign (2026-10-19)
+
+The goal remains substantive PIDL/FEM field agreement. The user explicitly redirects the primary work from minimal-switch validation to first-principles method reconstruction. The previously proposed offline hard-map minimum check is not the active research route. Completed W0/W25 and other negative results remain unchanged.
+
+D1 reuse: current W0/W25 code/results, independently reviewed PC16 negative/nonstationary endpoint, and fresh E032/E033 attempt02 result records. D5 delivered a method-focused synthesis and4 complete source papers/reading notes. Main recommendation is a constraint/state-consistent FEM–neural hybrid; pure-neural alternative combines field-split solves, physical-metric globalization and localized trial representations. This is conceptual direction selection, not a code-ready solver or measured improvement. Next deliverable is one complete mathematical/algorithmic framework specification, not another gamma or clamp switch attempt. No training/FEM/data-boundary change follows from this report.
+
+Report: `/Users/wenxiaofang/obsidian/05 Knowledge/deep research report/Deep Research - PIDL接近FEM的第一性原理重构路线.md`. Search/source/evidence records: `local_archive/research/pidl_first_principles_20261019/`.
+
+## Historical decision ladder (completed 2026-10-18)
 
 | Step | Decision / minimal asset | State / advance or redirect |
 |---|---|---|
@@ -19,7 +28,7 @@ W0 u/v/d at0/200 exactly repeat historical C. W25 increases J by31.157%, u/v/d b
 
 [Full result and actual field-error table](../research/S04/S04-E011/runs/loss_weight_fixed200_result_20261018.md), [compact comparison](../research/S04/S04-E011/runs/loss_weight_fixed200_comparison_20261018.json), [actual strict-gradient evidence review](../research/S04/S04-E011/runs/weight_gradient_fix_evidence_review_20261018.json). Local exact fields/figures: `local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_fix_8edc762_20261018T210743Z/{retrieved,analysis,comparison}`; full checkpoints/GP retained remote under the same Run ID.
 
-Next smallest candidate: offline hard-map intervention range and saturation/release-gradient audit of the saved W0 endpoint, reusing the existing full-grid algebraic feasibility check instead of repeating it. No training, no projected-field improvement claim. Only then consider a separately scoped hard-box-only200 test at unchanged gamma/weights. Displacement contributes about96.12% of J squared, so feasibility alone cannot establish the desired FEM agreement.
+Historical next candidate (superseded as main route by the user on2026-10-19): offline hard-map intervention range and saturation/release-gradient audit of the saved W0 endpoint, reusing the existing full-grid algebraic feasibility check instead of repeating it. No training, no projected-field improvement claim. Only then consider a separately scoped hard-box-only200 test at unchanged gamma/weights. Displacement contributes about96.12% of J squared, so feasibility alone cannot establish the desired FEM agreement.
 
 Current workflow: installed research-decision-core plus road-fracture/PIDL adapters; project-local skill files remain historical snapshots. This workflow refresh changes no scientific thresholds, allowed evidence, execution authority or budget. Obsidian owner note is mesh对齐.md with its one current Roadmap link.
 

@@ -19,7 +19,9 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S04-E011 gamma-only fixed200 (2026-10-18):** strict9-component arithmetic diagnostic repaired at unchanged tolerance; reviewed W0/W25 completed400 updates. W0 repeats C bitwise, W25 joint FEM error31.157% higher despite GP-bound improvements; retain gamma16875. Single seen c1s1, no trajectory or newFEM. Next only offline hard-map impact audit reusing existing feasibility checks. [Canonical track and result](experiments/s04_fem_pidl_field_alignment_track.md).
+- **S04 method direction (2026-10-19, user-directed):** retain completed negative gamma result; primary work now first-principles reconstruction of constrained incremental problem, function-space solver and crack-local trial representation, with FEM–neural hybrid prioritized when field agreement is the goal. Four-source synthesis delivered; no new computation. [Goal anchor and source report](experiments/s04_fem_pidl_field_alignment_track.md).
+
+- **S04-E011 gamma-only fixed200 (2026-10-18):** strict9-component arithmetic diagnostic repaired at unchanged tolerance; reviewed W0/W25 completed400 updates. W0 repeats C bitwise, W25 joint FEM error31.157% higher despite GP-bound improvements; retain gamma16875. Single seen c1s1, no trajectory or newFEM. Historical offline hard-map next suggestion is superseded as the main route by the2026-10-19 method redesign. [Canonical track and result](experiments/s04_fem_pidl_field_alignment_track.md).
 
 - **S04-E011 fixed-state physical-u/v pilot (2026-10-18):** approved 200+200 updates completed in26.319s; candidate active error1.015% lower than equal-budget control but still0.540% higher than unchanged original, with raw/parity tradeoffs. No demonstrated upcurl repair or trajectory improvement; no new FEM. [Experiment and completed result](research/S04/S04-E011/physical_symmetry_preparation_20261017.md). Retain original; any new run needs a separately bounded discriminator.
 
