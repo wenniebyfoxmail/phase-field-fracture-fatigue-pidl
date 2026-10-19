@@ -1,6 +1,6 @@
 {
   "step": "E024-D013",
-  "stage": "DESIGN_ONLY_AWAITING_INDEPENDENT_REVIEW",
+  "stage": "DESIGN_ONLY_AWAITING_FOCUSED_REVIEW",
   "authority": "2026-10-19 direct user: physical-field-defined budget, plan and independent review only",
   "source_baseline": "ab403ff58a5d014b293a059fb5d94a0c5168e5c9",
   "states": [
@@ -119,5 +119,38 @@
     "remote_or_external_send": false,
     "install_dependencies": false
   },
-  "future_execution_permissions": "implementation + exact-source Code Ready and a separately approved final execution scope required; current design review is not launch permission"
+  "future_execution_permissions": "implementation + exact-source Code Ready and a separately approved final execution scope required; current design review is not launch permission",
+  "revision": "r2",
+  "initial_design_commit": "98d7381f",
+  "authoritative_actual_field": "cast head to original producer dtype/layout; fixed local raw-network reconstruction; all Q/guards/gain from that realized field; affine agreement never supplies physical slack; original cross-platform exceptions retained",
+  "predicted_step": "quantized representable theta_q minus current accepted head",
+  "zero_denominators": {
+    "full_UV_origin_error_zero": "NO_CORRECTION_ALREADY_EXACT, no normalized objective; retain original; continue prespecified other states",
+    "other_budget_zero": "explicit exact zero-change condition; no epsilon or division",
+    "mapping_scale_zero": "exact zero mapping discrepancy",
+    "zero_FEM_reference_norm": "absolute error only, relative error UNDEFINED"
+  },
+  "radius_geometric_UV_gain_bounds": [
+    0.1,
+    0.3,
+    1.0
+  ],
+  "radius_bounds_role": "reverse-triangle upper limits only, not reachability predictions or application standards",
+  "profile_order": {
+    "states": [
+      "c20s4",
+      "c60s4",
+      "c83s4"
+    ],
+    "within_state": [
+      "strict_eta_0.1",
+      "strict_eta_0.3",
+      "strict_eta_1.0",
+      "seven_guard_eta_0.3"
+    ]
+  },
+  "ablation_interpretation": "cross-score only already saved central-radius heads under all13 guards; retain solver residual/stopping differences; observed candidate cost is not optimal protection-cost proof",
+  "resource_enforcement": "parent-supervised subprocess timeouts and monotonic absolute per-phase/cumulative3120s deadlines; no borrowed phase budget; RSS/storage excess stops remaining profiles/states; no automatic retry; remaining read-only retrieval/review budget may preserve completed evidence",
+  "implementation_checks": "future300s includes568-dimensional artificial known-solution/degenerate QCQP and analytic-Jacobian/resource checks; no real model scientific forward; no new training",
+  "Gram_memory": "chunk GP strain/driver and native force Gram accumulation; never hold full stacked domain Jacobian"
 }
