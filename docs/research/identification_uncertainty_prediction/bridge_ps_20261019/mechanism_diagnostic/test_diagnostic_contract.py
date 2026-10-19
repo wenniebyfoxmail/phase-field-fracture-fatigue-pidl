@@ -52,6 +52,16 @@ class ContractTests(unittest.TestCase):
   with patch.object(c,'package_id',return_value='syntheticdigest'),patch.object(runner.subprocess,'Popen',side_effect=AssertionError('no subprocess permitted')):
    with self.assertRaises(PermissionError):runner.main(['--output',str(out)])
   self.assertFalse(out.exists())
+ def test_size_scan_tolerates_only_disappearance(self):
+  class Disappeared:
+   def stat(self):raise FileNotFoundError('artificial atomic rename')
+  live=self.out/'live';live.write_bytes(b'12345')
+  with patch.object(Path,'rglob',return_value=iter([Disappeared(),live])):
+   self.assertEqual(runner.output_size(self.out),5)
+  class Inaccessible:
+   def stat(self):raise PermissionError('artificial non-race failure')
+  with patch.object(Path,'rglob',return_value=iter([Inaccessible()])):
+   with self.assertRaises(PermissionError):runner.output_size(self.out)
  def test_authority_exact_budget_binding(self):
   payload={'authority_kind':'hq_arithmetic_continuation','allow_saved_derivative_read':True,'hq_thread_id':'01a14bb9-6cd1-7ee2-9647-5190d786f7ba','approval_text':'ARTIFICIAL TEST ONLY','source_commit':'a'*40,'package_sha256':'toy','source_root':c.SOURCE,'output_root':str(self.out),'budget':c.BUDGET}
   p=self.out/'synthetic_authority.json';p.write_text(json.dumps(payload));self.assertEqual(c.authority(p,'toy',self.out)['package_sha256'],'toy')

@@ -3,8 +3,8 @@
   "files": {
     "analyse.py": "faf054e718509fbb15598da09b8d533fc46c1cc6090684135766b96cd1f7b750",
     "diagnostic_contract.py": "e27b5b61a912a6424d204b313343a29663206313cdbc6863fb69652de6744d22",
-    "run_bounded.py": "ace1935c4446cb06b70aebfbe35c0a402bc173b797391093f837715c9c2541c6",
-    "protocol.md": "ef26b28d4e42ae2cfd64e8299a9e122339d131bbfa617a3024f90140565f0124",
-    "test_diagnostic_contract.py": "370f784da0b52b08f4f6c8f5c0bdcdcf9fe654acad151eaa818cc28572b7ddab"
+    "run_bounded.py": "978086ef0e6abf6072b59e9dbf168b0f0f5a78019125a520bc2a4db6e1ba1210",
+    "protocol.md": "6aaa3b2e7c60586345bf042d3d0283c93eb5174ceb59a8963fda9da6cc3abfbb",
+    "test_diagnostic_contract.py": "1d2fdaccf2ff7e49c519ac47cb8cb2d122377727c83424484b182af7b3cc0a52"
   }
 }
