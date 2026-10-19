@@ -78,7 +78,9 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   frozenrecognition/history-onlygeometricprobe;holdAE981vs trend924px²,
   gain57(5.81%),1/1calculable. Butspeckle-dominatedcandidates/53pxguideswitch
   preventvalidatedcrack-growthclaim;nocapturetime/loadmapping. Oldscoreskept.
-  Next existing3image texture/change inspection,notnewwindoworcomplexmodel.
+  D3specificationready2026-10-19:notexecuted;design89→132,exposed132→175
+  diagnostic,rawvssaved-motion-compensatedresidualsfixedband. Ifinseparable,
+  returntoobservationinterfaceandpauseMD03predictorcomparison;noD01overlap.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。

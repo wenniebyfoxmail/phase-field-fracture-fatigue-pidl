@@ -379,3 +379,17 @@ D3active: propose existing3image texture-correspondence/new-opening structure
 inspection,notmoredarkthresholdtuning,newwindowsorcomplexpredictor. OldMD01
 halfdepth/masks/scoresunchanged;33.7%beamunopened. Evidenceunder
 local_archive/experiments/S03-E049-MD03/README_analysis.md inparentroot.
+
+### E049 D3 scoped observation-diagnostic card — 2026-10-19
+
+ActiveD3: [executable specification, section2026-10-19](../research/S03/S03-E049-MD03/results.md).
+OwnerthisMD03chat; originalgoalcrack-evolutionprediction, currentquestionwhether
+spraytexturecanbeseparatedfromnew/openingstructures. Continuein-scopeobservation
+repair,notreplacegoalwithdark-areaextrapolation. Designonly89→132;175exposed,
+132→175developmentdiagnosticonly. Proposedrawdifferencevssaved-similarity-warp
+signeddifference,samefixedband/support/grayrange; nofit/thresholds/newmasks.
+Minimumdeliverableinput/overlay/pattern-decisiontablecompleteinexistingrecord.
+Anytexturecancellationorlocalisablestructureiscomponentprogress;inseparable
+texturemeansmeasurementinterfacegapandpauseMD03predictorcomparison,noglobal
+routefailure. D01owner/geometrypredictionuntouched. Nopixelsread,numerics,
+inference,registration,downloads,runsorreviewsperformedbythisrecordupdate.
