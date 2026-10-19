@@ -19,6 +19,7 @@ import torch
 
 from s09_code_identity import current_commit
 from s09_e010_producer import evaluate_arm
+from s09_e011_producer import _restore_evaluation_key_order
 from s09_e014_common_direction import ARM_CANDIDATE, ARM_CONTROL, ARM_ORDER
 from s09_e014_producer import (
     _load_json,
@@ -915,9 +916,10 @@ def _validate_outputs(
     for label in order:
         record = loaded_evaluations["states"][label]
         update = 0 if label == "B25_step0" else 1
-        _require_valid_evaluation(record["evaluation"], update, label)
+        restored_evaluation = _restore_evaluation_key_order(record["evaluation"])
+        _require_valid_evaluation(restored_evaluation, update, label)
         _require_score_evaluation_alignment(
-            record["score_rows"], record["evaluation"], label
+            record["score_rows"], restored_evaluation, label
         )
     _require(
         (output / "state_cycle_metrics.csv").read_bytes()
@@ -1038,10 +1040,10 @@ def run_producer(
     _, environment = _validate_binding(
         run_config, protocol, repo_root, output_dir, archive_dir, expected_commit
     )
+    _require(
+        not output_dir.exists() and not archive_dir.exists(), "fresh roots required"
+    )
     try:
-        _require(
-            not output_dir.exists() and not archive_dir.exists(), "fresh roots required"
-        )
         _require(
             shutil.disk_usage(output_dir.parent).free >= 5 * 1024**3,
             "less than 5 GiB free",

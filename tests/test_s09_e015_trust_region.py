@@ -292,6 +292,12 @@ def test_full_writer_validator_round_trip_and_npz_shared_array_guard(
     )
     monkeypatch.setattr(producer, "_validate_source_closure", lambda **kwargs: None)
     monkeypatch.setattr(producer, "_check_resources", lambda *args: None)
+    restored = []
+    monkeypatch.setattr(
+        producer,
+        "_restore_evaluation_key_order",
+        lambda record: restored.append(record) or record,
+    )
     hashes = producer._validate_outputs(
         tmp_path,
         states,
@@ -310,6 +316,7 @@ def test_full_writer_validator_round_trip_and_npz_shared_array_guard(
         deadline=1.0,
     )
     assert "state_evaluations.json" in hashes
+    assert len(restored) == 13
 
     archive_path = tmp_path / "all_state_fields.npz"
     with np.load(archive_path, allow_pickle=False) as archive:
@@ -489,3 +496,58 @@ def test_startup_evidence_failure_produces_failure_receipts(tmp_path, monkeypatc
         assert failure["scientific_status"] == "EXECUTION_INVALID"
         assert failure["states_evaluated"] == 0
         assert failure["optimizer_steps_completed"] == 0
+
+
+def test_existing_success_roots_are_not_mutated_by_duplicate_call(
+    tmp_path, monkeypatch
+):
+    import s09_e015_producer as producer
+
+    output = tmp_path / "run"
+    archive = tmp_path / "archive"
+    for root in (output, archive):
+        root.mkdir()
+        producer._write_json(
+            root / "completion_receipt.json",
+            {"execution_status": "SUCCEEDED", "root": root.name},
+        )
+        (root / "sentinel.txt").write_text("preserve\n")
+    before = {
+        path: path.read_bytes()
+        for root in (output, archive)
+        for path in root.iterdir()
+    }
+    monkeypatch.setattr(producer.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(
+        producer,
+        "_validate_binding",
+        lambda *args: ({}, {"hostname": "GPUServer8"}),
+    )
+
+    with pytest.raises(ValueError, match="fresh roots required"):
+        producer.run_producer(
+            packet_dir=tmp_path / "packet",
+            base_config=tmp_path / "base.json",
+            initial_checkpoint=tmp_path / "base.pt",
+            control_endpoint=tmp_path / "control.pt",
+            candidate_endpoint=tmp_path / "candidate.pt",
+            e014_run_dir=tmp_path / "e014",
+            vector_archive=tmp_path / "vector.pt",
+            e014_completion=tmp_path / "e014_completion.json",
+            output_dir=output,
+            archive_dir=archive,
+            repo_root=tmp_path,
+            expected_commit="fixture",
+            run_config=tmp_path / "run_config.json",
+            protocol=tmp_path / "experiment.md",
+        )
+
+    after = {
+        path: path.read_bytes()
+        for root in (output, archive)
+        for path in root.iterdir()
+    }
+    assert after == before
+    assert not (output / "failure_receipt.json").exists()
+    assert not (archive / "failure_receipt.json").exists()
