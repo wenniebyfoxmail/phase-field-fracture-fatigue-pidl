@@ -11,6 +11,7 @@ from scripts.analyse_s09_e016_factorisation import (
     _optional_pair_score,
     _validate_saved_arrays,
     _validate_saved_csv,
+    _validate_saved_json,
 )
 from s09_e016_factorisation import (
     EXPECTED_CYCLES,
@@ -230,8 +231,26 @@ def test_saved_csv_validation_rejects_scientific_value_mutation(tmp_path):
     _validate_saved_csv(path, rows)
 
     path.write_text("cycle,amplitude\n1,0.5\n")
-    with pytest.raises(ValueError, match="CSV value drift: amplitude"):
+    with pytest.raises(ValueError, match="CSV byte drift"):
         _validate_saved_csv(path, rows)
+
+
+def test_saved_csv_validation_rejects_duplicate_conflicting_column(tmp_path):
+    path = tmp_path / "table.csv"
+    rows = [{"cycle": 1, "amplitude": 0.25}]
+    path.write_bytes(b"cycle,amplitude,amplitude\r\n1,999,0.25\r\n")
+    with pytest.raises(ValueError, match="CSV byte drift"):
+        _validate_saved_csv(path, rows)
+
+
+def test_saved_json_validation_rejects_duplicate_conflicting_key(tmp_path):
+    path = tmp_path / "decision.json"
+    decision = {"readiness": {"ready": True}}
+    path.write_text(
+        '{"readiness":{"ready":false},"readiness":{"ready":true}}\n'
+    )
+    with pytest.raises(ValueError, match="JSON byte drift"):
+        _validate_saved_json(path, decision)
 
 
 def test_saved_array_validation_rejects_missing_scientific_array(tmp_path):

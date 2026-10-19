@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import io
 import json
 import math
 from pathlib import Path
@@ -130,8 +131,12 @@ def _load_a25(path: Path) -> dict[int, dict[str, float]]:
     return values
 
 
+def _json_text(value: Any) -> str:
+    return json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n"
+
+
 def _json_dump(path: Path, value: Any) -> None:
-    path.write_text(json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n")
+    path.write_text(_json_text(value))
 
 
 def _finite_ratio(numerator: float, denominator: float) -> float | None:
@@ -195,6 +200,14 @@ def _frozen_fem_support(raw_fem_increment: np.ndarray) -> np.ndarray:
 
 
 def _validate_saved_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+    expected_stream = io.StringIO(newline="")
+    writer = csv.DictWriter(expected_stream, fieldnames=list(rows[0]))
+    writer.writeheader()
+    writer.writerows(rows)
+    _require(
+        path.read_bytes() == expected_stream.getvalue().encode("utf-8"),
+        "CSV byte drift",
+    )
     with path.open(newline="") as stream:
         reread_rows = list(csv.DictReader(stream))
     _require(len(reread_rows) == len(rows), "CSV row count drift")
@@ -207,6 +220,13 @@ def _validate_saved_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         for key, value in expected.items():
             rendered_value = "" if value is None else str(value)
             _require(observed[key] == rendered_value, f"CSV value drift: {key}")
+
+
+def _validate_saved_json(path: Path, value: Any) -> None:
+    _require(path.read_text() == _json_text(value), "JSON byte drift")
+    parsed = json.loads(path.read_text())
+    expected = json.loads(json.dumps(value, allow_nan=False))
+    _require(parsed == expected, "JSON value drift")
 
 
 def _validate_saved_arrays(path: Path, payload: dict[str, np.ndarray]) -> None:
@@ -706,7 +726,7 @@ def main() -> None:
             "support_threshold": SUPPORT_THRESHOLD,
         },
         "claim_boundary": (
-            "This exposed-set audit establishes numerical readiness of the representation only. "
+            "This exposed-set audit assesses numerical readiness of the representation only. "
             "It does not establish training success, holdout generalisation, rollout stability, "
             "damage stationarity, history complementarity, or physical-teacher truth."
         ),
@@ -809,9 +829,7 @@ E016 replaces another loss-weight scan with a representation-level repair: separ
     (args.output / "README_analysis.md").write_text(readme)
 
     _validate_saved_csv(csv_path, rows)
-    parsed_decision = json.loads((args.output / "factorisation_decision.json").read_text())
-    expected_decision = json.loads(json.dumps(decision, allow_nan=False))
-    _require(parsed_decision == expected_decision, "decision reread drift")
+    _validate_saved_json(args.output / "factorisation_decision.json", decision)
     _validate_saved_arrays(arrays_path, array_payload)
     rendered = plt.imread(figure_path)
     _require(rendered.size > 0 and np.isfinite(rendered).all(), "invalid rendered figure")
