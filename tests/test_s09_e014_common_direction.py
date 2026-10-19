@@ -4,7 +4,7 @@ import torch
 
 from s09_e014_common_direction import (
     ARM_CANDIDATE, ARM_CONTROL, aggregate_rank_gradient, common_directions,
-    nullspace_local_secondary,
+    classify, nullspace_local_secondary,
 )
 
 
@@ -49,3 +49,34 @@ def test_common_candidate_adds_one_shared_secondary() -> None:
     assert components["local_secondary"].norm() > 0
     assert record["local_secondary"]["gram_rank"] == 2
     assert not torch.equal(directions[ARM_CONTROL], directions[ARM_CANDIDATE])
+
+
+def test_protected_ratio_uses_true_small_positive_denominator() -> None:
+    control = {"local_pair_score": 34, "global_pair_score": 34,
+               "G": 1e-31, "F": 1.0, "L_P": 1.0, "L_judge": 1.0,
+               "finite": True, "hard_constraint_violations": 0}
+    candidate = {**control, "local_pair_score": 35, "G": 2e-31}
+    result = classify(True, control, candidate, valid=True)
+    assert result["level"] == 4
+    assert result["protected_ratios"]["G"] == 2.0
+    assert result["protected_ratios_ok"] is False
+
+
+def test_zero_denominator_does_not_default_to_protected_pass() -> None:
+    control = {"local_pair_score": 34, "global_pair_score": 34,
+               "G": 0.0, "F": 1.0, "L_P": 1.0, "L_judge": 1.0,
+               "finite": True, "hard_constraint_violations": 0}
+    candidate = {**control, "local_pair_score": 35, "G": 1e-12}
+    result = classify(True, control, candidate, valid=True)
+    assert result["level"] == 4
+    assert result["protected_ratios"]["G"] is None
+
+
+def test_classifier_rejects_hard_constraint_even_if_valid_flag_is_true() -> None:
+    control = {"local_pair_score": 34, "global_pair_score": 34,
+               "G": 1.0, "F": 1.0, "L_P": 1.0, "L_judge": 1.0,
+               "finite": True, "hard_constraint_violations": 1}
+    candidate = {**control, "local_pair_score": 35,
+                 "hard_constraint_violations": 0}
+    result = classify(True, control, candidate, valid=True)
+    assert result == {"level": 1, "status": "EXECUTION_INVALID"}

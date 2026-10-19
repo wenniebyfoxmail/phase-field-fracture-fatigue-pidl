@@ -26,7 +26,7 @@ from s09_e009_four_arm import (
     NORM_EPSILON, atomic_losses, flattened_objective_gradients,
     flattened_parameters, parameter_state_sha256,
 )
-from s09_e010_producer import evaluate_arm
+from s09_e010_producer import _validate_evaluation_record, evaluate_arm
 from s09_e010_support_amplitude import (
     BALANCED_OBJECTIVE_ORDER, balanced_objectives, support_amplitude_losses,
 )
@@ -34,6 +34,7 @@ from s09_e013_local_ranking_objective import (
     GROWTH_CYCLES, NEAR_STAGNANT_CYCLES, PAIR_ORDER,
     local_support_score, weighted_amplitude,
 )
+from s09_e011_producer import _restore_evaluation_key_order
 from s09_e013_producer import _adamw_displacement, _optimizer_state_sha256
 from s09_e014_common_direction import (
     ARM_CANDIDATE, ARM_CONTROL, ARM_ORDER, NORMALISER_D, PINV_RTOL,
@@ -82,8 +83,15 @@ def _write_json(path: Path, value: Any) -> None:
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(),
-                      parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
+    def no_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result = {}
+        for key, value in pairs:
+            _require(key not in result, f"duplicate JSON key: {key}")
+            result[key] = value
+        return result
+    return json.loads(
+        path.read_text(encoding="utf-8"), object_pairs_hook=no_duplicates,
+        parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
 
 
 def _check_deadline(deadline: float, stage: str) -> None:
@@ -94,6 +102,21 @@ def _check_vram(stage: str) -> None:
     reserved = int(torch.cuda.max_memory_reserved())
     _require(reserved <= 20 * 1024**3,
              f"VRAM_CAP_EXCEEDED:{stage}:{reserved}", MemoryError)
+
+
+def _check_resources(deadline: float, stage: str) -> None:
+    _check_deadline(deadline, stage)
+    _check_vram(stage)
+
+
+def _canonical_exact_path(path: Path, expected: str, label: str) -> Path:
+    _require(path.is_absolute(), f"{label} must be absolute")
+    _require(path == Path(os.path.normpath(str(path))), f"{label} is noncanonical")
+    _require(path == Path(expected), f"{label} differs from frozen run config")
+    parent = path.parent.resolve(strict=True)
+    _require(parent == Path(expected).parent,
+             f"{label} parent resolves through a symlink")
+    return path
 
 
 def _execution_files_clean(root: Path) -> bool:
@@ -114,13 +137,15 @@ def _environment() -> dict[str, Any]:
 
 def _validate_binding(*, run_config: Path, protocol: Path, repo_root: Path,
                       output: Path, archive: Path, expected_commit: str) -> tuple[dict[str, Any], dict[str, Any]]:
-    _require(repo_root.resolve(strict=True) == MODULE_ROOT, "module/repo root drift")
+    resolved_repo = repo_root.resolve(strict=True)
+    _require(resolved_repo == MODULE_ROOT, "module/repo root drift")
+    _require(str(resolved_repo) == EXPECTED_CODE_ROOT, "executing code root drift")
     _require(sha256_file(run_config) == EXPECTED_RUN_CONFIG_SHA256, "run config identity mismatch")
     _require(sha256_file(protocol) == EXPECTED_PROTOCOL_SHA256, "protocol identity mismatch")
     config = _load_json(run_config)
     _require(run_config.read_bytes() == canonical_json(config), "run config is not canonical JSON")
-    _require(output == Path(EXPECTED_OUTPUT_ROOT) and archive == Path(EXPECTED_ARCHIVE_ROOT),
-             "output/archive binding drift")
+    _canonical_exact_path(output, EXPECTED_OUTPUT_ROOT, "output root")
+    _canonical_exact_path(archive, EXPECTED_ARCHIVE_ROOT, "archive root")
     producer = config["producer"]
     _require(producer == {
         "CUDA_VISIBLE_DEVICES": EXPECTED_CUDA_VISIBLE_DEVICES,
@@ -172,7 +197,7 @@ def collect_common_gradients(runtime: Any, *, deadline: float) -> dict[str, Any]
     local_records = {}
     parameter_order = None
     for index, cycle in enumerate(cycles):
-        _check_deadline(deadline, f"gradient_cycle_{cycle}:before")
+        _check_resources(deadline, f"gradient_cycle_{cycle}:before")
         objectives, gs, ls, lrecord, gradients, layout = _cycle_objectives(runtime, index)
         if parameter_order is None:
             parameter_order = layout["parameter_order"]
@@ -188,7 +213,7 @@ def collect_common_gradients(runtime: Any, *, deadline: float) -> dict[str, Any]
             global_jac[cycle] = gradients["global_score"].detach()
             local_jac[cycle] = gradients["local_score"].detach()
             local_records[cycle] = lrecord
-        _check_deadline(deadline, f"gradient_cycle_{cycle}:after")
+        _check_resources(deadline, f"gradient_cycle_{cycle}:after")
     assert base_sums is not None and parameter_order is not None
     base_gradients = OrderedDict((name, value / len(cycles)) for name, value in base_sums.items())
     global_loss, global_rank, global_rows = aggregate_rank_gradient(
@@ -249,10 +274,10 @@ def _collect_fields(runtime: Any, *, deadline: float, label: str) -> dict[str, n
     with torch.no_grad():
         for index, cycle_raw in enumerate(runtime.arrays["cycles"]):
             cycle = int(cycle_raw)
-            _check_deadline(deadline, f"fields:{label}:{cycle}:before")
+            _check_resources(deadline, f"fields:{label}:{cycle}:before")
             _, context = atomic_losses(runtime, index)
             predicted.append(context["output"]["d_peak"].detach().cpu().numpy())
-            _check_deadline(deadline, f"fields:{label}:{cycle}:after")
+            _check_resources(deadline, f"fields:{label}:{cycle}:after")
     return {"predicted_peak": np.stack(predicted),
             "d_pre": np.asarray(runtime.arrays["d_pre"]),
             "target_peak": np.asarray(runtime.arrays["d_peak"]),
@@ -266,7 +291,17 @@ def _evaluate(runtime: Any) -> dict[str, Any]:
     record["aggregate"]["update"] = 1
     for row in record["per_cycle"]:
         row["update"] = 1
+    _validate_evaluation_record(record, 1)
     return record
+
+
+def _require_valid_evaluation(record: Mapping[str, Any], update: int, label: str) -> None:
+    _validate_evaluation_record(record, update)
+    aggregate = record["aggregate"]
+    _require(aggregate["finite"] is True, f"nonfinite evaluation: {label}")
+    _require(type(aggregate["hard_constraint_violations"]) is int and
+             aggregate["hard_constraint_violations"] == 0,
+             f"hard-constraint violation: {label}")
 
 
 def _scores_from_fields(fields: Mapping[str, np.ndarray]) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
@@ -285,6 +320,14 @@ def _scores_from_fields(fields: Mapping[str, np.ndarray]) -> tuple[dict[str, Any
     return pair_score(global_values, PAIR_ORDER), pair_score(local_values, PAIR_ORDER), rows
 
 
+def _require_score_evaluation_alignment(
+        score_rows: list[dict[str, Any]], evaluation: Mapping[str, Any], label: str) -> None:
+    expected = [int(row["cycle"]) for row in evaluation["per_cycle"]]
+    observed = [int(row["cycle"]) for row in score_rows]
+    _require(len(score_rows) == len(evaluation["per_cycle"]) == 16 and
+             observed == expected, f"score/evaluation cycle drift: {label}")
+
+
 def _save_vector_archive(path: Path, bundle: Mapping[str, Any],
                          displacements: Mapping[str, torch.Tensor]) -> str:
     payload = {"parameter_order": bundle["parameter_order"],
@@ -299,10 +342,100 @@ def _save_vector_archive(path: Path, bundle: Mapping[str, Any],
     return sha256_file(path)
 
 
-def _write_figures(output: Path, fields: Mapping[str, Mapping[str, np.ndarray]]) -> tuple[str, ...]:
+def _validate_json_artifact(path: Path, expected: Mapping[str, Any]) -> dict[str, Any]:
+    observed = _load_json(path)
+    _require(path.read_bytes() == canonical_json(observed),
+             f"noncanonical JSON artifact: {path.name}")
+    _require(observed == expected, f"JSON artifact content drift: {path.name}")
+    return observed
+
+
+def _validate_checkpoint_artifact(path: Path, arm: str, expected_sha256: str) -> None:
+    _require(path.is_file() and sha256_file(path) == expected_sha256,
+             f"checkpoint identity drift: {arm}")
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    _require(set(checkpoint) == {"model", "optimizer", "update", "arm", "source_run"}
+             and isinstance(checkpoint["model"], Mapping)
+             and isinstance(checkpoint["optimizer"], Mapping)
+             and type(checkpoint["update"]) is int and checkpoint["update"] == 1
+             and checkpoint["arm"] == arm and checkpoint["source_run"] == RUN_ID,
+             f"checkpoint semantic drift: {arm}")
+
+
+def _validate_vector_archive(path: Path, expected_sha256: str,
+                             bundle: Mapping[str, Any],
+                             displacements: Mapping[str, torch.Tensor]) -> None:
+    _require(path.is_file() and sha256_file(path) == expected_sha256,
+             "common gradient vector archive identity drift")
+    observed = torch.load(path, map_location="cpu", weights_only=False)
+    expected_keys = {
+        "parameter_order", "base_gradients", "global_score_gradients",
+        "local_score_gradients", "global_rank_gradient", "local_rank_gradient",
+        "components", "directions", "adamw_displacements",
+    }
+    _require(isinstance(observed, Mapping) and set(observed) == expected_keys and
+             observed["parameter_order"] == bundle["parameter_order"],
+             "common gradient vector archive schema drift")
+    expected_tensors = {
+        "global_rank_gradient": bundle["global_rank_gradient"],
+        "local_rank_gradient": bundle["local_rank_gradient"],
+    }
+    for name, expected in expected_tensors.items():
+        value = observed[name]
+        _require(torch.is_tensor(value) and torch.isfinite(value).all().item() and
+                 tensor_sha256(value) == tensor_sha256(expected),
+                 f"vector archive tensor drift: {name}")
+    for mapping_name, expected_mapping in (
+        ("base_gradients", bundle["base_gradients"]),
+        ("global_score_gradients", bundle["global_score_gradients"]),
+        ("local_score_gradients", bundle["local_score_gradients"]),
+        ("components", bundle["components"]),
+        ("directions", bundle["directions"]),
+        ("adamw_displacements", displacements),
+    ):
+        values = observed[mapping_name]
+        _require(isinstance(values, Mapping) and set(values) == set(expected_mapping),
+                 f"vector archive mapping drift: {mapping_name}")
+        for key, expected in expected_mapping.items():
+            value = values[key]
+            _require(torch.is_tensor(value) and torch.isfinite(value).all().item() and
+                     tensor_sha256(value) == tensor_sha256(expected),
+                     f"vector archive tensor drift: {mapping_name}/{key}")
+
+
+def _validate_csv_coverage(path: Path, states: tuple[str, ...], cycles: tuple[int, ...]) -> None:
+    with path.open(newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    expected = [(state, str(cycle)) for state in states for cycle in cycles]
+    observed = [(row.get("state"), row.get("cycle")) for row in rows]
+    _require(observed == expected, "per-cycle CSV coverage drift")
+
+
+def _validate_field_archive(path: Path,
+                            fields: Mapping[str, Mapping[str, np.ndarray]]) -> None:
+    expected = {
+        "cycles": fields["B25_step0"]["cycles"],
+        "xy": fields["B25_step0"]["xy"],
+        "nodal_weight": fields["B25_step0"]["nodal_weight"],
+        "d_pre": fields["B25_step0"]["d_pre"],
+        "target_peak": fields["B25_step0"]["target_peak"],
+        "step0_peak": fields["B25_step0"]["predicted_peak"],
+        "control_peak": fields[ARM_CONTROL]["predicted_peak"],
+        "candidate_peak": fields[ARM_CANDIDATE]["predicted_peak"],
+    }
+    with np.load(path, allow_pickle=False) as observed:
+        _require(set(observed.files) == set(expected), "field archive key drift")
+        for name, value in expected.items():
+            _require(np.array_equal(observed[name], value),
+                     f"field archive array drift: {name}")
+
+
+def _write_figures(output: Path, fields: Mapping[str, Mapping[str, np.ndarray]],
+                   *, deadline: float) -> tuple[str, ...]:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    _check_resources(deadline, "figures:before")
     step0, control, candidate = fields["B25_step0"], fields[ARM_CONTROL], fields[ARM_CANDIDATE]
     with (output / "field_arrays_step0_step1.npz").open("xb") as stream:
         np.savez_compressed(stream, cycles=step0["cycles"], xy=step0["xy"],
@@ -310,6 +443,7 @@ def _write_figures(output: Path, fields: Mapping[str, Mapping[str, np.ndarray]])
                             target_peak=step0["target_peak"], step0_peak=step0["predicted_peak"],
                             control_peak=control["predicted_peak"],
                             candidate_peak=candidate["predicted_peak"])
+    _check_resources(deadline, "figures:field_archive_after")
     arrays = [step0["target_peak"] - step0["d_pre"],
               step0["predicted_peak"] - step0["d_pre"],
               control["predicted_peak"] - step0["d_pre"],
@@ -330,6 +464,7 @@ def _write_figures(output: Path, fields: Mapping[str, Mapping[str, np.ndarray]])
                  label=f"Δd, shared physical scale [{vmin:.3e}, {vmax:.3e}]")
     fig.savefig(output / "delta_d_fields_all_cycles.png", dpi=150, facecolor="white")
     plt.close(fig)
+    _check_resources(deadline, "figures:plot_after")
     readme = (
         "# S09-E014 field evidence\n\n"
         "Scientific question: does one shared nullspace-constrained local secondary "
@@ -351,8 +486,55 @@ def _write_figures(output: Path, fields: Mapping[str, Mapping[str, np.ndarray]])
         "`decision_metrics.json`; continuous margins remain explanatory diagnostics.\n"
     )
     (output / "README_analysis.md").write_text(readme, encoding="utf-8")
+    _check_resources(deadline, "figures:after")
     return ("field_arrays_step0_step1.npz", "delta_d_fields_all_cycles.png",
             "README_analysis.md")
+
+
+def _validate_success_artifacts(
+        *, output: Path, vector_path: Path, vector_sha256: str,
+        audit: Mapping[str, Any], step0_evaluation: Mapping[str, Any],
+        results: Mapping[str, Mapping[str, Any]], decision: Mapping[str, Any],
+        fields: Mapping[str, Mapping[str, np.ndarray]], bundle: Mapping[str, Any],
+        displacements: Mapping[str, torch.Tensor], deadline: float) -> dict[str, str]:
+    _check_resources(deadline, "completion_validation:before")
+    _validate_json_artifact(output / "zero_step_common_direction_audit.json", audit)
+    step0_disk = _validate_json_artifact(
+        output / "step0_evaluation.json", step0_evaluation)
+    _require_valid_evaluation(
+        _restore_evaluation_key_order(step0_disk), 0, "B25_step0:on_disk")
+    for arm in ARM_ORDER:
+        observed = _validate_json_artifact(
+            output / f"{arm}_step1_result.json", results[arm])
+        disk_evaluation = _restore_evaluation_key_order(observed["evaluation"])
+        _require_valid_evaluation(disk_evaluation, 1, f"{arm}:on_disk")
+        _require_score_evaluation_alignment(
+            observed["score_rows"], disk_evaluation, f"{arm}:on_disk")
+        _validate_checkpoint_artifact(
+            output / f"{arm}_checkpoint_step1.pt", arm,
+            results[arm]["checkpoint_sha256"])
+    _validate_json_artifact(output / "decision_metrics.json", decision)
+    _validate_vector_archive(vector_path, vector_sha256, bundle, displacements)
+    cycles = tuple(int(value) for value in fields["B25_step0"]["cycles"])
+    _validate_csv_coverage(output / "per_cycle_metrics.csv",
+                           ("B25_step0", *ARM_ORDER), cycles)
+    _validate_field_archive(output / "field_arrays_step0_step1.npz", fields)
+    for name in ("delta_d_fields_all_cycles.png", "README_analysis.md"):
+        _require((output / name).is_file() and (output / name).stat().st_size > 0,
+                 f"missing or empty required evidence: {name}")
+    names = (
+        "environment.json", "source_identity.json",
+        "zero_step_common_direction_audit.json", "step0_evaluation.json",
+        f"{ARM_CONTROL}_step1_result.json", f"{ARM_CANDIDATE}_step1_result.json",
+        f"{ARM_CONTROL}_checkpoint_step1.pt",
+        f"{ARM_CANDIDATE}_checkpoint_step1.pt",
+        "decision_metrics.json", "per_cycle_metrics.csv",
+        "field_arrays_step0_step1.npz", "delta_d_fields_all_cycles.png",
+        "README_analysis.md",
+    )
+    hashes = {name: sha256_file(output / name) for name in names}
+    _check_resources(deadline, "completion_validation:after_hashes")
+    return hashes
 
 
 def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Path,
@@ -392,10 +574,9 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
         initial_model_hash = parameter_state_sha256(runtime.model)
         initial_optimizer = _clone_optimizer(runtime.model, checkpoint["optimizer"])
         initial_optimizer_hash = _optimizer_state_sha256(initial_optimizer)
-        _check_deadline(deadline, "common_gradient_collection_before")
+        _check_resources(deadline, "common_gradient_collection_before")
         bundle = collect_common_gradients(runtime, deadline=deadline)
-        _check_deadline(deadline, "common_gradient_collection_after")
-        _check_vram("common_gradient_collection_after")
+        _check_resources(deadline, "common_gradient_collection_after")
         models = {arm: copy.deepcopy(runtime.model) for arm in ARM_ORDER}
         optimizers = {arm: _clone_optimizer(models[arm], checkpoint["optimizer"])
                       for arm in ARM_ORDER}
@@ -403,6 +584,7 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
                                                   bundle["directions"][arm],
                                                   bundle["parameter_order"])
                          for arm in ARM_ORDER}
+        _check_resources(deadline, "arm_clone_and_displacement_after")
         ql_norm = float(torch.linalg.vector_norm(bundle["components"]["local_secondary"]).cpu())
         local_projection = bundle["diagnostics"]["local_secondary"]
         anchor_scale = max(
@@ -445,22 +627,28 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
         _write_json(output_dir / "zero_step_common_direction_audit.json", audit)
         vector_path = archive_dir / "common_gradient_vectors.pt"
         vector_sha = _save_vector_archive(vector_path, bundle, displacements)
+        _check_resources(deadline, "vector_archive_after")
         _require(parameter_state_sha256(runtime.model) == initial_model_hash and
                  _optimizer_state_sha256(initial_optimizer) == initial_optimizer_hash,
                  "zero-step collection mutated state")
         _require(common_secondary, "NO_COMMON_NULLSPACE_SECONDARY")
         fields = {"B25_step0": _collect_fields(runtime, deadline=deadline, label="B25_step0")}
         step0_evaluation = evaluate_arm(runtime, update=0)
+        _require_valid_evaluation(step0_evaluation, 0, "B25_step0")
         step0_global_pair, step0_local_pair, step0_score_rows = _scores_from_fields(
             fields["B25_step0"])
+        _require_score_evaluation_alignment(
+            step0_score_rows, step0_evaluation, "B25_step0")
         _write_json(output_dir / "step0_evaluation.json", step0_evaluation)
         results = {}
         for arm in ARM_ORDER:
-            _check_deadline(deadline, f"{arm}:step_before")
+            _check_resources(deadline, f"{arm}:step_prepare_before")
             before, order = flattened_parameters(models[arm])
             _require(order == bundle["parameter_order"], "parameter order drift before step")
             assign_merged_gradient(models[arm], bundle["directions"][arm], order)
+            _check_resources(deadline, f"{arm}:optimizer_step_immediate_before")
             optimizers[arm].step(); steps += 1
+            _check_resources(deadline, f"{arm}:optimizer_step_after")
             after, after_order = flattened_parameters(models[arm])
             _require(after_order == order, "parameter order drift after step")
             actual = after - before
@@ -472,6 +660,7 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
                         "optimizer": optimizers[arm].state_dict(), "update": 1,
                         "arm": arm, "source_run": RUN_ID}, partial)
             os.replace(partial, checkpoint_path)
+            _check_resources(deadline, f"{arm}:checkpoint_after")
             saved = torch.load(checkpoint_path, map_location=device, weights_only=False)
             reloaded_model = copy.deepcopy(runtime.model)
             reloaded_model.load_state_dict(saved["model"], strict=True)
@@ -481,8 +670,10 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
                      _optimizer_state_sha256(optimizers[arm]), "strict reload state drift")
             replay_runtime = replace(runtime, model=reloaded_model)
             evaluation = _evaluate(replay_runtime)
+            _require_valid_evaluation(evaluation, 1, arm)
             fields[arm] = _collect_fields(replay_runtime, deadline=deadline, label=arm)
             global_pair, local_pair, score_rows = _scores_from_fields(fields[arm])
+            _require_score_evaluation_alignment(score_rows, evaluation, arm)
             metrics = dict(evaluation["aggregate"])
             metrics.update({"global_pair_score": global_pair["score_2W_plus_T"],
                             "local_pair_score": local_pair["score_2W_plus_T"]})
@@ -492,11 +683,16 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
                             "model_state_sha256": parameter_state_sha256(reloaded_model),
                             "optimizer_state_sha256": _optimizer_state_sha256(reloaded_optimizer)}
             _write_json(output_dir / f"{arm}_step1_result.json", results[arm])
-            _check_deadline(deadline, f"{arm}:evaluation_after")
-            _check_vram(f"{arm}:evaluation_after")
+            _check_resources(deadline, f"{arm}:evaluation_after")
+        valid = all(
+            result["evaluation"]["aggregate"]["finite"] is True and
+            result["evaluation"]["aggregate"]["hard_constraint_violations"] == 0
+            for result in results.values())
         classification = classify(
             common_secondary, results[ARM_CONTROL]["metrics"],
-            results[ARM_CANDIDATE]["metrics"], valid=True)
+            results[ARM_CANDIDATE]["metrics"], valid=valid)
+        _require(classification["status"] != "EXECUTION_INVALID",
+                 "invalid evidence cannot be classified")
         csv_fields = (
             "state", "cycle", "global_amplitude", "local_support_contrast",
             "support_positive_increment_mean", "background_positive_increment_mean",
@@ -534,26 +730,39 @@ def run_producer(*, packet_dir: Path, base_config: Path, initial_checkpoint: Pat
                     "optimizer_steps_completed": steps,
                     "claim_boundary": "one-step component signal on the exposed 16-cycle development trajectory only"}
         _write_json(output_dir / "decision_metrics.json", decision)
-        figure_names = _write_figures(output_dir, fields)
+        _write_figures(output_dir, fields, deadline=deadline)
+        artifact_hashes = _validate_success_artifacts(
+            output=output_dir, vector_path=vector_path,
+            vector_sha256=vector_sha, audit=audit,
+            step0_evaluation=step0_evaluation, results=results,
+            decision=decision, fields=fields, bundle=bundle,
+            displacements=displacements, deadline=deadline)
         completion = {"schema_version": SCHEMA_VERSION, "run_id": RUN_ID,
                       "execution_status": "SUCCEEDED", "scientific_status": classification["status"],
                       "total_optimizer_steps_completed": steps, "total_update_cap": 2,
                       "elapsed_seconds": time.time() - start, "environment": environment,
                       "max_cuda_memory_reserved_bytes": int(torch.cuda.max_memory_reserved()),
                       "source": source, "vector_archive_sha256": vector_sha,
-                      "artifacts": {name: sha256_file(output_dir / name) for name in (
-                          "zero_step_common_direction_audit.json", "step0_evaluation.json",
-                          f"{ARM_CONTROL}_step1_result.json", f"{ARM_CANDIDATE}_step1_result.json",
-                          "decision_metrics.json", "per_cycle_metrics.csv", *figure_names)}}
+                      "artifacts": artifact_hashes,
+                      "failure_precedence": (
+                          "failure_receipt.json supersedes completion_receipt.json "
+                          "at the same root")}
+        canonical_json(completion)
+        _check_resources(deadline, "completion:before_archive_receipt")
         _write_json(archive_dir / "completion_receipt.json", completion)
+        _check_resources(deadline, "completion:after_archive_receipt")
         _write_json(output_dir / "completion_receipt.json", completion)
+        _check_resources(deadline, "completion:after_output_receipt")
         return completion
     except BaseException as error:
         failure = {"schema_version": SCHEMA_VERSION, "run_id": RUN_ID,
                    "execution_status": "FAILED", "error_type": type(error).__name__,
                    "error": str(error), "elapsed_seconds": time.time() - start,
                    "total_optimizer_steps_completed": steps, "source": source,
-                   "environment": environment}
+                   "environment": environment,
+                   "precedence": (
+                       "This failure receipt supersedes any completion receipt "
+                       "at the same root")}
         for root in (output_dir, archive_dir):
             path = root / "failure_receipt.json"
             if not path.exists():

@@ -216,6 +216,12 @@ def pair_score(values: Mapping[int, float], pairs: tuple[tuple[int, int], ...]) 
 
 def classify(common_secondary: bool, control: Mapping[str, Any],
              candidate: Mapping[str, Any], *, valid: bool) -> dict[str, Any]:
+    valid = (valid and control.get("finite") is True and
+             candidate.get("finite") is True and
+             type(control.get("hard_constraint_violations")) is int and
+             control["hard_constraint_violations"] == 0 and
+             type(candidate.get("hard_constraint_violations")) is int and
+             candidate["hard_constraint_violations"] == 0)
     if not valid:
         return {"level": 1, "status": "EXECUTION_INVALID"}
     if not common_secondary:
@@ -224,11 +230,22 @@ def classify(common_secondary: bool, control: Mapping[str, Any],
     if local_gain < 1:
         return {"level": 3, "status": "COMMON_SECONDARY_AVAILABLE",
                 "local_pair_score_gain": local_gain}
-    protected = all(candidate[name] / max(control[name], 1e-30) <= 1.10
-                    for name in ("G", "F", "L_P", "L_judge"))
+    protected_ratios = {}
+    for name in ("G", "F", "L_P", "L_judge"):
+        denominator = float(control[name])
+        numerator = float(candidate[name])
+        if denominator > 0.0:
+            protected_ratios[name] = numerator / denominator
+        elif denominator == 0.0 and numerator == 0.0:
+            protected_ratios[name] = 1.0
+        else:
+            protected_ratios[name] = None
+    protected = all(value is not None and value <= 1.10
+                    for value in protected_ratios.values())
     balanced = (candidate["global_pair_score"] >= control["global_pair_score"]
                 and candidate["hard_constraint_violations"] == 0 and protected)
     return {"level": 5 if balanced else 4,
             "status": "BALANCED_ONE_STEP_SIGNAL" if balanced
                       else "ONE_STEP_LOCAL_COMPONENT_SIGNAL",
-            "local_pair_score_gain": local_gain, "protected_ratios_ok": protected}
+            "local_pair_score_gain": local_gain, "protected_ratios": protected_ratios,
+            "protected_ratios_ok": protected}
