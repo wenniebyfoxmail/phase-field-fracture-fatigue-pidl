@@ -1,0 +1,42 @@
+# E024-D012 — full output-head reachability under the unchanged seven protections
+
+2026-10-19 direct user authority. Owner S04/E024, active D012. Goal: reproduce qualified same-state conditional FEM UV and assess the physical cost before any crack/fatigue use. Continue D011; do not repeat small 3D patches. Existing D009–D011 assets/native mechanics/tests and first-principles workflow/bootstrap are reused. No new data/state/holdout/FEM/producer/training/history update or external action.
+
+## Hypothesis and decision-scale comparison
+
+With fixed hidden features/D/BC/window, U(theta0+delta)=U0+L delta exactly, while the old search was restricted to a 3D subspace of a 568-dimensional output head. The full UV error and its four regional protections are exact convex quadratics. The physical restrictions use the SAME native original-branch weak/Gauss–Newton driver candidate models and authoritative nonlinear checks as D011. Competing explanations: (A) old subspace excludes useful low-curvature feasible combinations; (B) physical protections or 2% norm cap bound gain even in the full head; (C) tangent/GN physics predicts gains that do not survive true finite-field checking. One complete-space comparison across c20/c60/c83 and displacement/weak/driver/strain can distinguish these; do not add one axis or reconfirm only a directional sign.
+
+Reference: each own E023 joint10000/seed7 conditional FEM target, original 284x2 UV weights+bias, D/map/leak/hidden/backbone/BC/window fixed, history/fatigue/damage unchanged. Missing history channels remain missing. Shared original scaled-head Frobenius R=.02||theta0||, same center and original physical parameter metric. Primary outputs are measured gains/costs versus E023 and D011; numerical reference/physical tolerances remain output-specific/undefined, `.001` historical only. No new acceptance threshold is manufactured. Synthetic exposed-state evidence is not transfer or coupled evolution validity.
+
+## Complete-space quadratics and identity
+
+Use every 568 row-major head coordinate z (feature,u),(feature,v), theta=theta0+R reshape(z), ||z||<=1. Encode physical_features*producerD in chunks1024 with no gradients, validate theta/B/reference identity and pin D011 receipt/manifest to tracked joint_head files. Full-domain original squared errors and native mass normalisation are retained even where the Jacobian has compact support.
+
+Four UV models: c+2b.z+z.Qz, normalized by each own original error², component-interleaved blocks from native nodal mass Gram. Weak tangent: sparse native Q4 BᵀC(origin branch)B on ALL elements incident to nonzero feature nodes, with complete connected force-row halo; divide by global original free-force mass-dual norm². Driver GN: dp=2(1-d)sigma_plus:epsilon(deltaU), native GP weights and old background/inside-background masks, divide by global own error², not nearzero FEM driver reference. Engineering shear stays gamma/shear stress. All Hessians are Gram/PSD; no cutoff or objective rank truncation.
+
+As an execution validity check, project all 7 full g/H back onto the byte-preserved D011 B and compare saved g/H (rtol/atol1e-8). Verify sparse tangent contractions with all three existing axes against native matrix-free force, including exact zero forces outside the halo. This is a new sparse-assembly/coordinate identity risk, not another scientific microtest. Original33files, D0113NPZ/input/receipt pins/modeldigest/gradNone remain unchanged.
+
+## One full-dimensional convex solve and its certificate
+
+Minimize f0(z)=g0.z+.5z.H0.z with six nonredundant half-error guards fj(z)<=0 and .5(z.z−1)<=0. Full UV nonincrease is redundant with objective<=origin0, but remains in the seven post-solve and true-field checks. Use the dual with lambda>=0, mu>=1e-12:
+
+A=H0+sum lambda_j Hj+mu I; b=g0+sum lambda_j gj; z=-A^-1b;
+d(lambda,mu)=-.5 bᵀA^-1b−.5mu.
+
+Minimize -d by a single L-BFGS-B, maxiter400/maxfun2000/maxls40/ftol1e-14/gtol1e-9. Its gradient is negative the original six half-error and half-ball values. An invertible inner UV-curvature transform floors ONLY preconditioner eigenvalues at1e-8*lambda_max; retain all568 coordinates, original H, D, norm and ellipsoid. The ball-only UV secular multiplier provides the mu coordinate scale and a separately labelled UV-only relaxation dual bound. It is algebraic solver initialisation, not a second admitted field/candidate or a new criterion. Start six lambda0, scaledmu1. Cholesky/nonfinite/identity/resource failure stops and preserves attempt; no solver substitution, extra starts or retry automatically appended.
+
+The positive mu floor is a restricted dual search domain; every returned point is a valid nonnegative dual point, but the floor does not automatically yield the original optimum. Report untruncated original-coordinate primal/dual gap, all constraints, multiplier/linear-stationarity residuals, rank and objective spectrum. Prospective norm-only repair if raw norm>1−1e-12: scale radially to1−1e-12 (save raw and repaired vectors), no direction change or extra solve. Proxy eligibility: finite and all7 half-error changes<=1e-8, repaired original norm<=1+1e-12. Certificate considered numerically resolved only if also gap in[-1e-9,1e-6] and original linear-stationarity relative<=1e-8. These are numerical diagnostics, not actual physical slack. A finite proxy-eligible but unresolved return may still furnish an actual feasible witness; never call its tiny/zero gain an ability ceiling. Success flags and numerical certificate are separately reported.
+
+## True finite steps, stopping and physical costs
+
+For eligible return test k0..8, theta0+R*2^-k z, FIRST actual feasible stops. Same seven strict own-E023 no-increase checks: full/damage/background/insidebackground nodal UV MSE, true nonlinear AMOR free-force mass-dual norm², two native GP background elastic-driver error integrals. Actual shared delta/theta norm<=.02*(1+1e-12), exact BC/outside UV, no new physical slack. Every visited trial/rejection/branch change saved; no best-of-grid or unvisited field plotted. No eligible candidate or all rejected -> exact saved-original theta/UV fallback. Nonfinite stops. No extra step/second solver/new basis/head hidden update/history/fatigue update follows.
+
+Compare full, damage, background, insidebackground UV and GP strain/driver/activeenergy, actualrho, own reference absolute driver RMS and errors, with E023/D011. Instantaneous2(1-d)psi0 is not net evolution/fatigue drive. Background strain is a measured cost, not an added eighth constraint. Regional averages are not pointwise guarantees. Retain old strictMac LR/mass/D/rho failures and numerical warnings. UV-only relaxation, constrained convex proxy, actual finite witness and application validity are distinct.
+
+## Resources, review, record and route decision
+
+CPU2threads, new full_head_attainable_v1 local archive, numerical wall<=900s and observedRSS<=3GiB; no GPU/NN optimiser/CPwrite/remote. New deterministic tests address dual derivative/metric/sparse halo and direct native Gram correctness; unchanged D011 tests reused. Independent exact-source Code Ready before single execution; independent raw encoder/nativeQ4/AMOR/actual7guards/GP/parameter/identity, projected-Gram and saved dual-certificate audit, no new accepted candidate or alternate head solve by reviewer. Preserve initial code findings and fixes.
+
+Save source/host/cmd/start/exit/logs, per-state coefficient/UV/raw/candidate z/oldB/all7gH/normalisations, multiplier traces/certificates, old3D-orthogonal norm fraction, metrics/all visited tests/branch/budget/digests. Decision visual compares fullhead versus D011 across all3states and required outputs, with a c60 field atlas (preselected focus), shared signed scales/damage/window overlays and native sum(s_i)=rho² interpretation. README/sidecars/independent review, compact owner/storyline/censor and single Roadmap entry; raw payload stays local_archive.
+
+If fullhead yields materially larger true feasible gains across the covered states, this witnesses an old-subspace limitation (quantify it; not a physical application standard). If only proxy gain exists, target the actual/tangent mismatch rather than network capacity. If a sufficiently resolved full proxy also stays near3D, use its budget/active constraints to choose a representation or physics/objective redesign; never infer the true nonlinear/full-network ceiling from a convex proxy alone. No next training, solver round, scope or producer run is authorised by closing this diagnostic.
