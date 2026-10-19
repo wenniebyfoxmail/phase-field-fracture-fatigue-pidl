@@ -1,0 +1,483 @@
+{
+  "review_type": "independent exact snapshot static review; no scientific execution",
+  "commit": "d05fd5834468f04e200d70e7f4dce7873241af6d",
+  "artifact_id": "73f617acd9d23fc6706c6493665e3d92035d29f4e317bc3e3b3566a43c62d276",
+  "manifest_path": "docs/research/S04/hybrid_constrained_design_20261019/producer_source_manifest_v1.json",
+  "manifest_sha256": "fe310a26c0dece816642d479f9e1d7fcf626814c5e4665c2429db0e2a6c25872",
+  "card_sha256": "5603ff641bd8d4fdf97dd8e208447785cc1dff2bc0a78e40157cb6dc74486097",
+  "manifest_files": [
+    {
+      "path": "source/hybrid_history.py",
+      "sha256": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+      "bytes": 4040,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/hybrid_damage.py",
+      "sha256": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+      "bytes": 4975,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/hybrid_incremental.py",
+      "sha256": "53c20ce7cec2a8828fc7ce7b85380223839eda81f85971253c5339bc18371dac",
+      "bytes": 15780,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/hybrid_transaction.py",
+      "sha256": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+      "bytes": 4649,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/hybrid_network.py",
+      "sha256": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+      "bytes": 7603,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/hybrid_inputs.py",
+      "sha256": "6c561c191e87b5880e7572a3d4363daf5d559e48b7e460d37727a71c1f14bd11",
+      "bytes": 2374,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/hybrid_producer_common.py",
+      "sha256": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+      "bytes": 2922,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/native_q4_damage_qp.py",
+      "sha256": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+      "bytes": 16116,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/damage_conditioned_equilibrium.py",
+      "sha256": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+      "bytes": 20011,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/compute_energy.py",
+      "sha256": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+      "bytes": 28966,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/q4_quadrature.py",
+      "sha256": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+      "bytes": 2876,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/tri3_quadrature.py",
+      "sha256": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+      "bytes": 2039,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/material_properties.py",
+      "sha256": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+      "bytes": 919,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "source/pff_model.py",
+      "sha256": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+      "bytes": 5749,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "tools/audit_hybrid_labels.py",
+      "sha256": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+      "bytes": 6468,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "tools/prepare_hybrid_native_inputs.py",
+      "sha256": "9c72f660e341cf36b2d28574c49cfca811276276379070ac0bfb0c4a54374d64",
+      "bytes": 5470,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "tools/replay_hybrid_native_operators.py",
+      "sha256": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+      "bytes": 3030,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "tools/hybrid_producer_worker.py",
+      "sha256": "c826c59a4f2576f56312baea00518768e56e4163072c4f914f325ba463ec7fc3",
+      "bytes": 17352,
+      "commit_matches": true,
+      "worktree_matches": false
+    },
+    {
+      "path": "tools/run_hybrid_producer.py",
+      "sha256": "3816d93770d6b0e192981aa4b6b31511ab84e059eae3de56d7ecf9b55a50b8ca",
+      "bytes": 16155,
+      "commit_matches": true,
+      "worktree_matches": false
+    },
+    {
+      "path": "tools/inspect_hybrid_run.py",
+      "sha256": "2bb857a29823e69fb0e70b8a721e0180961c51f6a594bca29607af8e9ed91ef3",
+      "bytes": 1351,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "tests/test_hybrid_incremental.py",
+      "sha256": "5a8b24ae0ae1a33c65ea60e593131b8cf4d3a8757f57a9c0509014c8995b4a3e",
+      "bytes": 9394,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "tests/test_hybrid_producer.py",
+      "sha256": "f2184b1397cfae8c07fa4d26ae31004c6136a60042d4665e4ec3090e14fb8f47",
+      "bytes": 4335,
+      "commit_matches": true,
+      "worktree_matches": false
+    },
+    {
+      "path": "tests/test_native_q4_damage_qp.py",
+      "sha256": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+      "bytes": 10466,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "tests/test_damage_conditioned_equilibrium.py",
+      "sha256": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+      "bytes": 6397,
+      "commit_matches": true,
+      "worktree_matches": true
+    },
+    {
+      "path": "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json",
+      "sha256": "5603ff641bd8d4fdf97dd8e208447785cc1dff2bc0a78e40157cb6dc74486097",
+      "bytes": 5342,
+      "commit_matches": true,
+      "worktree_matches": true
+    }
+  ],
+  "static_local_import_edges": [
+    [
+      "source/hybrid_damage.py",
+      "native_q4_damage_qp",
+      "source/native_q4_damage_qp.py"
+    ],
+    [
+      "source/hybrid_incremental.py",
+      "damage_conditioned_equilibrium",
+      "source/damage_conditioned_equilibrium.py"
+    ],
+    [
+      "source/hybrid_incremental.py",
+      "hybrid_damage",
+      "source/hybrid_damage.py"
+    ],
+    [
+      "source/hybrid_incremental.py",
+      "hybrid_history",
+      "source/hybrid_history.py"
+    ],
+    [
+      "source/hybrid_incremental.py",
+      "native_q4_damage_qp",
+      "source/native_q4_damage_qp.py"
+    ],
+    [
+      "source/hybrid_incremental.py",
+      "native_q4_damage_qp",
+      "source/native_q4_damage_qp.py"
+    ],
+    [
+      "source/hybrid_transaction.py",
+      "hybrid_history",
+      "source/hybrid_history.py"
+    ],
+    [
+      "source/hybrid_network.py",
+      "hybrid_history",
+      "source/hybrid_history.py"
+    ],
+    [
+      "source/hybrid_network.py",
+      "hybrid_incremental",
+      "source/hybrid_incremental.py"
+    ],
+    [
+      "source/hybrid_inputs.py",
+      "hybrid_history",
+      "source/hybrid_history.py"
+    ],
+    [
+      "source/hybrid_inputs.py",
+      "hybrid_incremental",
+      "source/hybrid_incremental.py"
+    ],
+    [
+      "source/hybrid_inputs.py",
+      "native_q4_damage_qp",
+      "source/native_q4_damage_qp.py"
+    ],
+    [
+      "source/hybrid_inputs.py",
+      "hybrid_transaction",
+      "source/hybrid_transaction.py"
+    ],
+    [
+      "source/hybrid_producer_common.py",
+      "hybrid_inputs",
+      "source/hybrid_inputs.py"
+    ],
+    [
+      "source/native_q4_damage_qp.py",
+      "damage_conditioned_equilibrium",
+      "source/damage_conditioned_equilibrium.py"
+    ],
+    [
+      "source/compute_energy.py",
+      "q4_quadrature",
+      "source/q4_quadrature.py"
+    ],
+    [
+      "source/compute_energy.py",
+      "tri3_quadrature",
+      "source/tri3_quadrature.py"
+    ],
+    [
+      "tools/prepare_hybrid_native_inputs.py",
+      "hybrid_inputs",
+      "source/hybrid_inputs.py"
+    ],
+    [
+      "tools/prepare_hybrid_native_inputs.py",
+      "hybrid_incremental",
+      "source/hybrid_incremental.py"
+    ],
+    [
+      "tools/prepare_hybrid_native_inputs.py",
+      "hybrid_transaction",
+      "source/hybrid_transaction.py"
+    ],
+    [
+      "tools/prepare_hybrid_native_inputs.py",
+      "native_q4_damage_qp",
+      "source/native_q4_damage_qp.py"
+    ],
+    [
+      "tools/prepare_hybrid_native_inputs.py",
+      "damage_conditioned_equilibrium",
+      "source/damage_conditioned_equilibrium.py"
+    ],
+    [
+      "tools/replay_hybrid_native_operators.py",
+      "damage_conditioned_equilibrium",
+      "source/damage_conditioned_equilibrium.py"
+    ],
+    [
+      "tools/replay_hybrid_native_operators.py",
+      "hybrid_inputs",
+      "source/hybrid_inputs.py"
+    ],
+    [
+      "tools/replay_hybrid_native_operators.py",
+      "hybrid_history",
+      "source/hybrid_history.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "hybrid_inputs",
+      "source/hybrid_inputs.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "hybrid_incremental",
+      "source/hybrid_incremental.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "hybrid_producer_common",
+      "source/hybrid_producer_common.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "hybrid_transaction",
+      "source/hybrid_transaction.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "hybrid_network",
+      "source/hybrid_network.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "audit_hybrid_labels",
+      "tools/audit_hybrid_labels.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "hybrid_incremental",
+      "source/hybrid_incremental.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "hybrid_network",
+      "source/hybrid_network.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "hybrid_network",
+      "source/hybrid_network.py"
+    ],
+    [
+      "tools/hybrid_producer_worker.py",
+      "replay_hybrid_native_operators",
+      "tools/replay_hybrid_native_operators.py"
+    ],
+    [
+      "tools/run_hybrid_producer.py",
+      "hybrid_inputs",
+      "source/hybrid_inputs.py"
+    ],
+    [
+      "tools/run_hybrid_producer.py",
+      "hybrid_producer_common",
+      "source/hybrid_producer_common.py"
+    ],
+    [
+      "tools/inspect_hybrid_run.py",
+      "hybrid_transaction",
+      "source/hybrid_transaction.py"
+    ],
+    [
+      "tests/test_hybrid_incremental.py",
+      "hybrid_history",
+      "source/hybrid_history.py"
+    ],
+    [
+      "tests/test_hybrid_incremental.py",
+      "hybrid_damage",
+      "source/hybrid_damage.py"
+    ],
+    [
+      "tests/test_hybrid_incremental.py",
+      "hybrid_incremental",
+      "source/hybrid_incremental.py"
+    ],
+    [
+      "tests/test_hybrid_incremental.py",
+      "hybrid_transaction",
+      "source/hybrid_transaction.py"
+    ],
+    [
+      "tests/test_hybrid_incremental.py",
+      "hybrid_network",
+      "source/hybrid_network.py"
+    ],
+    [
+      "tests/test_hybrid_incremental.py",
+      "native_q4_damage_qp",
+      "source/native_q4_damage_qp.py"
+    ],
+    [
+      "tests/test_hybrid_incremental.py",
+      "hybrid_transaction",
+      "source/hybrid_transaction.py"
+    ],
+    [
+      "tests/test_hybrid_incremental.py",
+      "hybrid_transaction",
+      "source/hybrid_transaction.py"
+    ],
+    [
+      "tests/test_hybrid_producer.py",
+      "hybrid_inputs",
+      "source/hybrid_inputs.py"
+    ],
+    [
+      "tests/test_hybrid_producer.py",
+      "hybrid_incremental",
+      "source/hybrid_incremental.py"
+    ],
+    [
+      "tests/test_hybrid_producer.py",
+      "hybrid_producer_common",
+      "source/hybrid_producer_common.py"
+    ],
+    [
+      "tests/test_hybrid_producer.py",
+      "run_hybrid_producer",
+      "tools/run_hybrid_producer.py"
+    ],
+    [
+      "tests/test_hybrid_producer.py",
+      "test_hybrid_incremental",
+      "tests/test_hybrid_incremental.py"
+    ],
+    [
+      "tests/test_native_q4_damage_qp.py",
+      "compute_energy",
+      "source/compute_energy.py"
+    ],
+    [
+      "tests/test_native_q4_damage_qp.py",
+      "material_properties",
+      "source/material_properties.py"
+    ],
+    [
+      "tests/test_native_q4_damage_qp.py",
+      "pff_model",
+      "source/pff_model.py"
+    ],
+    [
+      "tests/test_native_q4_damage_qp.py",
+      "q4_quadrature",
+      "source/q4_quadrature.py"
+    ],
+    [
+      "tests/test_native_q4_damage_qp.py",
+      "native_q4_damage_qp",
+      "source/native_q4_damage_qp.py"
+    ],
+    [
+      "tests/test_damage_conditioned_equilibrium.py",
+      "damage_conditioned_equilibrium",
+      "source/damage_conditioned_equilibrium.py"
+    ]
+  ],
+  "missing_static_local_imports": [],
+  "unreviewed_postcommit": [
+    "tools/launch_hybrid_detached.py",
+    "tests/test_hybrid_producer.py added detached-launcher test"
+  ],
+  "tests": "owner 41 passed in0.69s receipt inspected; not rerun",
+  "no_execution": [
+    "No worker/scientific solve/NN forward/training/optimizer",
+    "No SSH/GPU/newFEM/extraFP64",
+    "No owner files modified"
+  ]
+}

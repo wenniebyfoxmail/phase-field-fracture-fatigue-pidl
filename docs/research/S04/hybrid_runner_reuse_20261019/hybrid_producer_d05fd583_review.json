@@ -1,0 +1,126 @@
+{
+  "verdict": "MODIFY_AND_REREVIEW",
+  "readiness": "NOT_CODE_READY_FOR_COMPLETE_PRODUCER",
+  "review_scope": "Independent exact immutable source/card/package review; carries a76825eb unchanged library findings; no launch authority in this reviewer chat",
+  "commit": "d05fd5834468f04e200d70e7f4dce7873241af6d",
+  "artifact_id": "73f617acd9d23fc6706c6493665e3d92035d29f4e317bc3e3b3566a43c62d276",
+  "card_sha256": "5603ff641bd8d4fdf97dd8e208447785cc1dff2bc0a78e40157cb6dc74486097",
+  "manifest_sha256": "fe310a26c0dece816642d479f9e1d7fcf626814c5e4665c2429db0e2a6c25872",
+  "material_receipt": "/tmp/hybrid_producer_d05fd583_review_materials.json",
+  "manifest_files_verified": 25,
+  "static_local_import_closure": "No missing static local imports among the25 frozen files; dynamic import/installed interpreter/runtime and future launcher require exact final admission",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "53c20ce7cec2a8828fc7ce7b85380223839eda81f85971253c5339bc18371dac",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "6c561c191e87b5880e7572a3d4363daf5d559e48b7e460d37727a71c1f14bd11",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "9c72f660e341cf36b2d28574c49cfca811276276379070ac0bfb0c4a54374d64",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "c826c59a4f2576f56312baea00518768e56e4163072c4f914f325ba463ec7fc3",
+    "tools/run_hybrid_producer.py": "3816d93770d6b0e192981aa4b6b31511ab84e059eae3de56d7ecf9b55a50b8ca",
+    "tools/inspect_hybrid_run.py": "2bb857a29823e69fb0e70b8a721e0180961c51f6a594bca29607af8e9ed91ef3",
+    "tests/test_hybrid_incremental.py": "5a8b24ae0ae1a33c65ea60e593131b8cf4d3a8757f57a9c0509014c8995b4a3e",
+    "tests/test_hybrid_producer.py": "f2184b1397cfae8c07fa4d26ae31004c6136a60042d4665e4ec3090e14fb8f47",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "5603ff641bd8d4fdf97dd8e208447785cc1dff2bc0a78e40157cb6dc74486097"
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "priority": 1,
+      "file": "tools/run_hybrid_producer.py",
+      "lines": [
+        76,
+        78,
+        110,
+        160,
+        236,
+        239
+      ],
+      "title": "Hard budgets and worker cleanup are not independent of blocking monitor work",
+      "evidence": "GPU query may block15s; os.walk/fsync have no deadline; guard checks only before these operations; successful child exit has no final deadline audit. stop_owned adds up to20s beyond already reached caps. After Popen and before supervise, append_event/SIGTERM exceptions have no unconditional child cleanup and can leave the detached worker running.",
+      "minimal_fix": "Own each spawned PGID in a try/finally from Popen onward. Use an independent hard deadline controller, reserve termination grace within substep/phase/global/GPU caps, keep resource sampling bounded/off the deadline path, and recheck all elapsed caps after wait before success."
+    },
+    {
+      "id": "R2",
+      "priority": 2,
+      "file": "tools/run_hybrid_producer.py",
+      "lines": [
+        119,
+        160,
+        233,
+        251
+      ],
+      "title": "Failed or killed phases drop measured peak resource evidence",
+      "evidence": "supervise keeps peak_rss/gpu_peak/storage in local variables and rethrows without returning them. Outer usage remains{} and records only wall/cpu/completedFalse, so failure cost ledger omits measured RAM/VRAM peaks and storage state; monitor.json may retain only an earlier sample.",
+      "minimal_fix": "Maintain a shared phase usage record updated at each measurement and finalize it for every exception/kill; preserve reason, measured peaks, last storage and termination overhead in the durable phase/cost receipt."
+    },
+    {
+      "id": "R3",
+      "priority": 2,
+      "file": "tools/run_hybrid_producer.py",
+      "lines": [
+        163,
+        186
+      ],
+      "title": "Joint matched-quality speed verdict does not qualify the classical comparator",
+      "evidence": "quality reads only comparisons[test_hybrid], while speed compares CH to min(CF,CC); classical error metrics can violate every frozen field/history/reaction criterion without blocking supports_neural_online_acceleration.",
+      "minimal_fix": "Compute and report the same quality contract for test_classical and test_hybrid. Freeze how a failed classical quality check limits the matched-quality joint claim; do not silently discard it or change thresholds after results."
+    },
+    {
+      "id": "R4",
+      "priority": 2,
+      "file": "tools/hybrid_producer_worker.py",
+      "lines": [
+        78,
+        114,
+        117,
+        146
+      ],
+      "title": "Complete planned field/evolution evidence is not produced",
+      "evidence": "Analysis computes only u/v/d GP RMS, A/r/f and reaction errors. The reviewed design/validation contract additionally requires raw/active, energy/branch, front/morphology, negative-damage/healing and fallback/correction diagnostics plus decision-facing fields. Raw states/work records are saved but the required derived reports/figures and fallback summary are absent.",
+      "minimal_fix": "Add bounded common posthoc analysis from the exact sealed states, with per-channel field/energy/raw-active and feasibility/retreat/correction/fallback summaries and fixed-rule common-scale decision figures/README. These diagnostics must not rescue or replace frozen primary criteria."
+    }
+  ],
+  "carried_findings": [
+    "Native blocked/interleaved DOF conversion and explicit zero-load recovered state0 are coherent in inspected adapter/preparation code.",
+    "Changed core adds fresh force L2 and damage-feasible L2 conjunction without relaxing earlier acceptance.",
+    "Accepted predecessor lower/history remain fixed through inner solves; CAS commits one full state.",
+    "Label features use returned common initial u_pred/psi_pred, not solved targets. Train_A/B statistics and validation-based selection precede unopened test phases.",
+    "All three test methods use the same backend/settings/initial state and own accepted histories; posthoc reference scoring is outside online solver paths."
+  ],
+  "preparation_card": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-loss-weight-prep-20261018/docs/research/S04/hybrid_runner_reuse_20261019/preparation_card.json",
+    "sha256": "7eb42b499b94d3e47ea942063e530b0adc0c988e8f843970fa4743c723d4f490",
+    "binding_verified": true,
+    "execution_enabled": false,
+    "accepted_by_runner_schema": false,
+    "authority_inherited": false
+  },
+  "tests": "Owner receipt41passed/0.69s read; no tests rerun by reviewer",
+  "runtime_gap": "Python interpreter identity/minimum not in card: sha256 helper uses hashlib.file_digest (Python>=3.11). Confirm target support or use portable streaming hash before final runnable package.",
+  "recovery_followup": "inspect_hybrid_run parses all JSONL lines without handling a torn final journal line; improve read-only crash report if claiming journal-corruption reconciliation.",
+  "excluded_unfrozen": [
+    "new tools/launch_hybrid_detached.py",
+    "post-d05 edits to worker/supervisor/tests"
+  ],
+  "not_performed": [
+    "No worker or scientific solve",
+    "No NN forward/optimizer/training",
+    "No SSH/GPU/newFEM/supplementalFP64",
+    "No owner source/doc modifications",
+    "No independent recomputation of scientific input arrays or replay claims"
+  ]
+}
