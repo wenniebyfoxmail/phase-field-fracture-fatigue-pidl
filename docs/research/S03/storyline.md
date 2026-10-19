@@ -824,3 +824,13 @@
   Per user no SVG open/preview, sidecar validator, independent acceptance,
   real/held/C/D or frozen edits. No visual/numerical/physical interpretation;
   B003 incomplete/B002 quarantine preserved. Stop pending next authority.
+
+- **2026-10-19 — F01-V001 independent display/sidecar acceptance plan prepared.**
+  See S03-E019/font_svg_display_acceptance_plan.md. D3 proposes one local
+  independent Codex review of seven derived assets only: pinned SHA/stdlib
+  XML-JSON/sidecar direct comparisons, originalSVG views in Safari, final
+  SHA/cleanHEAD. Exact commands not executed or dynamically tested; no review
+  dispatched, no derived content/hash or image opened this turn. No numeric
+  recomputation, SVDQR, B003 source read, real/held/C/D or frozen edits.
+  Outcome limited to local display/description, not scientific acceptance;
+  awaiting user approval before any acceptance command or visual action.
