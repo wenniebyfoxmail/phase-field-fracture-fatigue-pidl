@@ -31,6 +31,10 @@
     "deepcrack.py": {
       "bytes": 4885,
       "sha256": "92650883b6f6c993bc29635450035e066c968c4f5a9022a6c1966a0b9f0d3360"
+    },
+    "legacy_center.npz": {
+      "bytes": 140062,
+      "sha256": "4c0b8a51c7c9af40bbf184db174f12cb2a588f250f9412e817d33156ba3a6d8e"
     }
   },
   "counts": {
@@ -59,5 +63,34 @@
     "2027"
   ],
   "source_images": 338,
-  "annotation_semantics": "partial region envelopes; outside is unknown, not exhaustive crack truth"
+  "annotation_semantics": "partial region envelopes; outside is unknown, not exhaustive crack truth",
+  "legacy_reference": {
+    "source_run": "S01-E025-R001",
+    "shape": [
+      12238,
+      32,
+      32
+    ],
+    "dtype": "uint8",
+    "row_indices": "scope order/global original row index",
+    "old_saved_rows_read_for_packaging": 24476,
+    "new_metrics": 0,
+    "sources": [
+      {
+        "fold": 0,
+        "mask_sha256": "0da9c76cafaa217e489da75ea120c4bdb46b89106aa34970cf3f95ae16939aa3",
+        "index_sha256": "7869fdc5214738187f1894e44e2333fe870d3cd1bcc65a134fe7e010eb937888"
+      },
+      {
+        "fold": 1,
+        "mask_sha256": "52f3a0ac96db7cb18aa1c20087571ffcb2623fbb4068817e0fa0a1a12d95bf4f",
+        "index_sha256": "67acebddc6a739dd4e02ad207343d6b000a89bc55a7b91c49c9d0c8d1591f671"
+      },
+      {
+        "fold": 2,
+        "mask_sha256": "76425e7e664426ec09555c6d049ee68ff7e0ef78932c38cd1c9eb8bb0120acf9",
+        "index_sha256": "bb7e55da8f7406c4216879d97b747ae0e2fb65b7cf92633711274d9f09723782"
+      }
+    ]
+  }
 }

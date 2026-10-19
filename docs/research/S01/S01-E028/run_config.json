@@ -79,5 +79,6 @@
     "selector": false,
     "OOF": false
   },
-  "private_inputs": 8
+  "private_inputs": 9,
+  "evaluation_subset": "R_any foreground context subset shared by all8 combinations"
 }
