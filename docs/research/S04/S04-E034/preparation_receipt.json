@@ -1,0 +1,79 @@
+{
+  "experiment_id": "S04-E034",
+  "protocol": "S04-E034/v1-finite-raw-reaction-F8-F802-20261019",
+  "status": "CODE_READY_LOCAL_AWAITING_HQ_EVALUATION",
+  "runtime_source_commit": "5319bf47e6c5b7ca6fe3a95884b610e0d7251848",
+  "source_archive_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E034/preparation_20261019/S04-E034_5319bf47_source.tar.gz",
+  "source_archive_bytes": 16249685,
+  "source_archive_sha256": "70f9bd763a2c34cd4de5964cab0d0b043d56a6b6f8304eb64248801306d71ac0",
+  "source_manifest": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E034/preparation_20261019/source_manifest_5319bf47.json",
+  "original_E033_runtime_source": "30ba0572b691b97e9ce272280627bd8bd52f86b4",
+  "frozen_E033_runner_module_data_lock_unchanged": true,
+  "preparation_authorized": true,
+  "execution_authorized": false,
+  "resource_preflight_done": false,
+  "gpu_reserved": false,
+  "ssh_or_producer_access": false,
+  "real_PT_or_model_loaded": false,
+  "real_field_or_head_optimization": false,
+  "new_GPU_hours": 0,
+  "local_fixture_tests": {
+    "passed": 17,
+    "duration_seconds": 5.922,
+    "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E034/preparation_20261019/final_fixture_checks.log",
+    "log_sha256": "2976ec430b19ea09b417256ac36ec2c7e8d2aa0cceeb8e6b2b94591569c056fc"
+  },
+  "synthetic_full_runner_fixture": {
+    "passed": true,
+    "source_commit": "71e59dddcee0b9f3431bb56dc9eda9405a232fe6",
+    "scope": "synthetic three-Q4 problem/toy features; mocked admission/initializer/real-data IO/normal-zero solver; outputs, nine figures/sidecars, checkpoint, archive, manifest and receipt; temporary payloads destroyed"
+  },
+  "checks": {
+    "default_runner_and_launcher_no_execute": true,
+    "py_compile": true,
+    "diff_check": true,
+    "source_archive_readable": true
+  },
+  "independent_review": {
+    "channel": "independent read-only Codex agent",
+    "reviewer": "/root/e027_independent_review",
+    "verdict": "REVIEW_PASS",
+    "reviewed_source_commit": "5319bf47e6c5b7ca6fe3a95884b610e0d7251848",
+    "scope": "Code Ready preparation only",
+    "receipt": "independent_review.md",
+    "prior_verdicts": [
+      {
+        "commit": "71e59dddcee0b9f3431bb56dc9eda9405a232fe6",
+        "verdict": "MODIFY_AND_REREVIEW"
+      },
+      {
+        "commit": "0041a8c6d564a43f13d5610c3c9362faecb7d5ba",
+        "verdict": "MODIFY_AND_REREVIEW"
+      }
+    ]
+  },
+  "future_budget": {
+    "additional_GPU_hours_cap": 0.5,
+    "original_total_GPU_hours_cap": 2,
+    "previous_conservative_GPU_hours": 1.108339654581623,
+    "worst_cumulative_GPU_hours": 1.608339654581623,
+    "each_arm_seconds": 600,
+    "shared_seconds": 480,
+    "outer_TERM_seconds": 1790,
+    "outer_KILL_after_seconds": 5,
+    "each_arm_max_major_iterations": 60,
+    "each_arm_max_distinct_points": 120,
+    "quota_transfer": false
+  },
+  "future_execution_grant_template": "grant.template.json",
+  "inputs_this_turn": "Identities carried from prior verified manifests; no producer refresh or true input/model replay this turn.",
+  "local_environment": {
+    "numpy": "2.2.6",
+    "scipy": "1.14.1",
+    "torch": "2.11.0",
+    "h5py": "3.16.0",
+    "matplotlib": "3.9.2"
+  },
+  "source_pushed_or_transmitted_this_turn": false,
+  "claim": "No scientific result from preparation or synthetic fixtures."
+}

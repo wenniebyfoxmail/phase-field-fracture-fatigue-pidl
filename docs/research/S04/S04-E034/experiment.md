@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E034
 protocol_revision: v1-finite-raw-reaction-F8-F802-20261019
-status: code_preparation_under_independent_review
+status: code_ready_awaiting_HQ_evaluation
 ---
 # E034：反力保护下的实际有限 raw 双臂比较
 
@@ -42,3 +42,9 @@ status: code_preparation_under_independent_review
 F8成功即证明已有八轴足够此次有限目标，优先简单方案。F8未达/F802成功需结合B8分解与复放解释，不能宣称八轴全局无解。两臂有效未达则停止当前冻结头/半径/锥/预算配方追加，回HQ讨论机制路线；工程停止则比较不完整，不能算方法/容量失败。
 
 结论：本地准备和独立审查阶段，不是运行结果。代码检查通过也不授予运行权限。完成确切审查后将运行卡和不可变源版本交HQ决定。
+
+## 2026-10-19 准备完成，独立代码审查通过
+
+代码冻结于 `5319bf47e6c5b7ca6fe3a95884b610e0d7251848`；17项本地合成fixture通过，另完成全合成完整入口/导出/归档路径检查。独立审查初审和两次焦点复审保留，最终 REVIEW_PASS；收尾双重故障被修复，原异常、首停和watchdog清理均有针对性检查。数学、目标、预算和旧E033源码/判据不改。
+
+[确切运行包与HQ决定项](hq_handoff_20261019.md)、[准备回执](preparation_receipt.json)、[独立审查回执](independent_review.md)。当前是Code Ready本地准备，不是Run Ready；本轮0真实数据拟合/模型加载/NN梯度/GPU/资源预检/远程传送/执行。下一步由HQ决定是否批准此确切源版本的资源预检和一次运行，不能沿用旧E033授权。
