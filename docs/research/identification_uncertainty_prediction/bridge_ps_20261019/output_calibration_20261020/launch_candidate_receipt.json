@@ -1,0 +1,134 @@
+{
+  "status": "EXACT_LAUNCH_CANDIDATE_REVIEWED_AWAITING_HQ_ONE_SHOT_ADMISSION_AND_RUN_DECISION",
+  "date": "2026-10-20 Europe/London",
+  "reviewed_runtime_source_commit": "4297ddc4d16d2e410a7b7a24a0888fa9d2bfa481",
+  "accepted_scientific_design_commit": "fe54ab36df890551f13e0e515ab50c2ad69c97c8",
+  "package_sha256": "0503d28e8417cb9a2d4a410f90f8faa32fcb9dddd42a56bd82068a196f5c0d63",
+  "config_sha256": "8a5ce65a16f9fadb833787f1c66c8f0e050c9f9434cdc47f914461841f4d3f57",
+  "source_archive": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020/final_launch_candidate/launch_candidate_source_v3.tar",
+    "bytes": 921600,
+    "sha256": "f76d5c65397f6eadc4b358b3366c33631fcf9a3fb72ef0f7325657ba11d27613"
+  },
+  "independent_review": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020/final_launch_candidate/independent_launch_review_v3.md",
+    "sha256": "0e5d085372d729161449cc4c32641df6444f340bcc2db7bdd94e1dd7d01e8530",
+    "verdict": "REVIEW_PASS_WITHIN_EXACT_SOURCE_AND_ARTIFICIAL_SCOPE",
+    "independent_artificial_tests": 31,
+    "independent_test_seconds": 8.917
+  },
+  "owner_artificial_tests": {
+    "count": 31,
+    "seconds": 9.047,
+    "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020/final_launch_candidate/artificial_tests_v3.log",
+    "sha256": "5b86a0554f8f594c4ddaf4b5fe4bea860fbae1038f6fac1d1cecec629091c848",
+    "scope": "temporary synthetic arrays/process snapshots and mocked launch; no production data/fit/forward or Linux admission"
+  },
+  "scientific_contract": {
+    "primary": "L(selected C27)-L(selected A25)",
+    "groups": 19,
+    "cases": 1144,
+    "H": [
+      10,
+      40
+    ],
+    "channels": 2,
+    "arms": 7,
+    "solves": 2166,
+    "predictor_solves": 1444,
+    "residualizer_solves": 722,
+    "inner_candidate_scores": 1853280,
+    "outer_scores": 16016,
+    "all_C30_retained": true,
+    "native_fields_self_contained": true
+  },
+  "resources_approved_only": {
+    "wall_seconds": 1200,
+    "threads": 1,
+    "rss_bytes": 2147483648,
+    "total_generated_bytes": 1610612736,
+    "archive_bytes": 734003200,
+    "gpu": 0
+  },
+  "category_caps": {
+    "raw_arrays": 513802240,
+    "models": 16777216,
+    "metadata": 33554432,
+    "figures": 25165824,
+    "logs": 16777216,
+    "cache": 67108864,
+    "code": 8388608,
+    "temporary": 16777216,
+    "archive": 734003200
+  },
+  "resource_authority_record": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/output_calibration_20261020/resource_decision.json",
+  "future_command": {
+    "host_alias": "gpu-taobo",
+    "expected_hostname": "GPUServer8",
+    "producer": "CPU only",
+    "python": "/usr/bin/python3",
+    "run_id": "IU-OUTPUT-CALIBRATION-C27A25-20261020-R001",
+    "run_root": "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001",
+    "cwd": "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/code",
+    "argv": [
+      "/usr/bin/python3",
+      "-W",
+      "error",
+      "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/code/launch.py",
+      "--config",
+      "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/code/config.json",
+      "--approval-receipt",
+      "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/execution_authority.json"
+    ],
+    "detached_shell_command": "cd /mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/code && nohup /usr/bin/python3 -W error /mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/code/launch.py --config /mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/code/config.json --approval-receipt /mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/execution_authority.json >/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/launch.stdout 2>/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001/launch.stderr < /dev/null &",
+    "execution_authority_created": false,
+    "ssh_or_command_executed": false
+  },
+  "execution_authority_schema": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/output_calibration_20261020/execution_authority.schema.json",
+  "execution_authority_instance_created": false,
+  "scientific_input_accessed": false,
+  "scientific_fit_forward_or_scores_executed": false,
+  "ssh_live_preflight_or_formal_admission_performed": false,
+  "old_R003_or_diagnostic_reopened_or_rerendered": false,
+  "lifecycle_repairs": [
+    "Independent watchdog covers admission through actual controller exit/final I/O; guards persist through watchdog callbacks",
+    "Retain last observed PID/start/PGID/SID through interrupted monitor; owned-group cleanup verifies inactive descendants, rejects stale unknown groups",
+    "Primary reason/clocks/members fsynced before cleanup; cleanup write failures remain stopped with explicit evidence gaps",
+    "Dual-clock start/trigger/cleanup/final seals permit latency accounting, but callback seal is not actual OS exit measurement"
+  ],
+  "limits": [
+    "Sampled conservative combined HWM/RSS at0.25s; NOT hard2GiB RSS guarantee;8GiB per-process AS is a separate backstop",
+    "No Linux /proc/affinity/ownership/dependency/native schema/host availability/time/RSS feasibility qualification yet",
+    "Future formal admission checks host, dependency, storage/RAM/load,180 input hashes/frozen cohort/source/features then all required current/future native representations before any solve",
+    "Unknown specimen independence, release-step/current-anchor, exposed development and original R003 warning breach remain; output calibration does not establish input identifiability, fatigue mechanism or road prediction"
+  ],
+  "remaining_decision": "HQ must separately bind exact source/config/package/archive/command/resources/RunID to one formal admission plus complete comparison; no retry, fallback host, relaxed schema/dependency, scope or budget extension",
+  "source_transitive_files_sha256": {
+    "LAUNCH_CARD.md": "962561c89f4011f12a65f8ab04178caaaa3b80114f3aa660d495be07fff8ba8d",
+    "PROTOCOL.md": "69eca2c6a9c1b9a486f4c17be2193433d33b4b51e8fedc27c26f4ff951c6f4e2",
+    "admission.py": "4f68396e67664738666e9c6695e1f9c4e17e519a31c5fd771b54f63ed26b4e1e",
+    "build_lock.py": "4995cce02e094969b7916d57c99548a6353dd85d48c5f6f4500c5173f862a362",
+    "config.json": "8a5ce65a16f9fadb833787f1c66c8f0e050c9f9434cdc47f914461841f4d3f57",
+    "engine.py": "bcc5a1fff61f4d00a0047b02d3b0a481e898128a6cd05e7788b59e6c53002de3",
+    "evidence.py": "dd39c3465216f024215e55bee19b334e80ff1861ea4b90e6dc3778a162937ee3",
+    "execution_authority.schema.json": "3273af5a6c52121db2669f1d5810b2ae998ac61d68bdf8523cd309ecfc5f351e",
+    "figures.py": "99101f96e68eae23ddcbd53f14b96515fdfbf22ed1fae285bae02c794bce2d45",
+    "frozen_cohort.json": "19a75f76d68d63294744031b9369864185bb3da313f520699242132a5b7ae553",
+    "input_manifest.json": "f54753600f76dec7a5c153f413bb27a311d9d8551b966cc91fa6b21b663151de",
+    "launch.py": "231f03c60b76f654d949f8a4599555ba9858e3d62969bd1be017d6ca16ded46f",
+    "launch_command.json": "5577270d15c79c31f3f0590d152d8202784a5d8f9170c7db0bc3fb0ee09aead6",
+    "legacy_config.json": "8c339efce6964aa4e2efcf4c654a11b5ace9b0fee319d362370dfaa6ff98804f",
+    "legacy_state.py": "5bff0d293be761e1b6b08d8f14d9e2e2d58987f666d5e48d38d894cc90ccf39d",
+    "package.py": "ccbb7dd335e308939c07b0d7fdfffa10ac5536474d2813dff5765576b18c079a",
+    "producer_data.py": "bfecf6e3c56faa282dd1171facf4c686b84cc9c9aecb966ca3d4bd0d88653cf9",
+    "r002_base.py": "262b8ddb79f81896e6dcb6717e4722f479a6bca65a3dc84e33a322097e555d1a",
+    "requirements.txt": "981cc2e288f4d825a8f810e02afc3c40509b661adab03358abe26485523ef75b",
+    "resource_contract.py": "97fb4980b704a790c81874854d7ebad8acc13b3686f3a8a1da8b6d5b12eb00ac",
+    "resource_decision.json": "810e192fd5d1d05f07e59b85687a7e39628653e699a05cdea037b253f3d1646d",
+    "runtime_guard.py": "39bccc115fa99850f6ddfe7d584da63a303e68ce263213ab586af3a74d05b9f3",
+    "supervise.py": "bc316fd1c08cb72e3bc3038f6390de63a778c6fed543f484b59bd37ea6afbeaf",
+    "test_package.py": "74f2b6aefec625e598facbaeca5c5fdcd4167928f61b91ea7db533a1fd294692",
+    "watchdog.py": "dcdaa4c0733d56fda602a262a43582b62eba317db1b47d3e07b51db1ef5fc35c",
+    "worker.py": "f7cc474c7b0d2ed14a7a89bb2a86306cc3f0520a9ae7eefc4851dff71e038faa"
+  }
+}
