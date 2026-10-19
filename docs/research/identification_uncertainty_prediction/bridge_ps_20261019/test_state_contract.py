@@ -73,6 +73,14 @@ class StateContract(unittest.TestCase):
   self.assertTrue(np.isfinite(oracle).all());np.testing.assert_allclose(model[2],oracle,rtol=0,atol=1e-11)
  def test_external_config_is_rejected_before_resource_or_array_io(self):
   with self.assertRaises(ValueError):contract.load_config(Path(__file__).parent,'/not/a/sealed/config.json')
+ def test_archive_rename_between_type_and_stat_is_not_a_job_failure(self):
+  with patch.object(Path,'is_file',return_value=True),patch.object(Path,'stat',side_effect=FileNotFoundError):
+   self.assertEqual(supervise.size('/fixture/results.tar.gz.partial'),0)
+ def test_completion_and_stop_both_have_explicit_UTC_boundaries(self):
+  with patch('supervise.utc',return_value='2026-10-19T16:00:02Z'):
+   for status in ('COMPLETE','STOPPED_NO_RETRY'):
+    record=supervise.finish_record(status,'fixture-digest','2026-10-19T16:00:00Z',2.,1,123)
+    self.assertEqual(record['started_at_utc'],'2026-10-19T16:00:00Z');self.assertEqual(record['ended_at_utc'],'2026-10-19T16:00:02Z');self.assertEqual(record['wall_seconds'],2.)
  def test_default_paths_cannot_load_arrays_or_start_process(self):
   with patch('numpy.load',side_effect=AssertionError('array access')),patch('subprocess.Popen',side_effect=AssertionError('producer launch')):
    with self.assertRaises(PermissionError):worker.main(['--run'])

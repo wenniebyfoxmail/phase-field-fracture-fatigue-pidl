@@ -5,7 +5,9 @@ import contract
 
 def size(p):
  p=Path(p)
- if p.is_file():return p.stat().st_size
+ try:
+  if p.is_file():return p.stat().st_size
+ except FileNotFoundError:return 0  # The owned archive temp file was atomically renamed.
  total=0
  if not p.exists():return 0
  for x in p.rglob('*'):
@@ -13,6 +15,13 @@ def size(p):
    if x.is_file():total+=x.stat().st_size
   except FileNotFoundError:pass  # Owned atomic-write temp file was renamed during the scan.
  return total
+
+
+def utc():return time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
+
+def finish_record(status,digest,started_at,elapsed,peak,pid,reason=None,exit_code=None):
+ return {'status':status,'package_sha256':digest,'started_at_utc':started_at,'ended_at_utc':utc(),
+         'wall_seconds':elapsed,'peak_rss_bytes':peak,'worker_pid':pid,'reason':reason,'exit_code':exit_code}
 
 def main(argv=None):
  p=argparse.ArgumentParser();p.add_argument('--config',type=Path,default=Path(__file__).with_name('config.producer.json'));p.add_argument('--approval-receipt',type=Path);args=p.parse_args(argv)
@@ -22,8 +31,9 @@ def main(argv=None):
  r=Path(cfg['run_root'])
  if code!=(r/'code').resolve():raise ValueError('run must use its sealed code snapshot')
  r.mkdir(parents=True,exist_ok=True)
- with (r/'run_claim.json').open('x') as f:json.dump({'package_sha256':digest,'authority':auth,'controller_pid':os.getpid(),'source_code':str(code),'command':sys.argv},f)
- started=time.monotonic();child=None;peak=0;reason=None
+ started=time.monotonic();started_at=utc()
+ with (r/'run_claim.json').open('x') as f:json.dump({'package_sha256':digest,'authority':auth,'controller_pid':os.getpid(),'started_at_utc':started_at,'source_code':str(code),'command':sys.argv},f)
+ child=None;peak=0;reason=None
  try:
   for name in ('outputs','results.tar.gz','results.tar.gz.partial'):
    if (r/name).exists():raise FileExistsError('fresh run required; no retry')
@@ -45,7 +55,7 @@ def main(argv=None):
   if reason:raise RuntimeError(reason)
   if contract.read(r/'outputs/receipt.json')['status']!='COMPLETE':raise RuntimeError('worker lacked complete receipt')
   if not(r/'results.tar.gz').exists():raise RuntimeError('archive missing')
-  contract.write(r/'controller_receipt.json',{'status':'COMPLETE','package_sha256':digest,'wall_seconds':time.monotonic()-started,'peak_rss_bytes':peak,'worker_pid':child.pid,'exit_code':0})
+  contract.write(r/'controller_receipt.json',finish_record('COMPLETE',digest,started_at,time.monotonic()-started,peak,child.pid,exit_code=0))
  except BaseException as exc:
   if child is not None and child.poll() is None:
    # Only the new child process group owned by this controller; never a shared-user kill.
@@ -53,6 +63,6 @@ def main(argv=None):
    except ProcessLookupError:pass
    try:child.wait(timeout=5)
    except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);child.wait()
-  contract.write(r/'controller_receipt.json',{'status':'STOPPED_NO_RETRY','reason':str(exc),'wall_seconds':time.monotonic()-started,'peak_rss_bytes':peak,'worker_pid':None if child is None else child.pid})
+  contract.write(r/'controller_receipt.json',finish_record('STOPPED_NO_RETRY',digest,started_at,time.monotonic()-started,peak,None if child is None else child.pid,reason=str(exc)))
   raise
 if __name__=='__main__':main()
