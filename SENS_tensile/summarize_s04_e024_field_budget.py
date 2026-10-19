@@ -3,8 +3,8 @@ import json
 from pathlib import Path
 import numpy as np
 from s04_e024_field_budget import (PROFILES, STATES, GUARDS, InvalidEvidence,
-    quantize_head, safe_json, finite,preconditioner,digest_array)
-from s04_e024_field_runtime import sha,write_json
+    quantize_head, safe_json, finite,preconditioner,digest_array,branch_change,ratio_norm,BUDGETS,REGIONS)
+from s04_e024_field_runtime import sha,write_json,code_tree_sha
 
 
 def close_record(actual,saved):
@@ -75,6 +75,7 @@ def replay_profile(adapter,folder,eta,strict,check=lambda:None):
             step=(head.astype(float)-current.astype(float)).ravel()
             f=adapter.realize(head);adapter.check_identity()
             realization=adapter.check_realization(head,f,metrics)
+            close_record(branch_change(f,metrics.origin),ev['branch_changed_GP_fraction'])
             actual_ev=metrics.evaluate(f)
             failures=metrics.violations(actual_ev,eta,strict)
             actual=(metrics.evaluate(fields)['guards']['uv_full']-actual_ev['guards']['uv_full'])/metrics.ceilings[0]
@@ -119,6 +120,7 @@ def replay_profile(adapter,folder,eta,strict,check=lambda:None):
 
 def replay_state(adapter,root,state,check,expected_commit=None):
     case=root/'states'/state;meta=json.loads((case/'receipt.json').read_text())
+    if meta.get('code_tree_sha256')!=code_tree_sha():raise InvalidEvidence('numeric worker code tree')
     if meta['state']!=state or (expected_commit is not None and meta['source_commit']!=expected_commit):raise InvalidEvidence('numeric worker source/state')
     if any(meta[k]!=0 for k in ('NN_optimizer_steps','original_checkpoint_writes','history_fatigue_damage_updates','remote_actions')):raise InvalidEvidence('numeric worker mutation receipt')
     if list(meta['profiles'])!=[x[0] for x in PROFILES]:raise InvalidEvidence('worker profile order')
@@ -148,11 +150,109 @@ def replay_state(adapter,root,state,check,expected_commit=None):
     if not cross and b['report']['guards']['uv_full']<a['report']['guards']['uv_full']:
         interpretation='seven-guard return is also thirteen-feasible; investigate finite-solver difference'
     adapter.final_identity();check()
-    return dict(state=state,profiles={k:{x:y for x,y in v.items() if x!='head'} for k,v in results.items()},
+    return dict(state=state,code_tree_sha256=code_tree_sha(),numeric_receipt_sha256=sha(case/'receipt.json'),
+        input_manifest_sha256=manifest_sha(meta['files']),profiles={k:{x:y for x,y in v.items() if x!='head'} for k,v in results.items()},
         central_cross_guard_failures=cross,central_interpretation=interpretation,
         baseline=adapter.physical_report(adapter.origin),D012_report=historical,
         replayed_solvers=total_solves,replayed_trials=total_trials,new_optimizations=0,
         scope='all recorded actual trials and saved endpoints replayed; no new candidate selected')
+
+
+def manifest_sha(files):
+    import hashlib
+    return hashlib.sha256(json.dumps(files,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+
+
+def number(value,label,nonnegative=True):
+    if isinstance(value,bool) or not isinstance(value,(int,float)) or not np.isfinite(value):
+        raise InvalidEvidence('nonfinite/nonnumeric '+label)
+    if nonnegative and value<0:raise InvalidEvidence('negative '+label)
+    return value
+
+
+def count(value,label,maximum):
+    if type(value) is not int or not 0<=value<=maximum:raise InvalidEvidence('invalid integer count '+label)
+    return value
+
+
+def validate_counts(profile,origin_uv_error):
+    solves=count(profile['solves'],'solves',3);trials=count(profile['trials'],'trials',27)
+    accepted=count(profile['accepted_steps'],'accepted_steps',3);stop=profile['stop']
+    if accepted>min(solves,trials) or trials>9*solves:raise InvalidEvidence('incoherent profile counts')
+    if stop=='NO_CORRECTION_ALREADY_EXACT':valid=solves==trials==accepted==0 and origin_uv_error==0
+    elif stop=='MAX_RELINEARIZATIONS':valid=solves==accepted==3 and accepted<=trials<=9*accepted
+    elif stop=='NO_PROXY_FEASIBLE_RETURN':valid=solves>=1 and accepted==solves-1 and accepted<=trials<=9*accepted
+    elif stop=='ALL_NINE_REJECTED':valid=solves>=1 and accepted==solves-1 and 9+accepted<=trials<=9*solves
+    else:valid=False
+    if not valid:raise InvalidEvidence('profile stop/count structure')
+    return solves,trials
+
+
+def validate_report(report,base=None,zero_change=False,allow_infinite_budget=False):
+    """Validate every consumed physical number, including exact zero-scale policy."""
+    if tuple(report['guards'])!=GUARDS or tuple(report['budget_components'])!=BUDGETS:
+        raise InvalidEvidence('physical report guard/budget schema')
+    for k,v in report['guards'].items():number(v,k)
+    keys=[q+'_'+r for q in ('uv','strain','driver') for r in REGIONS]
+    if set(report['region_metrics'])!=set(keys):raise InvalidEvidence('region report schema')
+    mapped=[*GUARDS[:4],*GUARDS[7:11],GUARDS[11],GUARDS[12],GUARDS[5],GUARDS[6]]
+    for key,guard in zip(keys,mapped):
+        item=report['region_metrics'][key]
+        if set(item)!=set(('error_integral','error_RMS','relative_L2','reference_integral','weight_sum')):
+            raise InvalidEvidence('regional metric schema')
+        for k in ('error_integral','error_RMS','reference_integral','weight_sum'):number(item[k],key+'.'+k)
+        if item['weight_sum']<=0:raise InvalidEvidence('empty fixed region')
+        close_record(item['error_integral'],report['guards'][guard])
+        close_record(float(np.sqrt(item['error_integral']/item['weight_sum'])),item['error_RMS'])
+        if item['reference_integral']==0:
+            if item['relative_L2'] is not None:raise InvalidEvidence('undefined reference ratio')
+        else:
+            number(item['relative_L2'],key+'.relative_L2')
+            close_record(float(np.sqrt(item['error_integral']/item['reference_integral'])),item['relative_L2'])
+        if base is not None:
+            for k in ('weight_sum','reference_integral'):close_record(base['region_metrics'][key][k],item[k])
+    number(report['rho_u'],'rho_u');close_record(report['guards']['weak_squared'],report['rho_u']**2)
+    if len(report['changes_sq'])!=4:raise InvalidEvidence('four change integrals required')
+    for value in report['changes_sq']:number(value,'change integral')
+    if zero_change and any(x!=0 for x in report['changes_sq']):raise InvalidEvidence('original cumulative change not zero')
+    origin=report if base is None else base
+    scales=[origin['guards'][k] for k in ('uv_full','strain_full','driver_full','weak_squared')]
+    qs=[ratio_norm(x,y) for x,y in zip(report['changes_sq'],scales)]
+    for key,expected in zip(BUDGETS,qs):
+        if np.isinf(expected):
+            if not allow_infinite_budget or report['budget_components'][key]!='Infinity':raise InvalidEvidence('zero-scale budget not admissible')
+        else:number(report['budget_components'][key],key);close_record(expected,report['budget_components'][key])
+    if np.isinf(max(qs)):
+        if not allow_infinite_budget or report['budget_q']!='Infinity':raise InvalidEvidence('zero-scale Q not admissible')
+    else:number(report['budget_q'],'budget_q');close_record(max(qs),report['budget_q'])
+
+
+def bound_numeric(root,state,record,expected_commit,check):
+    case=root/'states'/state;path=case/'receipt.json'
+    if sha(path)!=record.get('numeric_receipt_sha256'):raise InvalidEvidence('numeric receipt binding')
+    meta=json.loads(path.read_text());tree=code_tree_sha()
+    if record.get('code_tree_sha256')!=tree or meta.get('code_tree_sha256')!=tree:
+        raise InvalidEvidence('aggregate code tree binding')
+    if meta['state']!=state or meta['source_commit']!=expected_commit:raise InvalidEvidence('aggregate numeric identity')
+    if manifest_sha(meta['files'])!=record.get('input_manifest_sha256'):raise InvalidEvidence('numeric manifest binding')
+    actual={str(p.relative_to(case)) for p in case.rglob('*') if p.is_file() and p!=path}
+    if actual!=set(meta['files']):raise InvalidEvidence('numeric file set')
+    for name,digest in meta['files'].items():
+        check();file=case/name
+        if not file.resolve().is_relative_to(case.resolve()) or sha(file)!=digest:
+            raise InvalidEvidence('numeric input file hash')
+    for key in ('NN_optimizer_steps','original_checkpoint_writes','history_fatigue_damage_updates','remote_actions'):
+        count(meta[key],key,0)
+    if list(meta['profiles'])!=[x[0] for x in PROFILES]:raise InvalidEvidence('numeric profile order')
+    close_record(record['baseline'],json.loads((case/'origin.json').read_text())['report'])
+    close_record(record['D012_report'],meta['D012_report'])
+    for name,_,_ in PROFILES:
+        final=json.loads((case/name/'final.json').read_text())
+        close_record(record['profiles'][name]['report'],final['report'])
+        for k in ('solves','trials','accepted_steps','stop'):
+            if record['profiles'][name][k]!=meta['profiles'][name][k] or record['profiles'][name][k]!=final['counts'][k]:
+                raise InvalidEvidence('bound profile counts/stops')
+    return meta
 
 
 def aggregate(root,expected_commit,check=lambda:None):
@@ -165,9 +265,16 @@ def aggregate(root,expected_commit,check=lambda:None):
         r=json.loads(path.read_text());records.append(r)
         if r['state']!=state or r['source_commit']!=expected_commit or r['new_optimizations']!=0:
             raise InvalidEvidence('replay identity')
-        if set(r['profiles'])!={x[0] for x in PROFILES}:raise InvalidEvidence('all four replay profiles required')
+        if list(r['profiles'])!=[x[0] for x in PROFILES]:raise InvalidEvidence('all four replay profiles/order required')
+        count(r['new_optimizations'],'new replay optimizations',0)
+        meta=bound_numeric(root,state,r,expected_commit,check)
+        validate_report(r['baseline'],zero_change=True)
+        validate_report(r['D012_report'],r['baseline'],allow_infinite_budget=True)
+        state_solves=state_trials=0
         for name,eta,strict in PROFILES:
             p=r['profiles'][name];base=r['baseline'];old=r['D012_report']
+            validate_report(p['report'],base)
+            ss,tt=validate_counts(p,base['guards']['uv_full']);state_solves+=ss;state_trials+=tt
             if tuple(p['report']['guards'])!=GUARDS or tuple(base['guards'])!=GUARDS:raise InvalidEvidence('aggregate thirteen-guard schema')
             for i,key in enumerate(GUARDS):
                 value=p['report']['guards'][key];ceiling=base['guards'][key];finite(value,ceiling)
@@ -184,12 +291,16 @@ def aggregate(root,expected_commit,check=lambda:None):
                 row.update(rho_u=p['report']['rho_u'],rho_u_E023=base['rho_u'],budget_q=p['report']['budget_q'],
                            stop=p['stop'],solves=p['solves'],trials=p['trials'])
                 rows.append(row)
+        if count(r['replayed_solvers'],'state solves',12)!=state_solves or count(r['replayed_trials'],'state trials',108)!=state_trials:
+            raise InvalidEvidence('state totals mismatch')
+        if count(meta['offline_solver_calls'],'numeric solves',12)!=state_solves or count(meta['actual_candidate_trials'],'numeric trials',108)!=state_trials:
+            raise InvalidEvidence('numeric/replay total mismatch')
     solves=sum(r['replayed_solvers'] for r in records);trials=sum(r['replayed_trials'] for r in records)
     if solves>36 or trials>324:raise InvalidEvidence('aggregate run budget')
     out=root/'summary';out.mkdir(exist_ok=False)
     with (out/'regions.csv').open('w') as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0]),lineterminator='\n');w.writeheader();w.writerows(rows)
-    receipt=dict(source_commit=expected_commit,states=list(STATES),profiles=12,
+    receipt=dict(source_commit=expected_commit,code_tree_sha256=code_tree_sha(),states=list(STATES),profiles=12,
         strict_profiles=9,diagnostic_seven_guard_profiles=3,offline_solver_calls=solves,
         real_candidate_trials=trials,actual_trials_replayed=trials,new_replay_optimizations=0,
         verdict='COMPARATIVE_FIELD_REPLAY_COMPLETE_NOT_APPLICATION_VALIDATION',

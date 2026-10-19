@@ -1,11 +1,11 @@
 {
   "verdict": "NONTRAINING_CHECKS_PASS",
   "scope": "synthetic/native-Q4 fixture checks only; not three-state preflight or scientific execution",
-  "code_tree_sha256": "c3d24496c575b8e7b82dffd9dfd6def06d8117e3186b3827e13763bef704b87a",
-  "test_cases_passed_final": 49,
-  "new_field_budget_cases": 29,
+  "code_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "test_cases_passed_final": 70,
+  "new_field_budget_cases": 50,
   "reused_cases": 20,
-  "wall_seconds": 14.628348750107165,
+  "wall_seconds": 51.567363001101825,
   "pytest_attempts": [
     {
       "command": [
@@ -89,12 +89,95 @@
       "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_5.log",
       "real_model_or_FEM_forward_count": 0,
       "NN_optimizer_steps": 0
+    },
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "tests/test_s04_e024_field_budget.py",
+        "tests/test_s04_e024_full_head.py",
+        "tests/test_s04_e024_joint_head.py"
+      ],
+      "wall_seconds": 5.1598881669924594,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_6.log",
+      "real_model_or_FEM_forward_count": 0,
+      "NN_optimizer_steps": 0
+    },
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "/tmp/test_d013_review_probes.py"
+      ],
+      "wall_seconds": 0.32000987499486655,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_7.log",
+      "real_model_or_FEM_forward_count": 0,
+      "NN_optimizer_steps": 0
+    },
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "tests/test_s04_e024_field_budget.py",
+        "tests/test_s04_e024_full_head.py",
+        "tests/test_s04_e024_joint_head.py"
+      ],
+      "wall_seconds": 4.645729666983243,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_8.log",
+      "real_model_or_FEM_forward_count": 0,
+      "NN_optimizer_steps": 0
+    },
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "tests/test_s04_e024_field_budget.py",
+        "tests/test_s04_e024_full_head.py",
+        "tests/test_s04_e024_joint_head.py"
+      ],
+      "wall_seconds": 12.191174542007502,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_9.log",
+      "real_model_or_FEM_forward_count": 0,
+      "NN_optimizer_steps": 0
+    },
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "tests/test_s04_e024_field_budget.py",
+        "tests/test_s04_e024_full_head.py",
+        "tests/test_s04_e024_joint_head.py"
+      ],
+      "wall_seconds": 14.622212000016589,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_10.log",
+      "real_model_or_FEM_forward_count": 0,
+      "NN_optimizer_steps": 0
     }
   ],
   "manual_synthetic_index_probe_wall_seconds": 0.112071375,
-  "final_full568_known_solution_wall_seconds": 0.8897997500025667,
+  "final_full568_known_solution_wall_seconds": 1.0341318330029026,
   "full568_iterations": 11,
-  "full568_observed_process_peak_RSS_bytes": 418217984,
+  "full568_observed_process_peak_RSS_bytes": 407568384,
   "full568_cost_scope": "one artificial case; includes eigenscaling/model/solver/KKT; observed process peak, not allocation delta or production cost",
   "warnings": "3 existing NumPy/SciPy NNLS matmul warnings retained, values checked with explicit contractions; backend cause not identified",
   "real_model_or_FEM_forward_count": 0,
@@ -103,12 +186,13 @@
   "original_checkpoint_writes": 0,
   "remote_actions": 0,
   "implementation_sha256": {
-    "SENS_tensile/s04_e024_field_budget.py": "1090a53d5465b9714e70b3005a86e0a9812b1e1a0a3701e8d72bf18d612b21c2",
+    "SENS_tensile/s04_e024_field_budget.py": "eb965bc2706078b97db122670cb22ad5fc3d7d537aba7da790b09784f611bedb",
     "SENS_tensile/s04_e024_field_physics.py": "30d4993c8c47ff1e80ae85254f2b284857bc3b5e6b9334eb53a34858bb968111",
     "SENS_tensile/s04_e024_field_runtime.py": "3b8e3931a891450aad5f37cdc7444335bb58a6226228087afe0cd72b6740e73f",
     "SENS_tensile/run_s04_e024_field_budget.py": "8e651476af52d2a80f2216285202d7d2543a3b52bff1cde2e958c56907d565e2",
-    "SENS_tensile/summarize_s04_e024_field_budget.py": "3d155b55c09e0d3bb53c4879c3f93825c49eeba5d3fba310afb15957775b0852",
-    "tests/test_s04_e024_field_budget.py": "82b7e4b2bc60f8f30df997e4133e73d69ca215799a6850630f64f94e072e4e68"
+    "SENS_tensile/summarize_s04_e024_field_budget.py": "b1eb52e16a82c46bf73bed82d331ced2bb77e83cb88b41619e4578f7292d51a2",
+    "tests/test_s04_e024_field_budget.py": "36efa4f642ca8777cf718f9babfca845ca732bbeb2b40b7ecc195dc652cdda41"
   },
-  "snapshot_note": "Implementation nontraining snapshot; independent reviewer binds exact scientific tree. Tiny artificial Torch forwards only; no real endpoint or FEM reference loaded."
+  "snapshot_note": "Implementation nontraining snapshot; independent reviewer binds exact scientific tree. Tiny artificial Torch forwards only; no real endpoint or FEM reference loaded.",
+  "review_initial_verdict": "CHANGES_REQUIRED; malformed aggregate evidence and per-trial branch gaps reproduced and retained"
 }

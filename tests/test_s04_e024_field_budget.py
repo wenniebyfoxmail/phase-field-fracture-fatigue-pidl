@@ -261,7 +261,9 @@ def test_all12_synthetic_profiles_replayed_aggregated_and_rendered(tmp_path):
         profiles={}
         for name,eta,strict in PROFILES:
             _,_,counts,_=save_profile(case/name,adapter,eta,strict);profiles[name]=counts
-        meta=dict(state=state,source_commit='fixture',assets=adapter.assets,profiles=profiles,
+        write_json(case/'origin.json',dict(report=adapter.physical_report(adapter.origin)))
+        from s04_e024_field_runtime import code_tree_sha
+        meta=dict(state=state,source_commit='fixture',code_tree_sha256=code_tree_sha(),assets=adapter.assets,profiles=profiles,
             D012_report=adapter.physical_report(adapter.realize(adapter.d012_head)),
             NN_optimizer_steps=0,original_checkpoint_writes=0,history_fatigue_damage_updates=0,remote_actions=0,
             offline_solver_calls=sum(x['solves'] for x in profiles.values()),actual_candidate_trials=sum(x['trials'] for x in profiles.values()),
@@ -362,3 +364,115 @@ def test_owned_child_CPU_visibility_and_provenance(tmp_path):
     assert record['exit_code']==0
     provenance=record['provenance']
     assert provenance['host'] and provenance['utc'] and provenance['versions']['numpy']
+
+
+def bound_artificial_archive(root):
+    """Pure receipt fixture: no actual optimizer or scientific asset needed."""
+    from s04_e024_field_budget import STATES
+    from s04_e024_field_runtime import sha,code_tree_sha
+    from summarize_s04_e024_field_budget import manifest_sha
+    for state in STATES:
+        a=ScalarAdapter();report=a.physical_report(a.origin);case=root/'states'/state
+        case.mkdir(parents=True);write_json(case/'origin.json',dict(report=report))
+        profiles={};counts=dict(stop='NO_PROXY_FEASIBLE_RETURN',solves=1,trials=0,accepted_steps=0)
+        for name,eta,strict in PROFILES:
+            write_json(case/name/'final.json',dict(report=report,counts=counts))
+            profiles[name]=dict(report=copy.deepcopy(report),**counts)
+        files={str(p.relative_to(case)):sha(p) for p in case.rglob('*') if p.is_file()}
+        meta=dict(state=state,source_commit='review_fixture',code_tree_sha256=code_tree_sha(),
+            profiles={k:dict(counts) for k in profiles},D012_report=report,files=files,
+            offline_solver_calls=4,actual_candidate_trials=0,NN_optimizer_steps=0,
+            original_checkpoint_writes=0,history_fatigue_damage_updates=0,remote_actions=0)
+        write_json(case/'receipt.json',meta)
+        replay=dict(state=state,source_commit='review_fixture',code_tree_sha256=code_tree_sha(),
+            numeric_receipt_sha256=sha(case/'receipt.json'),input_manifest_sha256=manifest_sha(files),
+            profiles=profiles,baseline=report,D012_report=report,replayed_solvers=4,replayed_trials=0,
+            new_optimizations=0,central_cross_guard_failures=[],central_interpretation='pure artificial fixture')
+        write_json(root/'replay'/state/'verified.json',replay)
+
+
+def test_bound_artificial_receipts_are_complete_without_science(tmp_path):
+    from summarize_s04_e024_field_budget import aggregate
+    bound_artificial_archive(tmp_path)
+    assert aggregate(tmp_path,'review_fixture')['offline_solver_calls']==12
+
+
+@pytest.mark.parametrize('tamper',['nan_budget','negative_counts','fractional_counts','mismatched_totals',
+    'nan_region','unbound_tree','numeric_receipt','manifest','missing_profile','profile_order',
+    'accepted_steps','stop','stale_file'])
+def test_fail_closed_aggregate_regressions(tmp_path,tamper):
+    from summarize_s04_e024_field_budget import aggregate
+    bound_artificial_archive(tmp_path);path=tmp_path/'replay/c20s4/verified.json'
+    r=json.loads(path.read_text());p=r['profiles'][PROFILES[0][0]]
+    if tamper=='nan_budget':p['report']['budget_q']=float('nan')
+    elif tamper=='negative_counts':r['replayed_solvers']=-100
+    elif tamper=='fractional_counts':r['replayed_trials']=.5
+    elif tamper=='mismatched_totals':r['replayed_solvers']=0
+    elif tamper=='nan_region':p['report']['region_metrics']['strain_background']['error_RMS']=float('nan')
+    elif tamper=='unbound_tree':r['code_tree_sha256']='wrong'
+    elif tamper=='numeric_receipt':r['numeric_receipt_sha256']='wrong'
+    elif tamper=='manifest':r['input_manifest_sha256']='wrong'
+    elif tamper=='missing_profile':r['profiles'].pop(PROFILES[-1][0])
+    elif tamper=='profile_order':r['profiles']=dict(reversed(list(r['profiles'].items())))
+    elif tamper=='accepted_steps':p['accepted_steps']=1
+    elif tamper=='stop':p['stop']='MAX_RELINEARIZATIONS'
+    elif tamper=='stale_file':(tmp_path/'states/c20s4/origin.json').write_text('{}')
+    path.write_text(json.dumps(r)) # deliberately permit NaN to model malformed input
+    with pytest.raises((InvalidEvidence,AssertionError)):
+        aggregate(tmp_path,'review_fixture')
+    assert not (tmp_path/'summary/receipt.json').exists()
+
+
+@pytest.mark.parametrize('tamper',['budget','region','counts','stop'])
+def test_self_bound_but_inconsistent_report_is_rejected(tmp_path,tamper):
+    from summarize_s04_e024_field_budget import aggregate,manifest_sha
+    from s04_e024_field_runtime import sha
+    bound_artificial_archive(tmp_path);case=tmp_path/'states/c20s4';path=tmp_path/'replay/c20s4/verified.json'
+    r=json.loads(path.read_text());name=PROFILES[0][0];p=r['profiles'][name]
+    if tamper=='budget':p['report']['budget_q']=.01 # zero actual changes cannot spend Q
+    elif tamper=='region':p['report']['region_metrics']['strain_background']['error_RMS']=-1.
+    elif tamper=='counts':p['solves']=-1
+    else:p['stop']='MAX_RELINEARIZATIONS'
+    final=case/name/'final.json';f=json.loads(final.read_text());f['report']=p['report']
+    for k in ('solves','trials','accepted_steps','stop'):f['counts'][k]=p[k]
+    write_json(final,f);meta=json.loads((case/'receipt.json').read_text());meta['files'][str(final.relative_to(case))]=sha(final)
+    meta['profiles'][name]=f['counts'];write_json(case/'receipt.json',meta)
+    r['numeric_receipt_sha256']=sha(case/'receipt.json');r['input_manifest_sha256']=manifest_sha(meta['files']);write_json(path,r)
+    with pytest.raises((InvalidEvidence,AssertionError)):aggregate(tmp_path,'review_fixture')
+    assert not (tmp_path/'summary/receipt.json').exists()
+
+
+def test_rejected_trial_branch_change_is_saved_and_replay_checked(tmp_path):
+    class BranchRaw(ScalarAdapter):
+        def realize(self,head):
+            f=super().realize(head)
+            if float(head[0,0])!=self.centre:f['strain'][...,0]=-100.
+            return f
+    folder=tmp_path/'p';_,_,counts,events=save_profile(folder,BranchRaw())
+    trials=[e for e in events if e['kind']=='trial']
+    assert trials and all(not e['accepted'] and e['branch_changed_GP_fraction']==1. for e in trials)
+    assert replay_profile(BranchRaw(),folder,.1,True)['trials']==counts['trials']
+    trials[0]['branch_changed_GP_fraction']=0.
+    (folder/'events.jsonl').write_text(''.join(json.dumps(e)+'\n' for e in events))
+    with pytest.raises(AssertionError):replay_profile(BranchRaw(),folder,.1,True)
+
+
+def test_quadratic_overflow_is_global_nonfinite_not_a_profile_failure():
+    p=Quadratics.empty(2);p.h[:]=np.eye(2)*1e300
+    with np.errstate(over='ignore',invalid='ignore'):
+        with pytest.raises(InvalidEvidence,match='nonfinite'):p.values(np.array([1e100,1e100]))
+
+
+
+def test_explicit_infinite_zero_scale_historical_diagnostic_never_primary():
+    from summarize_s04_e024_field_budget import validate_report
+    a=ScalarAdapter();reference=copy.deepcopy(a.metrics.reference);reference['driver']=a.origin['driver'].copy()
+    m=Metrics(a.origin,reference,a.metrics.node_weights,a.metrics.gp_weights)
+    base=safe_json(m.report(a.origin));validate_report(base,zero_change=True)
+    changed=copy.deepcopy(a.origin);changed['driver']+=1.
+    report=safe_json(m.report(changed))
+    assert report['budget_q']=='Infinity'
+    validate_report(report,base,allow_infinite_budget=True)
+    with pytest.raises(InvalidEvidence,match='zero-scale'):validate_report(report,base)
+    bad=copy.deepcopy(report);bad['budget_q']=float('inf')
+    with pytest.raises(InvalidEvidence):validate_report(bad,base,allow_infinite_budget=True)

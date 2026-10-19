@@ -120,7 +120,7 @@ class Metrics:
                 result[prefix+'_'+region] = dict(error_integral=error,
                     error_RMS=float(np.sqrt(error/weights[region].sum())),
                     relative_L2=None if reference==0 else float(np.sqrt(error/reference)),
-                    reference_integral=reference)
+                    reference_integral=reference,weight_sum=float(weights[region].sum()))
         return dict(**ev,region_metrics=result,rho_u=float(np.linalg.norm(f['force'])))
 
 
@@ -146,9 +146,12 @@ class Quadratics:
 
     def values(self,p):
         finite(p)
-        return self.c+2*np.einsum('ki,i->k',self.b,p)+np.einsum('i,kij,j->k',p,self.h,p)
+        result=self.c+2*np.einsum('ki,i->k',self.b,p)+np.einsum('i,kij,j->k',p,self.h,p)
+        finite(result);return result
 
-    def jacobian(self,p): return 2*self.b+2*np.einsum('kij,j->ki',self.h,p)
+    def jacobian(self,p):
+        result=2*self.b+2*np.einsum('kij,j->ki',self.h,p)
+        finite(result);return result
 
     def fingerprint(self):return dict(c=digest_array(self.c),b=digest_array(self.b),h=digest_array(self.h))
 
@@ -184,13 +187,17 @@ def solve_proxy(pack,metrics,eta,strict,check=lambda:None):
     check()
     b=np.einsum('ki,ij->kj',pack.b,t)
     h=np.stack([dgemm(1.,dgemm(1.,np.asarray(t,order='F'),np.asarray(hh,order='F'),trans_a=True),np.asarray(t,order='F')) for hh in pack.h])
+    finite(b,h)
     active=list(range(1,13 if strict else 7))+list(range(13,17))
     limits=np.r_[metrics.ceilings,eta*eta*metrics.scales_sq]
     # A zero ceiling is an exact squared-norm-zero condition, never an epsilon floor.
     scale=np.where(limits>0,limits,1.)
     def values(y):
-        check();return pack.c+2*np.einsum('ki,i->k',b,y)+np.einsum('i,kij,j->k',y,h,y)
-    def jac(y):return 2*b+2*np.einsum('kij,j->ki',h,y)
+        check();result=pack.c+2*np.einsum('ki,i->k',b,y)+np.einsum('i,kij,j->k',y,h,y)
+        finite(result);return result
+    def jac(y):
+        result=2*b+2*np.einsum('kij,j->ki',h,y)
+        finite(result);return result
     def fun(y):return float(values(y)[0]/metrics.ceilings[0])
     def grad(y):return jac(y)[0]/metrics.ceilings[0]
     def cons(y):return (limits-values(y))[active]/scale[active]
@@ -234,6 +241,14 @@ def quantize_head(head,dtype):
     return q.copy()
 
 
+def branch_change(fields,origin):
+    trace=fields['strain'][...,:2].sum(axis=-1)
+    original=origin['strain'][...,:2].sum(axis=-1)
+    finite(trace,original)
+    if trace.shape!=original.shape or not trace.size:raise InvalidEvidence('GP branch schema')
+    return float(np.mean((trace>=0)!=(original>=0)))
+
+
 def run_profile(adapter,metrics,eta,strict,check,emit,solver=solve_proxy):
     """Up to3 models/9 halvings; authoritative forward precedes every actual test."""
     theta0=adapter.theta.copy();current=theta0.copy();fields=adapter.origin
@@ -269,7 +284,7 @@ def run_profile(adapter,metrics,eta,strict,check,emit,solver=solve_proxy):
             emit(dict(kind='trial',outer=outer,k=k,head=head,actual=ev,
                 proxy_values=pack.values(step),predicted_reduction=predicted,
                 actual_reduction=float(actual),agreement_ratio=float(ratio),accepted=ok,
-                realization=realization,raw_wall_seconds=raw_wall,score_wall_seconds=score_wall,
+                realization=realization,branch_changed_GP_fraction=branch_change(f,metrics.origin),raw_wall_seconds=raw_wall,score_wall_seconds=score_wall,
                 failures=failures,relative_head_change=float(np.linalg.norm(head-theta0)/np.linalg.norm(theta0))
                 if np.linalg.norm(theta0)>0 else None))
             if ok:

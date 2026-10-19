@@ -1,0 +1,109 @@
+{
+  "verdict": "CHANGES_REQUIRED",
+  "review_scope": "Independent Codex Code Ready implementation/contract review and artificial nontraining checks only",
+  "source_commit": "0c7d4584ea8d043ff9744b40d2137823fda7ee47",
+  "code_tree_sha256": "c3d24496c575b8e7b82dffd9dfd6def06d8117e3186b3827e13763bef704b87a",
+  "design_commit": "ecf1cc9f080a12f5579a234ecbc9f55191060e6e",
+  "files": {
+    "SENS_tensile/s04_e024_field_budget.py": "1090a53d5465b9714e70b3005a86e0a9812b1e1a0a3701e8d72bf18d612b21c2",
+    "SENS_tensile/s04_e024_field_physics.py": "30d4993c8c47ff1e80ae85254f2b284857bc3b5e6b9334eb53a34858bb968111",
+    "SENS_tensile/s04_e024_field_runtime.py": "3b8e3931a891450aad5f37cdc7444335bb58a6226228087afe0cd72b6740e73f",
+    "SENS_tensile/run_s04_e024_field_budget.py": "8e651476af52d2a80f2216285202d7d2543a3b52bff1cde2e958c56907d565e2",
+    "SENS_tensile/summarize_s04_e024_field_budget.py": "3d155b55c09e0d3bb53c4879c3f93825c49eeba5d3fba310afb15957775b0852",
+    "tests/test_s04_e024_field_budget.py": "82b7e4b2bc60f8f30df997e4133e73d69ca215799a6850630f64f94e072e4e68",
+    "docs/research/S04/S04-E024/physical_field_budget_plan.md": "0441e6cc847c501b822c5bb1fbf0ed816bd8a97bc5c526178a0d88aa50280d32",
+    "docs/research/S04/S04-E024/physical_field_budget_contract.json": "8bc35175839dc69ee4fcab618903a5043401d871f45cdfc104c88f6527834236",
+    "docs/research/S04/S04-E024/physical_field_budget_implementation.md": "2392119c34a80f892af5c1b67e140890f516b1810a63ff53bc1b28cb863b890c",
+    "docs/research/S04/S04-E024/physical_field_budget_nontraining_checks.json": "ac159b6cd51ad3360b494033cd62489e732f43435ac89f40572cff429c39461f"
+  },
+  "checks": [
+    {
+      "name": "Independent rerun of project artificial suite",
+      "result": "49 passed; 3 original NNLS matmul warnings retained",
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "tests/test_s04_e024_field_budget.py",
+        "tests/test_s04_e024_full_head.py",
+        "tests/test_s04_e024_joint_head.py"
+      ],
+      "wall_seconds": 5.1598881669924594,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_6.log",
+      "sha256": "f11ef4b1c4b98518b774beee21ea7127d2d32149c1f79441d03a2751862e9b7e"
+    },
+    {
+      "name": "Independent malformed aggregate receipt probes",
+      "result": "6 reproduced defects; pytest passes because probes assert current incorrect acceptance",
+      "cases": [
+        "nan_budget",
+        "negative_counts",
+        "fractional_counts",
+        "mismatched_totals",
+        "nan_region",
+        "unbound_tree"
+      ],
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "/tmp/test_d013_review_probes.py"
+      ],
+      "wall_seconds": 0.32000987499486655,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/nontraining_7.log",
+      "sha256": "373be85294e760f560b1884578dec17d2c4a2ad5460b85da98c30f43f4bf5272",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/independent_review_0c7d4584_probes.py",
+      "source_sha256": "0bac1c58e0128ec2ba1ccfb98957336e8e825d71c01481493e11a14f9e2d5347"
+    }
+  ],
+  "findings": [
+    {
+      "id": "B1",
+      "priority": 1,
+      "file": "SENS_tensile/summarize_s04_e024_field_budget.py",
+      "start": 165,
+      "end": 185,
+      "title": "Reject nonfinite or malformed report values before certifying complete replay",
+      "detail": "aggregate checks 13 guard values, but never checks budget_q or regional RMS for finiteness. Python json.loads admits NaN; NaN > eta is false. An artificial replay receipt with budget_q=NaN or strain_background.error_RMS=NaN is accepted and writes COMPARATIVE_FIELD_REPLAY_COMPLETE_NOT_APPLICATION_VALIDATION plus a NaN-containing CSV. The aggregate entry is therefore not fail-closed against unreadable physical budget/metric evidence.",
+      "required_change": "Validate the complete consumed physical-report schema and numeric domain before comparison/output. Reject NaN/Infinity and malformed q/components/region metrics; recompute q/ceiling consistency from recorded component integrals and immutable origin scales, handling explicit zero-scale semantics. Add negative tests proving no summary/complete receipt is emitted."
+    },
+    {
+      "id": "B2",
+      "priority": 2,
+      "file": "SENS_tensile/summarize_s04_e024_field_budget.py",
+      "start": 120,
+      "end": 198,
+      "title": "Bind replay evidence and enforce coherent integer compute counts",
+      "detail": "aggregate trusts replayed_solvers/replayed_trials without nonnegative-integer or per-profile-sum checks, and ignores code_tree_sha256. Artificial receipts with -100 solves/-10 trials per state, fractional totals, profile counts 999 with aggregate counts zero, or a wrong code-tree hash all receive a complete verdict. Replay also does not bind its result to a hash of the numeric receipt/input manifest; matching source_commit text alone is insufficient to detect stale/mixed evidence.",
+      "required_change": "Validate exact state/profile schema/order; nonnegative integer per-profile and total counts within 3 solves/27 trials per profile, 12/108 per state and 36/324 total; require totals to equal profile sums and validated stop/accepted-step structure. Bind numeric and replay records to the current reviewed code tree and immutable numeric receipt/input-manifest hashes; verify those links before aggregate completion. Add malformed/stale-identity/count tests."
+    },
+    {
+      "id": "B3",
+      "priority": 2,
+      "file": "SENS_tensile/s04_e024_field_budget.py",
+      "start": 269,
+      "end": 274,
+      "title": "Persist and replay branch-change diagnostics for every visited trial",
+      "detail": "The frozen plan line105 requires branch changes for every visited candidate. Trial events store coefficients, guards/Q, gains, mapping and timing, but no tensile/compressive GP branch-change diagnostic. physical_report computes branch_changed_GP_fraction only for original/final/historical reports, leaving rejected/intermediate visited heads without the required saved branch evidence.",
+      "required_change": "Emit a compact actual-field branch-change diagnostic for every visited quantized trial, including rejected trials, relative to the declared fixed origin (and current iterate if useful). Recompute and check it during no-optimizer replay; include a synthetic branch-changing rejected trial and tamper test. No extra real candidate or scientific computation is needed."
+    }
+  ],
+  "nontraining_cumulative_ledger_seconds": 19.99617541709449,
+  "nontraining_cap_seconds": 300,
+  "nontraining_ledger": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1/independent_review_0c7d4584_nontraining_ledger.json",
+  "scientific_execution_authorized": false,
+  "real_model_or_FEM_forward_count": 0,
+  "real_three_state_head_solves": 0,
+  "NN_optimizer_steps": 0,
+  "source_mutations": 0,
+  "remote_actions": 0,
+  "limitations": [
+    "No real endpoint, reference archive or D012 scientific payload was loaded.",
+    "True conditioning, physical gains, production-scale cost and cross-platform bit replay remain unmeasured.",
+    "No claim of scientific success or application/teacher/history validity."
+  ]
+}
