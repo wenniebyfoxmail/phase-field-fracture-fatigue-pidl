@@ -6,13 +6,13 @@
 | 绑定项 | 精确值 |
 |---|---|
 | CardID / 批准索引 | S04-E011-UVH-C1-FN776-CARD-r2 / S04-E011-FN776-r2-A1 |
-| Dev | 61b9894d7c2ea2c84ab698e53076160b6f6eec45 |
-| Producer根快照 | 513059b7cb54417e3b8a99f6545ffb03858cd91f |
+| Dev | de0a651435c83b548510f22134ab416b38151471 |
+| Producer根快照 | 722788c74377c4f247b521d1e8cf14eb454902a3 |
 | 科学代码复用自 | f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92；worker与square_root逐字节相同 |
-| Bundle ref | refs/codex/fn776-gpu7-61b9894d7c2e |
-| Bundle字节 / SHA256 | 198195 / 58b4e4009780c5a81a09b6e3ef6e7e03e8e436efb738ffb4e87d5f07dd5f9e88 |
-| 执行计划SHA256 | 2afb9e650036414ffe8d056902eff9d529d4442473263a4ee9900cb00bf1f852 |
-| 控制器blob | ccb9eddfd8385160254bf53e00d987d9d86818c7 |
+| Bundle ref | refs/codex/fn776-gpu7-de0a651435c8 |
+| Bundle字节 / SHA256 | 198817 / 161208e5d27fc7b5280866e4715a6aa48dd60626d6fc9e958e1b078a1fa91488 |
+| 执行计划SHA256 | 68fb14b435dd9f9c1cbdb6f82843e9d94cff8b47362530277a0e3fbdb32a31fc |
+| 控制器blob | 41e4634d792b777fa6f622fe8c12438cddab442d |
 | 新RunID | pf_s04e011_uvh_c1_fn776_r2_20261019 |
 | 新root/code | /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r2_20261019/code |
 | 新archive | /mnt/data2/drtao/pidl_archives/pf_s04e011_uvh_c1_fn776_r2_20261019 |
@@ -72,9 +72,9 @@ CASE为：
 唯一控制入口（Mac，不是科学求解入口）：
 
 ```bash
-FN776_R2_CTRL='/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/control_r2.py'
+FN776_R2_CTRL='/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/control_r2.py'
 FN776_R2_PLAN='/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-c1-uv-energy-head-20261018/docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/execution_plan_fn776_r2.json'
-python3 -B "$FN776_R2_CTRL" --execute-approved --approval-ref S04-E011-UVH-C1-FN776-CARD-r2 --approval-index S04-E011-FN776-r2-A1 --plan "$FN776_R2_PLAN" --plan-sha256 2afb9e650036414ffe8d056902eff9d529d4442473263a4ee9900cb00bf1f852 --step local_package
+python3 -B "$FN776_R2_CTRL" --execute-approved --approval-ref S04-E011-UVH-C1-FN776-CARD-r2 --approval-index S04-E011-FN776-r2-A1 --plan "$FN776_R2_PLAN" --plan-sha256 68fb14b435dd9f9c1cbdb6f82843e9d94cff8b47362530277a0e3fbdb32a31fc --step local_package
 ```
 
 相同入口参数下，逐条显式调用以下step；不得用失败循环或自动重发：
@@ -87,7 +87,7 @@ python3 -B "$FN776_R2_CTRL" --execute-approved --approval-ref S04-E011-UVH-C1-FN
 | deployment | 60秒 | 一次SSH，空Git init/fetch本bundle/detach精确Producer，标准库verifier |
 | launch | 30秒 | 新鲜对话核对+远端同项ps；一次detached guard Popen，独占guard.log |
 | monitor | 每次15秒，最多16次 | 每次上次成功后才可再观察，间隔>=60秒；无自动重连或重新启动 |
-| manifest / archive | 各60秒 | 确认原guard PID/start_ticks身份已退出且有终态回执后，各一次自有报告清单/hash与tar副本传输 |
+| manifest / archive | 各60秒 | 确认原guard及已知worker的PID/start_ticks身份已退出且有终态回执后，各一次自有报告清单/hash与tar副本传输 |
 | verify_retrieval | 30秒 | 本地标准库路径/文件集合/大小/hash核验，不解码数组或补算 |
 
 各阶段含4秒本地自有客户端TERM/KILL/reap清理预留，预检等待至56秒后停止，
@@ -97,7 +97,7 @@ python3 -B "$FN776_R2_CTRL" --execute-approved --approval-ref S04-E011-UVH-C1-FN
 launch计划内唯一科学guard向量为：
 
 ```text
-/usr/bin/python3 -B tools/s04_e011_fn776/guard.py --execute-approved --approval-ref S04-E011-UVH-C1-FN776-CARD-r2 --expected-source 513059b7cb54417e3b8a99f6545ffb03858cd91f
+/usr/bin/python3 -B tools/s04_e011_fn776/guard.py --execute-approved --approval-ref S04-E011-UVH-C1-FN776-CARD-r2 --expected-source 722788c74377c4f247b521d1e8cf14eb454902a3
 ```
 
 cwd=/mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r2_20261019/code，CUDA_VISIBLE_DEVICES固定上述UUID，Python优化关闭、线程数1；
@@ -109,8 +109,10 @@ SSH失联不代表guard停止；控制端终止本尝试，不重发launch，也
 
 科学worker blob adb8c050b5330026cc120f47f14244ab040af028、square_root blob
 0f485e08d39a55e4ee53f88d8e2652372a388a30与既有审核一致。新包无基础对象依赖，
-51文件、650127选定字节、22本地模块闭包，空目录物化/fsck/逐blob检查通过。
+51文件、652098选定字节、22本地模块闭包，空目录物化/fsck/逐blob检查通过。
 本轮只做本地AST/text/Git检查，不运行控制入口、网络、资源mock或数值测试。
+控制层补齐SIGTERM清理及guard/worker退出后报告冻结；SIGKILL/断电/无法写盘
+不能保证回执落盘，状态缺失时仍须记未知，不能据此重发。
 独立审查仅审控制记录/新身份/预算预留/包卡联锁的实际差异，沿用不变科学结论。
 
 r1缺失的部分输出不可补造；其远端执行位置、连接根因仍未知。本修订增加未来
@@ -118,5 +120,5 @@ r1缺失的部分输出不可补造；其远端执行位置、连接根因仍未
 性能。共享Obsidian与Roadmap由主S04更新，本对话不重复写。
 
 批准可表述为：按S04-E011-UVH-C1-FN776-CARD-r2、批准索引S04-E011-FN776-r2-A1、
-Dev 61b9894d、Producer 513059b7及本卡计划hash，在Taobo物理GPU7执行唯一一次新Run，
+Dev de0a6514、Producer 722788c7及本卡计划hash，在Taobo物理GPU7执行唯一一次新Run，
 含卡内检查/部署/五文件读取/求解/报告取回；保持原预算和失败不重试规则。

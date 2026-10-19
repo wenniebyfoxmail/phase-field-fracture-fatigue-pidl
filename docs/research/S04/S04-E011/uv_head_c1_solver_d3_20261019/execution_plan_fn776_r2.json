@@ -2,13 +2,13 @@
   "card_id": "S04-E011-UVH-C1-FN776-CARD-r2",
   "approval_index": "S04-E011-FN776-r2-A1",
   "run_id": "pf_s04e011_uvh_c1_fn776_r2_20261019",
-  "development_source": "61b9894d7c2ea2c84ab698e53076160b6f6eec45",
-  "producer_source": "513059b7cb54417e3b8a99f6545ffb03858cd91f",
-  "controller_blob": "ccb9eddfd8385160254bf53e00d987d9d86818c7",
+  "development_source": "de0a651435c83b548510f22134ab416b38151471",
+  "producer_source": "722788c74377c4f247b521d1e8cf14eb454902a3",
+  "controller_blob": "41e4634d792b777fa6f622fe8c12438cddab442d",
   "bundle": {
-    "bytes": 198195,
-    "sha256": "58b4e4009780c5a81a09b6e3ef6e7e03e8e436efb738ffb4e87d5f07dd5f9e88",
-    "ref": "refs/codex/fn776-gpu7-61b9894d7c2e"
+    "bytes": 198817,
+    "sha256": "161208e5d27fc7b5280866e4715a6aa48dd60626d6fc9e958e1b078a1fa91488",
+    "ref": "refs/codex/fn776-gpu7-de0a651435c8"
   },
   "automatic_execution": false,
   "retry_allowed": false,
@@ -18,13 +18,13 @@
       "argv": [
         "python3",
         "-B",
-        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/verify_code_package.py",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/verify_code_package.py",
         "--code",
-        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
         "--expected-source",
-        "513059b7cb54417e3b8a99f6545ffb03858cd91f"
+        "722788c74377c4f247b521d1e8cf14eb454902a3"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "timeout_seconds": 30
     },
     "preflight": {
@@ -40,11 +40,11 @@
         "gpu-taobo",
         "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - preflight"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "stdin": {
-        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
-        "bytes": 19058,
-        "sha256": "634d1705434a0844879c187e77cbf6c7b7ca01133d0203fd66f740de208e7d2c"
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 19819,
+        "sha256": "051bd760d9b77448896bc7a462bdb72a614b95af8570a5a8108936d95d5fa9cf"
       },
       "timeout_seconds": 60,
       "requires": [
@@ -64,13 +64,13 @@
         "-o",
         "ConnectionAttempts=1",
         "gpu-taobo",
-        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B -c 'from pathlib import Path\nimport datetime as dt,hashlib,json,sys\nroot=Path('\"'\"'/mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r2_20261019'\"'\"')\ndef emit(event,**fields):print(json.dumps(dict(event=event,utc=dt.datetime.now(dt.timezone.utc).isoformat(),**fields)),file=sys.stderr,flush=True)\ntry:\n emit('\"'\"'mkdir_begin'\"'\"',path=str(root));root.mkdir(mode=0o700,exist_ok=False);emit('\"'\"'mkdir_end'\"'\"',status='\"'\"'completed'\"'\"')\n emit('\"'\"'bundle_write_begin'\"'\"',path=str(root/'\"'\"'source.bundle'\"'\"'));h=hashlib.sha256();n=0\n with (root/'\"'\"'source.bundle'\"'\"').open('\"'\"'xb'\"'\"') as out:\n  for b in iter(lambda:sys.stdin.buffer.read(65536),b'\"'\"''\"'\"'):out.write(b);h.update(b);n+=len(b)\n emit('\"'\"'bundle_write_end'\"'\"',bytes=n,sha256=h.hexdigest())\n assert n==198195 and h.hexdigest()=='\"'\"'58b4e4009780c5a81a09b6e3ef6e7e03e8e436efb738ffb4e87d5f07dd5f9e88'\"'\"'\n print(json.dumps(dict(status='\"'\"'UPLOAD_PASS'\"'\"',bytes=n,sha256=h.hexdigest())),flush=True)\nexcept BaseException as error:\n emit('\"'\"'upload_terminal_failure'\"'\"',error=repr(error),retry_allowed=False);raise\n'"
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B -c 'from pathlib import Path\nimport datetime as dt,hashlib,json,sys\nroot=Path('\"'\"'/mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r2_20261019'\"'\"')\ndef emit(event,**fields):print(json.dumps(dict(event=event,utc=dt.datetime.now(dt.timezone.utc).isoformat(),**fields)),file=sys.stderr,flush=True)\ntry:\n emit('\"'\"'mkdir_begin'\"'\"',path=str(root));root.mkdir(mode=0o700,exist_ok=False);emit('\"'\"'mkdir_end'\"'\"',status='\"'\"'completed'\"'\"')\n emit('\"'\"'bundle_write_begin'\"'\"',path=str(root/'\"'\"'source.bundle'\"'\"'));h=hashlib.sha256();n=0\n with (root/'\"'\"'source.bundle'\"'\"').open('\"'\"'xb'\"'\"') as out:\n  for b in iter(lambda:sys.stdin.buffer.read(65536),b'\"'\"''\"'\"'):out.write(b);h.update(b);n+=len(b)\n emit('\"'\"'bundle_write_end'\"'\"',bytes=n,sha256=h.hexdigest())\n assert n==198817 and h.hexdigest()=='\"'\"'161208e5d27fc7b5280866e4715a6aa48dd60626d6fc9e958e1b078a1fa91488'\"'\"'\n print(json.dumps(dict(status='\"'\"'UPLOAD_PASS'\"'\"',bytes=n,sha256=h.hexdigest())),flush=True)\nexcept BaseException as error:\n emit('\"'\"'upload_terminal_failure'\"'\"',error=repr(error),retry_allowed=False);raise\n'"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "stdin": {
-        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/code.bundle",
-        "bytes": 198195,
-        "sha256": "58b4e4009780c5a81a09b6e3ef6e7e03e8e436efb738ffb4e87d5f07dd5f9e88"
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/code.bundle",
+        "bytes": 198817,
+        "sha256": "161208e5d27fc7b5280866e4715a6aa48dd60626d6fc9e958e1b078a1fa91488"
       },
       "timeout_seconds": 60,
       "requires": [
@@ -89,13 +89,13 @@
         "-o",
         "ConnectionAttempts=1",
         "gpu-taobo",
-        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - deploy 513059b7cb54417e3b8a99f6545ffb03858cd91f refs/codex/fn776-gpu7-61b9894d7c2e 58b4e4009780c5a81a09b6e3ef6e7e03e8e436efb738ffb4e87d5f07dd5f9e88 198195"
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - deploy 722788c74377c4f247b521d1e8cf14eb454902a3 refs/codex/fn776-gpu7-de0a651435c8 161208e5d27fc7b5280866e4715a6aa48dd60626d6fc9e958e1b078a1fa91488 198817"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "stdin": {
-        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
-        "bytes": 19058,
-        "sha256": "634d1705434a0844879c187e77cbf6c7b7ca01133d0203fd66f740de208e7d2c"
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 19819,
+        "sha256": "051bd760d9b77448896bc7a462bdb72a614b95af8570a5a8108936d95d5fa9cf"
       },
       "timeout_seconds": 60,
       "requires": [
@@ -114,13 +114,13 @@
         "-o",
         "ConnectionAttempts=1",
         "gpu-taobo",
-        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - launch 513059b7cb54417e3b8a99f6545ffb03858cd91f"
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - launch 722788c74377c4f247b521d1e8cf14eb454902a3"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "stdin": {
-        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
-        "bytes": 19058,
-        "sha256": "634d1705434a0844879c187e77cbf6c7b7ca01133d0203fd66f740de208e7d2c"
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 19819,
+        "sha256": "051bd760d9b77448896bc7a462bdb72a614b95af8570a5a8108936d95d5fa9cf"
       },
       "timeout_seconds": 30,
       "requires": [
@@ -142,11 +142,11 @@
         "gpu-taobo",
         "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - monitor"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "stdin": {
-        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
-        "bytes": 19058,
-        "sha256": "634d1705434a0844879c187e77cbf6c7b7ca01133d0203fd66f740de208e7d2c"
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 19819,
+        "sha256": "051bd760d9b77448896bc7a462bdb72a614b95af8570a5a8108936d95d5fa9cf"
       },
       "timeout_seconds": 15,
       "requires": [
@@ -170,11 +170,11 @@
         "gpu-taobo",
         "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - manifest"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "stdin": {
-        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
-        "bytes": 19058,
-        "sha256": "634d1705434a0844879c187e77cbf6c7b7ca01133d0203fd66f740de208e7d2c"
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 19819,
+        "sha256": "051bd760d9b77448896bc7a462bdb72a614b95af8570a5a8108936d95d5fa9cf"
       },
       "timeout_seconds": 60,
       "requires": [
@@ -196,11 +196,11 @@
         "gpu-taobo",
         "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - archive"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "stdin": {
-        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
-        "bytes": 19058,
-        "sha256": "634d1705434a0844879c187e77cbf6c7b7ca01133d0203fd66f740de208e7d2c"
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 19819,
+        "sha256": "051bd760d9b77448896bc7a462bdb72a614b95af8570a5a8108936d95d5fa9cf"
       },
       "timeout_seconds": 60,
       "requires": [
@@ -213,9 +213,9 @@
       "argv": [
         "python3",
         "-B",
-        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code/tools/s04_e011_fn776/verify_retrieval_r2.py"
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code/tools/s04_e011_fn776/verify_retrieval_r2.py"
       ],
-      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_61b9894d/materialized/code",
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r2_20261019/package_de0a6514/materialized/code",
       "timeout_seconds": 30,
       "requires": [
         "archive"
