@@ -1,0 +1,53 @@
+{
+  "status": "REVIEWED_PREPARATION_ONLY_NO_CONTINUATION",
+  "date": "2026-10-19 Europe/London",
+  "source_commit": "088900d29698faafee13785cdaede4cd3e0e6f99",
+  "package_sha256": "7bdabea9f67dabf58ec32c306f0478490beeabbb5f0bfe86ce42008989226dab",
+  "baseline_stopped_source": "2b4498719b7fd3ba088e31f6ed449ad7d04d706f",
+  "scope": "Precision contract, precheck evidence, source-only review and artificial fixtures only",
+  "tests": {
+    "artificial_tests": 9,
+    "result": "PASS",
+    "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/repair_preparation_20261019/synthetic_tests_final.log"
+  },
+  "reviews": {
+    "independent_review.md": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/repair_preparation_20261019/independent_review.md",
+      "sha256": "faa6da52c30d815c7619a555577b8cb6a690c3dd4cf16e49c9b824e5cb73c090"
+    },
+    "independent_review_final.md": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/repair_preparation_20261019/independent_review_final.md",
+      "sha256": "86bcde119f204a663b6a5abaf462101f48a824a180679378f3172c8191623cf0"
+    }
+  },
+  "budget": {
+    "wall_seconds": 600,
+    "threads": 1,
+    "rss_bytes": 2147483648,
+    "new_output_bytes": 104857600,
+    "gpu": 0
+  },
+  "future_coverage": "all19 groups, all3 C30 labels, H10/H40, both channels; no additional cases",
+  "future_command": [
+    "/Users/wenxiaofang/miniconda3/bin/python3",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/mechanism_diagnostic/run_bounded.py",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/continuation_after_precision_review",
+    "--authority-receipt",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/hq_continuation_authority.json"
+  ],
+  "future_authority_created": false,
+  "scientific_csv_npz_read_in_repair": false,
+  "continued_diagnostic": false,
+  "fit_or_forward": false,
+  "ssh": false,
+  "original_stop_preserved": true,
+  "new_mechanism_result": false,
+  "remaining_limits": [
+    "Actual first failing scientific case/cause remains unknown",
+    "No query c/h/innovation states: cannot resolve identifiability or innovation direction coverage",
+    "G/S are not additive native-error shares or causal fractions",
+    "Original R003 warning-stop breach retained; exposed-group exploratory evidence only",
+    "Controller resource budgets sampled every0.25s, not hard OS caps"
+  ]
+}
