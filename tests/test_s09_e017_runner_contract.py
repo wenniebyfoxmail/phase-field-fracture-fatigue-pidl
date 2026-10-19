@@ -76,40 +76,69 @@ def metric_fixture(arm=contract.ARM_DIRECT, update=64):
     }
 
 
-def gradient_fixture(arm=contract.ARM_DIRECT):
+def gradient_fixture(arm=contract.ARM_DIRECT, raw_value=0.0):
     active = contract.ACTIVE_GROUPS[arm]
-    zeros = {group: [0.0, 0.0, 0.0] for group in active}
+    raw = {group: [raw_value, 0.0, 0.0] for group in active}
+    scaled = {
+        group: [contract.GROUP_WEIGHTS[group] * raw_value, 0.0, 0.0]
+        for group in active
+    }
     pairs = []
     for i, first in enumerate(active):
         for second in active[i + 1 :]:
+            raw_dot = raw_value * raw_value
+            raw_denominator = abs(raw_value) * abs(raw_value)
+            scaled_dot = scaled[first][0] * scaled[second][0]
+            scaled_denominator = abs(scaled[first][0]) * abs(scaled[second][0])
             pairs.append(
                 {
                     "first": first,
                     "second": second,
-                    "raw_dot": 0.0,
-                    "raw_cosine": 0.0,
+                    "raw_dot": raw_dot,
+                    "raw_cosine": None
+                    if raw_denominator <= contract.GRADIENT_EPSILON
+                    else 1.0,
                     "raw_conflict": False,
-                    "scaled_dot": 0.0,
-                    "scaled_cosine": 0.0,
+                    "scaled_dot": scaled_dot,
+                    "scaled_cosine": None
+                    if scaled_denominator <= contract.GRADIENT_EPSILON
+                    else 1.0,
                     "scaled_conflict": False,
                 }
             )
+    permutation = list(reversed(active))
+    projection_log = []
+    for target in active:
+        for reference in permutation:
+            if target == reference:
+                continue
+            projection_log.append(
+                {
+                    "target": target,
+                    "reference": reference,
+                    "skipped_near_zero": abs(scaled[reference][0])
+                    <= contract.GRADIENT_EPSILON,
+                    "projection_applied": False,
+                    "dot_before": scaled[target][0] * scaled[reference][0],
+                }
+            )
+    preclip_norm = abs(sum(scaled[group][0] for group in active) / len(active))
     return {
         "arm": arm,
         "update": 1,
         "active_groups": list(active),
         "vectors": {
-            "raw": copy.deepcopy(zeros),
-            "scaled": copy.deepcopy(zeros),
-            "projected": copy.deepcopy(zeros),
+            "raw": copy.deepcopy(raw),
+            "scaled": copy.deepcopy(scaled),
+            "projected": copy.deepcopy(scaled),
         },
         "frozen_scales": {group: 1.0 for group in active},
         "weights": {group: contract.GROUP_WEIGHTS[group] for group in active},
         "pairwise_geometry": pairs,
-        "permutation": list(reversed(active)),
-        "projection_log": [],
-        "preclip_norm": 0.0,
-        "postclip_norm": 0.0,
+        "permutation": permutation,
+        "projection_log": projection_log,
+        "preclip_norm": preclip_norm,
+        "postclip_norm": min(preclip_norm, contract.GLOBAL_CLIP_NORM),
         "raw_group_dot_realised_update": {group: 0.0 for group in active},
         "withheld_shape_gradient": [0.0, 0.0, 0.0]
         if arm == contract.ARM_AMPLITUDE
@@ -275,6 +304,37 @@ def test_gradient_schema_closes_raw_scaled_projected_and_pairwise_geometry(arm):
     contract.validate_gradient_row(row)
     active_count = len(contract.ACTIVE_GROUPS[arm])
     assert len(row["pairwise_geometry"]) == active_count * (active_count - 1) // 2
+    assert len(row["projection_log"]) == active_count * (active_count - 1)
+
+
+@pytest.mark.parametrize(
+    "raw_value",
+    [
+        0.0,
+        contract.GRADIENT_EPSILON,
+        math.nextafter(math.sqrt(contract.GRADIENT_EPSILON), 0.0),
+        math.nextafter(math.sqrt(contract.GRADIENT_EPSILON), math.inf),
+        1.0,
+    ],
+)
+def test_gradient_cosine_preserves_undefined_threshold_semantics(raw_value):
+    row = gradient_fixture(raw_value=raw_value)
+    contract.validate_gradient_row(row)
+    for item in row["pairwise_geometry"]:
+        raw_undefined = raw_value * raw_value <= contract.GRADIENT_EPSILON
+        assert (item["raw_cosine"] is None) is raw_undefined
+
+
+def test_zero_gradient_rejects_numeric_cosine_and_nonzero_rejects_undefined_cosine():
+    zero = gradient_fixture()
+    zero["pairwise_geometry"][0]["raw_cosine"] = 0.0
+    with pytest.raises(ValueError, match="must be undefined"):
+        contract.validate_gradient_row(zero)
+
+    nonzero = gradient_fixture(raw_value=1.0)
+    nonzero["pairwise_geometry"][0]["raw_cosine"] = None
+    with pytest.raises(ValueError, match="must be numeric"):
+        contract.validate_gradient_row(nonzero)
 
 
 @pytest.mark.parametrize(
@@ -294,6 +354,61 @@ def test_gradient_schema_rejects_vector_geometry_and_beta_drift(mutator, match):
     row = gradient_fixture()
     mutator(row)
     with pytest.raises(ValueError, match=match):
+        contract.validate_gradient_row(row)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (lambda r: r.update(projection_log=[]), "projection log count"),
+        (
+            lambda r: r["projection_log"].__setitem__(0, None),
+            "projection entry must be a record",
+        ),
+        (
+            lambda r: r["projection_log"][0].update(reference="NOT_AN_ACTIVE_GROUP"),
+            "projection entry order",
+        ),
+        (
+            lambda r: r["projection_log"][0].update(dot_before=math.nan),
+            "must be finite",
+        ),
+        (
+            lambda r: r["projection_log"][0].pop("skipped_near_zero"),
+            "projection entry keys",
+        ),
+        (
+            lambda r: r["projection_log"][0].update(skipped_near_zero=False),
+            "skipped flag inconsistent",
+        ),
+        (
+            lambda r: r.update(postclip_norm=2.0),
+            "postclip norm inconsistent",
+        ),
+    ],
+)
+def test_projection_schema_rejects_missing_malformed_nonfinite_and_inconsistent_logs(
+    mutator, match
+):
+    row = gradient_fixture()
+    mutator(row)
+    with pytest.raises(ValueError, match=match):
+        contract.validate_gradient_row(row)
+
+
+def test_gradient_schema_replays_beta_scaling_projection_and_norms():
+    row = gradient_fixture(raw_value=1.0)
+    contract.validate_gradient_row(row)
+    row["vectors"]["scaled"]["P"][0] = 1.0
+    row["vectors"]["projected"]["P"][0] = 1.0
+    with pytest.raises(ValueError, match=r"scaled\.P\[0\] inconsistent"):
+        contract.validate_gradient_row(row)
+
+
+def test_f_amp_projection_never_accepts_s_as_target_or_reference():
+    row = gradient_fixture(contract.ARM_AMPLITUDE)
+    row["projection_log"][0]["reference"] = "S"
+    with pytest.raises(ValueError, match="projection entry order"):
         contract.validate_gradient_row(row)
 
 
@@ -339,6 +454,94 @@ def test_first_stop_rejects_second_event_retry_and_unknown_reason():
         contract.validate_first_stop_event(event)
 
 
+def test_first_stop_rejects_progress_after_its_own_event():
+    event = stop_fixture()
+    event["arm"] = contract.ARM_DIRECT
+    event["attempted_update"] = 1
+    with pytest.raises(ValueError, match="progress exceeds attempted"):
+        contract.build_failure_receipt(
+            event,
+            completed_updates={arm: 64 for arm in contract.ARM_ORDER},
+            last_complete_evaluation={arm: 64 for arm in contract.ARM_ORDER},
+            preserved_artifacts={},
+            run_execution_authorized=True,
+        )
+
+
+def test_first_stop_rejects_later_arm_progress_and_prerun_progress():
+    event = stop_fixture()
+    event["arm"] = contract.ARM_DIRECT
+    with pytest.raises(ValueError, match="later arm progressed"):
+        contract.build_failure_receipt(
+            event,
+            completed_updates={
+                contract.ARM_DIRECT: 0,
+                contract.ARM_AMPLITUDE: 1,
+                contract.ARM_AMPLITUDE_SHAPE: 0,
+            },
+            last_complete_evaluation={arm: 0 for arm in contract.ARM_ORDER},
+            preserved_artifacts={},
+            run_execution_authorized=True,
+        )
+
+    event["arm"] = None
+    event["attempted_update"] = 0
+    with pytest.raises(ValueError, match="pre-run stop"):
+        contract.build_failure_receipt(
+            event,
+            completed_updates={
+                contract.ARM_DIRECT: 1,
+                contract.ARM_AMPLITUDE: 0,
+                contract.ARM_AMPLITUDE_SHAPE: 0,
+            },
+            last_complete_evaluation={
+                contract.ARM_DIRECT: 1,
+                contract.ARM_AMPLITUDE: 0,
+                contract.ARM_AMPLITUDE_SHAPE: 0,
+            },
+            preserved_artifacts={},
+            run_execution_authorized=True,
+        )
+
+
+def test_first_stop_transition_preserves_original_event_progress_and_artifacts():
+    first = contract.preserve_first_stop(
+        None,
+        stop_fixture(),
+        completed_updates={
+            contract.ARM_DIRECT: 3,
+            contract.ARM_AMPLITUDE: 0,
+            contract.ARM_AMPLITUDE_SHAPE: 0,
+        },
+        last_complete_evaluation={
+            contract.ARM_DIRECT: 1,
+            contract.ARM_AMPLITUDE: 0,
+            contract.ARM_AMPLITUDE_SHAPE: 0,
+        },
+        preserved_artifacts={"metrics.jsonl": "a" * 64},
+        run_execution_authorized=True,
+    )
+    second_event = stop_fixture()
+    second_event.update(
+        reason="DAMAGE_BOUND_VIOLATION",
+        arm=contract.ARM_AMPLITUDE_SHAPE,
+        attempted_update=64,
+    )
+    preserved = contract.preserve_first_stop(
+        first,
+        second_event,
+        completed_updates={arm: 64 for arm in contract.ARM_ORDER},
+        last_complete_evaluation={arm: 64 for arm in contract.ARM_ORDER},
+        preserved_artifacts={"replacement.json": "b" * 64},
+        run_execution_authorized=True,
+    )
+    assert preserved == first
+    assert preserved is not first
+    assert preserved["first_stop"]["reason"] == "NONFINITE_VALUE"
+    assert preserved["completed_updates"][contract.ARM_DIRECT] == 3
+    assert preserved["preserved_artifacts"] == {"metrics.jsonl": "a" * 64}
+
+
 def test_receipt_write_is_canonical_hash_bound_and_one_shot(tmp_path):
     receipt = contract.build_failure_receipt(
         stop_fixture(),
@@ -353,6 +556,75 @@ def test_receipt_write_is_canonical_hash_bound_and_one_shot(tmp_path):
     assert len(digest) == 64
     with pytest.raises(ValueError, match="already exists"):
         contract.write_new_failure_receipt(output, receipt)
+
+
+@pytest.mark.parametrize(
+    ("target", "value", "match"),
+    [
+        (("data", "cycles", 0), True, "cycle type"),
+        (("budget", "evaluation_updates", 1), True, "budget type"),
+        (("optimizer", "constructed_in_this_gate"), 0, "optimizer declaration"),
+    ],
+)
+def test_config_rejects_boolean_integer_and_flag_substitutions(target, value, match):
+    config = config_fixture()
+    cursor = config
+    for key in target[:-1]:
+        cursor = cursor[key]
+    cursor[target[-1]] = value
+    with pytest.raises(ValueError, match=match):
+        contract.validate_static_config(config)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "validator", "match"),
+    [
+        (
+            lambda value: value.update(cycle=True),
+            contract.validate_metric_row,
+            "non-Boolean integer",
+        ),
+        (
+            lambda value: value.update(update=True),
+            contract.validate_metric_row,
+            "non-Boolean integer",
+        ),
+        (
+            lambda value: value.update(sequence_index=False),
+            contract.validate_first_stop_event,
+            "non-Boolean integer",
+        ),
+    ],
+)
+def test_runtime_metadata_rejects_boolean_integer_substitutions(
+    mutator, validator, match
+):
+    value = (
+        stop_fixture()
+        if validator is contract.validate_first_stop_event
+        else metric_fixture()
+    )
+    mutator(value)
+    with pytest.raises(ValueError, match=match):
+        validator(value)
+
+
+def test_start_and_receipt_reject_boolean_counts_and_evaluations():
+    start = start_fixture()
+    start["operations"]["model_forwards"] = False
+    with pytest.raises(ValueError, match="non-Boolean integer"):
+        contract.validate_start_declaration(start)
+
+    receipt = contract.build_failure_receipt(
+        stop_fixture(),
+        completed_updates={arm: 0 for arm in contract.ARM_ORDER},
+        last_complete_evaluation={arm: 0 for arm in contract.ARM_ORDER},
+        preserved_artifacts={},
+        run_execution_authorized=True,
+    )
+    receipt["last_complete_evaluation"][contract.ARM_DIRECT] = False
+    with pytest.raises(ValueError, match="non-Boolean integer"):
+        contract.validate_failure_receipt(receipt)
 
 
 def test_static_receipt_records_zero_operations_and_no_scientific_result():

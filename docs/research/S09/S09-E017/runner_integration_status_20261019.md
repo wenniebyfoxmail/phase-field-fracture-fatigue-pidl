@@ -1,13 +1,15 @@
 # S09-E017 static runner integration status
 
-Status: `RUNNER_CONFIG_EVIDENCE_CANDIDATE__NO_IO__AWAITING_EXACT_COMMIT_REVIEW`
+Status: `RUNNER_CONFIG_EVIDENCE_REVISED__NO_SCIENCE_IO__AWAITING_REREVIEW`
 Date: 2026-10-19
 Reviewed numerical core: `5ac6b7955b56309ac8ff2fda50b16b2e1669110a`
+Round-1 candidate: `1d30506e25fa990460e97c5b9376abee24c4bc92`
+Round-1 verdict: `E017_RUNNER_INTEGRATION_REVISE`
 
 ## What this gate implements
 
-The candidate adds a standard-library-only contract validator and an
-unauthorised draft config.  Together they freeze:
+The candidate adds a standard-library contract validator and an unauthorised
+draft config. Together they freeze:
 
 - `D_DIRECT`, `F_AMP` and `F_AMP_SHAPE` identity and order;
 - byte-identical shared start declarations, arm-specific trainable classes,
@@ -15,26 +17,47 @@ unauthorised draft config.  Together they freeze:
 - 64 updates per arm, 192 total, evaluations at `0, 1, 4, 16, 32, 64` and
   update 64 as the only endpoint eligible for the terminal comparison;
 - A2/S6/R2/P4 metric widths and bounded discrete count components;
-- raw, scaled and projected gradients, beta=0.25, complete pairwise geometry,
-  permutations, projection logs, clipping norms and realised-update dots;
-- first-event precedence, whole-run termination, no retry/fallback and a
-  canonical write-once failure receipt; and
-- all-cycle update-64 damage panels on a shared physical colour scale.  The
+- raw, scaled and projected gradients, beta=.25, pairwise geometry,
+  permutations, complete flattened projection logs, clipping norms and
+  realised-update dots;
+- first-event precedence, progress consistent with the stop, whole-run
+  termination, no retry/fallback and a canonical write-once failure receipt;
+  and
+- all-cycle update-64 damage panels on a shared physical colour scale. The
   external thin strip is the colourbar; a broad right-edge strip inside the
   specimen is predicted field mass.
 
+## Round-1 repairs
+
+The revised validator now:
+
+- preserves the core's legal `None` cosine exactly when a raw or scaled norm
+  product is at most `1e-12`, and checks every defined cosine, dot and
+  conflict flag against the vectors;
+- requires every active target/reference projection entry exactly once and
+  replays beta-weighted scaling, sequential PCGrad projection and clip norms;
+- rejects failed-arm progress beyond the attempted update and any later-arm
+  progress, and exposes a pure first-stop transition that preserves the first
+  receipt verbatim; and
+- uses strict non-Boolean integer and Boolean checks for the reviewed metadata
+  examples.
+
+The failure receipt is the only filesystem writer. No scientific or execution
+I/O route exists in this gate.
+
 ## Verification
 
-Synthetic fixtures are the only test input.  The candidate never imports a
-tensor library and does not expose a scientific loader, neural-network
-forward, autograd call, optimiser constructor or execution route.
+Synthetic fixtures are the only scientific test input. The candidate never
+imports a tensor library and does not expose a scientific loader,
+neural-network forward, autograd call, optimiser constructor or execution
+route.
 
 ```text
-/Users/wenxiaofang/miniconda3/bin/python -m pytest -q \
+PYTHONPATH=source /Users/wenxiaofang/miniconda3/bin/python -m pytest -q \
   tests/test_s09_e017_runner_contract.py \
   tests/test_s09_e017_factorised_pilot.py \
   tests/test_s09_e016_factorisation.py
-90 passed in 0.58s
+115 passed in 0.70s
 
 /Users/wenxiaofang/miniconda3/bin/python -m py_compile \
   source/s09_e017_runner_contract.py \
@@ -42,24 +65,20 @@ forward, autograd call, optimiser constructor or execution route.
 /Users/wenxiaofang/miniconda3/bin/ruff check \
   source/s09_e017_runner_contract.py \
   tests/test_s09_e017_runner_contract.py
-git diff --check
 python -m json.tool runner_integration_config_draft_20261019.json
+git diff --check
 all passed
 ```
 
-The initial shell `python` resolved to the agent-reach environment, which does
-not contain pytest or Ruff, and stopped before test collection.  The declared
-project Python then completed all checks.  This was a tooling-path correction,
-not a scientific retry.
-
 ## Evidence boundary
 
-`STATIC_INTEGRATION_VALID` means that synthetic declarations match the frozen
-schemas.  It is not a scientific pass, model validation or prediction result.
-No packet, checkpoint, model, FEM array, holdout, SSH session or GPU was read or
-used.  No optimiser was constructed and no update was performed.
+`STATIC_INTEGRATION_VALID` means only that synthetic declarations match and
+arithmetically replay the frozen schemas. It is not a scientific pass, model
+validation or prediction result. No packet, checkpoint, model, FEM array,
+holdout, SSH session or GPU was read or used. No optimiser was constructed
+and no update was performed.
 
 The later 192-update experiment still lacks an exact authorised config and
 launch wrapper, live producer/GPU/resource checks, real asset reads and hash
 verification, model/loader binding, runtime counters and evidence writers,
-exact-commit runner review closure, and specific execution authority.
+exact-commit rereview closure, and specific execution authority.

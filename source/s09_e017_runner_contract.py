@@ -1,9 +1,10 @@
-"""Static no-I/O runner contract for the S09-E017 three-arm pilot.
+"""Static no-science runner contract for the S09-E017 three-arm pilot.
 
 This module validates configuration and evidence *shapes*.  It intentionally
 contains no tensor library, model loader, optimiser, subprocess, network or
-scientific-data reader.  Synthetic dictionaries are the only permitted input
-at this gate.
+scientific-data reader.  Synthetic dictionaries are the only permitted
+scientific input at this gate.  Its sole filesystem route is the explicit,
+write-once failure-metadata receipt.
 """
 from __future__ import annotations
 
@@ -50,6 +51,9 @@ EXPECTED_CYCLES = (1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73)
 EVALUATION_UPDATES = (0, 1, 4, 16, 32, 64)
 UPDATES_PER_ARM = 64
 TOTAL_UPDATE_CAP = 192
+GRADIENT_EPSILON = 1.0e-12
+GLOBAL_CLIP_NORM = 1.0
+NUMERIC_COMPARE_TOLERANCE = 1.0e-12
 
 EXPECTED_PACKET_SHA256 = (
     "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6"
@@ -100,6 +104,49 @@ def _finite_number(value: Any, name: str) -> float:
     number = float(value)
     _require(math.isfinite(number), f"{name} must be finite")
     return number
+
+
+def _strict_int(
+    value: Any,
+    name: str,
+    *,
+    minimum: int | None = None,
+    maximum: int | None = None,
+) -> int:
+    _require(
+        not isinstance(value, bool) and isinstance(value, int),
+        f"{name} must be a non-Boolean integer",
+    )
+    if minimum is not None:
+        _require(value >= minimum, f"{name} below minimum")
+    if maximum is not None:
+        _require(value <= maximum, f"{name} above maximum")
+    return value
+
+
+def _close(left: float, right: float) -> bool:
+    return abs(left - right) <= NUMERIC_COMPARE_TOLERANCE * max(
+        1.0, abs(left), abs(right)
+    )
+
+
+def _dot(left: Sequence[float], right: Sequence[float], name: str) -> float:
+    try:
+        value = math.fsum(a * b for a, b in zip(left, right, strict=True))
+    except OverflowError as exc:
+        raise ValueError(f"{name} must be finite") from exc
+    _require(math.isfinite(value), f"{name} must be finite")
+    return value
+
+
+def _norm(vector: Sequence[float], name: str) -> float:
+    value = math.hypot(*vector)
+    _require(math.isfinite(value), f"{name} must be finite")
+    return value
+
+
+def _require_close(actual: float, expected: float, name: str) -> None:
+    _require(_close(actual, expected), f"{name} inconsistent")
 
 
 def canonical_json(value: Any) -> bytes:
@@ -190,6 +237,14 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         "evidence domain drift",
     )
     _require(data["mapping"] == "independent_cycle_s00_to_s04_peak", "mapping drift")
+    _require(
+        isinstance(data["cycles"], list)
+        and all(
+            not isinstance(cycle, bool) and isinstance(cycle, int)
+            for cycle in data["cycles"]
+        ),
+        "cycle type drift",
+    )
     _require(tuple(data["cycles"]) == EXPECTED_CYCLES, "cycle order drift")
     _require(
         data["packet_manifest_sha256"] == EXPECTED_PACKET_SHA256,
@@ -224,6 +279,10 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
             "autoregressive": False,
         },
         "operator mapping drift",
+    )
+    _require(
+        config["operator_mapping"]["autoregressive"] is False,
+        "autoregressive flag drift",
     )
     _require(
         config["physics"]
@@ -298,6 +357,12 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         "optimizer",
     )
     _require(
+        optimizer["constructed_in_this_gate"] is False
+        and _strict_int(optimizer["state_entries"], "optimizer state entries") == 0
+        and _strict_int(optimizer["step_count"], "optimizer step count") == 0,
+        "optimizer declaration drift",
+    )
+    _require(
         optimizer
         == {
             "class": "AdamW",
@@ -316,6 +381,22 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
 
     budget = config["budget"]
     _require(
+        _strict_int(budget["updates_per_arm"], "updates per arm") == UPDATES_PER_ARM
+        and _strict_int(budget["total_update_cap"], "total update cap")
+        == TOTAL_UPDATE_CAP
+        and isinstance(budget["evaluation_updates"], list)
+        and all(
+            not isinstance(update, bool) and isinstance(update, int)
+            for update in budget["evaluation_updates"]
+        )
+        and _strict_int(budget["fixed_endpoint_update"], "fixed endpoint update")
+        == EVALUATION_UPDATES[-1]
+        and budget["early_success_selection"] is False
+        and budget["budget_transfer"] is False
+        and budget["retry"] is False,
+        "budget type drift",
+    )
+    _require(
         budget
         == {
             "updates_per_arm": UPDATES_PER_ARM,
@@ -333,6 +414,7 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         == {"decision_vector_widths": METRIC_WIDTHS, "lower_is_better": True},
         "metric schema drift",
     )
+    _require(config["metrics"]["lower_is_better"] is True, "metric flag drift")
     _validate_gradient_schema(config["gradients"])
     _validate_first_stop_config(config["first_stop"])
     validate_figure_request(config["figures"])
@@ -370,7 +452,13 @@ def _validate_gradient_schema(schema: Mapping[str, Any]) -> None:
         tuple(schema["representations"]) == ("raw", "scaled", "projected"),
         "gradient representations drift",
     )
-    _require(schema["group_weights"] == GROUP_WEIGHTS, "gradient weights drift")
+    _require(tuple(schema["group_weights"]) == GROUP_ORDER, "gradient weights drift")
+    for group in GROUP_ORDER:
+        _require(
+            _finite_number(schema["group_weights"][group], f"weight.{group}")
+            == GROUP_WEIGHTS[group],
+            "gradient weights drift",
+        )
     _require(
         tuple(schema["required_geometry"])
         == ("pairwise_dot", "pairwise_cosine", "pairwise_conflict"),
@@ -414,6 +502,12 @@ def _validate_first_stop_config(value: Mapping[str, Any]) -> None:
 
 def _validate_producer_envelope(value: Mapping[str, Any]) -> None:
     _require(
+        _strict_int(value["wall_time_cap_seconds"], "wall-time cap") == 1800
+        and _strict_int(value["reserved_memory_cap_gib"], "memory cap") == 20
+        and value["checked_live_in_this_gate"] is False,
+        "producer envelope type drift",
+    )
+    _require(
         value
         == {
             "alias": "gpu-taobo",
@@ -437,18 +531,23 @@ def validate_start_declaration(value: Mapping[str, Any]) -> None:
     )
     _require(value["schema_version"] == SCHEMA_VERSION, "start schema drift")
     _require(value["planned_run_id"] == PLANNED_RUN_ID, "start run id drift")
+    expected_operations = {
+        "scientific_packet_reads": 0,
+        "checkpoint_reads": 0,
+        "model_forwards": 0,
+        "autograd_collections": 0,
+        "optimizers_constructed": 0,
+        "optimizer_mutations": 0,
+    }
     _require(
-        value["operations"]
-        == {
-            "scientific_packet_reads": 0,
-            "checkpoint_reads": 0,
-            "model_forwards": 0,
-            "autograd_collections": 0,
-            "optimizers_constructed": 0,
-            "optimizer_mutations": 0,
-        },
-        "start operations must remain zero",
+        tuple(value["operations"]) == tuple(expected_operations),
+        "start operation keys drift",
     )
+    for name, operation_value in value["operations"].items():
+        _require(
+            _strict_int(operation_value, f"start operation {name}") == 0,
+            "start operations must remain zero",
+        )
     arms = value["arms"]
     _require(tuple(arms) == ARM_ORDER, "start arm order drift")
     hashes: list[str] = []
@@ -490,7 +589,14 @@ def validate_start_declaration(value: Mapping[str, Any]) -> None:
         )
         _require(item["optimizer_constructed"] is False, f"{arm} optimizer constructed")
         _require(
-            item["optimizer_state_entries"] == 0 and item["optimizer_step_count"] == 0,
+            _strict_int(
+                item["optimizer_state_entries"], f"{arm} optimizer state entries"
+            )
+            == 0
+            and _strict_int(
+                item["optimizer_step_count"], f"{arm} optimizer step count"
+            )
+            == 0,
             f"{arm} optimizer state not empty",
         )
     _require(len(set(hashes)) == 1, "arm shared initial states differ")
@@ -511,6 +617,8 @@ def validate_metric_row(row: Mapping[str, Any]) -> None:
         "metric row",
     )
     _require(row["arm"] in ARM_ORDER, "metric arm drift")
+    _strict_int(row["cycle"], "metric cycle")
+    _strict_int(row["update"], "metric update")
     _require(row["cycle"] in EXPECTED_CYCLES, "metric cycle drift")
     _require(row["update"] in EVALUATION_UPDATES, "metric update is unscheduled")
     vectors = row["decision_vectors"]
@@ -563,26 +671,26 @@ def validate_gradient_row(row: Mapping[str, Any]) -> None:
     )
     arm = row["arm"]
     _require(arm in ARM_ORDER, "gradient arm drift")
-    _require(
-        not isinstance(row["update"], bool)
-        and isinstance(row["update"], int)
-        and 1 <= row["update"] <= UPDATES_PER_ARM,
-        "gradient update drift",
-    )
+    _strict_int(row["update"], "gradient update", minimum=1, maximum=UPDATES_PER_ARM)
     active = ACTIVE_GROUPS[arm]
     _require(tuple(row["active_groups"]) == active, "active gradient group drift")
-    _require(
-        row["weights"] == {name: GROUP_WEIGHTS[name] for name in active},
-        "active gradient weights drift",
-    )
+    _require(tuple(row["weights"]) == active, "active gradient weights drift")
+    for group in active:
+        _require(
+            _finite_number(row["weights"][group], f"active weight.{group}")
+            == GROUP_WEIGHTS[group],
+            "active gradient weights drift",
+        )
     _require(
         tuple(row["vectors"]) == ("raw", "scaled", "projected"),
         "gradient vector representation drift",
     )
     lengths: set[int] = set()
+    numeric_vectors: dict[str, dict[str, list[float]]] = {}
     for representation in ("raw", "scaled", "projected"):
         vectors = row["vectors"][representation]
         _require(tuple(vectors) == active, f"{representation} gradient groups drift")
+        numeric_vectors[representation] = {}
         for group in active:
             vector = vectors[group]
             _require(
@@ -590,24 +698,38 @@ def validate_gradient_row(row: Mapping[str, Any]) -> None:
                 f"{representation}.{group} must be a vector",
             )
             lengths.add(len(vector))
-            for index, value in enumerate(vector):
+            numeric_vectors[representation][group] = [
                 _finite_number(value, f"{representation}.{group}[{index}]")
+                for index, value in enumerate(vector)
+            ]
     _require(len(lengths) == 1, "gradient vector length drift")
+
     scales = row["frozen_scales"]
     _require(tuple(scales) == active, "frozen scale groups drift")
     for group in active:
-        _require(
-            _finite_number(scales[group], f"scale.{group}") > 0.0,
-            f"nonpositive scale: {group}",
-        )
+        scale = _finite_number(scales[group], f"scale.{group}")
+        _require(scale > 0.0, f"nonpositive scale: {group}")
+        for index, (actual, raw_value) in enumerate(
+            zip(
+                numeric_vectors["scaled"][group],
+                numeric_vectors["raw"][group],
+                strict=True,
+            )
+        ):
+            expected = GROUP_WEIGHTS[group] * raw_value / scale
+            _require(math.isfinite(expected), f"scaled.{group}[{index}] must be finite")
+            _require_close(actual, expected, f"scaled.{group}[{index}]")
+
     expected_pairs = [
         (active[i], active[j])
         for i in range(len(active))
         for j in range(i + 1, len(active))
     ]
     geometry = row["pairwise_geometry"]
+    _require(isinstance(geometry, list), "pairwise geometry drift")
     _require(len(geometry) == len(expected_pairs), "pairwise geometry count drift")
     for item, pair in zip(geometry, expected_pairs, strict=True):
+        _require(isinstance(item, Mapping), "pairwise geometry row must be a record")
         _exact_keys(
             item,
             {
@@ -623,25 +745,149 @@ def validate_gradient_row(row: Mapping[str, Any]) -> None:
             "pairwise geometry row",
         )
         _require(
-            (item["first"], item["second"]) == pair, "pairwise geometry order drift"
+            (item["first"], item["second"]) == pair,
+            "pairwise geometry order drift",
         )
-        for name in ("raw_dot", "raw_cosine", "scaled_dot", "scaled_cosine"):
-            _finite_number(item[name], f"geometry.{name}")
         _require(
             isinstance(item["raw_conflict"], bool)
             and isinstance(item["scaled_conflict"], bool),
             "conflict flag drift",
         )
-    _require(sorted(row["permutation"]) == sorted(active), "PCGrad permutation drift")
-    _require(isinstance(row["projection_log"], list), "projection log drift")
+        for label in ("raw", "scaled"):
+            first_vector = numeric_vectors[label][pair[0]]
+            second_vector = numeric_vectors[label][pair[1]]
+            expected_dot = _dot(first_vector, second_vector, f"geometry.{label}_dot")
+            actual_dot = _finite_number(
+                item[f"{label}_dot"], f"geometry.{label}_dot"
+            )
+            _require_close(actual_dot, expected_dot, f"geometry.{label}_dot")
+            denominator = _norm(
+                first_vector, f"geometry.{label} first norm"
+            ) * _norm(second_vector, f"geometry.{label} second norm")
+            _require(
+                math.isfinite(denominator),
+                f"geometry.{label} denominator must be finite",
+            )
+            cosine = item[f"{label}_cosine"]
+            if denominator <= GRADIENT_EPSILON:
+                _require(
+                    cosine is None,
+                    f"geometry.{label}_cosine must be undefined for near-zero norms",
+                )
+            else:
+                actual_cosine = _finite_number(
+                    cosine, f"geometry.{label}_cosine"
+                )
+                _require(
+                    -1.0 - NUMERIC_COMPARE_TOLERANCE
+                    <= actual_cosine
+                    <= 1.0 + NUMERIC_COMPARE_TOLERANCE,
+                    f"geometry.{label}_cosine out of bounds",
+                )
+                _require_close(
+                    actual_cosine,
+                    expected_dot / denominator,
+                    f"geometry.{label}_cosine",
+                )
+            _require(
+                item[f"{label}_conflict"] is (expected_dot < 0.0),
+                f"geometry.{label}_conflict inconsistent",
+            )
+
+    permutation = row["permutation"]
     _require(
-        _finite_number(row["preclip_norm"], "preclip norm") >= 0.0,
-        "negative preclip norm",
+        isinstance(permutation, list)
+        and len(permutation) == len(active)
+        and sorted(permutation) == sorted(active),
+        "PCGrad permutation drift",
     )
+    projection_log = row["projection_log"]
+    _require(isinstance(projection_log, list), "projection log drift")
+    expected_projection_count = len(active) * (len(active) - 1)
     _require(
-        _finite_number(row["postclip_norm"], "postclip norm") >= 0.0,
-        "negative postclip norm",
+        len(projection_log) == expected_projection_count,
+        "projection log count drift",
     )
+    log_index = 0
+    replayed_projected: dict[str, list[float]] = {}
+    for target in active:
+        working = list(numeric_vectors["scaled"][target])
+        for reference in permutation:
+            if reference == target:
+                continue
+            entry = projection_log[log_index]
+            log_index += 1
+            _require(isinstance(entry, Mapping), "projection entry must be a record")
+            _exact_keys(
+                entry,
+                {
+                    "target",
+                    "reference",
+                    "skipped_near_zero",
+                    "projection_applied",
+                    "dot_before",
+                },
+                "projection entry",
+            )
+            _require(
+                (entry["target"], entry["reference"]) == (target, reference),
+                "projection entry order drift",
+            )
+            _require(
+                isinstance(entry["skipped_near_zero"], bool)
+                and isinstance(entry["projection_applied"], bool),
+                "projection flags drift",
+            )
+            reference_vector = numeric_vectors["scaled"][reference]
+            reference_norm = _norm(reference_vector, "projection reference norm")
+            skipped = reference_norm <= GRADIENT_EPSILON
+            dot_before = _dot(working, reference_vector, "projection dot_before")
+            actual_dot = _finite_number(entry["dot_before"], "projection dot_before")
+            _require_close(actual_dot, dot_before, "projection dot_before")
+            applied = not skipped and dot_before < 0.0
+            _require(
+                entry["skipped_near_zero"] is skipped,
+                "projection skipped flag inconsistent",
+            )
+            _require(
+                entry["projection_applied"] is applied,
+                "projection applied flag inconsistent",
+            )
+            if applied:
+                denominator = _dot(
+                    reference_vector, reference_vector, "projection denominator"
+                )
+                working = [
+                    value - dot_before / denominator * reference_value
+                    for value, reference_value in zip(
+                        working, reference_vector, strict=True
+                    )
+                ]
+                _require(
+                    all(math.isfinite(value) for value in working),
+                    "projected gradient must be finite",
+                )
+        replayed_projected[target] = working
+        for index, (actual, expected) in enumerate(
+            zip(numeric_vectors["projected"][target], working, strict=True)
+        ):
+            _require_close(actual, expected, f"projected.{target}[{index}]")
+
+    vector_length = next(iter(lengths))
+    merged = [
+        math.fsum(replayed_projected[group][index] for group in active) / len(active)
+        for index in range(vector_length)
+    ]
+    expected_preclip = _norm(merged, "preclip norm")
+    actual_preclip = _finite_number(row["preclip_norm"], "preclip norm")
+    actual_postclip = _finite_number(row["postclip_norm"], "postclip norm")
+    _require_close(actual_preclip, expected_preclip, "preclip norm")
+    _require_close(
+        actual_postclip,
+        min(expected_preclip, GLOBAL_CLIP_NORM),
+        "postclip norm",
+    )
+
     dots = row["raw_group_dot_realised_update"]
     _require(tuple(dots) == active, "raw-group dot keys drift")
     for group in active:
@@ -649,14 +895,13 @@ def validate_gradient_row(row: Mapping[str, Any]) -> None:
     withheld = row["withheld_shape_gradient"]
     if arm == ARM_AMPLITUDE:
         _require(
-            isinstance(withheld, list) and len(withheld) in lengths,
+            isinstance(withheld, list) and len(withheld) == vector_length,
             "F_AMP withheld shape gradient missing",
         )
         for index, value in enumerate(withheld):
             _finite_number(value, f"withheld S[{index}]")
     else:
         _require(withheld is None, f"{arm} must not carry withheld S gradient")
-
 
 def validate_figure_request(value: Mapping[str, Any]) -> None:
     _require(
@@ -708,7 +953,10 @@ def validate_first_stop_event(event: Mapping[str, Any]) -> None:
         event["retry"] is False and event["alternate_gpu"] is False,
         "first stop cannot retry or fall back",
     )
-    _require(event["sequence_index"] == 0, "receipt must preserve the first stop")
+    _require(
+        _strict_int(event["sequence_index"], "first-stop sequence index") == 0,
+        "receipt must preserve the first stop",
+    )
 
 
 def build_failure_receipt(
@@ -732,11 +980,15 @@ def build_failure_receipt(
             f"{arm} completed update drift",
         )
         last = last_complete_evaluation[arm]
+        if last is not None:
+            _strict_int(last, f"{arm} last evaluation")
         _require(
-            last is None or last in EVALUATION_UPDATES, f"{arm} last evaluation drift"
+            last is None or last in EVALUATION_UPDATES,
+            f"{arm} last evaluation drift",
         )
         if last is not None:
             _require(last <= count, f"{arm} evaluation exceeds completed updates")
+    _validate_stop_progress(event, completed_updates)
     for name, digest in preserved_artifacts.items():
         _require(
             isinstance(name, str)
@@ -814,11 +1066,15 @@ def validate_failure_receipt(receipt: Mapping[str, Any]) -> None:
             f"{arm} completed update drift",
         )
         last = last_evaluation[arm]
+        if last is not None:
+            _strict_int(last, f"{arm} last evaluation")
         _require(
-            last is None or last in EVALUATION_UPDATES, f"{arm} last evaluation drift"
+            last is None or last in EVALUATION_UPDATES,
+            f"{arm} last evaluation drift",
         )
         if last is not None:
             _require(last <= count, f"{arm} evaluation exceeds completed updates")
+    _validate_stop_progress(receipt["first_stop"], completed)
     artifacts = receipt["preserved_artifacts"]
     _require(isinstance(artifacts, Mapping), "preserved artifacts drift")
     for name, digest in artifacts.items():
@@ -830,6 +1086,55 @@ def validate_failure_receipt(receipt: Mapping[str, Any]) -> None:
             and all(character in "0123456789abcdef" for character in digest),
             "artifact identity drift",
         )
+
+
+def _validate_stop_progress(
+    event: Mapping[str, Any], completed_updates: Mapping[str, int]
+) -> None:
+    """Bind the immediate whole-run stop to its last complete progress snapshot."""
+    failed_arm = event["arm"]
+    if failed_arm is None:
+        _require(
+            event["attempted_update"] == 0,
+            "pre-run stop must use attempted update zero",
+        )
+        _require(
+            all(completed_updates[arm] == 0 for arm in ARM_ORDER),
+            "pre-run stop cannot have completed updates",
+        )
+        return
+    failed_index = ARM_ORDER.index(failed_arm)
+    _require(
+        completed_updates[failed_arm] <= event["attempted_update"],
+        "failed arm progress exceeds attempted update",
+    )
+    for arm in ARM_ORDER[failed_index + 1 :]:
+        _require(
+            completed_updates[arm] == 0,
+            "later arm progressed after first stop",
+        )
+
+
+def preserve_first_stop(
+    existing_receipt: Mapping[str, Any] | None,
+    event: Mapping[str, Any],
+    *,
+    completed_updates: Mapping[str, int],
+    last_complete_evaluation: Mapping[str, int | None],
+    preserved_artifacts: Mapping[str, str],
+    run_execution_authorized: bool,
+) -> dict[str, Any]:
+    """Pure transition: create the first receipt once, then preserve it verbatim."""
+    if existing_receipt is not None:
+        validate_failure_receipt(existing_receipt)
+        return json.loads(canonical_json(existing_receipt))
+    return build_failure_receipt(
+        event,
+        completed_updates=completed_updates,
+        last_complete_evaluation=last_complete_evaluation,
+        preserved_artifacts=preserved_artifacts,
+        run_execution_authorized=run_execution_authorized,
+    )
 
 
 def write_new_failure_receipt(path: Path, receipt: Mapping[str, Any]) -> str:
