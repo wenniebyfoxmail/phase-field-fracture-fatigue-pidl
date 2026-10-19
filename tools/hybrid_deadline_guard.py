@@ -13,33 +13,47 @@ def guard_loop(worker,supervisor,fd,phase_deadline,step_seconds,report,ready_fd=
         raise RuntimeError('Linux pidfd deadline guardian required')
     wf=os.pidfd_open(worker);sf=os.pidfd_open(supervisor);sock=socket.socket(fileno=fd);sock.setblocking(False)
     active=None;last_step=0;reason=None;started=time.monotonic();status='worker_exited'
+    def drain():
+        nonlocal active,last_step,reason
+        for _ in range(4096):
+            try:m=json.loads(sock.recv(4096))
+            except BlockingIOError:break
+            except Exception:reason='invalid deadline message';break
+            if m.get('event')=='step_start':
+                if active or m['step']!=last_step+1:reason='invalid step sequence';break
+                t=float(m['started'])
+                if not math.isfinite(t) or t>time.monotonic()+.01:reason='invalid step time';break
+                last_step=m['step'];active=dict(step=last_step,started=t,deadline=t+step_seconds)
+            elif m.get('event')=='step_done':
+                if not active or m['step']!=active['step']:reason='invalid step completion';break
+                t=float(m['finished'])
+                if not math.isfinite(t) or t<active['started'] or t>time.monotonic()+.01:reason='invalid finish time';break
+                if t>=active['deadline']:reason='late step completion';break
+                active=None
+            elif m.get('event')=='shutdown':
+                if wf not in ready:reason='shutdown while worker alive';break
+            else:reason='unknown deadline event';break
+        else:reason='deadline IPC flood'
     try:
         if ready_fd is not None:os.write(ready_fd,b'1');os.close(ready_fd)
         while True:
             now=time.monotonic()
-            if now>=phase_deadline:reason='phase/global/shared/GPU reserved deadline';break
-            if active and now>=active['deadline']:reason='physical-substep120s deadline';break
             ready,_,_=select.select([wf,sf,sock],[],[],.05)
             if sf in ready:reason='supervisor exited';break
-            while True:
-                try:m=json.loads(sock.recv(4096))
-                except BlockingIOError:break
-                except Exception:reason='invalid deadline message';break
-                if m.get('event')=='step_start':
-                    if active or m['step']!=last_step+1:reason='invalid step sequence';break
-                    t=float(m['started'])
-                    if not math.isfinite(t) or t>time.monotonic()+.01:reason='invalid step time';break
-                    last_step=m['step'];active=dict(step=last_step,started=t,deadline=t+step_seconds)
-                elif m.get('event')=='step_done':
-                    if not active or m['step']!=active['step']:reason='invalid step completion';break
-                    t=float(m['finished'])
-                    if not math.isfinite(t) or t<active['started'] or t>time.monotonic()+.01:reason='invalid finish time';break
-                    if t>=active['deadline']:reason='late step completion';break
-                    active=None
-                elif m.get('event')=='shutdown':
-                    if wf not in ready:reason='shutdown while worker alive';break
-                else:reason='unknown deadline event';break
+            drain()
             if reason:break
+            # Consume queued completion timestamps BEFORE judging active time.
+            # A timely done must not be rejected merely because this process
+            # resumed a few ms after the old deadline. Late done still fails.
+            now=time.monotonic()
+            if now>=phase_deadline:reason='phase/global/shared/GPU reserved deadline';break
+            if active and now>=active['deadline']:
+                # Close the drain-to-clock scheduling gap: a timely completion
+                # may have queued while this process was descheduled there.
+                drain()
+                if reason:break
+                now=time.monotonic()
+                if active and now>=active['deadline']:reason='physical-substep120s deadline';break
             if wf in ready:
                 # Final deadline audit after exit; a worker cannot hide a late
                 # success behind a resource monitor blocked in os.walk/fsync.

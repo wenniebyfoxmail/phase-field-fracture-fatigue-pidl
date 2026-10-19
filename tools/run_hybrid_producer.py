@@ -84,7 +84,7 @@ def gpu_usage(card, allowed_pids,usage=None):
         if len(row)==3 and row[1].strip()==card['producer']['gpu_uuid']:
             pid=int(row[0]);used+=float(row[2])
             if pid not in allowed_pids:foreign.append(pid)
-    if usage is not None:usage.update(peak_gpu_mib=max(used,usage.get('peak_gpu_mib',0.)),foreign_gpu_pids=foreign)
+    if usage is not None:usage.update(peak_gpu_mib=max(used,usage.get('peak_gpu_mib') or 0.),foreign_gpu_pids=foreign,gpu_observed=True,gpu_status='observed',gpu_sample_count=usage.get('gpu_sample_count',0)+1,last_gpu_sample_monotonic=perf_counter())
     if foreign:raise RuntimeError('GPU acquired by another process; stop only our worker')
     if used>card['budget']['gpu_vram_gib']*1024:raise RuntimeError('owned GPU memory cap')
     return used
@@ -126,6 +126,9 @@ def stop_owned(proc):
 
 def supervise(proc,spec,card,runroot,archive,totals,usage=None,guardian=None):
     usage={} if usage is None else usage
+    usage.update(rss_observed=False,rss_sample_count=0,gpu_observed=False,gpu_sample_count=0,gpu_status='pending' if spec['gpu'] else 'not_applicable')
+    def measured_peaks():
+        return dict(peak_rss_bytes=peak if usage['rss_observed'] else None,peak_gpu_mib=usage.get('peak_gpu_mib') if usage['gpu_observed'] else None)
     start=perf_counter();reserve=card['budget']['termination_reserve_seconds'];peak=0;last_scan=-1.;storage={};gpu_peak=0.;gpu_last=-10.
     try:
         while proc.poll() is None:
@@ -146,36 +149,39 @@ def supervise(proc,spec,card,runroot,archive,totals,usage=None,guardian=None):
                     m=read_manifest(marker)
                     if m.get('phase')==spec['id'] and perf_counter()-m['start_monotonic']>card['solver']['wall_seconds']:
                         raise RuntimeError('physical-substep hard wall cap')
-            tree=[]
+            tree=[];current_rss_observed=False
             try:
                 root=psutil.Process(proc.pid)
                 tree=[root,*root.children(recursive=True)]
-                rss=sum(p.memory_info().rss for p in tree if p.is_running())
+                rss=sum(p.memory_info().rss for p in tree)
+                current_rss_observed=True
+                usage.update(rss_observed=True,rss_sample_count=usage['rss_sample_count']+1,last_rss_sample_monotonic=perf_counter())
             except psutil.NoSuchProcess:rss=0
             peak=max(peak,rss)
-            usage.update(peak_rss_bytes=peak,peak_gpu_mib=gpu_peak,storage=storage,last_sample_monotonic=perf_counter())
+            usage.update(**measured_peaks(),storage=storage,last_sample_monotonic=perf_counter())
             if rss>card['budget']['ram_gib']*2**30:raise RuntimeError('process-tree RAM cap')
             if spec['gpu'] and elapsed-gpu_last>=5:
                 gpu_peak=max(gpu_peak,gpu_usage(card,{proc.pid,*[p.pid for p in tree]},usage=usage))
                 gpu_last=elapsed
             if elapsed-last_scan>=10:
-                storage['primary_bytes']=bytes_under(runroot);usage['storage']=dict(storage)
-                storage['archive_bytes']=bytes_under(archive);usage['storage']=dict(storage)
+                storage['primary_bytes']=bytes_under(runroot);usage.update(storage=dict(storage),last_primary_storage_sample_monotonic=perf_counter())
+                storage['archive_bytes']=bytes_under(archive);usage.update(storage=dict(storage),last_archive_storage_sample_monotonic=perf_counter())
                 last_scan=elapsed
                 if storage['primary_bytes']>card['budget']['primary_gib']*2**30 or storage['archive_bytes']>card['budget']['archive_gib']*2**30:
                     raise RuntimeError('attributed storage cap')
-            usage.update(peak_rss_bytes=peak,peak_gpu_mib=gpu_peak,storage=dict(storage),last_sample_monotonic=perf_counter())
+            usage.update(**measured_peaks(),storage=dict(storage),last_sample_monotonic=perf_counter())
             write_json(runroot/'monitor.json',dict(phase=spec['id'],pid=proc.pid,elapsed=elapsed,
-                                                    rss_bytes=rss,peak_rss_bytes=peak,storage=storage,
-                                                    peak_gpu_mib=gpu_peak,
+                                                    rss_bytes=rss if current_rss_observed else None,peak_rss_bytes=measured_peaks()['peak_rss_bytes'],storage=storage,
+                                                    peak_gpu_mib=measured_peaks()['peak_gpu_mib'],rss_observed=usage['rss_observed'],gpu_observed=usage['gpu_observed'],gpu_status=usage['gpu_status'],
                                                     totals_before_phase=totals))
             sleep(1)
         if perf_counter()-start>spec['wall_seconds']:raise RuntimeError('late successful phase exit')
         if perf_counter()-totals['start_monotonic']>card['budget']['cpu_wall_hours']*3600:raise RuntimeError('late total exit')
         if proc.returncode:raise RuntimeError(f"worker exit {proc.returncode}")
-        return dict(wall_seconds=perf_counter()-start,peak_rss_bytes=peak,peak_gpu_mib=gpu_peak,storage=storage)
+        usage.update(**measured_peaks())
+        return dict(wall_seconds=perf_counter()-start,**measured_peaks(),storage=storage)
     except BaseException as exc:
-        usage.update(stop_reason=str(exc),peak_rss_bytes=max(peak,usage.get('peak_rss_bytes',0)),peak_gpu_mib=max(gpu_peak,usage.get('peak_gpu_mib',0)),storage=dict(storage))
+        usage.update(stop_reason=str(exc),**measured_peaks(),storage=dict(storage))
         t=perf_counter();stop_owned(proc);usage["termination_seconds"]=perf_counter()-t
         raise
 
@@ -188,6 +194,7 @@ def wait_guard_ready(fd):
 def run_owned_worker(command,code,env,log,spec,card,runroot,archive,totals,usage=None):
     """Guard from spawn onward; no monitor IO participates in deadline control."""
     usage={} if usage is None else usage
+    usage.update(peak_rss_bytes=None,peak_gpu_mib=None,rss_observed=False,gpu_observed=False,rss_sample_count=0,gpu_sample_count=0,gpu_status='pending' if spec['gpu'] else 'not_applicable')
     proc=None;guardian=None;left=None;right=None;fds=[]
     try:
         left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_DGRAM)

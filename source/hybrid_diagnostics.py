@@ -23,8 +23,9 @@ def fields(backend,state,previous):
     support=dg>=.5
     gp_xy=np.einsum('gn,end->egd',k.shape_values,k.points[k.cells])
     tip=float(np.max(gp_xy[:,:,0][support])) if np.any(support) else None
-    diag=dict(elastic_energy=float(np.sum(w*elastic)),fracture_energy=float(np.sum(w*fracture)),
-              total_energy=float(np.sum(w*(elastic+fracture))),trace_positive_fraction=float(np.sum(w*(strain[:,:,0]+strain[:,:,1]>=0))/area),
+    thickness=backend.material['thickness']
+    diag=dict(elastic_energy=float(thickness*np.sum(w*elastic)),fracture_energy=float(thickness*np.sum(w*fracture)),
+              total_energy=float(thickness*np.sum(w*(elastic+fracture))),trace_positive_fraction=float(np.sum(w*(strain[:,:,0]+strain[:,:,1]>=0))/area),
               min_damage=float(state.damage.min()),negative_amplitude=float(max(0.,-state.damage.min())),
               box_violation=float(max(0.,state.damage.max()-1.,-state.damage.min())),
               nodal_healing=float(max(0.,np.max(previous.damage-state.damage))),

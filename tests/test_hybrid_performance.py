@@ -128,3 +128,49 @@ def test_inspection_identifies_nested_inflight_work(tmp_path):
     row=inspect(tmp_path)[0]
     assert not row['reconciliation_needed'] and row['work_evidence_incomplete']
     assert [x['kind'] for x in row['unfinished_work_blocks']]==['common_mechanics','mechanical.factorization']
+
+
+def test_no_samples_are_unknown_not_measured_zero(tmp_path):
+    import run_hybrid_producer as r
+    class Exited:
+        returncode=0
+        def poll(self):return 0
+    usage={}
+    result=r.supervise(Exited(),dict(id='unit',kind='replay',gpu=False,wall_seconds=100),card(),tmp_path,tmp_path,
+                       dict(start_monotonic=r.perf_counter(),gpu_seconds=0.),usage=usage)
+    assert result['peak_rss_bytes'] is None and result['peak_gpu_mib'] is None
+    assert usage['rss_sample_count']==0 and not usage['rss_observed'] and usage['gpu_status']=='not_applicable'
+
+
+def test_diagnostic_energy_scales_with_thickness_artificial_only():
+    from hybrid_incremental import NativeQ4Backend
+    from hybrid_diagnostics import fields
+    k,_=fixture();b=NativeQ4Backend(k,np.zeros(4,bool));b3=NativeQ4Backend(k,np.zeros(4,bool),thickness=3.)
+    z=np.zeros((1,4));one=np.ones((1,4))
+    state=AcceptedState(np.array([0,0,0,0,0,.01,0,.01]),np.full(4,.2),z,z,one,z,0,0,b.mesh_id,b.physics_id,'artificial')
+    a=fields(b,state,state)['diag'];c=fields(b3,state,state)['diag']
+    for name in ('elastic_energy','fracture_energy','total_energy'):assert c[name]==pytest.approx(3*a[name])
+
+
+@pytest.mark.parametrize('finished,expected',[(119.99,None),(120.02,'late step completion')])
+def test_queued_step_completion_is_drained_before_timeout(tmp_path,monkeypatch,finished,expected):
+    import hybrid_deadline_guard as g
+    a,b=os.pipe();c,d=os.pipe();fds=iter((a,c))
+    class FakeSocket:
+        n=0
+        def setblocking(self,value):pass
+        def close(self):pass
+        def recv(self,size):
+            self.n+=1
+            if self.n==1:return json.dumps(dict(event='step_start',step=1,started=0.)).encode()
+            if self.n==3:return json.dumps(dict(event='step_done',step=1,finished=finished)).encode()
+            raise BlockingIOError()
+    sock=FakeSocket();times=iter([0.,0.,0.,120.01])
+    monkeypatch.setattr(g.sys,'platform','linux')
+    monkeypatch.setattr(g.os,'pidfd_open',lambda pid:next(fds),raising=False)
+    monkeypatch.setattr(g.socket,'socket',lambda **kw:sock)
+    monkeypatch.setattr(g.time,'monotonic',lambda:next(times,120.01))
+    monkeypatch.setattr(g.select,'select',lambda readers,*args:([a] if readers==[a] or sock.n>=4 else [sock],[],[]))
+    report=tmp_path/'guard.json';g.guard_loop(123,456,99,1000.,120.,report)
+    result=json.loads(report.read_text());assert result['reason']==expected and sock.n>=3
+    os.close(b);os.close(d)
