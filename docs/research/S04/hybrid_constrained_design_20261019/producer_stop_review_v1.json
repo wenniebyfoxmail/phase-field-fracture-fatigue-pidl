@@ -1,0 +1,116 @@
+{
+  "verdict": "REVIEW_PASS",
+  "review_scope": "independent read-only saved runtime-stop evidence/narrative review; no scientific benefit or producer restart approval",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-19T13:56:56.151604+00:00",
+  "commit": "43af56d43150f4ae8cf8799ceec4669564d67ef0",
+  "artifact_id": "6b0ef3bf36ffbedf3c33170b2f641c06873684276a18be3f6726537e4d7c4585",
+  "card_sha256": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+  "prior_review_sha256": "443e326fe47a06ae2b0f9166dc4cd01c1f694f651bbf13ba229b87ed475397d0",
+  "snapshot_hashes": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_producer_20261019/launch_snapshot_v1.json": "adad9c4b8bf7152b8fe50f65baf978be4d09d94cc7cb0cd65db11017ac160522",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_producer_20261019/first_accepted_snapshot.json": "83ad85248a597b4423349681a2fa14f18fde606a59d7f44b3e393b67179f38ae",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_producer_20261019/terminal_snapshot_v1.json": "f559ed1748c64c4d787f00b9a13d645f1c1d952b3e9e32eee4b0371cef3cd7e0"
+  },
+  "checks_passed": [
+    "Exact commit/card match prior independent v4 review",
+    "Artifact and launch/card bindings match across snapshots",
+    "Final full assets/runtime/identity admission passed",
+    "Saved host/GPU admission matches card",
+    "Five saved-state parity rows pass unchanged 1e-10",
+    "Known-state replay adds no scientific solves or updates",
+    "One accepted label-generation step; step2 active",
+    "Recorded first-step force/KKT/bounds/fatigue satisfy card",
+    "Durable version/journal/load_index/snapshot agree at step1",
+    "No saved crash lock/journal error/reconciliation flag",
+    "Terminal is watchdog stop; raw executor failed status retained",
+    "Only train_A archive phase and zero GPU-time; no training phase reached",
+    "Both saved owned PIDs absent at terminal observation",
+    "Phase wall/CPU totals add exactly within roundoff",
+    "Total wall includes supervisor overhead; 16-core upper recomputes",
+    "Step2 has no worker failure/work receipt",
+    "Snapshot timing consistent with 120s trigger plus polling/cleanup"
+  ],
+  "decisive_blockers": [],
+  "execution_status": "STOPPED_PHYSICAL_SUBSTEP_TIME_BUDGET",
+  "raw_terminal_status": "failed",
+  "runtime_admission": "Saved actual Linux full-asset/runtime/strict-identity/five-seen-state replay/resource receipts close prior v4 runtime-admission pending items for this one launch. Reviewer did not perform fresh live admission or SSH.",
+  "accepted_step": {
+    "phase": "train_A",
+    "role": "reference label-generation trajectory, not NN training",
+    "step": 1,
+    "state_id": "8e103380a44f5f49abc98acab93b64cb6c8eddec8fd52d21b1dca126297e4e9c",
+    "total_step_wall_seconds": 56.95242438558489,
+    "solver_wall_seconds": 55.18392532970756,
+    "outer": 2,
+    "force_l2": 2.2022191809458867e-15,
+    "damage_kkt_scaled_inf": 1.4798688769274216e-08,
+    "joint_residual_l2_sum": 1.4799525193149794e-07,
+    "primal_inf": 0.0,
+    "fatigue_residual": 0.0,
+    "f_min": 1.0
+  },
+  "stopped_step": {
+    "phase": "train_A",
+    "step": 2,
+    "watchdog_trigger_seconds": 120,
+    "epoch_elapsed_to_terminal_seconds": 120.56132006645203,
+    "internal_block": "UNOBSERVED; no step2 work/failure record persisted"
+  },
+  "durable_terminal": {
+    "version": 1,
+    "journal_step": 1,
+    "snapshot_state_matches": true,
+    "lock_present": false,
+    "journal_errors": [],
+    "reconciliation_needed": false,
+    "owned_pid_observation": {
+      "1054983": null,
+      "1055156": null
+    },
+    "observation_epoch": 1792418008.0411804
+  },
+  "cost": {
+    "wall_seconds": 186.6456181658432,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 178.3489510184154,
+    "cpu_seconds": 251.959305,
+    "phases": {
+      "native_replay": {
+        "wall_seconds": 8.296667147427797,
+        "peak_rss_bytes": 447889408,
+        "peak_gpu_mib": 0.0,
+        "storage": {},
+        "cpu_seconds": 9.828283,
+        "completed": true
+      },
+      "train_A": {
+        "wall_seconds": 178.3489510184154,
+        "cpu_seconds": 242.131022,
+        "completed": false
+      }
+    },
+    "start_monotonic": 5439855.607843576,
+    "shared_analysis_seconds": 8.296667147427797,
+    "total_job_wall_seconds": 187.86706474237144,
+    "supervisor_overhead_seconds": 1.2214465765282512,
+    "allocated_cpu_core_hours_upper": 0.8349647321883175,
+    "recorded_child_cpu_core_hours": 0.06998869583333334,
+    "scope": "Formal supervised job only; recorded CPU uses RUSAGE_CHILDREN. Allocated upper includes full job wall at16cores. Prelaunch staging/install/admission preparation costs are not included; no total-R&D-cost claim."
+  },
+  "allowed_conclusion": "Exact reviewed package passed saved Linux admission and accepted one constrained NN-off reference transition, then stopped train_A step2 at its frozen120s watchdog trigger. Whole pipeline incomplete. This is an execution time-budget/admission stop, with no complete labels/model fit/test comparison and no evidence of FEM field improvement, hybrid acceleration, fatigue-degraded path coverage or mathematical algorithm failure.",
+  "limits": [
+    "Scalar certificates, durable-state identity, process absence and asset admission are verified for internal consistency from saved observer JSON, not independently recomputed from scientific arrays or rechecked live.",
+    "The first accepted state has f_min=1 and cannot certify the required f<1 trajectory coverage.",
+    "Step2 missing internal work means no justified claim that a specific QP/mechanics/assembly block caused the stop or that numerical convergence is impossible.",
+    "One accepted transition is not a qualified complete label trajectory. NN training/test phases were not reached; zero GPU seconds means zero measured job GPU time, not GPU device index0.",
+    "The executor status failed is retained; it is not a scientific finding that the hybrid method failed. The prescribed pipeline could not finish under this run's per-step operational budget.",
+    "No resume/retry/partial fit/tolerance relaxation is approved by this review; retain the stopped archive and original card."
+  ],
+  "review_operations": "Read3localJSON, priorv4review, exactcardgitobject and relevant supervisor bookkeeping lines; deterministic metadata/threshold/arithmetic assertions only. No SSH, new solve, training, optimizer, model/holdout/scientific-array access or source changes.",
+  "supplemental_narrative_check": {
+    "first_step_mechanics_seconds": 46.18026283942163,
+    "first_step_mechanics_fraction_total": 0.8108568395046273,
+    "note": "First-step profile arithmetic supports a large mechanics cost, not the cause of step2 stop. Source initially zeros displacement but then constructs a boundary-driven linear-y initial guess; report should say it rebuilds this initial guess and does not reuse prior converged u, rather than starts from zero displacement. Owner notified. No production-code change requested."
+  }
+}

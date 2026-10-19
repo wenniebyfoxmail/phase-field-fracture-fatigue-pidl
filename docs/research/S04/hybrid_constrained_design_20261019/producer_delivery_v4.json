@@ -683,5 +683,15 @@
     ],
     "phase_failure_exists": false
   },
-  "interpretation": "one accepted train_A state; substep2 exceeded fixed120s watchdog. Full train/validation/test comparison was not completed, no neural/field/acceleration conclusion. Budget/time stop is not a new optimization/weight/capacity failure."
+  "interpretation": "one accepted train_A state; substep2 exceeded fixed120s watchdog. Full train/validation/test comparison was not completed, no neural/field/acceleration conclusion. Budget/time stop is not a new optimization/weight/capacity failure.",
+  "first_step_cost_breakdown": {
+    "mechanics_seconds": 46.18026283942163,
+    "damage_qp_seconds": 5.686019396409392,
+    "other_solver_seconds": 3.3176430938765407,
+    "post_solve_seconds": 1.768499055877328,
+    "mechanics_fraction_total": 0.8108568395046273
+  },
+  "independent_stop_review": "producer_stop_review_v1.json",
+  "stop_review_checks": 17,
+  "static_cost_note": "Each mechanics call reconstructs a boundary-driven linear displacement guess after zero allocation; it does not reuse the last converged u. This does not establish the exact substep2 timeout location."
 }

@@ -10,4 +10,6 @@ train_A/c1s1接受并持久提交：完整步56.9524秒，求解55.1839秒，2ou
 
 完整方法比较尚未完成，无FEM场误差改善/回退或加速结论，不解释为NN训练、loss权重、方法表达能力或物理模型失败。零自动重试，未改阈值/时限，未用零散标签训练。下一轮完整执行前，需先处理整条求解链的机械成本、初值/因子复用可能性及逐块持久计时，并据实际成本重新审查完整预算；不能仅放宽120秒或声称4小时混合阶段必能覆盖600步。此处不授权新profile/solve/训练或producer重跑。
 
-真实快照、精确身份与成本见producer_delivery_v4.json；独立停止复核见producer_stop_review_v1（完成后附）。
+真实快照、精确身份与成本见producer_delivery_v4.json；独立停止复核producer_stop_review_v1.json/.md通过17项已保存证据检查；初猜表述已按复审更正，原始executor failed状态保留。
+
+只读后端成本诊断：首步机械合计46.1803秒（完整步81.09%），damage QP5.6860秒，求解其他3.3176秒，求解后保存/特征等1.7685秒。source/damage_conditioned_equilibrium.py:344–351每次先zeros再按当前边界峰值重建线性y位移初猜，并非全零初猜；NativeQ4Backend.mechanics未传入上一轮已收敛u，当前接口也无warm-start参数，没有持久因子缓存。完整性能修正应优先研究同问题的位移/active-set热启动、装配/符号分解复用，并保留fresh验收；不能把damage初值网络视为已解决主要机械成本。此静态发现和首步计时不等于已定位第2步超时根因，也不声称上述优化已有收益。
