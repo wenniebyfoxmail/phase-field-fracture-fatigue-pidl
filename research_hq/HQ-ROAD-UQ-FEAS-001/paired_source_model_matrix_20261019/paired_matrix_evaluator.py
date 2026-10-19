@@ -144,6 +144,7 @@ def approval_gate(approval, lock_path):
     if platform.system() != "Windows" or not torch.cuda.is_available(): raise RuntimeError("Windows CUDA evaluator required")
     if approval.get("execute_matrix") is not True or approval.get("hostname") != socket.gethostname(): raise RuntimeError("authorization/host mismatch")
     if approval.get("run_id") != "HQ-ROAD-UQ-MATRIX-001-R001": raise RuntimeError("matrix run identity mismatch")
+    if str(approval.get("gpu")) != "0" or os.environ.get("CUDA_VISIBLE_DEVICES") != "0": raise RuntimeError("GPU identity mismatch")
     if approval.get("code_snapshot") != snapshot() or approval.get("data_lock_sha256") != sha256(lock_path): raise RuntimeError("unreviewed evaluator or lock")
     if approval.get("environment") != environment(): raise RuntimeError("environment drift")
 

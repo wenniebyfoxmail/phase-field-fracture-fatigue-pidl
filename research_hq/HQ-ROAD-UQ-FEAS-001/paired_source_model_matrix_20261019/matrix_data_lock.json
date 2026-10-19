@@ -1,0 +1,13 @@
+{
+  "status": "PREPARED_NOT_EXECUTION_AUTHORIZED",
+  "old_checkpoint": {"bytes": 7872385, "sha256": "43423f84e3f56325821000c8b6845063df2e4472424cd80f612e225c04a0205d", "identity": "HQ-ROAD-UQ-FEAS-001-R001 best epoch 29 scratch U-Net"},
+  "new_checkpoint": {"bytes": 57735403, "sha256": "92cd93741021ecdf63768f8885325d804eb1a595fff8af9ae4ba43c2686027e2", "identity": "HQ-ROAD-UQ-FEAS-002-R001 best epoch 37 ResNet18UNet package"},
+  "valzip": {"bytes": 20836950, "sha256": "78974e47e7499aa2d40829e5171c87c8001055731aaa4a92aed5d8d67073718c"},
+  "gapszip": {"bytes": 158730287, "sha256": "e40e8eec77d09cb76896a4fa5bdb28f1a4df9d14602b13dbd998c5d361f0a2a6"},
+  "old_cfd_csv": {"bytes": 13290, "sha256": "85a00df3a719fab9ad4748dfbd75048cdcbb980375829d04f3749071a363d6b1"},
+  "new_gaps_csv": {"bytes": 52721, "sha256": "e069f455945dbeb7b4c6cda2893e08a69df23dfb04817221420bd0049e7e9c23"},
+  "cfd_lock": {"labeled_pairs": 118, "files": 236, "bytes": 4143667, "aggregate_sha256": "ca8f294c2d9a8ca6d696c9c20394b67d4f521176dbbbef00c03ed0dd577b57de"},
+  "expected": {"a_validation": 341, "cfd": 118, "gaps_labeled": 384, "gaps_nonempty": 382, "gaps_empty": 2},
+  "training_steps": 0,
+  "road420_access": false
+}

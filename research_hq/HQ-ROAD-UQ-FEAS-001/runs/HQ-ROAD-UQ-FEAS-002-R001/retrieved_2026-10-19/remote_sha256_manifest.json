@@ -1,0 +1,67 @@
+[
+    {
+        "name":  "all_failures.json",
+        "bytes":  5285688,
+        "sha256":  "c17e2494b4edd8f1ff5d0a3c92b289ce8a24af55222b011296c0aa91976d9f77"
+    },
+    {
+        "name":  "a_test_metrics.csv",
+        "bytes":  30862,
+        "sha256":  "9def314d2bea64aac001fc55be286c93d3305dcc46c6c44325bcf5a270a981fb"
+    },
+    {
+        "name":  "a_validation_metrics.csv",
+        "bytes":  55816,
+        "sha256":  "2ad38ef8afa248d39ccf790b5c06c0e1a161ee04466a757faa4fb1fa778a97c9"
+    },
+    {
+        "name":  "best.pt",
+        "bytes":  57735403,
+        "sha256":  "92cd93741021ecdf63768f8885325d804eb1a595fff8af9ae4ba43c2686027e2"
+    },
+    {
+        "name":  "fit_status.json",
+        "bytes":  123,
+        "sha256":  "4bd88c1f96906ed2ca160cde1fca707df75910058a29f205bd785926cd69f8b0"
+    },
+    {
+        "name":  "gaps384_empty_reference_metrics.csv",
+        "bytes":  282,
+        "sha256":  "3df392d106114979c020c2afe55c6eb3f7c23271d8d4670821105852da28e0b0"
+    },
+    {
+        "name":  "gaps384_nonempty_metrics.csv",
+        "bytes":  52721,
+        "sha256":  "e069f455945dbeb7b4c6cda2893e08a69df23dfb04817221420bd0049e7e9c23"
+    },
+    {
+        "name":  "gaps384_risk_curves.json",
+        "bytes":  150949,
+        "sha256":  "1f5ae24ddef8cefb1579f9ca87624cff7eef75c9d4a60164345fad987dea9071"
+    },
+    {
+        "name":  "gaps384_risk_curves.png",
+        "bytes":  97910,
+        "sha256":  "8f509365a9108a4b0d771fd850db3986fb8f757000559b7769ceb11d414cbe34"
+    },
+    {
+        "name":  "README_analysis.md",
+        "bytes":  330,
+        "sha256":  "f3fd6ea5dde98ca886fd31601ced3a59edc21396dc7958888d3608bea07a3440"
+    },
+    {
+        "name":  "receipt.json",
+        "bytes":  1556,
+        "sha256":  "77cd7c01b366127209ecad47648187378e2629d021a2bfa1bc4daf84b14edb1b"
+    },
+    {
+        "name":  "result.json",
+        "bytes":  1095,
+        "sha256":  "7ba4e1d48744566e18e75b06e1746d85ab79aaa94668b0b737fde8ab23140b50"
+    },
+    {
+        "name":  "selection.json",
+        "bytes":  6736,
+        "sha256":  "0a0b2207ecc6e9f8f54efbccc2d2ef629cbe7782392b7c2fc748785fe80a12de"
+    }
+]

@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-19",
+  "status": "PREPARED_NOT_EXECUTION_AUTHORIZED",
+  "experiment_id": "HQ-ROAD-UQ-MATRIX-001",
+  "proposed_run_id": "HQ-ROAD-UQ-MATRIX-001-R001",
+  "code_snapshot": "49271e498b9019ed6d239e9df368ed9474a9bcb5e9a373efb12f2f26654e89b8",
+  "data_lock_sha256": "1a4a80fb370e89258c24eb623cd166d81ba53da22f3db7321f3a7e71211d51ba",
+  "local_checks": ["python_compile", "argument_surface", "zero_and_two_pixel_tolerance", "paired_bootstrap_sign", "risk_summary_arithmetic", "frozen_failure_selection_rule"],
+  "training_steps": 0,
+  "producer_started": false,
+  "road420_access": false
+}

@@ -1,0 +1,50 @@
+{
+  "status": "PASS_REMOTE_PREFLIGHT_NO_TRAINING",
+  "inputs": {
+    "trainzip": {
+      "bytes": 115224706,
+      "sha256": "d5e9eb4bbb27163ef9778e63c7d743080d3b4458d069652f4285f07f5d02cbac"
+    },
+    "valzip": {
+      "bytes": 20836950,
+      "sha256": "78974e47e7499aa2d40829e5171c87c8001055731aaa4a92aed5d8d67073718c"
+    },
+    "testzip": {
+      "bytes": 547759078,
+      "sha256": "8c812484ccbbdbf37b2aa6f0133ba68ba77b4da9431d98160d2ab447628788b7"
+    },
+    "gapszip": {
+      "bytes": 158730287,
+      "sha256": "e40e8eec77d09cb76896a4fa5bdb28f1a4df9d14602b13dbd998c5d361f0a2a6"
+    },
+    "weights": {
+      "bytes": 46830571,
+      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+    }
+  },
+  "code_snapshot": "79132eecb1d8d80a486a92475eab7226cf7324cce2d0258fc76254a036cc4b65",
+  "data_lock_sha256": "ff95bd1e005f8ef3cccde8024eee7da7b4b2fdce338ca2acd6e199b25319a2a0",
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "numpy": "2.5.2",
+    "pillow": "11.3.0",
+    "matplotlib": "3.11.2",
+    "cuda": "12.8"
+  },
+  "local_checks_on_producer": {
+    "status": "pass",
+    "checks": [
+      "official_weights_strict_load",
+      "even_and_odd_forward",
+      "finite_logits_and_512d_features",
+      "gaps_384_pair_decode_382_nonempty",
+      "frozen_gate_arithmetic"
+    ],
+    "training_or_optimizer_steps": 0,
+    "road420_access": false
+  },
+  "training_or_optimizer_steps": 0,
+  "road420_access": false
+}

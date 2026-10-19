@@ -1,0 +1,26 @@
+{
+  "status": "PASS_INDEPENDENT_RECOMPUTATION",
+  "checkpoint_sha256": "92cd93741021ecdf63768f8885325d804eb1a595fff8af9ae4ba43c2686027e2",
+  "result_sha256": "7ba4e1d48744566e18e75b06e1746d85ab79aaa94668b0b737fde8ab23140b50",
+  "epochs": 40,
+  "best_epoch": 37,
+  "a_val": 341,
+  "a_test": 200,
+  "gaps_nonempty": 382,
+  "gaps_empty": 2,
+  "full_risk": 0.9860688925831892,
+  "dice_positive": 331,
+  "degenerate": 0,
+  "risk_at_25": {
+    "U_LC": 0.9752635793890495,
+    "U_H": 0.9754821641641875,
+    "U_Z": 0.9788366565673582
+  },
+  "F1": true,
+  "F2": false,
+  "F3_U_Z_directional": false,
+  "verdict": "FEASIBILITY_NO_GO",
+  "finite": true,
+  "strict_checkpoint_load": true,
+  "road420_access": false
+}
