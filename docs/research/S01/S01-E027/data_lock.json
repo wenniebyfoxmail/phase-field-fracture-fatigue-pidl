@@ -1,0 +1,46 @@
+{
+  "files": {
+    "pavetrack_identities.json": {
+      "sha256": "0f4b93818b5fc2ae177547742df81880ea96d1dda25f13954293c8b7fb233727",
+      "bytes": 5714
+    },
+    "pavetrack.npz": {
+      "sha256": "bd8f332b8178278eb1155990ba6f0bf553dfacdcd709e4bb6db166d48ee2e555",
+      "bytes": 804154
+    },
+    "cfd.npz": {
+      "sha256": "8e97dfa4452f2d7b9f35ac586369451828d8cd8f386dcac8cbdc1fb7ae6f51ec",
+      "bytes": 4171773
+    },
+    "cfd_identities.json": {
+      "sha256": "86b28a34cfde52d103e43e39228eea91a49263cc030eca3c32cde013f951da9a",
+      "bytes": 6365
+    },
+    "DeepCrack_CT260_FT1.pth": {
+      "sha256": "945239375c2b3de45abccc2dbdc374e3259b55d16298b298fb9e0cd13be5ad63",
+      "bytes": 123636774
+    },
+    "deepcrack.py": {
+      "sha256": "92650883b6f6c993bc29635450035e066c968c4f5a9022a6c1966a0b9f0d3360",
+      "bytes": 4885
+    }
+  },
+  "cfd_ids": [
+    "049",
+    "039",
+    "105",
+    "116",
+    "082",
+    "029",
+    "079",
+    "092",
+    "115",
+    "077",
+    "102",
+    "097"
+  ],
+  "cfd_field": "groundTruth.Boundaries==1",
+  "pavetrack_source": "S01-E026-R001 original16 control packet",
+  "cfd_count": 12,
+  "pavetrack_count": 16
+}

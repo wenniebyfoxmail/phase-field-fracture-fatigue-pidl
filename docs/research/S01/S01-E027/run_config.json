@@ -1,0 +1,49 @@
+{
+  "protocol": "S01-E027-v1.1",
+  "run_id": "S01-E027-R001",
+  "producer": {
+    "hostname": "D-26-09",
+    "ssh_alias": "gpu-server",
+    "account": "ad\\xw436",
+    "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "gpu_physical_index": 1,
+    "gpu_logical_index": 0,
+    "CUDA_VISIBLE_DEVICES": "1",
+    "gpu_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+    "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
+    "fallback": false,
+    "GPU": true
+  },
+  "checkpoint": {
+    "sha256": "945239375c2b3de45abccc2dbdc374e3259b55d16298b298fb9e0cd13be5ad63",
+    "bytes": 123636774,
+    "parameters": 30905011,
+    "tensors": 74,
+    "upstream_commit": "f3988031dd2adc3d19b32d1c48a2bf90d12871ac"
+  },
+  "primary": {
+    "minimum_images": 7,
+    "images": 12,
+    "threshold": 0.5,
+    "margin": 1e-06
+  },
+  "repeat_tolerance": 1e-06,
+  "budget": {
+    "models": 0,
+    "updates": 0,
+    "training_rows": 0,
+    "prediction_rows": 56,
+    "total_wall_seconds": 600,
+    "peak_RSS_bytes": 4294967296,
+    "peak_GPU_allocated_bytes": 4294967296,
+    "peak_GPU_reserved_bytes": 4294967296,
+    "output_bytes": 104857600
+  },
+  "source_models": 1,
+  "fit": false,
+  "selector": false,
+  "OOF": false,
+  "fresh_access": false
+}

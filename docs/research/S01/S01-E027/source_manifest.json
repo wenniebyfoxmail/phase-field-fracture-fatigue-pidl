@@ -1,0 +1,19 @@
+{
+  "protocol": "S01-E027-v1.1",
+  "files": {
+    "scripts/pavetrack_spatial_source/run.py": "4fe3eeca24db36c60078d083ea30481d02fb6cbe655d72ae1f7c4906b9c512d4",
+    "scripts/pavetrack_spatial_source/probe.py": "c02026047300605cf3baf04e9ab8fe6630772176651ceef3e7ff51104cc0b85b",
+    "scripts/pavetrack_spatial_source/analyze.py": "28e7382e109001e8bd6898e6d720f49e559cff06313c04594588668d6446bd18",
+    "scripts/pavetrack_spatial_source/producer.ps1": "30be59f91341be8ec4901d86d05961b9f06bdc052dcee3fe2e7490aeaf129dda",
+    "scripts/pavetrack_translation_control/run.py": "9db18098f5b3a2e96cc8958f583bb9d81bfeb21b96226c23b7821239bdf145a2",
+    "scripts/pavetrack_translation_control/probe.py": "6b80c0721f48dd86a9bc3616086f35d74b8a635408ae13c979872eb6ff348f67",
+    "scripts/pavetrack_controlled_localizer/model.py": "1e4116bfe1b850f8d1090ee14033f735ff3b56ad1aa6fd17d5556d8409708daa",
+    "scripts/pavetrack_qualified_localizer/model.py": "22bc611f53ebb9b748fa438de18bfde0748fd3c0df788a69e2bb8405a9003b31",
+    "scripts/pavetrack_positive_evidence/stage_b_runtime.py": "2a7b1f8cf53f869487dbe723e111299231286001cefa59c5e11b4676a1134dcd",
+    "docs/research/S01/S01-E012/stage_B/gpu_desktop_baseline.json": "bebab7f7f4059abb296790377fa33d43a46774a91121feeba38a60d706911926",
+    "docs/research/S01/S01-E027/experiment.md": "a0ab51b487bd4f63aaa5d3a27b70c196d1eecbec287f74b68c51e61ee6f8e663",
+    "docs/research/S01/S01-E027/run_config.json": "312e89587cbddb2784ca998e195df48317fb1389ae273d3fc5708f2d541a4a62",
+    "docs/research/S01/S01-E027/data_lock.json": "3e380bda1e24a5d83d4c558f3b327798f13b322406eacdaa66324ac8a5b3b07a",
+    "tests/pavetrack_spatial_source/test_source.py": "a8e328551cf8be8cd24d3dd08875ce2b528bc0e66d10866e5f4c8ae3cbca1b2e"
+  }
+}
