@@ -9,7 +9,9 @@
     "docs/research/S01/S01-E028/experiment.md": "22181604a713825815e6b85efadc041b128bf39b973ce5ca22c7817d74080f81",
     "docs/research/S01/S01-E028/gpu_desktop_baseline.json": "e09b3e0ab7021cb9bc942a5c8313c4a8ea9d56b32903128be90753a7c7cfbbef",
     "docs/research/S01/S01-E028/placement_amendment_gpu0.md": "a892c225516439360725a09239354375358a0cd8b6febf49ba3abe93f87402c6",
-    "docs/research/S01/S01-E028/run_config.json": "9b2369f5c465aeccdc1fb44339d34364be192fbe9ff89e1ab5384dea9dfcc798",
+    "docs/research/S01/S01-E028/run_config.json": "394e056d42d6383d58234ae5acc911fde9d41799039f6354f0c1ea159d6f26b0",
+    "docs/research/S01/S01-E028/runtime_lock.json": "096967e170b61231c48981febd646b1f2241f20dcd71008982b330b1dde1117a",
+    "docs/research/S01/S01-E028/runtime_repair_R002.md": "a9e72717442a8e45a9e4a47cc9e33116784feaaca64724c825fb9ab6f1cb6e6c",
     "scripts/pavetrack_controlled_localizer/model.py": "1e4116bfe1b850f8d1090ee14033f735ff3b56ad1aa6fd17d5556d8409708daa",
     "scripts/pavetrack_positive_evidence/stage_b_runtime.py": "2a7b1f8cf53f869487dbe723e111299231286001cefa59c5e11b4676a1134dcd",
     "scripts/pavetrack_qualified_localizer/model.py": "22bc611f53ebb9b748fa438de18bfde0748fd3c0df788a69e2bb8405a9003b31",
@@ -18,15 +20,17 @@
     "scripts/pavetrack_spatial_source/producer.ps1": "30be59f91341be8ec4901d86d05961b9f06bdc052dcee3fe2e7490aeaf129dda",
     "scripts/pavetrack_spatial_source/run.py": "4fe3eeca24db36c60078d083ea30481d02fb6cbe655d72ae1f7c4906b9c512d4",
     "scripts/pavetrack_target_spatial/analyze.py": "fbd7ccab55f4959da74c1feb94ef14a269db121beec6b2e9527016e909d40024",
-    "scripts/pavetrack_target_spatial/environment.py": "6d756e7e4ad618f0630101791180dca79b11df430c820da58c5410e4162effaa",
+    "scripts/pavetrack_target_spatial/environment.py": "e8962297c2e202b5cb8b74eb056eef7ca3ed580164af601c469f6ad4f034a575",
     "scripts/pavetrack_target_spatial/evaluate.py": "732ba0367528307db72c4d893706d4b6e63c2d0213ba9b068a7e525dd6fb59c7",
     "scripts/pavetrack_target_spatial/geometry.py": "bc748502b32c97db2aa8abef0ce324fa33219c039c586f5484ee040ad6132b2c",
-    "scripts/pavetrack_target_spatial/producer.ps1": "f3dc46037de095cfb86f86765871b6e8631b5e4ff555e26a5809dcf390e419cf",
-    "scripts/pavetrack_target_spatial/run.py": "95a362286ba9132fd7b6aeb1cde3a9d3463d7ebc556d1d64d5baf7b662212313",
+    "scripts/pavetrack_target_spatial/prepare_runtime.ps1": "9e3f1bd1ea1849ca83c56faca54f5634565fbf23950594428a95de24c5dece39",
+    "scripts/pavetrack_target_spatial/producer.ps1": "9561d73955c7d3ca6a5921c562cfcba016dbc8c7b43775942f2884870cce8dec",
+    "scripts/pavetrack_target_spatial/run.py": "2389ff79ffb73a37d572bf06dd65774d72ddf9bda32dc2b8b3111b70f898fe42",
+    "scripts/pavetrack_target_spatial/runtime_preflight.py": "f2c311d6dd3f6222c7428f511c97da1aa86f17f6624cd45af511aacb616980f0",
     "scripts/pavetrack_translation_control/probe.py": "6b80c0721f48dd86a9bc3616086f35d74b8a635408ae13c979872eb6ff348f67",
     "scripts/pavetrack_translation_control/run.py": "9db18098f5b3a2e96cc8958f583bb9d81bfeb21b96226c23b7821239bdf145a2",
     "tests/pavetrack_spatial_source/test_source.py": "a8e328551cf8be8cd24d3dd08875ce2b528bc0e66d10866e5f4c8ae3cbca1b2e",
     "tests/pavetrack_target_spatial/raster_fixture.py": "7b8957bcb55f7cce8149aa43685112840715c0145042162fd40ccfa9f33485de",
-    "tests/pavetrack_target_spatial/test_target.py": "811ebac3b712b1034e4d0081df697da2d572bc5c61ca54e0a658dd432e4306aa"
+    "tests/pavetrack_target_spatial/test_target.py": "1bb29d958cbb5783cc617f821f6de885117ed94826d45039e32cdf3b6b6b08b6"
   }
 }

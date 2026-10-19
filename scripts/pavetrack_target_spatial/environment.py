@@ -18,7 +18,36 @@ def production_environment(cfg):
     parts=lambda x:[v for v in x.lower().split(chr(92)) if v]
     if parts(identity)!=parts(p['account']) or sys.version.split()[0]!='3.12.14':raise PermissionError('account/Python runtime')
     if os.environ.get('CUDA_VISIBLE_DEVICES')!='0' or any(os.environ.get(k)!='1' for k in ['OPENBLAS_NUM_THREADS','OMP_NUM_THREADS','MKL_NUM_THREADS']):raise PermissionError('frozen GPU/thread environment')
+    lock=json.loads((ROOT/'docs/research/S01/S01-E028/runtime_lock.json').read_text())
+    if os.environ.get('PYTHONPATH')!=lock['overlay'] or os.environ.get('PYTHONDONTWRITEBYTECODE')!='1':raise PermissionError('isolated Pillow runtime environment')
     if os.path.normcase(os.path.abspath(sys.executable))!=os.path.normcase(os.path.abspath(p['python'])):raise PermissionError('python executable')
+
+
+def verify_overlay(overlay,files):
+    import hashlib
+    overlay=Path(overlay)
+    actual={p.relative_to(overlay).as_posix():p for p in overlay.rglob('*') if p.is_file()}
+    if set(actual)!=set(files):raise ValueError('Pillow overlay exact inventory')
+    for n,p in actual.items():
+        if hashlib.sha256(p.read_bytes()).hexdigest()!=files[n]:raise ValueError('Pillow overlay binary identity')
+    return len(actual)
+
+
+def verify_pillow():
+    lock=json.loads((ROOT/'docs/research/S01/S01-E028/runtime_lock.json').read_text());overlay=Path(lock['overlay'])
+    count=verify_overlay(overlay,lock['files'])
+    import PIL
+    if PIL.__version__!=lock['version'] or Path(PIL.__file__).resolve()!= (overlay/'PIL/__init__.py').resolve():raise ValueError('Pillow version/origin')
+    from PIL import Image,ImageDraw
+    if Path(Image.__file__).resolve()!=(overlay/'PIL/Image.py').resolve() or Path(Image.core.__file__).resolve().parent!=(overlay/'PIL').resolve():raise ValueError('Pillow native origin')
+    # Cheap, data-free exercise of the raster and image codec before producer use.
+    import io
+    im=Image.new('L',(8,8));ImageDraw.Draw(im).polygon([(1,1),(4,1),(4,4),(1,4)],fill=1)
+    if sum(im.tobytes())!=16:raise ValueError('Pillow polygon sanity')
+    data=io.BytesIO();im.save(data,format='PNG');data.seek(0)
+    with Image.open(data) as reopened:
+        if reopened.tobytes()!=im.tobytes():raise ValueError('Pillow codec sanity')
+    return dict(version=PIL.__version__,origin=PIL.__file__,files=count)
 
 
 def physical_gpu(info,cfg):

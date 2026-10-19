@@ -1,6 +1,6 @@
 {
   "protocol": "S01-E028-v1",
-  "run_id": "S01-E028-R001",
+  "run_id": "S01-E028-R002",
   "producer": {
     "hostname": "D-26-09",
     "ssh_alias": "gpu-server",
@@ -65,7 +65,7 @@
     "reference": "any"
   },
   "budget": {
-    "wall_seconds": 3600,
+    "wall_seconds": 3590,
     "RSS_bytes": 4294967296,
     "GPU_allocated_bytes": 4294967296,
     "GPU_reserved_bytes": 4294967296,

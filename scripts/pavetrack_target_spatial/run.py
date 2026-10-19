@@ -69,7 +69,7 @@ class Guard:
     def check(self):
         self.rss=max(self.rss,int(self.memory()));a,r=self.gpu();self.allocated=max(self.allocated,int(a));self.reserved=max(self.reserved,int(r))
         b=self.cfg['budget']
-        if time.monotonic()-START>b['wall_seconds']:raise TimeoutError('3600s wall cap')
+        if time.monotonic()-START>b['wall_seconds']:raise TimeoutError('3590s R002 wall cap')
         if self.rss>b['RSS_bytes'] or self.allocated>b['GPU_allocated_bytes'] or self.reserved>b['GPU_reserved_bytes']:raise MemoryError('4GiB memory cap')
         if sum(p.stat().st_size for p in self.out.rglob('*') if p.is_file())>b['output_bytes']:raise RuntimeError('6GiB output cap')
     def receipt(self):
@@ -79,8 +79,8 @@ class Guard:
 def validate_config(cfg):
     environment.placement(cfg)
     expected=dict(contexts=12238,images=338,pixels=700876800,native_tiles=13520,cached_forwards=12238,total_forwards=25758)
-    budget=dict(wall_seconds=3600,RSS_bytes=4*1024**3,GPU_allocated_bytes=4*1024**3,GPU_reserved_bytes=4*1024**3,output_bytes=6*1024**3,archive_bytes=6*1024**3,minimum_free_disk_bytes=16*1024**3,source_image_decodes=338,models=1,model_fits=0,updates=0,selector=False,OOF=False)
-    if cfg['protocol']!='S01-E028-v1' or cfg['run_id']!='S01-E028-R001' or cfg['counts']!=expected or cfg['budget']!=budget:raise ValueError('frozen identity/count/budget')
+    budget=dict(wall_seconds=3590,RSS_bytes=4*1024**3,GPU_allocated_bytes=4*1024**3,GPU_reserved_bytes=4*1024**3,output_bytes=6*1024**3,archive_bytes=6*1024**3,minimum_free_disk_bytes=16*1024**3,source_image_decodes=338,models=1,model_fits=0,updates=0,selector=False,OOF=False)
+    if cfg['protocol']!='S01-E028-v1' or cfg['run_id']!='S01-E028-R002' or cfg['counts']!=expected or cfg['budget']!=budget:raise ValueError('frozen identity/count/budget')
     if cfg['sites']!=['24','1638','2027'] or cfg['qual_locations']!=[['1638','2027'],['24','2027'],['24','1638']]:raise ValueError('frozen site pairs')
     if cfg['candidate']!=dict(input='native_image',pool='max',reference='any') or cfg['threshold']!=.5 or cfg['margin']!=1e-6 or cfg['private_inputs']!=9:raise ValueError('candidate/criteria')
     if cfg['tile']!=dict(input=512,stride=256,halo=128,padding='reflect',batch=1):raise ValueError('frozen tile')
@@ -208,12 +208,14 @@ def path_auditor(scope,run):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--input',type=Path,required=True);parser.add_argument('--run',type=Path,required=True);parser.add_argument('--reviewed-commit',required=True);parser.add_argument('--manifest-sha256',required=True);args=parser.parse_args()
     cfg=json.loads((ROOT/'docs/research/S01/S01-E028/run_config.json').read_text());validate_config(cfg)
-    environment.production_environment(cfg) # Producer check precedes torch/data/model use.
+    environment.production_environment(cfg)
+    environment.verify_pillow() # Full runtime pin before any private input/reference access.
+    # Producer check precedes torch/data/model use.
     manifest=ROOT/'docs/research/S01/S01-E028/source_manifest.json'
     if sha(manifest)!=args.manifest_sha256:raise ValueError('manifest identity')
     for n,h in json.loads(manifest.read_text())['files'].items():
         if sha(ROOT/n)!=h:raise ValueError('source binding '+n)
-    if str(args.run.resolve()).casefold()!=r'C:\Users\xw436\pavetrack_runs\S01-E028-R001'.casefold():raise ValueError('fixed fresh run')
+    if str(args.run.resolve()).casefold()!=r'C:\Users\xw436\pavetrack_runs\S01-E028-R002'.casefold():raise ValueError('fixed fresh run')
     if shutil.disk_usage(args.run.parent).free<cfg['budget']['minimum_free_disk_bytes']:raise OSError('16GiB free disk required')
     lock=json.loads((ROOT/'docs/research/S01/S01-E028/data_lock.json').read_text())
     if len(lock['files'])!=cfg['private_inputs']:raise ValueError('frozen private input count')

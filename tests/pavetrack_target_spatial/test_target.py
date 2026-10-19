@@ -248,3 +248,16 @@ def test_cuda_uuid_object_canonical_form_matches_nvidia_smi_gpu_prefix():
     for text in ['3d74ea12-5d84-a619-90b2-c0b1f104599a','malformed','']:
         props.uuid=CUuuid(text)
         with pytest.raises(ValueError):env.logical_gpu(SimpleNamespace(cuda=cuda),cfg)
+
+
+def test_pillow_overlay_rejects_missing_extra_and_tampered_library(tmp_path):
+    import hashlib
+    folder=tmp_path/'PIL';folder.mkdir();file=folder/'__init__.py';file.write_bytes(b'pinned runtime')
+    expected={'PIL/__init__.py':hashlib.sha256(file.read_bytes()).hexdigest()}
+    assert r.environment.verify_overlay(tmp_path,expected)==1
+    file.write_bytes(b'wrong runtime')
+    with pytest.raises(ValueError):r.environment.verify_overlay(tmp_path,expected)
+    file.write_bytes(b'pinned runtime');extra=tmp_path/'sitecustomize.py';extra.write_text('unexpected startup code')
+    with pytest.raises(ValueError):r.environment.verify_overlay(tmp_path,expected)
+    extra.unlink();file.unlink()
+    with pytest.raises(ValueError):r.environment.verify_overlay(tmp_path,expected)
