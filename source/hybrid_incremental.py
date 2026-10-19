@@ -80,7 +80,7 @@ class NativeQ4Backend:
             arrays[field.name] = np.frombuffer(a.tobytes(), dtype=a.dtype).reshape(a.shape)
         self.kin = kin = replace(kin, **arrays)
         # The GP feature/state contract is native (+,+),(-,+),(+,-),(-,-).
-        from native_q4_damage_qp import build_native_q4_kinematics
+        from hybrid_kinematics import build_portable_native_q4_kinematics as build_native_q4_kinematics
         reference = build_native_q4_kinematics(kin.points, kin.cells)
         if (np.any(kin.det_jacobians <= 0) or np.any(kin.shape_values < 0)
                 or not np.array_equal(kin.shape_values, reference.shape_values)

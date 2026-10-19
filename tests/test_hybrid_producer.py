@@ -17,7 +17,7 @@ from test_hybrid_incremental import AlgebraicBackend,state,settings
 
 
 def card():
-    return json.loads((Path(__file__).resolve().parents[1]/'docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json').read_text())
+    return json.loads((Path(__file__).resolve().parents[1]/'docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json').read_text())
 
 
 def test_native_dof_vector_and_boundary_permutation_are_consistent():
@@ -145,3 +145,16 @@ def test_shared_replay_analysis_budget_is_cumulative(tmp_path):
         supervise(proc,dict(id='analysis',kind='analysis',gpu=False,wall_seconds=14400),c,tmp_path,archive,
                   dict(wall_seconds=0.,gpu_seconds=0.,shared_analysis_seconds=14400.,start_monotonic=perf_counter()))
     assert proc.poll() is not None
+
+
+def test_portable_geometry_matches_independent_lapack_and_linear_patch():
+    from hybrid_kinematics import build_portable_native_q4_kinematics
+    from native_q4_damage_qp import build_native_q4_kinematics
+    points=np.array([[0.,0.],[1.2,.1],[1.,1.3],[-.1,.9]])
+    cells=np.array([[0,1,2,3]])
+    p=build_portable_native_q4_kinematics(points,cells);old=build_native_q4_kinematics(points,cells)
+    assert np.max(np.abs(p.b_matrices-old.b_matrices))<1e-14
+    assert np.max(np.abs(p.det_jacobians-old.det_jacobians))<1e-14
+    u=np.column_stack((2*points[:,0]+3*points[:,1],-points[:,0]+4*points[:,1])).ravel()
+    strain=np.einsum('egij,ej->egi',p.b_matrices,u[p.element_dofs])
+    assert np.max(np.abs(strain-np.array([2.,4.,2.])))<1e-14

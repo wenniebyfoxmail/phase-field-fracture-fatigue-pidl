@@ -7,7 +7,7 @@ import numpy as np
 
 from hybrid_history import AcceptedState
 from hybrid_incremental import NativeQ4Backend
-from native_q4_damage_qp import build_native_q4_kinematics
+from hybrid_kinematics import build_portable_native_q4_kinematics as build_native_q4_kinematics
 from hybrid_transaction import StateStore
 
 

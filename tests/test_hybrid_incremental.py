@@ -12,7 +12,7 @@ from hybrid_damage import NodalQP, assemble_nodal_qp, kkt_audit, solve_nodal_qp
 from hybrid_incremental import NativeQ4Backend, SolverSettings, StepFailure, solve_step
 from hybrid_transaction import StateStore, CommitUncertain
 from hybrid_network import DamageGraphPredictor, FrozenGraphInterface, FEATURES, features_for, mesh_graph
-from native_q4_damage_qp import build_native_q4_kinematics
+from hybrid_kinematics import build_portable_native_q4_kinematics as build_native_q4_kinematics
 
 
 def state(d=None):

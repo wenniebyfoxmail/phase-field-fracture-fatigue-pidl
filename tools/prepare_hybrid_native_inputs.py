@@ -10,7 +10,7 @@ from hybrid_inputs import (sha256, blocked_to_interleaved, native_dofs_to_canoni
                            state_from_native_group)
 from hybrid_incremental import NativeQ4Backend
 from hybrid_transaction import StateStore
-from native_q4_damage_qp import build_native_q4_kinematics
+from hybrid_kinematics import build_portable_native_q4_kinematics as build_native_q4_kinematics
 from damage_conditioned_equilibrium import sens_displacement_boundary_conditions
 
 
