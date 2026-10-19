@@ -1,0 +1,169 @@
+{
+  "by_early_mid_late_release_position_not_lifetime": {
+    "compact": {
+      "0": 0.7688593390761563,
+      "1": 0.7428383217787239,
+      "2": 1.258246016633739
+    },
+    "oracle_output_projection": {
+      "0": 0.06717302517160995,
+      "1": 0.07136699694703888,
+      "2": 0.12594980363534228
+    },
+    "persistence": {
+      "0": 0.7156171564746244,
+      "1": 0.7057344245075129,
+      "2": 1.7082653493237836
+    },
+    "rich": {
+      "0": 0.84523558928531,
+      "1": 0.7798093282822594,
+      "2": 1.156932114818285
+    },
+    "rich_fixed": {
+      "0": 0.8451938184461251,
+      "1": 0.7798952832263673,
+      "2": 1.1574599310872296
+    },
+    "rich_set": {
+      "0": 0.8464217540489988,
+      "1": 0.7807587000289492,
+      "2": 1.15824287089739
+    },
+    "scalar": {
+      "0": 0.7720814577866288,
+      "1": 0.7242633465947932,
+      "2": 1.4595988720973865
+    },
+    "secant": {
+      "0": 1.402639568647063,
+      "1": 1.3514874793823966,
+      "2": 1.5465536796113148
+    }
+  },
+  "primary_equal_group_horizon_scores": {
+    "compact": 0.9198465501875784,
+    "persistence": 1.0360921537838201,
+    "rich": 0.924877797545519,
+    "rich_fixed": 0.9250640967352564,
+    "rich_set": 0.9260253239469086,
+    "scalar": 0.9802768416209076,
+    "secant": 1.432245016183377
+  },
+  "paired_release_group_comparisons": {
+    "compact minus scalar": {
+      "paired_mean_difference": -0.060430291433328974,
+      "groups_better": 16,
+      "groups_worse": 3,
+      "n_release_groups": 19,
+      "range": [
+        -0.2934426020079319,
+        0.13027110329581193
+      ]
+    },
+    "compact minus persistence": {
+      "paired_mean_difference": -0.11624560359624159,
+      "groups_better": 14,
+      "groups_worse": 5,
+      "n_release_groups": 19,
+      "range": [
+        -0.5151716595141405,
+        0.25966302973087285
+      ]
+    },
+    "compact minus secant": {
+      "paired_mean_difference": -0.512398465995799,
+      "groups_better": 18,
+      "groups_worse": 1,
+      "n_release_groups": 19,
+      "range": [
+        -1.154591988790001,
+        0.17785134533436958
+      ]
+    },
+    "rich minus scalar": {
+      "paired_mean_difference": -0.055399044075388204,
+      "groups_better": 15,
+      "groups_worse": 4,
+      "n_release_groups": 19,
+      "range": [
+        -0.4302012406926292,
+        0.7463869391934074
+      ]
+    },
+    "rich minus compact": {
+      "paired_mean_difference": 0.005031247357940764,
+      "groups_better": 9,
+      "groups_worse": 10,
+      "n_release_groups": 19,
+      "range": [
+        -0.2889131374136493,
+        0.6161158358975954
+      ]
+    },
+    "rich_set minus rich": {
+      "paired_mean_difference": 0.001147526401389525,
+      "groups_better": 5,
+      "groups_worse": 14,
+      "n_release_groups": 19,
+      "range": [
+        -0.0007498179367830815,
+        0.011865162216485925
+      ]
+    },
+    "rich_set minus rich_fixed": {
+      "paired_mean_difference": 0.0009612272116521682,
+      "groups_better": 9,
+      "groups_worse": 10,
+      "n_release_groups": 19,
+      "range": [
+        -0.0008840728269775555,
+        0.011918288128913657
+      ]
+    },
+    "rich minus secant": {
+      "paired_mean_difference": -0.507367218637858,
+      "groups_better": 18,
+      "groups_worse": 1,
+      "n_release_groups": 19,
+      "range": [
+        -1.1435154208166265,
+        0.047111363246945204
+      ]
+    },
+    "rich_set minus secant": {
+      "paired_mean_difference": -0.5062196922364686,
+      "groups_better": 18,
+      "groups_worse": 1,
+      "n_release_groups": 19,
+      "range": [
+        -1.1428866443536494,
+        0.04636154531016212
+      ]
+    }
+  },
+  "by_horizon_stages": {
+    "10": {
+      "compact": 0.9261997270952683,
+      "oracle_output_projection": 0.10352161123205683,
+      "persistence": 1.0344261191587691,
+      "rich": 0.91650198451298,
+      "rich_fixed": 0.9166118536864055,
+      "rich_set": 0.9169729773067985,
+      "scalar": 0.968582036272965,
+      "secant": 1.302769909863516
+    },
+    "40": {
+      "compact": 0.9134933732798887,
+      "oracle_output_projection": 0.07212990200882986,
+      "persistence": 1.037758188408871,
+      "rich": 0.9332536105780584,
+      "rich_fixed": 0.9335163397841074,
+      "rich_set": 0.935077670587019,
+      "scalar": 0.9919716469688498,
+      "secant": 1.5617201225032389
+    }
+  },
+  "rows": 18304,
+  "scope": "Exploratory release-observable prediction; no independent physical UQ, crack truth or unseen-asset claim."
+}
