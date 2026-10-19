@@ -1,0 +1,116 @@
+{
+  "verdict": "MODIFY_AND_REREVIEW",
+  "review_scope": "exact preparation-only static delta and artificial unit/interface checks; no producer/admission/performance-science verdict",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-19T16:59:50.305479+00:00",
+  "commit": "1fdf5117efa01dd654fa6542a003c91858272893",
+  "artifact_id": "efebabaa0da61394bb514ef806d80a06e0f888f7308ad143f6c124f3651fa963",
+  "card_sha256": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+  "manifest_sha256": "3de0ecceee5f28e9a8885ace66a40ac64ed5a5de8f759d289ba25c8dfdcac030",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "052be2e0dfc97f4b6a81590989efc56740e4c4bab27b8c1ebdcdca4feb9fe03f",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "fa04844aa4afdeeaa75478508e49469cf72081e1126216216389c0f45db1043c",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "81f3f46d3c3c55c806258636cff3915cbb8ae5859dca4bf20a0634152b832549",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "c8beb6d8a2543de8d9d929da3eef93fdbf239600e7f45f95121ae3865668f97f",
+    "tools/run_hybrid_producer.py": "ecb4ac2b629bcd0eb72f39eaa52f3cc9826d05d98f0ba517df16e8f6a18ad55e",
+    "tools/inspect_hybrid_run.py": "2ab909a462f147123a3eeb61a92b687c6223d3bc7e53f8ef6c1182cb6cbb5496",
+    "tests/test_hybrid_incremental.py": "c787673a144dbb49835a79c698bb097039b9badabfb9070d89e0fcda96462490",
+    "tests/test_hybrid_producer.py": "af2c91c806defeba992eca7f29f155bf809663abf6e57d7d05007dd36e218325",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "e0bdc3e911aea98ebda023d582f4822850f4b4cfce1c0f737d31e1110bd82101",
+    "tools/launch_hybrid_detached.py": "fb515b236551d441b4cfb11667c200dff61999b4c4119b965a9caac861e47730",
+    "source/hybrid_kinematics.py": "06197c9a1f02cb725f42903834301ba6265c80e8d0218672b8fa8463e45edfef",
+    "tools/canonicalize_hybrid_inputs.py": "e23a12b4d6cce6dd4560f06f5fc395c7bfafb9440b0119670b3b6d7db9bda643",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+    "source/hybrid_mechanics.py": "b7476d06c244e914c692b0edac19083159f3836d5b9e1b9bf37a6e37fff15507",
+    "source/hybrid_work_trace.py": "b33c6bc48126b22748d6c3f4fa0f7d87d1f790535ed4b11fde218c391a09c805",
+    "source/hybrid_guard_client.py": "7daedb716f1e1328fa61070b04407f57a82ed6169906bcb6c0af441931d14e50",
+    "source/hybrid_diagnostics.py": "ae459a82c9a7b5e4fadb77d2b6df12593a5d1e3fca3b7e30759a877359974f87",
+    "tools/hybrid_deadline_guard.py": "4adb3860c1a7877153abffc26e4020bcd5cc5c7a62ba4f41035fcfd5c59caa95",
+    "tests/test_hybrid_performance.py": "cefb61970671530893040c5e1f9ee15b82a3ae5d589dad074d7648cf78eb6db3",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_card_v1.json": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v1.md": "4229cb8cf5fe66479852435e0d1b9d54a30a858cd086ad7954c91a6d476c0e54"
+  },
+  "findings": [
+    {
+      "id": "G1",
+      "priority": "P2",
+      "required_for_preparation_pass": true,
+      "file": "tools/hybrid_deadline_guard.py",
+      "lines": [
+        18,
+        25
+      ],
+      "title": "Drain queued completion IPC before deciding the previous step timed out",
+      "problem": "Loop tests active deadline before receiving queued IPC. If step1 sends an in-time done and next-step start near120s, a controller descheduled across the old deadline kills a timely completed step without reading its done. The claim of exit/drain final auditing does not close this ordering race.",
+      "independent_reproduction": "Stdlib controller substitution only: start0; queued step_done finished119.99; next guardian scheduling120.01. Result physical-substep120s deadline, recv called only twice (start then BlockingIOError); queued done was never consumed. No real Linux call or worker/scientific execution.",
+      "requested_change": "Drain/validate pending ordered IPC before step-deadline adjudication, both after scheduling wake and at worker exit; then enforce deadline of the still-active step. Retain rejection of done whose finished>=deadline. Add deterministic timely-queued-done/new-start, late-done, missing-done and worker-exit regression cases."
+    },
+    {
+      "id": "G2",
+      "priority": "P2",
+      "required_for_preparation_pass": true,
+      "file": "tools/run_hybrid_producer.py",
+      "lines": [
+        129,
+        178
+      ],
+      "title": "Keep unsampled resource peaks distinct from measured zero",
+      "problem": "Shared usage now preserves already sampled peaks on failure, but peak=0/gpu_peak=0 defaults are still returned or written when no sample occurred. Immediate worker exit returns peak_rss_bytes0 and peak_gpu_mib0 without an observed/sample_count flag; this contradicts the preparation promise not to encode missing evidence as0.",
+      "independent_reproduction": "Artificial Exited poll()->0, returncode0 passed directly to supervise, no subprocess: returned peak_rss_bytes0,peak_gpu_mib0,storage{},sharedusage{}; no resource sample occurred.",
+      "requested_change": "Represent unobserved peaks as null or supply explicit observed/sample_count/per-resource last-success timestamps; distinguish not-applicable CPU-phase GPU from measured0. Retain the last valid measurement on every error, without replacing missing with0."
+    },
+    {
+      "id": "G3",
+      "priority": "P2",
+      "required_for_preparation_pass": false,
+      "file": "source/hybrid_diagnostics.py",
+      "lines": [
+        26,
+        27
+      ],
+      "title": "Multiply integrated energies by physical thickness or label per-thickness quantities",
+      "problem": "Elastic/fracture/total energy sums use detJ only; mechanical and damage operators include material thickness. Frozen card t=1 is unaffected, but public NativeQ4Backend permits other thickness and reported energy becomes inconsistent with the same-problem operator.",
+      "independent_reproduction": "Artificial distorted one-Q4 identical u/d/f at thickness1 and2: total_energy0.09342180668978209 both, whereas integrated physical energy should double.",
+      "requested_change": "Multiply energy integration weights by thickness while retaining area weights for RMS/area fractions, or explicitly expose per-unit-thickness diagnostic names/contract. Add nonunit-thickness energy consistency regression. No change to frozen t=1 physical settings required."
+    }
+  ],
+  "test_result": {
+    "command": "PYTHONPATH=source:tools:.:tests <existing development venv>/bin/python -m pytest -q tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py tests/test_hybrid_performance.py",
+    "exact_git_object_export": true,
+    "passed": 55,
+    "elapsed_seconds": 3.17,
+    "exit_code": 0,
+    "extra_controls": "Three artificial control/interface probes: queued timely IPC, unsampled Exited usage, nonunit-thickness diagnostic; outcomes recorded in findings."
+  },
+  "accepted_delta_checks": [
+    "All37 manifest file hashes and canonical files-object artifact hash match exact git objects. Preparation card SHA matches request.",
+    "Hybrid-only cached dev/vol element tensors include material thickness; CSR scatter and native GP order are preserved. Warm displacement is own-path previous/iteration state, scaled and BC projected; trace active set remains releasable. LU reuse key contains exact freeDOFs and complete current CSC indptr/indices/data. Backend rejects changed material before mechanics; no symbolic-factor reuse claimed.",
+    "Uncached legacy final assembly/residual/pivot checking and unchanged final joint force/KKT/trial-history verification remain. Old accepted state is immutable; no inner history accumulation or durable commit contract change found. Artificial tension/compression/damage assembly and warm/cold regressions pass. No full-grid parity or actual speed inferred.",
+    "Worker stdlib startup waits on ready/gate before NumPy import; Linux pidfd guardian has independent IPC/deadline loop and signals before report FS; spawn ownership finally and worker parent-death protections retained. This is a substantial R1 improvement, pending G1 ordering fix and future authorized actual Linux validation.",
+    "Shared usage and pre-exception updates preserve sampled RAM/GPU/storage, including GPU over-cap samples; failed wall/childCPU and guardian costs remain charged. R2 mostly addressed but G2 missing-evidence semantics remains.",
+    "Both classical and neural use same frozen J/history/f/reaction quality thresholds; joint matched-quality acceleration now requires both, speed and fatigue coverage. Classical-quality negative test passes. R3 addressed within frozen exploratory claim scope.",
+    "Sealed posthoc now adds raw/active full/diffuse/fixed-window errors, AT1 energies/trace branches, fixed-rule support/front, own-predecessor negative/healing and correction/fallback metrics. Fixed4/304/599/600 maps share scales across methods; triangle display and native-Q4 scoring distinction stated. Start/end fsync observation wraps blocks and nested mechanics; inspect exposes unmatched starts. R4 materially addressed, with G3 generic thickness caveat.",
+    "Preparation card is nonexecution schema, execution_enabledfalse, run_id/runrootsnull. New runner rejects absent/nontrue execution flag; old run authority not inherited. Proposed6htraining/6hhybrid remains12h total, substep120s and old physical/quality tolerances retained; no runtime or cost benefit claim."
+  ],
+  "limits": [
+    "No SSH/profile/preflight/producer retry, actual Linux pidfd/runtime test, full native mesh/scientific arrays, holdouts/model, new real-state solve or training. Only artificial checks and exact source/doc reads.",
+    "Actual Linux protocol behavior, actual-grid cache parity/RAM/setup/IO costs, full trajectory capacity, admissible labels and neural added value remain unverified. Preparation review cannot authorize an executable card or revive stoppedR1.",
+    "Original v4/design findings are inherited only for unchanged contracts; this new guardian/cache/analysis delta receives its own findings. No claimed performance improvement."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "source_commit": "1fdf5117",
+  "artifact_id": "efebabaa0da61394bb514ef806d80a06e0f888f7308ad143f6c124f3651fa963",
+  "scope": "artificial unit/interface only; no scientific profile or real-state solve",
+  "test_count": 55,
+  "last_complete_suite_seconds": 3.86,
+  "artificial_plot_QA": "u/v/d and raw/active PNG inspected; explicit ARTIFICIAL UNIT ARRAYS title; PNG/PDF/sidecars saved under local_archive/research/hybrid_performance_prepare_20261019/artificial_plot_unit",
+  "not_done": [
+    "SSH",
+    "producer preflight",
+    "actual Linux pidfd/IPC validation",
+    "real project state solve",
+    "new training",
+    "new FEM",
+    "producer retry",
+    "new Run ID"
+  ],
+  "readiness": "prepared static candidate; exact independent delta review pending",
+  "historical_record": true,
+  "superseded_by": "performance_checks_v3.json"
+}

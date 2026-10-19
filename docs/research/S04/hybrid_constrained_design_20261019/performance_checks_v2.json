@@ -1,0 +1,24 @@
+{
+  "source_commit": "7862d9a3f725703d8a3629bcc7f3667db2274b53",
+  "artifact_id": "c197cdbccada83734524bbbf4f191912f2402ec427bb2672b94435e355c7ac3e",
+  "card_sha256": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+  "scope": "artificial unit/interface checks only; no scientific profile or real-state solve",
+  "test_count": 59,
+  "last_complete_suite_seconds": 3.8,
+  "manifest_file_count": 38,
+  "manifest_verified": true,
+  "artificial_plot_QA": "u/v/d and raw/active PNG inspected; explicit ARTIFICIAL UNIT ARRAYS; PNG/PDF/sidecars retained",
+  "not_done": [
+    "SSH",
+    "producer preflight",
+    "actual Linux pidfd/IPC validation",
+    "real project state solve",
+    "new training",
+    "new FEM",
+    "producer retry",
+    "new Run ID"
+  ],
+  "readiness": "static delta review pending; execution disabled",
+  "historical_record": true,
+  "superseded_by": "performance_checks_v3.json"
+}

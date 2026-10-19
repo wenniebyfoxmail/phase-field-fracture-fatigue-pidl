@@ -1,0 +1,24 @@
+{
+  "source_commit": "5bb172149b94788599cfc351cbe2fe7788710dc8",
+  "artifact_id": "5742e4c79bd136e7dfcdaff4188721823be06073a8e1dac980158783d8198d1d",
+  "card_sha256": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+  "scope": "artificial unit/interface checks only; no scientific profile or real-state solve",
+  "test_count": 61,
+  "last_complete_suite_seconds": 3.1,
+  "manifest_file_count": 39,
+  "manifest_verified": true,
+  "artificial_plot_QA": "u/v/d and raw/active PNG inspected; explicit ARTIFICIAL UNIT ARRAYS; PNG/PDF/sidecars retained",
+  "not_done": [
+    "SSH",
+    "producer preflight",
+    "actual Linux pidfd/IPC validation",
+    "real project state solve",
+    "new training",
+    "new FEM",
+    "producer retry",
+    "new Run ID"
+  ],
+  "readiness": "REVIEW_PASS_PREPARATION_ONLY_EXECUTION_DISABLED",
+  "independent_review": "performance_review_v3.json",
+  "independent_test_seconds": 3.15
+}

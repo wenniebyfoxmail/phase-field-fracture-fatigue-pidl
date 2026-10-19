@@ -1,0 +1,103 @@
+{
+  "verdict": "REVIEW_PASS",
+  "scope_verdict": "PREPARATION_STATIC_API_REVIEW_PASS_ONLY",
+  "review_type": "independent exact incremental rereview of v2 remaining worker-exit IPC terminal audit and downstream rejection",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-19T17:08:29.692782+00:00",
+  "commit": "5bb172149b94788599cfc351cbe2fe7788710dc8",
+  "artifact_id": "5742e4c79bd136e7dfcdaff4188721823be06073a8e1dac980158783d8198d1d",
+  "card_sha256": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+  "manifest_sha256": "e5dcb71367c594a420a33dbf02fac4a4fbd61d32d0768e93c7a72ad9e63c8437",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "052be2e0dfc97f4b6a81590989efc56740e4c4bab27b8c1ebdcdca4feb9fe03f",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "fa04844aa4afdeeaa75478508e49469cf72081e1126216216389c0f45db1043c",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "81f3f46d3c3c55c806258636cff3915cbb8ae5859dca4bf20a0634152b832549",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "c8beb6d8a2543de8d9d929da3eef93fdbf239600e7f45f95121ae3865668f97f",
+    "tools/run_hybrid_producer.py": "9129fbeb8f090bd0408118091cba70eeb248bad6b92cef315f2933573409cca5",
+    "tools/inspect_hybrid_run.py": "2ab909a462f147123a3eeb61a92b687c6223d3bc7e53f8ef6c1182cb6cbb5496",
+    "tests/test_hybrid_incremental.py": "c787673a144dbb49835a79c698bb097039b9badabfb9070d89e0fcda96462490",
+    "tests/test_hybrid_producer.py": "af2c91c806defeba992eca7f29f155bf809663abf6e57d7d05007dd36e218325",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "e0bdc3e911aea98ebda023d582f4822850f4b4cfce1c0f737d31e1110bd82101",
+    "tools/launch_hybrid_detached.py": "fb515b236551d441b4cfb11667c200dff61999b4c4119b965a9caac861e47730",
+    "source/hybrid_kinematics.py": "06197c9a1f02cb725f42903834301ba6265c80e8d0218672b8fa8463e45edfef",
+    "tools/canonicalize_hybrid_inputs.py": "e23a12b4d6cce6dd4560f06f5fc395c7bfafb9440b0119670b3b6d7db9bda643",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+    "source/hybrid_mechanics.py": "b7476d06c244e914c692b0edac19083159f3836d5b9e1b9bf37a6e37fff15507",
+    "source/hybrid_work_trace.py": "b33c6bc48126b22748d6c3f4fa0f7d87d1f790535ed4b11fde218c391a09c805",
+    "source/hybrid_guard_client.py": "7daedb716f1e1328fa61070b04407f57a82ed6169906bcb6c0af441931d14e50",
+    "source/hybrid_diagnostics.py": "a66496828f9c16ecdf97162a960773314915afbf9586ebc1c17335aa342034ee",
+    "tools/hybrid_deadline_guard.py": "f10160e58d14c48ddd4475cf9dcd9b6056bb5351458c9c5518523fc8cf0f5575",
+    "tests/test_hybrid_performance.py": "2fb8c479650ea6f679bd57ba78ee0ef4d628bbcba8a81b7a9d5d9261869dbe64",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_card_v1.json": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v1.md": "4229cb8cf5fe66479852435e0d1b9d54a30a858cd086ad7954c91a6d476c0e54",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v2.md": "8fa98ab0796913fe6db3ecfac7a1c67a4ad507bb46fda442fb428eb1d4688ddc",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v3.md": "649d141b02663f96d1a25acc6d02a21b24ddef1e97f415dca84fe3ad03a1cb6e"
+  },
+  "prior_reviews": {
+    "performance_review_v1.json": "eafbbe8c7693df9e83fccac4e236fc4b559fd165899ca5195c9c7f2d9f28aac5",
+    "performance_review_v2.json": "b87c18d95caeba9eebe9d7ef4a36aae5e9166d7a9b559b209c43f7e528f29444"
+  },
+  "decisive_blockers": [],
+  "findings": [],
+  "resolved": [
+    {
+      "id": "G1_EXIT",
+      "status": "RESOLVED_STATIC",
+      "source": "tools/hybrid_deadline_guard.py:57-65",
+      "evidence": "Worker-exit branch drains pending IPC again and rejects any reason from validation; after phase deadline check it now requires activeNone, otherwise incomplete step completion at worker exit. The two previously demonstrated premature-exit transcripts retain active step1/2 and produce deadline_or_control_stop rather than clean guard success."
+    },
+    {
+      "id": "DOWNSTREAM",
+      "status": "CHECKED_UNCHANGED",
+      "evidence": "run_owned_worker retains nonzero guardian returncode OR nonnull audit.reason rejection and unconditional owned-worker cleanup. New incomplete-completion reason therefore prevents successful phase/whole-pipeline verdict and no partial fit/resume is introduced."
+    },
+    {
+      "id": "PRIOR_FIXES",
+      "status": "CARRIED_FORWARD",
+      "evidence": "Queued timely completion passes and late completion rejects in retained control regressions; no deadline/quality/physical threshold changed. v2 null/sample observation semantics and thickness-correct energy fixes remain byte-identical. Warm mechanics/physical acceptance, R3 matched quality, R4 sealed posthoc/trace and preparation authority scope inherit v1/v2 checks."
+    }
+  ],
+  "checks": {
+    "immutable_git_object_export": true,
+    "verified_manifest_files": 39,
+    "canonical_artifact_hash_verified": true,
+    "actual_card_sha256_verified": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+    "test_command": "PYTHONPATH=source:tools:.:tests <existing dev venv>/bin/python -m pytest -q tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py tests/test_hybrid_performance.py",
+    "tests_passed": 61,
+    "test_wall_seconds": 3.15,
+    "exit_code": 0,
+    "tests_scope": "Artificial unit/interface/control substitutions and artificial Q4/render checks only; no actual Linux pidfd admission or real scientific state."
+  },
+  "authority": {
+    "execution_enabled": false,
+    "run_id": null,
+    "run_root": null,
+    "archive_root": null,
+    "producer_authorized_by_review": false,
+    "prior_R1_remains_terminal": true
+  },
+  "runtime_status": "NOT_VALIDATED",
+  "limits": [
+    "This is preparation source/API correctness review only, not producer-ready or runtime/admission pass.",
+    "Actual Linux pidfd/IPC lifecycle, full-grid cached/uncached operator parity, actual RAM/setup/logging cost, performance and complete-path budget capacity remain unverified.",
+    "No trained model, qualified complete new label set, FEM field improvement, neural acceleration or scientific/physical/generalization result is established.",
+    "No SSH/profile/preflight/real scientific arrays/model/holdout, new real-state solve, training or retry. Review wrote only its receipts and used artificial tests from an exact temporary git export.",
+    "Future executable package still needs its own exact card/source/runtime/resource/authorization review; current false-execution preparation card cannot launch and stoppedR1 is not resumed."
+  ]
+}

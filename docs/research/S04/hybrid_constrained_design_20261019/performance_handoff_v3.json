@@ -1,0 +1,36 @@
+{
+  "source_commit": "5bb172149b94788599cfc351cbe2fe7788710dc8",
+  "artifact_id": "5742e4c79bd136e7dfcdaff4188721823be06073a8e1dac980158783d8198d1d",
+  "preparation_card_sha256": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+  "status": "REVIEW_PASS_PREPARATION_ONLY",
+  "execution_enabled": false,
+  "run_id": null,
+  "prior_terminal_run": "pf_hybrid_full_20261019_r1",
+  "prior_actual": {
+    "wall_seconds": 187.86706474237144,
+    "cpu_seconds": 251.959305,
+    "gpu_seconds": 0,
+    "accepted_states": 1,
+    "qualified_complete_trajectories": 0
+  },
+  "artificial_checks": 61,
+  "proposed_budget": {
+    "steps": 3600,
+    "gpu_hours": 12,
+    "training_gpu_hours": 6,
+    "hybrid_gpu_hours": 6,
+    "host_hours": 136,
+    "core_hours_upper": 2176
+  },
+  "unverified": [
+    "actual Linux new guardian IPC/pidfd runtime",
+    "full-grid revised cached operator parity and RAM/setup costs",
+    "complete qualified labels",
+    "full trajectory wall times",
+    "network accuracy/added value"
+  ],
+  "current_task_new_execution": false,
+  "outbound_hq_message_sent": false,
+  "review": "performance_review_v3.json",
+  "review_scope": "exact static/API delta and artificial checks; not runtime or producer ready"
+}
