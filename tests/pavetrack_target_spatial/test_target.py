@@ -234,3 +234,17 @@ def test_logical_gpu_requires_actual_uuid_even_when_both_cards_share_name():
         with pytest.raises(ValueError):env.logical_gpu(torch,cfg)
     del props.uuid
     with pytest.raises(ValueError):env.logical_gpu(torch,cfg)
+
+
+def test_cuda_uuid_object_canonical_form_matches_nvidia_smi_gpu_prefix():
+    from types import SimpleNamespace
+    cfg=json.loads((ROOT/'docs/research/S01/S01-E028/run_config.json').read_text());env=r.environment
+    class CUuuid:
+        def __init__(self,text):self.text=text
+        def __str__(self):return self.text
+    props=SimpleNamespace(uuid=CUuuid(env.GPU_UUID.removeprefix('GPU-')))
+    cuda=SimpleNamespace(device_count=lambda:1,get_device_name=lambda i:cfg['producer']['gpu_name'],get_device_properties=lambda i:props)
+    env.logical_gpu(SimpleNamespace(cuda=cuda),cfg)
+    for text in ['3d74ea12-5d84-a619-90b2-c0b1f104599a','malformed','']:
+        props.uuid=CUuuid(text)
+        with pytest.raises(ValueError):env.logical_gpu(SimpleNamespace(cuda=cuda),cfg)

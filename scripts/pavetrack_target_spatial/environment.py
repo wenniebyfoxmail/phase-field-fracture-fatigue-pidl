@@ -1,5 +1,5 @@
 """E028-owned GPU0 placement checks; historical producer modules stay frozen."""
-import json,os,socket,subprocess,sys
+import json,os,socket,subprocess,sys,uuid
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 GPU_UUID='GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7'
@@ -32,7 +32,10 @@ def physical_gpu(info,cfg):
 
 def logical_gpu(torch,cfg):
     if torch.cuda.device_count()!=1 or torch.cuda.get_device_name(0)!=cfg['producer']['gpu_name']:raise ValueError('logical GPU mapping')
-    if getattr(torch.cuda.get_device_properties(0),'uuid',None)!=placement(cfg)['gpu_uuid']:raise ValueError('logical GPU UUID mapping')
+    raw=getattr(torch.cuda.get_device_properties(0),'uuid',None)
+    try:actual=uuid.UUID(str(raw).removeprefix('GPU-'))
+    except (ValueError,TypeError,AttributeError) as exc:raise ValueError('logical GPU UUID unavailable') from exc
+    if actual!=uuid.UUID(placement(cfg)['gpu_uuid'].removeprefix('GPU-')):raise ValueError('logical GPU UUID mapping')
 
 
 def production_checks(cfg,guard,desktop_inventory,sha):
