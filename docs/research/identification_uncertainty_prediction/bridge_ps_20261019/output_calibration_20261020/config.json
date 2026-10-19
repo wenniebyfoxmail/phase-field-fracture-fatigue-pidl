@@ -1,0 +1,47 @@
+{
+  "status": "DISABLED_PREPARATION_ONLY_BUDGET_PROPOSAL_UNAPPROVED",
+  "enabled": false,
+  "run_root": null,
+  "approved_budget": null,
+  "proposed_budget": {
+    "wall_seconds": 1200,
+    "threads": 1,
+    "rss_bytes": 2147483648,
+    "total_generated_bytes": 1610612736,
+    "archive_bytes": 734003200,
+    "gpu": 0
+  },
+  "accepted_design_commit": "fe54ab36df890551f13e0e515ab50c2ad69c97c8",
+  "accepted_design_sha256": "334d050d2fb1924f5d9f6c4c647e04844c1a1ee9189b4d731581c98f7b655d8b",
+  "predictor_alpha": 10.0,
+  "input_residualizer_alpha": 10.0,
+  "groups": 19,
+  "cases": 1144,
+  "H": [
+    10,
+    40
+  ],
+  "channels": 2,
+  "candidate_counts": {
+    "U": 25,
+    "C": 27,
+    "A": 25,
+    "unique": 45
+  },
+  "primary": "L(selected C27)-L(selected A25)",
+  "expected_work": {
+    "training_sets": 722,
+    "predictor": 1444,
+    "residualizer": 722,
+    "inner_rows": 41184,
+    "outer_rows": 2288,
+    "inner_scores": 1853280,
+    "outer_scores": 16016
+  },
+  "dependencies": {
+    "numpy": "2.2.6",
+    "matplotlib": "3.9.2",
+    "torch": "2.11.0"
+  },
+  "original100MiB_not_feasible": "Two complete copies of inner native-loss triples and outer bases alone are126444032bytes; self-contained native anchors/outer targets add449839104bytes before copies. No real data or timing measured."
+}
