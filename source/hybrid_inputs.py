@@ -13,7 +13,10 @@ from hybrid_transaction import StateStore
 
 def sha256(path):
     with Path(path).open("rb") as handle:
-        return hashlib.file_digest(handle, "sha256").hexdigest()
+        digest=hashlib.sha256()
+        for chunk in iter(lambda:handle.read(1024*1024),b""):
+            digest.update(chunk)
+        return digest.hexdigest()
 
 
 def blocked_to_interleaved(value):
