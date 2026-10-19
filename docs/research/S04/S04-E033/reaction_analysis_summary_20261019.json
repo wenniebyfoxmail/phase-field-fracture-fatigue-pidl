@@ -1,0 +1,122 @@
+{
+  "scope": "READ_ONLY_SAVED_FIELD_STRESS_ASSEMBLY_NO_MODEL_NO_SOLVE",
+  "nodes": 86756,
+  "free_u_dof_count": 172916,
+  "top_nodes": 27,
+  "top_vertical_dofs_free_count": 0,
+  "top_adjacent_elements": 26,
+  "all_fixed_uv_boundary_value_change_max_abs": 0.0,
+  "damage_bitwise_equal": true,
+  "reference_force_vector_max_abs_replay_error": 8.60551593092479e-17,
+  "reaction": {
+    "reference": 0.07200967241856503,
+    "before": 0.07313218093845117,
+    "after": 0.07560575024600928,
+    "actual_value_increase_percent": 3.382326734710515,
+    "error_before_percent_of_FEM": 1.5588301990341302,
+    "error_after_percent_of_FEM": 4.993881664315333,
+    "increment": 0.002473569307558101,
+    "linear_sum_from_saved_axes": 0.002473569743342716,
+    "linear_vs_actual_gap": 4.357846149910527e-10
+  },
+  "free_force_change": {
+    "old_L2": 0.024553292849729725,
+    "new_L2": 0.02452406899822847,
+    "delta_vector_L2": 0.000475849396465777,
+    "old_dot_delta": -8.303310914174555e-07,
+    "delta_squared_norm": 2.264326481168444e-07,
+    "squared_norm_change": -1.4342295347180666e-06,
+    "cos_old_delta": -0.07106766290013584
+  },
+  "top_reaction_increment_by_displacement_channel_linear": {
+    "u_update": -2.8538612943128655e-06,
+    "v_update": 0.002476423604636913
+  },
+  "old7_reaction_increment_linear": 0.006261082222403421,
+  "top_reaction_split_branch_remainder": -4.357844973372319e-10,
+  "exact_axis_plus_branch_gap": 1.1752751549742868e-16,
+  "known_saved_direction_slopes": {
+    "saved_full11_direction": {
+      "reaction_linear_slope": 0.027362334091837286,
+      "eleven_metric_slopes": [
+        -0.00032496147686248496,
+        -4.282176268166891e-05,
+        -0.0046357167024835754,
+        -0.004976437910910557,
+        -4.657760621617319,
+        -0.1703615778637196,
+        -0.18455238270921953,
+        -0.00010970599593147034,
+        -9.84234356761897e-06,
+        -0.00021525548093101452,
+        -3.297941911404993e-05
+      ],
+      "all_eleven_strict": true,
+      "reaction_error_first_order_decreasing": false
+    },
+    "saved_old7_direction": {
+      "reaction_linear_slope": 0.009344550477554284,
+      "eleven_metric_slopes": [
+        -0.0003610374294448968,
+        -1.9478024195700706e-05,
+        -0.0025960789554260503,
+        -0.008166686104045761,
+        -2.6084204738136556,
+        -0.09536212863685017,
+        -0.7810870180887228,
+        -0.00024229556346301438,
+        -2.604867699976218e-06,
+        -0.00011874186598188218,
+        -1.6873156495724477e-05
+      ],
+      "all_eleven_strict": true,
+      "reaction_error_first_order_decreasing": false
+    }
+  },
+  "top_adjacent_GP_area_fraction": 0.03767719403333061,
+  "strain_stress_errors": {
+    "E032_R": {
+      "top_adjacent_GP": {
+        "eps_xx_RMSE": 0.004422862110315652,
+        "eps_yy_RMSE": 0.005509463816123401,
+        "eps_xy_RMSE": 0.0030382553783936815,
+        "sigma_yy_RMSE": 0.00647705949928477
+      },
+      "whole_domain_GP": {
+        "eps_xx_RMSE": 0.022816851991167463,
+        "eps_yy_RMSE": 1.0689740526749716,
+        "eps_xy_RMSE": 0.20239464759043654,
+        "sigma_yy_RMSE": 0.025458915284857556
+      }
+    },
+    "endpoint": {
+      "top_adjacent_GP": {
+        "eps_xx_RMSE": 0.004416829368567344,
+        "eps_yy_RMSE": 0.006028081003264404,
+        "eps_xy_RMSE": 0.003107498139767392,
+        "sigma_yy_RMSE": 0.007258662000661502
+      },
+      "whole_domain_GP": {
+        "eps_xx_RMSE": 0.022811505926719846,
+        "eps_yy_RMSE": 1.0688379936027304,
+        "eps_xy_RMSE": 0.2023955966409793,
+        "sigma_yy_RMSE": 0.02541736540432899
+      }
+    }
+  },
+  "models_loaded": 0,
+  "new_full802_head_autograd_evals": 0,
+  "static_reaction_response_existing8": true,
+  "new_candidate_evaluations": 0,
+  "optimizer_steps": 0,
+  "FEM_solves": 0,
+  "new_GPU_hours": 0,
+  "run_id": "pf_s04e033_fullhead_axis1_a02_20261019T093116Z",
+  "source_commit": "30ba0572b691b97e9ce272280627bd8bd52f86b4",
+  "basis8_new_axis_linear_top_increment": -0.0037875124790607046,
+  "original_primary_unchanged": true,
+  "executing_D": "D8_complete_no_active_execution",
+  "next_decision": "HQ selects one minimal discriminator between insufficient raw amplitude and reaction degradation; recommendation reaction-safe reachability in saved8 first, no execution authorization yet",
+  "local_analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E033/runs/pf_s04e033_fullhead_axis1_a02_20261019T093116Z/analysis/reaction_audit_20261019",
+  "input_manifest": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E033/runs/pf_s04e033_fullhead_axis1_a02_20261019T093116Z/analysis/reaction_audit_20261019/input_identity_manifest.json"
+}
