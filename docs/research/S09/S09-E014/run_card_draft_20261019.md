@@ -1,6 +1,6 @@
-# S09-E014 finite one-step run card — draft for review
+# S09-E014 finite one-step run card
 
-Status: `DESIGN_DRAFT_ONLY_DO_NOT_LAUNCH`
+Status: `EXECUTABLE_ONLY_AFTER_EXACT_COMMIT_REVIEW_PASS`
 
 ## Frozen run identity
 
@@ -16,9 +16,8 @@ Status: `DESIGN_DRAFT_ONLY_DO_NOT_LAUNCH`
 - Data: same exposed 16-cycle development packet
 - Holdout: sealed
 
-The execution commit, config hash, protocol hash, command, PID/session, and log
-path must be filled only after implementation and exact-commit review.  Their
-absence makes this card non-executable.
+The launch receipt must bind the execution commit, config hash, protocol hash,
+command, PID/session, and log path before the first model forward.
 
 ## Arms
 
@@ -69,5 +68,4 @@ across all pairs, stop without an optimiser step.
 1. independent design review of `experiment.md`;
 2. local implementation and no-training synthetic/unit verification;
 3. exact-commit independent implementation review;
-4. only then create the executable final card and launch under a separate
-   execution authorisation.
+4. launch the already authorised single run and retrieve its evidence.

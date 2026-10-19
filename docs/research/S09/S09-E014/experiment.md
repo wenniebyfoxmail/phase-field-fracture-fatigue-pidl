@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-E014
 protocol_revision: v1-common-global-primary-nullspace-local-secondary
-status: design-draft-awaiting-independent-review
+status: executable-after-exact-commit-review
 primary_storyline: S09
 related_experiments: [S09-E010, S09-E011, S09-E012, S09-E013]
 ---
@@ -140,8 +140,9 @@ The experiment does not use an all-or-nothing eight-pair/17-pair gate.
    constraint contract fails.
 2. `NO_COMMON_NULLSPACE_SECONDARY`: the unique constrained `q_L` is at or
    below numerical epsilon.  This rejects this construction, not the operator.
-3. `COMMON_SECONDARY_AVAILABLE`: `q_L` is finite/nonzero and produces a
-   candidate displacement distinct from control.
+3. `COMMON_SECONDARY_AVAILABLE`: `q_L` is finite/nonzero, its relative dot
+   residual against both constraints is at most `1e-8`, and it produces a
+   candidate AdamW displacement distinct from control.
 4. `ONE_STEP_LOCAL_COMPONENT_SIGNAL`: after strict step-1 reload, candidate
    local pair score `2W+T` exceeds control by at least one point.
 5. `BALANCED_ONE_STEP_SIGNAL`: level 4 plus candidate global pair score no lower
@@ -156,6 +157,7 @@ score changes.  They may explain a result but cannot promote it to level 4.
 - Producer: Taobo GPU5, exact UUID required.
 - GPU budget: at most 0.5 GPU-hour.
 - Absolute wall cap: 30 minutes, including zero-step and step-1 evaluation.
+- Process peak CUDA reserved-memory cap: 20 GiB.
 - Optimiser cap: one step per arm, two total.
 - One run, no retry, restart, coefficient scan, unused-budget transfer, or
   alternate GPU.
