@@ -84,3 +84,18 @@ def test_invalid_or_indefinite_proxies_stop():
     h[3, 0, 0] = -1
     with pytest.raises(ValueError):solve_full(g, h)
     with pytest.raises(ValueError):solve_full(g[:6], h[:6])
+
+
+def test_saved_solution_recovery_never_calls_an_optimizer(monkeypatch):
+    import s04_e024_full_head
+    from s04_e024_full_head_recovery import restore_solution
+    monkeypatch.setattr(s04_e024_full_head, 'minimize', lambda *a, **k: pytest.fail('unexpected new solve'))
+    cache = dict(full_z=np.array([1., 0.]), raw_z=np.array([1., 0.]),
+                 quadratic_gradients=np.tile([-2., 0.], (7, 1)),
+                 quadratic_hessians=np.tile(np.eye(2), (7, 1, 1)))
+    record = dict(function_evaluations=1, multipliers=[0.]*6+[1.], dual_lower_bound=-1.5)
+    candidate, raw, _, trace = restore_solution(cache, record)
+    np.testing.assert_array_equal(candidate, cache['full_z'])
+    assert trace[0]['dual_lower_bound'] == pytest.approx(-1.5)
+    cache['raw_z'][0] = .9
+    with pytest.raises(AssertionError):restore_solution(cache, record)

@@ -7,6 +7,7 @@ from threadpoolctl import threadpool_limits
 from s04_e024_three_head import admit_finite,GUARDS
 from s04_e024_joint_head import write_trials
 from s04_e024_full_head import build_proxies,solve_full
+from s04_e024_full_head_recovery import restore_solution
 from s04_e023_head_scale import physical_features
 from scipy.linalg.blas import dgemm
 from s04_e024_head_cone import elastic_driver
@@ -34,7 +35,7 @@ def run(a):
     assert sha(previous/'archive_manifest.json')==pin['manifest_sha256']
     manifest=read(previous/'archive_manifest.json')['files']
     metrics=[];physical=[];trials=[];guards=[];audits=[];assets=[];solver_traces={}
-    for st in STATES:
+    for st in (a.state,):
         if time.perf_counter()-start>900:raise RuntimeError('compute cap')
         model,data,base,origin,asset=load_endpoint(old,e021,e022,e023,st,'E023')
         digest=state_digest(model);cp=e023/'runs'/HEAD_LOCKS[st]['run_id']
@@ -80,14 +81,31 @@ def run(a):
         basis_flat=basis.reshape(3,-1)
         info=dict(US=US,origin_force=mech.force(origin),basis_flat=basis_flat,weights=ref['weights'],
             driver_reference=pref,driver_masks=[gp_masks[key] for key in ('background','inside_background')])
-        cc,gg,hh,operator=build_proxies(phi,(origin-data['equilibrated_uv'])/abs(US),weights,mech,info,radius*abs(US),p0,stress)
+        cached=None;recovered_audit=None
+        if st=='c20s4':
+            recovery=read(source/'docs/research/S04/S04-E024/full_head_c20_recovery_lock.json')
+            assert recovery['source_commit']=='c328235e08d7c9067043b41b45579421cfae716c' and recovery['state']==st
+            for name,expected in recovery['files'].items():assert sha(Path(name))==expected
+            recovered_audit=read(Path(recovery['audit']))
+            assert recovered_audit['accepted_k']==0 and recovered_audit['solver']['function_evaluations']==1
+            with np.load(recovery['npz']) as z:cached={key:z[key].copy() for key in z.files}
+            np.testing.assert_array_equal(cached['original_coefficients'],theta)
+            np.testing.assert_array_equal(cached['original_basis'],basis)
+            cc,gg,hh=cached['quadratic_constants'],cached['quadratic_gradients'],cached['quadratic_hessians']
+            operator=recovered_audit['operator']
+        else:
+            cc,gg,hh,operator=build_proxies(phi,(origin-data['equilibrated_uv'])/abs(US),weights,mech,info,radius*abs(US),p0,stress)
         np.testing.assert_allclose(cc,np.array([origin_values[x] for x in GUARDS]),rtol=1e-12,atol=0)
         projected_g=np.einsum('ki,ji->kj',gg,basis_flat)
         projected_h=np.einsum('ai,kij,bj->kab',basis_flat,hh,basis_flat)
         np.testing.assert_allclose(projected_g,old_g,rtol=1e-8,atol=1e-8)
         np.testing.assert_allclose(projected_h,old_h,rtol=1e-8,atol=1e-8)
         projection=dict(gradient_max_abs=float(abs(projected_g-old_g).max()),hessian_max_abs=float(abs(projected_h-old_h).max()))
-        full_z,raw_z,solve,trace=solve_full(gg,hh);solver_traces[st]=trace
+        if cached is None:
+            full_z,raw_z,solve,trace=solve_full(gg,hh)
+        else:
+            full_z,raw_z,solve,trace=restore_solution(cached,recovered_audit['solver'])
+        solver_traces[st]=trace
         if resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*(1 if platform.system()=='Darwin' else 1024)>3*1024**3 or time.perf_counter()-start>900:
             raise RuntimeError('full proxy build/solve resource cap')
         accepted=False;chosen=theta.copy();uv=origin.copy();fraction=0.;accepted_k=None
@@ -96,6 +114,11 @@ def run(a):
             visited+=1
             t=2.**(-k);coef=theta+radius*t*full_z.reshape(theta.shape)
             candidate=network_order(model,data['xy'],base,coef,1024)
+            if cached is not None:
+                assert k==0
+                np.testing.assert_array_equal(coef,cached['head_coefficients'])
+                np.testing.assert_allclose(candidate,cached['uv'],rtol=0,atol=1e-12)
+                candidate=cached['uv'].copy()
             np.testing.assert_array_equal(candidate[window==0],origin[window==0])
             bc=(data['xy'][:,1]==-.5)|(data['xy'][:,1]==.5)
             np.testing.assert_array_equal(candidate[bc],origin[bc])
@@ -128,7 +151,8 @@ def run(a):
             radius=radius,delta_relative=float(np.linalg.norm(chosen-theta)/np.linalg.norm(theta)),affine_max_abs=affine_gap,outside_max_abs=0.,bc_max_abs=0.,
             branch_changed_gp_fraction=float(np.mean((mech.strains(uv)[...,:2].sum(2)>=0)!=mech.branches)),full_z_norm=float(np.linalg.norm(full_z)),
             outside_old3D_norm_fraction=float(np.linalg.norm(full_z-np.einsum('i,ij->j',np.einsum('ij,j->i',basis_flat,full_z),basis_flat))/max(np.linalg.norm(full_z),1e-300)),
-            operator=operator,D011_projection=projection,solver=solve))
+            operator=operator,D011_projection=projection,solver=solve,
+            recovered_prior_solve=cached is not None,scientific_solve_source='c328235e08d7c9067043b41b45579421cfae716c' if cached is not None else commit))
         np.savez_compressed(a.out/f'{st}_full_head.npz',uv=uv,head_coefficients=chosen,original_coefficients=theta,delta=chosen-theta,
             original_basis=basis,full_z=full_z,raw_z=raw_z,accepted_z=fraction*full_z,previous_3D_z=previous_z,
             quadratic_constants=cc,quadratic_gradients=gg,quadratic_hessians=hh,accepted_fraction=fraction)
@@ -143,11 +167,11 @@ def run(a):
     write_trials(a.out/'line_search.csv',trials)
     (a.out/'solver_trace.json').write_text(json.dumps(solver_traces,indent=2)+'\n')
     (a.out/'numerics.json').write_text(json.dumps(audits,indent=2)+'\n')
-    (a.out/'receipt.json').write_text(json.dumps(dict(source_commit=commit,states=list(STATES),assets=assets,wall_seconds=time.perf_counter()-start,peak_rss_bytes=int(peak),
-        parameter_radius_fraction=.02,accepted_external_fields=sum(row['accepted'] for row in audits),neural_optimizer_steps=0,new_direction_solves=0,offline_full_head_solves=3,
+    (a.out/'receipt.json').write_text(json.dumps(dict(source_commit=commit,states=[a.state],assets=assets,wall_seconds=time.perf_counter()-start,peak_rss_bytes=int(peak),
+        parameter_radius_fraction=.02,accepted_external_fields=sum(row['accepted'] for row in audits),neural_optimizer_steps=0,new_basis_direction_searches=0,offline_full_head_solves=int(a.state!='c20s4'),recovered_completed_solves=int(a.state=='c20s4'),
         original_checkpoint_writes=0,history_fatigue_damage_updates=0,remote_actions=0,scope='complete fixed-head convex proxy plus true finite seven-guard witness; not nonlinear/evolution ceiling'),indent=2)+'\n')
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--project',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--expected-commit',required=True)
+    p=argparse.ArgumentParser();p.add_argument('--project',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--expected-commit',required=True);p.add_argument('--state',choices=STATES,required=True)
     with threadpool_limits(limits=2):run(p.parse_args())

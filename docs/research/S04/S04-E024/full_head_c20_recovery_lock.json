@@ -1,0 +1,16 @@
+{
+  "source_commit": "c328235e08d7c9067043b41b45579421cfae716c",
+  "state": "c20s4",
+  "prior_attempt_exit": 1,
+  "audit": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1/recovery/c20_saved_audit.json",
+  "npz": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1/results/c20s4_full_head.npz",
+  "files": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1/recovery/c20_saved_audit.json": "984b848cd09f13ebb8320dc32161f06043988fecbe3da16e139436fe5fcabadd",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1/results/c20s4_full_head.npz": "5f8ec722ac4e55ad48aa20da2178d8bb853f6a1eaac1329e0aa2a4fe73ec3da4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1/execution.stdout.log": "59330a7786978c2e5d9919641936740cb1b440636577161dd2eb05470dc9c6e6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1/execution.stderr.log": "4b3da35f1000f83ac1e43302a9574200c63d875224b521004ed0dc969c66310a",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1/execution_command.json": "5028924344268ead2b94243c4cb56e474e1aa86fd41ef19c009b76b9af6781bd",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1/execution_exit.json": "a206fedac3bdd4148fe45f55bf476e5c8b942714e4091d3796aed7220a95efb6"
+  },
+  "scope": "restore one completed c20 solve; no rerun or new selection"
+}
