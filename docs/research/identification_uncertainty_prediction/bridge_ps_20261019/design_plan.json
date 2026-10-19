@@ -1,0 +1,92 @@
+{
+  "version": "BRIDGE-PS-v1.0",
+  "task_owner": "01a15519-43bc-7aa0-bc1d-0e15dee89f73",
+  "implementation_owner": "01a10e77-8832-7371-b4cc-e5cbdadceced",
+  "execution_enabled": false,
+  "production_runner": null,
+  "status": "DESIGN_COMPLETE_IMPLEMENTATION_PENDING_ORIGINAL_OWNER",
+  "data": {
+    "source_run": "IU-RESPONSE-STATE-20261019-R002",
+    "source_code_commit": "5ea77160e8bb72a1b3b7a2d91d9bcf09282f5011",
+    "groups": 19,
+    "origins": 1144,
+    "cases": 2288,
+    "clock": "release_step",
+    "horizons": [
+      10,
+      40
+    ],
+    "history_offsets": [
+      -20,
+      -10,
+      0
+    ],
+    "exposure": "all_development_exposed",
+    "physical_independence": "unknown",
+    "manifest_sha256": "19a75f76d68d63294744031b9369864185bb3da313f520699242132a5b7ae553"
+  },
+  "arms": {
+    "C_RAW": 20,
+    "H_RAW": 36,
+    "C_REL": 18,
+    "H_REL": 30,
+    "H_INNOV": 32,
+    "H_DONOR": 32
+  },
+  "derived_equivalence_control": "H_RAW_PULLBACK",
+  "primary_candidate": "H_INNOV",
+  "primary_baseline": "inner-selected P/S/C_RAW/C_REL",
+  "baseline_tie_order": [
+    "P",
+    "S",
+    "C_REL",
+    "C_RAW"
+  ],
+  "ridge_alphas": [
+    0.1,
+    10.0,
+    1000.0
+  ],
+  "input_residualizer_alpha": 10.0,
+  "work": {
+    "predictor_solves": 912,
+    "input_residualizer_solves_max": 76,
+    "learned_archives": 228,
+    "equivalence_archives": 38,
+    "case_method_scores": 20592,
+    "derived_selector_scores": 2288
+  },
+  "budget": {
+    "wall_seconds": 1800,
+    "cpu_threads": 1,
+    "gpu_hours": 0,
+    "rss_gib": 8,
+    "output_gib": 4,
+    "archive_gib": 4,
+    "automatic_retry": false
+  },
+  "resampling": {
+    "unit": "released_group",
+    "draws": 10000,
+    "seed": 20261019,
+    "interpretation": "reweighting_sensitivity_not_population_CI"
+  },
+  "blocked_actions": [
+    "SSH",
+    "producer_preflight",
+    "real_model_forward",
+    "autograd",
+    "training",
+    "FEM_solve",
+    "new_profile",
+    "new_private_data",
+    "fresh_holdout",
+    "owner_message",
+    "external_send"
+  ],
+  "prerequisites": [
+    "original_owner_version_bound_implementation_and_review",
+    "HQ_resolves_exact_execution_authority",
+    "old_protocol_and_stopped_runs_preserved"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "protocol": "BRIDGE-PS-v1.0",
+  "design_commit": "569cc865a9090e050042c7daf037cd2f0e535bba",
+  "files": {
+    "state.py": "5bff0d293be761e1b6b08d8f14d9e2e2d58987f666d5e48d38d894cc90ccf39d",
+    "contract.py": "bab5e13d9ce1da4e5214ff601359afb076fac8acbf3faa9ffe1a22ced6c51e6c",
+    "supervise.py": "193151c9b7fc5a3e53ac3d936d3912f3811f357c75bab0871f2da36ba7a85ba5",
+    "worker.py": "2b74e86e2e6b79a11ba8c6b738c35cb2b2e692da2415eeeb67aed95075589789",
+    "analysis.py": "7b3d1010ecbf446e389398dd241c56897d23597e91aa6ef7ed8d555b89b42ac4",
+    "verify.py": "b2fe85a9b98435650ba9279dd4217ed975376bed0080738b3921b6761af0beff",
+    "r002_base.py": "262b8ddb79f81896e6dcb6717e4722f479a6bca65a3dc84e33a322097e555d1a",
+    "config.producer.json": "8c339efce6964aa4e2efcf4c654a11b5ace9b0fee319d362370dfaa6ff98804f",
+    "frozen_cohort.json": "19a75f76d68d63294744031b9369864185bb3da313f520699242132a5b7ae553",
+    "input_manifest.json": "f54753600f76dec7a5c153f413bb27a311d9d8551b966cc91fa6b21b663151de",
+    "r002_verification.json": "b045b46ad5889a94064db76adeef93aa406757eedf6b40f51db1396767144158",
+    "design.md": "a17e23c60e7c1bf35b5e699388dbb4fee9deb744717a868ec2c2695cbb294b60",
+    "design_plan.json": "bcfe5d5762bcaca52fb201daa5f59a8e597254eab8f3f4a4c47f5dab33eb6fd5",
+    "design_source_manifest.json": "ac56be5b8a9de2ca191c4f8ba48d2730d8a805672b7144eb5779132cefeb01df",
+    "interface_fixture.py": "f50ae7017c21be31a93c764513053a5f71dc56d0e44a8dd75a3b48e006d4de4a",
+    "test_interface_fixture.py": "5c38cbd3f7d237fc9b7d9084f1d3e5ea863e7524991e72a9fd9788a9f135fc18",
+    "test_state_contract.py": "b5dd377f113e557547d01d7fadf07a499e748c529a767ee38c2b3bbe812e5d39"
+  }
+}
