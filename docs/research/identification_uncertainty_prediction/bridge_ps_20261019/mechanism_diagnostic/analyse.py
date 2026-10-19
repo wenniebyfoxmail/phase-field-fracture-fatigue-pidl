@@ -58,8 +58,8 @@ def diagnose(out):
  with source('per_case_scores.csv').open(newline='') as f:
   for row in csv.DictReader(f):
    total+=1
-   if row['arm'] not in ARMS:continue
    enter_csv(row)
+   if row['arm'] not in ARMS:continue
    i,h=int(row['case_index']),int(row['horizon_stages']);ident=(row['group'],int(row['origin_stage']))
    require(i not in meta or meta[i]==ident,'case identity changed',expected=meta.get(i),observed=ident)
    meta[i]=ident;k=(i,h,row['arm'])
@@ -185,6 +185,13 @@ def diagnose(out):
    ax.axhline(0,color='black',lw=.5,ls=':');ax.set_title(f'{g};H{h};channel{ch}');ax.set_xlabel('Origin release stage');ax.set_ylabel('Mean increment / saved train scale')
    if rr==0 and col==0:ax.legend(fontsize=8)
  fig.suptitle('Every origin in all3 preidentified C30-label groups: saved signed means\nConnected conditional readouts are NOT autonomous rollout; no selected example or physical angle claim');fig.savefig(out/'mechanism_C30_all_mean_curves.png',dpi=140);plt.close(fig)
+ for stem,question,reading in (
+  ('mechanism_error_components','Where do fixed-current contrasts appear across all19 groups?', 'Rows are all19 groups; columns are H10/H40 and channels where relevant. Red/blue show signed C_RAW minus H_INNOV; positive is lower history error. Each panel uses its own symmetric scale. Black outlines identify all three C30 labels.'),
+  ('mechanism_support_gain','Does the saved current-distance support proxy associate with gain?', 'Each point is one equally weighted group at the indicated H. X is its mean saved query-distance rank in the training CDF; Y is C_RAW minus H_INNOV balanced loss. Orange triangles identify all C30 labels. No fitted trend or OOD threshold.'),
+  ('mechanism_C30_all_mean_curves','What do all saved C30 mean-increment traces show?', 'Every origin in all3 C30 groups is shown at H10/H40 and both channels. X is origin release stage; Y is signed mean increment divided by the saved scale. Black is saved reference, grey C_RAW, blue H_INNOV. Connected conditional readouts are not autonomous rollout.')):
+  gains=[paired[g][str(h)]['C_RAW'] for g in groups for h in HS]
+  text=f"# {question}\n\nSource: R003 saved derivative CSV/NPZ only, {SOURCE}; package {AUDIT.package_sha256}, source {AUDIT.source_version}. All19 exposed groups, both H and channels, all C30 labels.\n\n{reading}\n\nNumerical context: fixed-current balanced gains positive in {sum(x>0 for x in gains)}/{len(gains)} group/H cells; range {min(gains):.8g} to {max(gains):.8g}. This aggregate context is not a causal explanation of individual panels.\n\nLimits: post-hoc exposed evidence; original R003 warning-stop breach retained. G/S are parallel increment diagnostics, not additive native-error shares. Support ranks do not establish identifiability or innovation coverage; no physical crack-tip or loading-angle claim. No new fits or model forward.\n"
+  (out/(stem+'.md')).write_text(text)
  save(out/'arithmetic_receipt.json',{'status':'COMPLETE_SAVED_DERIVATIVE_DIAGNOSTIC','elapsed_seconds':time.monotonic()-start,'source_files':len(read_log),'table_rows':len(table),'figures':3,'scientific_fit_or_forward':False,'native_target_read':False,'coefficient_read_or_forward':False,'warning_contract_breach_of_R003_preserved':True})
  print('COMPLETE: bounded saved-output arithmetic and3 figures',flush=True)
 

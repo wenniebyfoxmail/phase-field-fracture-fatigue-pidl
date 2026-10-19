@@ -37,6 +37,7 @@ def main(argv=None):
     try:pchild.wait(timeout=5)
     except subprocess.TimeoutExpired:os.killpg(pchild.pid,signal.SIGKILL);pchild.wait()
    rc=pchild.wait()
+ if not reason and time.monotonic()-start>600:reason='wall_budget'
  if not reason and rc!=0:reason='arithmetic_failed'
  if not reason and (out/'stderr.log').stat().st_size:reason='stderr_or_warning'
  size=sum(f.stat().st_size for f in out.rglob('*') if f.is_file())
