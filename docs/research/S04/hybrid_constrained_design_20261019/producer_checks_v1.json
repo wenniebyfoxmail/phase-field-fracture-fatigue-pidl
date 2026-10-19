@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_hybrid_incremental.py",
+    "tests/test_hybrid_producer.py",
+    "tests/test_native_q4_damage_qp.py",
+    "tests/test_damage_conditioned_equilibrium.py",
+    "--tb=short"
+  ],
+  "pythonpath": "source:tools:.:tests",
+  "returncode": 0,
+  "stdout": ".........................................                                [100%]\n41 passed in 0.69s\n",
+  "stderr": "",
+  "scope": "synthetic unit and owned benign watchdog child only; no project FEM or training",
+  "artifact_id": "73f617acd9d23fc6706c6493665e3d92035d29f4e317bc3e3b3566a43c62d276"
+}

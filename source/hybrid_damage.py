@@ -65,6 +65,7 @@ def kkt_audit(qp, damage, *, gradient_scale, bound_tolerance):
     primal = max(float(np.max(qp.lower - x)), float(np.max(x - qp.upper)), 0.)
     return {"operator_id": qp.identity, "primal_inf": primal,
             "kkt_scaled_inf": float(np.max(violation)) / gradient_scale,
+            "kkt_l2": float(np.linalg.norm(violation)),
             "projected_inf": float(np.max(np.abs(projected)))}
 
 

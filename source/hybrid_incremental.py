@@ -29,6 +29,7 @@ class SolverSettings:
     force_scale: float
     damage_gradient_scale: float
     force_tolerance: float = 1.e-8
+    joint_residual_sum_tolerance: float = 4.e-6
     damage_tolerance: float = 1.e-7
     bound_tolerance: float = 1.e-10
     fatigue_tolerance: float = 1.e-8
@@ -61,6 +62,7 @@ class StepProposal:
     state: AcceptedState
     certificate: dict
     work: tuple
+    prediction_context: tuple | None = None
 
 
 class NativeQ4Backend:
@@ -150,7 +152,7 @@ class NativeQ4Backend:
 
 
 def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id,
-               settings, predictor=None, classical_initial=None):
+               settings, predictor=None, classical_initial=None, return_prediction_context=False):
     """One complete coupled physical substep; no retry, commit or training.
 
     ``predictor.predict(old, u_pred, psi_pred, next_load_id, dofs, values)``
@@ -208,8 +210,12 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
         if (d.shape != lower.shape or not np.isfinite(d).all()
                 or np.any(d < lower) or np.any(d > 1)):
             raise ValueError("invalid classical feasible initial guess")
-        if predictor is not None:
+        prediction_context = None
+        if predictor is not None or return_prediction_context:
             psi_pred, _ = call("prediction_features", lambda: backend.trial(old, u_pred, lower))
+            if return_prediction_context:
+                prediction_context = (frozen_array(u_pred), frozen_array(psi_pred))
+        if predictor is not None:
             try:
                 a = call("network_inference", lambda: predictor.predict(
                     old, frozen_array(u_pred), frozen_array(psi_pred), next_load_id,
@@ -252,13 +258,15 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             force_audit = call("fresh_final_force", lambda: backend.force_audit(
                 final_u, new_d, dofs, values, settings))
             fatigue_residual = float(np.max(np.abs(final_q.fatigue - q.fatigue)))
-            scalars = list(damage_audit[k] for k in ("primal_inf", "kkt_scaled_inf", "projected_inf"))
+            scalars = list(damage_audit[k] for k in ("primal_inf", "kkt_scaled_inf", "kkt_l2", "projected_inf"))
             scalars += [force_audit[k] for k in ("force_inf", "force_l2", "force_scaled", "boundary_inf")]
             scalars += [fatigue_residual]
             passed = (np.isfinite(scalars).all()
                       and damage_audit["primal_inf"] <= settings.bound_tolerance
                       and max(damage_audit["kkt_scaled_inf"], damage_audit["projected_inf"]) <= settings.damage_tolerance
                       and force_audit["force_scaled"] <= settings.force_tolerance
+                      and force_audit["force_l2"] <= settings.force_tolerance * settings.force_scale
+                      and force_audit["force_l2"] + damage_audit["kkt_l2"] <= settings.joint_residual_sum_tolerance
                       and force_audit["boundary_inf"] <= settings.bound_tolerance
                       and fatigue_residual <= settings.fatigue_tolerance)
             remaining()
@@ -277,7 +285,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                                    model_id=attempted_model_id if neural_used else "NN_OFF",
                                    attempted_model_id=attempted_model_id,
                                    initialization_source=initialization_source)
-                return StepProposal(previous_id, state, certificate, tuple(work))
+                return StepProposal(previous_id, state, certificate, tuple(work), prediction_context)
             d, u_cache = new_d, final_u
         raise RuntimeError("joint iteration cap reached; no accepted proposal")
     except Exception as exc:

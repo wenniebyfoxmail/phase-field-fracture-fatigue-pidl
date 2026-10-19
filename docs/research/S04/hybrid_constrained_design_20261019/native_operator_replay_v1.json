@@ -1,0 +1,79 @@
+{
+  "schema": "hybrid-native-operator-replay-v1",
+  "rows": [
+    {
+      "step": 1,
+      "errors": {
+        "raw": 5.262646872103427e-14,
+        "force": 3.0515329905672614e-17,
+        "damage": 9.75781955236954e-19,
+        "A": 5.262646872103427e-14,
+        "r": 5.262646872103427e-14,
+        "f": 0.0
+      },
+      "passed": true,
+      "wall_seconds": 0.4788289160351269
+    },
+    {
+      "step": 2,
+      "errors": {
+        "raw": 4.370967563588346e-13,
+        "force": 8.191630022777118e-17,
+        "damage": 1.5178830414797062e-18,
+        "A": 1.7364777150918886e-13,
+        "r": 3.210295662141747e-13,
+        "f": 0.0
+      },
+      "passed": true,
+      "wall_seconds": 0.4848724579787813
+    },
+    {
+      "step": 3,
+      "errors": {
+        "raw": 1.1274557676355101e-12,
+        "force": 1.2287813147934936e-16,
+        "damage": 3.0357660829594124e-18,
+        "A": 6.346448973987284e-13,
+        "r": 7.772268297648904e-13,
+        "f": 0.0
+      },
+      "passed": true,
+      "wall_seconds": 0.4875048749963753
+    },
+    {
+      "step": 4,
+      "errors": {
+        "raw": 1.5838727356574933e-12,
+        "force": 1.862248203827656e-16,
+        "damage": 5.902125576467965e-18,
+        "A": 1.5838727356574933e-12,
+        "r": 1.5838727356574933e-12,
+        "f": 0.0
+      },
+      "passed": true,
+      "wall_seconds": 0.4881794999819249
+    },
+    {
+      "step": 5,
+      "errors": {
+        "raw": 6.465218929522581e-37,
+        "force": 4.4718552564716107e-29,
+        "damage": 8.673617379884035e-19,
+        "A": 0.0,
+        "r": 6.459178772621956e-39,
+        "f": 0.0
+      },
+      "passed": true,
+      "wall_seconds": 0.48766862496268004
+    }
+  ],
+  "passed": true,
+  "tolerance": 1e-10,
+  "inputs_sha256": "2ecb2c68041ac128b5cdfa706536933c10fee2ceb888ddcf3392169cd832f754",
+  "state0_id": "3a0d14f7a8ca7ab6f81619b338f84e1acf4bcbd20aab61f821cbbf28b269c2e5",
+  "total_wall_seconds": 2.807566792005673,
+  "new_fem_solves": 0,
+  "training_updates": 0,
+  "scope": "known five c1 saved fields; coefficient/DOF/GP/accepted-base map parity only; no convergence/label promotion",
+  "source_identity": "native saved MEX outputs and captured source/binary manifest; not live Fortran byte identity"
+}

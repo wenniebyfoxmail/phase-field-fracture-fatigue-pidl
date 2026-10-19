@@ -1,0 +1,9 @@
+{
+  "native_captured_source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/phase_tangent_preparation/at1_penalty_fatigue.f90",
+  "native_captured_sha256": "70b01f0b12480035df8254de2b5b45eaec6943893650c49b579e97be99db1645",
+  "live_source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/GRIPHFiTH/Sources/+phase_field/+mex/Modules/fem/assembly/pf/at1_penalty_fatigue.f90",
+  "live_sha256": "ff6c9ddbbf9c7df9ab51c29a5ceeaec2c36ff2f3e01a0e36a2b9f38f9448be73",
+  "universal_newline_text_identical": true,
+  "native_crlf": 127,
+  "binding": "captured native source SHA and MEX hashes; live hash differs only line endings"
+}
