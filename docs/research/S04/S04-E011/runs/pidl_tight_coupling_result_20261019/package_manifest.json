@@ -1,0 +1,13 @@
+{
+  "commit": "137cb031bad7c5f656d08c642e65627bcdd6076c",
+  "worker_blob": "1d4ec49da007426be8e7f86f3104d9576e8c49ec",
+  "code_bundle_bytes": 966356,
+  "code_bundle_sha256": "b1c3dbc3f9bc29ed5b760182859a2de8e131a474663f40d38f3856a11d66827a",
+  "contracts": {
+    "probe": "d1113336e8e9ab197ab46c577ceda542fa799e7d4de1e46d7cbad4fd68cab504",
+    "production": "8361980c8571d8f4f3abacf5057fa954c346f960db523f704d2dfa7e86b0bb27"
+  },
+  "source_actual_Phi_run": "pf_s04e011_readoutaudit_a698ec7_20261018T203915Z",
+  "baseline_run": "pf_s04e011_persistphi_f72434a_20261019T112844Z_production",
+  "baseline_energy": 0.005267089573071509
+}

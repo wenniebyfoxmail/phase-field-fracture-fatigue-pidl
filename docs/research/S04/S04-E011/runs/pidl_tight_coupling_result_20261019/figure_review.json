@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "reviewer": "root",
+  "method": "Actual visual inspection of all four rendered PNGs, captions and saved metrics; no regeneration or producer work.",
+  "figures": [
+    {
+      "png": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling/tight_coupling_stage_decision.png",
+      "png_sha256": "768f44053cbced573064a14a5a974c23da7fade623effe68f7ab50045224650f",
+      "sidecar": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling/tight_coupling_stage_decision.md",
+      "sidecar_sha256": "4d3c2d3f09549288de8a49f9d61331ccc8ca7e3d4f8008c6a68266325b82e179",
+      "labels_legible": true,
+      "no_clipping_or_blank_panels": true,
+      "field_scales_consistent": true
+    },
+    {
+      "png": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling/tight_coupling_gradient_spaces.png",
+      "png_sha256": "3521c7ebc141a731c1668e09c15d93ed10ca9c97570610adc72e34271881988a",
+      "sidecar": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling/tight_coupling_gradient_spaces.md",
+      "sidecar_sha256": "93f30b44b70930dbf832b46bb11ec0c4e059c590b28f6f79eb07ded97aafe2c6",
+      "labels_legible": true,
+      "no_clipping_or_blank_panels": true,
+      "field_scales_consistent": true
+    },
+    {
+      "png": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling/c20_tight_coupling_fields.png",
+      "png_sha256": "0736fd936bb3c262c92d95e81d29fa8a1600a78e0b272904148163f8d1df0df5",
+      "sidecar": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling/c20_tight_coupling_fields.md",
+      "sidecar_sha256": "6b0c48bbf0486793af2420daa0179833563b512f282cf6af0fd912090e9b0add",
+      "labels_legible": true,
+      "no_clipping_or_blank_panels": true,
+      "field_scales_consistent": true
+    },
+    {
+      "png": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling/c20_tight_coupling_errors.png",
+      "png_sha256": "0cb67acea13ea40dc563e2da764f4f2434db873f5841e3d4537fdec3deb0d09c",
+      "sidecar": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling/c20_tight_coupling_errors.md",
+      "sidecar_sha256": "ac2d44d0ad9d3a198fc503b1d941ceccccc335a30efda16b7091973442de5389",
+      "labels_legible": true,
+      "no_clipping_or_blank_panels": true,
+      "field_scales_consistent": true
+    }
+  ],
+  "interpretation": "Energy-axis zoom exaggerates visual size; extra gain is only 0.0119238321 percent. All metrics retain own coordinate units. Active maps use common row scales; signed raw/active errors use labelled SymLogNorm linthresh1e-12. Candidate markers are not closed endpoints. No FEM recovery or pure cadence attribution."
+}

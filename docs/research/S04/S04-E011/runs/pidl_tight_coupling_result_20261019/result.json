@@ -1,0 +1,2055 @@
+{
+  "status": "completed_independently_reviewed",
+  "source_commit": "137cb031bad7c5f656d08c642e65627bcdd6076c",
+  "branch": "codex/hard5-q4-t3-2x2-20261005",
+  "run": "pf_s04e011_tightcouple_137cb03_20261019T122720Z_production",
+  "probe_run": "pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe",
+  "state": {
+    "cycle": 20,
+    "substep": 4,
+    "step": 99,
+    "U": 0.11999988,
+    "FEM_reference": {
+      "source_commit": "0a0691ec9b480aa4069258dbf8bb4c15b277f8fd",
+      "outer": 18,
+      "accepted": true,
+      "pre_version": 98,
+      "history_commits": 0,
+      "free_u_l2": 2.8221899255188885e-15,
+      "projected_free_d_l2": 3.1479478827647947e-06,
+      "label": "MCS natural c20s4 accepted outer18; evaluated against original s3 frozen prehistory; no commit",
+      "rd_fem_semantics": "full native raw damage residual; projected free residual norm reported separately"
+    }
+  },
+  "decision": {
+    "efficacy": "supports_bounded_directional_gain",
+    "primary_met": true,
+    "operational_coupling_closure": true,
+    "endpoint_eligible": true,
+    "head_closure_failure_encountered": false,
+    "all_nonzero_hidden_steps_closed": true,
+    "closed_pairs": 8,
+    "hidden_actual_changed": true,
+    "preceding_energy_minus_new": 6.280389187752339e-07,
+    "original_directional_margin": 1e-10,
+    "common_initial_energy_minus_new": 1.9384710711828693e-06,
+    "source_relative_energy_reduction": 0.0003679430318997734,
+    "terminal_actual_Phi_gradient_inf": 3.9319147113539565e-11,
+    "conclusion": "The combined cadence/history-reset policy resolves the original directional energy margin against the preceding same-start terminal. No candidate or FEM-field metric rescues the primary. This does not establish full-network convergence, capacity or FEM evolution reproduction."
+  },
+  "metrics": {
+    "FEM": {
+      "E_el": 0.004320576024533599,
+      "free_u_l2": 3.775916400752357e-15,
+      "uv_mass_rel_L2": 0.0,
+      "uv_H1_rel": 0.0,
+      "elastic_excess_relative_FEM": 0.0,
+      "active_integral": 0.004317519850105422,
+      "active_vs_FEM_absolute_L2": 0.0,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 0.0,
+      "active_vs_FEM_correlation": 1.0,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.004317519850105422,
+      "raw_vs_FEM_absolute_L2": 0.0,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.0,
+      "raw_vs_FEM_correlation": 1.0,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 2.1736944777364178,
+      "boundary_maxabs": 0.0,
+      "fixed_FEM_damage_exact": true
+    },
+    "common_initial": {
+      "E_el": 0.005268400005223915,
+      "free_u_l2": 0.013488941154683494,
+      "uv_mass_rel_L2": 0.07548651474572704,
+      "uv_H1_rel": 0.5876388790246524,
+      "elastic_excess_relative_FEM": 0.21937444806161777,
+      "active_integral": 0.005265939601442452,
+      "active_vs_FEM_absolute_L2": 0.043696279100125975,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.120899302222349,
+      "active_vs_FEM_correlation": 0.10251798586523098,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005265939601442452,
+      "raw_vs_FEM_absolute_L2": 51.12505226774235,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7190289696425881,
+      "raw_vs_FEM_correlation": 0.8320428000502166,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8202343306538182,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true
+    },
+    "preceding_baseline": {
+      "E_el": 0.005267089573071508,
+      "free_u_l2": 0.013521654994065498,
+      "uv_mass_rel_L2": 0.07539654652064194,
+      "uv_H1_rel": 0.5871242726860942,
+      "elastic_excess_relative_FEM": 0.21907114772736436,
+      "active_integral": 0.0052645949162873525,
+      "active_vs_FEM_absolute_L2": 0.04356723663687682,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.1028232568581915,
+      "active_vs_FEM_correlation": 0.10273196324072736,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.0052645949162873525,
+      "raw_vs_FEM_absolute_L2": 51.10476798408107,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7187436890035673,
+      "raw_vs_FEM_correlation": 0.8327238232699563,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8206110548696918,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true
+    },
+    "observed_restored_terminal": {
+      "E_el": 0.0052664615341527325,
+      "free_u_l2": 0.01354745258341672,
+      "uv_mass_rel_L2": 0.07534909504853779,
+      "uv_H1_rel": 0.5868483093512513,
+      "elastic_excess_relative_FEM": 0.2189257877301769,
+      "active_integral": 0.005263969498876137,
+      "active_vs_FEM_absolute_L2": 0.04354186331595296,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.099269005889085,
+      "active_vs_FEM_correlation": 0.1027256808378238,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005263969498876137,
+      "raw_vs_FEM_absolute_L2": 51.08424605960129,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7184550661550957,
+      "raw_vs_FEM_correlation": 0.8330569783329262,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8212073415179019,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true
+    },
+    "new_last_closed": {
+      "E_el": 0.0052664615341527325,
+      "free_u_l2": 0.01354745258341672,
+      "uv_mass_rel_L2": 0.07534909504853779,
+      "uv_H1_rel": 0.5868483093512513,
+      "elastic_excess_relative_FEM": 0.2189257877301769,
+      "active_integral": 0.005263969498876137,
+      "active_vs_FEM_absolute_L2": 0.04354186331595296,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.099269005889085,
+      "active_vs_FEM_correlation": 0.1027256808378238,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005263969498876137,
+      "raw_vs_FEM_absolute_L2": 51.08424605960129,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7184550661550957,
+      "raw_vs_FEM_correlation": 0.8330569783329262,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8212073415179019,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true
+    }
+  },
+  "relative_change_percent_vs_preceding": {
+    "E_el": -0.011923832128968304,
+    "free_u_l2": 0.1907872177077774,
+    "uv_mass_rel_L2": -0.06293586947136998,
+    "uv_H1_rel": -0.04700254233748202,
+    "active_vs_FEM_relative_L2": -0.05823945442156031
+  },
+  "gradient_spaces": {
+    "initial": {
+      "hidden_gradient_inf": 0.04401310774368345,
+      "uv_head_gradient_inf": 1.2862145159706073e-13,
+      "conditioned_head_gradient_inf": 3.3665696098916786e-11
+    },
+    "previous": {
+      "hidden_gradient_inf": 0.02588867337474283,
+      "conditioned_head_gradient_inf": 4.893260839924918e-11
+    },
+    "new": {
+      "hidden_gradient_inf": 0.024650442618463934,
+      "uv_head_gradient_inf": 4.183394082535319e-14,
+      "conditioned_head_gradient_inf": 3.9319147113539565e-11
+    }
+  },
+  "work": {
+    "evaluations": 316,
+    "cap": 325,
+    "elapsed_seconds": 114.92739529255778,
+    "dense_assemblies": 16,
+    "explicit_tangent_vector_products": 80,
+    "linear_solves": 16,
+    "hidden_total_evaluations": 32,
+    "closed_pairs": 8,
+    "stop": "max_eight_pairs_completed"
+  },
+  "probe_work": {
+    "evaluations": 36,
+    "cap": 40,
+    "elapsed_seconds": 6.488950436003506,
+    "elapsed_cap_seconds": 60
+  },
+  "previous_work": {
+    "production_evaluations": 156,
+    "elapsed_seconds": 66.839440205,
+    "hidden_completed_steps": 24,
+    "hidden_evaluations": 80,
+    "closed_pairs": 2
+  },
+  "history_commits": 0,
+  "rollout_steps": 0,
+  "terminal_identity": {
+    "label": "final",
+    "basis_ref": "/mnt/data2/drtao/pidl_archives/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/output/c20_s4/bases/hidden_8",
+    "basis_phi_sha256": "7fc6fe524b411a8d3ccd003e3469dd7f32efbdf16470bbef656f7f76c75f757d",
+    "rank": 386,
+    "hidden_sha256": "4e9c21729cfed7e45527e9d40644c9da6dfdfb36ccd3f8bbdfb6f4cf84d7179d",
+    "basis_bound_hidden_sha256": "4e9c21729cfed7e45527e9d40644c9da6dfdfb36ccd3f8bbdfb6f4cf84d7179d",
+    "bound_weights_sha256": "17756d2ff1a101d6cac7ec390901bd87305a60943b855d6abcda0e9b3b0bed3b",
+    "basis_originating_weights_sha256": "19ade148fca0a8df4ae16c01ea66679900c5cbb45d3950d7b29484b66f4331b7",
+    "basis_hidden_match": true,
+    "actual_projected_gradient_inf": 3.9319147113539565e-11,
+    "actual_projected_gradient_l2": 1.8697250518987933e-10,
+    "head_closed": true,
+    "local_actual_basis_files": {
+      "phi.npy": "not_retrieved_no_reconstruction",
+      "transform.npy": "present_SHA_verified_without_forward_or_reconstruction"
+    },
+    "fields_maxabs_vs_checkpoint": null,
+    "independent_nodal_force_maxabs_difference": 2.4340338772299575e-17
+  },
+  "hidden_change": {
+    "producer_evidence": {
+      "before_sha256": "4ac4184626f19670efb864b277e010e2996605f8655dbaaeb7a0a13cdd34e8a4",
+      "after_sha256": "4e9c21729cfed7e45527e9d40644c9da6dfdfb36ccd3f8bbdfb6f4cf84d7179d",
+      "maxabs": 1.8411179637311398e-05,
+      "changed": true,
+      "changed_tensors": 23,
+      "total_hidden_tensors": 24
+    },
+    "verified_from_digest_and_delta": true,
+    "actual_hidden_changed": true,
+    "limitation": "Checks producer parameter digests/deltas; no Mac model training or hidden-parameter optimization"
+  },
+  "independent_four_checks": {
+    "common_initial": {
+      "E_el": {
+        "producer": 0.005268400005223913,
+        "independent": 0.005268400005223915,
+        "absolute_difference": 2.6020852139652106e-18,
+        "tolerance": 6.268400005223916e-12,
+        "passed": true
+      },
+      "free_u_l2": {
+        "producer": 0.013488941154683493,
+        "independent": 0.013488941154683494,
+        "absolute_difference": 1.734723475976807e-18,
+        "tolerance": 1.4488941154683494e-11,
+        "passed": true
+      },
+      "uv_mass_rel_L2": {
+        "producer": 0.07548651474572704,
+        "independent": 0.07548651474572704,
+        "absolute_difference": 0.0,
+        "tolerance": 7.648651474572704e-11,
+        "passed": true
+      },
+      "uv_H1_rel": {
+        "producer": 0.5876388790246525,
+        "independent": 0.5876388790246524,
+        "absolute_difference": 1.1102230246251565e-16,
+        "tolerance": 5.886388790246525e-10,
+        "passed": true
+      }
+    },
+    "preceding_baseline": {
+      "E_el": {
+        "producer": 0.005267089573071509,
+        "independent": 0.005267089573071508,
+        "absolute_difference": 8.673617379884035e-19,
+        "tolerance": 6.267089573071509e-12,
+        "passed": true
+      },
+      "free_u_l2": {
+        "producer": 0.013521654994065498,
+        "independent": 0.013521654994065498,
+        "absolute_difference": 0.0,
+        "tolerance": 1.4521654994065499e-11,
+        "passed": true
+      },
+      "uv_mass_rel_L2": {
+        "producer": 0.07539654652064194,
+        "independent": 0.07539654652064194,
+        "absolute_difference": 0.0,
+        "tolerance": 7.639654652064194e-11,
+        "passed": true
+      },
+      "uv_H1_rel": {
+        "producer": 0.5871242726860942,
+        "independent": 0.5871242726860942,
+        "absolute_difference": 0.0,
+        "tolerance": 5.881242726860942e-10,
+        "passed": true
+      }
+    },
+    "observed_restored_terminal": {
+      "E_el": {
+        "producer": 0.0052664615341527325,
+        "independent": 0.0052664615341527325,
+        "absolute_difference": 0.0,
+        "tolerance": 6.2664615341527325e-12,
+        "passed": true
+      },
+      "free_u_l2": {
+        "producer": 0.013547452583416717,
+        "independent": 0.01354745258341672,
+        "absolute_difference": 1.734723475976807e-18,
+        "tolerance": 1.4547452583416719e-11,
+        "passed": true
+      },
+      "uv_mass_rel_L2": {
+        "producer": 0.07534909504853779,
+        "independent": 0.07534909504853779,
+        "absolute_difference": 0.0,
+        "tolerance": 7.63490950485378e-11,
+        "passed": true
+      },
+      "uv_H1_rel": {
+        "producer": 0.5868483093512512,
+        "independent": 0.5868483093512513,
+        "absolute_difference": 1.1102230246251565e-16,
+        "tolerance": 5.878483093512514e-10,
+        "passed": true
+      }
+    }
+  },
+  "stage_metrics": [
+    {
+      "sequence": 0,
+      "stage": "initial",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "initial_closed",
+      "pair": 0,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.005268400005223915,
+      "free_u_l2": 0.013488941154683494,
+      "uv_mass_rel_L2": 0.07548651474572704,
+      "uv_H1_rel": 0.5876388790246524,
+      "elastic_excess_relative_FEM": 0.21937444806161777,
+      "active_integral": 0.005265939601442452,
+      "active_vs_FEM_absolute_L2": 0.043696279100125975,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.120899302222349,
+      "active_vs_FEM_correlation": 0.10251798586523098,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005265939601442452,
+      "raw_vs_FEM_absolute_L2": 51.12505226774235,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7190289696425881,
+      "raw_vs_FEM_correlation": 0.8320428000502166,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8202343306538182,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.07284678068456894,
+      "hidden_gradient_inf": 0.04401310774368345,
+      "uv_head_gradient_l2": 6.845775895537644e-13,
+      "uv_head_gradient_inf": 1.2862145159706073e-13,
+      "conditioned_head_gradient_l2": 1.6479403056443475e-10,
+      "conditioned_head_gradient_inf": 3.3665696098916786e-11
+    },
+    {
+      "sequence": 1,
+      "stage": "hidden_1",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "hidden_candidate_in_closed_pair",
+      "pair": 1,
+      "pair_completed": true,
+      "retained_closed_endpoint": false,
+      "E_el": 0.005268342384135609,
+      "free_u_l2": 0.013489030987883772,
+      "uv_mass_rel_L2": 0.07547656076265914,
+      "uv_H1_rel": 0.5876257001956605,
+      "elastic_excess_relative_FEM": 0.21936111162499938,
+      "active_integral": 0.005265876721822819,
+      "active_vs_FEM_absolute_L2": 0.04358373897778924,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.105134876269638,
+      "active_vs_FEM_correlation": 0.10277834215927172,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005265876721822819,
+      "raw_vs_FEM_absolute_L2": 51.15125334858739,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.719397464838737,
+      "raw_vs_FEM_correlation": 0.8323208662095415,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8189613162241095,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.20680540411158518,
+      "hidden_gradient_inf": 0.03531925074323783,
+      "uv_head_gradient_l2": 0.00015168446454010963,
+      "uv_head_gradient_inf": 3.0161482810422025e-05,
+      "conditioned_head_gradient_l2": 0.007338306087310895,
+      "conditioned_head_gradient_inf": 0.0010301286770159008
+    },
+    {
+      "sequence": 2,
+      "stage": "head_1",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "closed_head",
+      "pair": 1,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.005268334441187121,
+      "free_u_l2": 0.013481508807370564,
+      "uv_mass_rel_L2": 0.07548735660955781,
+      "uv_H1_rel": 0.5876415734640297,
+      "elastic_excess_relative_FEM": 0.21935927322464654,
+      "active_integral": 0.005265846562761782,
+      "active_vs_FEM_absolute_L2": 0.04363794798322773,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.112728380119298,
+      "active_vs_FEM_correlation": 0.10267807028285922,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005265846562761782,
+      "raw_vs_FEM_absolute_L2": 51.13805460010905,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7192118360305894,
+      "raw_vs_FEM_correlation": 0.8321003174653151,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8196871726201839,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.0639835510766422,
+      "hidden_gradient_inf": 0.03569858495532934,
+      "uv_head_gradient_l2": 2.358406643863265e-13,
+      "uv_head_gradient_inf": 5.337614031319937e-14,
+      "conditioned_head_gradient_l2": 2.0157614813444225e-10,
+      "conditioned_head_gradient_inf": 5.6219792710088257e-11
+    },
+    {
+      "sequence": 3,
+      "stage": "hidden_2",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "hidden_candidate_in_closed_pair",
+      "pair": 2,
+      "pair_completed": true,
+      "retained_closed_endpoint": false,
+      "E_el": 0.0052674223617122425,
+      "free_u_l2": 0.013459315513426173,
+      "uv_mass_rel_L2": 0.07529056957633372,
+      "uv_H1_rel": 0.5875888068543644,
+      "elastic_excess_relative_FEM": 0.21914817186461955,
+      "active_integral": 0.0052650681857403835,
+      "active_vs_FEM_absolute_L2": 0.043692771448732834,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.120407956473767,
+      "active_vs_FEM_correlation": 0.10257688045077942,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.0052650681857403835,
+      "raw_vs_FEM_absolute_L2": 51.105493339835455,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.718753890495352,
+      "raw_vs_FEM_correlation": 0.8320986852157064,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8210913993963459,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 3.778035509498455,
+      "hidden_gradient_inf": 0.4110753432316346,
+      "uv_head_gradient_l2": 0.002935139805054905,
+      "uv_head_gradient_inf": 0.0005577684880285327,
+      "conditioned_head_gradient_l2": 0.035589401851337896,
+      "conditioned_head_gradient_inf": 0.005780457825656262
+    },
+    {
+      "sequence": 4,
+      "stage": "head_2",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "closed_head",
+      "pair": 2,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.0052672848680305195,
+      "free_u_l2": 0.013529095980243332,
+      "uv_mass_rel_L2": 0.07540417541205363,
+      "uv_H1_rel": 0.587158100279653,
+      "elastic_excess_relative_FEM": 0.21911634886672715,
+      "active_integral": 0.005264821486076863,
+      "active_vs_FEM_absolute_L2": 0.04363413673644941,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.112194507253544,
+      "active_vs_FEM_correlation": 0.10255134729511338,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264821486076863,
+      "raw_vs_FEM_absolute_L2": 51.092755932718795,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7185747500483742,
+      "raw_vs_FEM_correlation": 0.8326218073041365,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8211387971618019,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.07010198109971744,
+      "hidden_gradient_inf": 0.03775148025591637,
+      "uv_head_gradient_l2": 4.099971523289817e-13,
+      "uv_head_gradient_inf": 8.603403091941159e-14,
+      "conditioned_head_gradient_l2": 1.8089050218988856e-10,
+      "conditioned_head_gradient_inf": 3.3395557152982036e-11
+    },
+    {
+      "sequence": 5,
+      "stage": "hidden_3",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "hidden_candidate_in_closed_pair",
+      "pair": 3,
+      "pair_completed": true,
+      "retained_closed_endpoint": false,
+      "E_el": 0.005267242857909886,
+      "free_u_l2": 0.01352929562231945,
+      "uv_mass_rel_L2": 0.07539726967952436,
+      "uv_H1_rel": 0.5871503322212891,
+      "elastic_excess_relative_FEM": 0.21910662559825655,
+      "active_integral": 0.005264774313255001,
+      "active_vs_FEM_absolute_L2": 0.04353837110182789,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.0987798225663505,
+      "active_vs_FEM_correlation": 0.10277345990731235,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264774313255001,
+      "raw_vs_FEM_absolute_L2": 51.11596281405032,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7189011344574313,
+      "raw_vs_FEM_correlation": 0.8328634442955358,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8200174452111285,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.16645946705455122,
+      "hidden_gradient_inf": 0.021853556706718322,
+      "uv_head_gradient_l2": 0.00012098361478583349,
+      "uv_head_gradient_inf": 2.4091286700924947e-05,
+      "conditioned_head_gradient_l2": 0.006563717791394055,
+      "conditioned_head_gradient_inf": 0.0009328465239229194
+    },
+    {
+      "sequence": 6,
+      "stage": "head_3",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "closed_head",
+      "pair": 3,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.005267236503432257,
+      "free_u_l2": 0.013521524583178443,
+      "uv_mass_rel_L2": 0.07540558242131247,
+      "uv_H1_rel": 0.5871682330061982,
+      "elastic_excess_relative_FEM": 0.219105154850469,
+      "active_integral": 0.005264749734578299,
+      "active_vs_FEM_absolute_L2": 0.0435862450990368,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.105485929405314,
+      "active_vs_FEM_correlation": 0.10268496081183315,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264749734578299,
+      "raw_vs_FEM_absolute_L2": 51.10442122084938,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7187388120831901,
+      "raw_vs_FEM_correlation": 0.8326634871928537,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8206580363762216,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.053880759047980946,
+      "hidden_gradient_inf": 0.02764514016772104,
+      "uv_head_gradient_l2": 6.817740271728736e-13,
+      "uv_head_gradient_inf": 1.4533372335451267e-13,
+      "conditioned_head_gradient_l2": 2.053758036751945e-10,
+      "conditioned_head_gradient_inf": 3.786868626835804e-11
+    },
+    {
+      "sequence": 7,
+      "stage": "hidden_4",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "hidden_candidate_in_closed_pair",
+      "pair": 4,
+      "pair_completed": true,
+      "retained_closed_endpoint": false,
+      "E_el": 0.005266896209803662,
+      "free_u_l2": 0.013514429734845764,
+      "uv_mass_rel_L2": 0.07530310674049745,
+      "uv_H1_rel": 0.5871375076251002,
+      "elastic_excess_relative_FEM": 0.21902639367912013,
+      "active_integral": 0.005264440932456538,
+      "active_vs_FEM_absolute_L2": 0.043293201321701454,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.064436863234201,
+      "active_vs_FEM_correlation": 0.10338631677015192,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264440932456538,
+      "raw_vs_FEM_absolute_L2": 51.173136296093325,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7197052292810213,
+      "raw_vs_FEM_correlation": 0.8334712885548053,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8173328580256647,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 2.2373158836115055,
+      "hidden_gradient_inf": 0.24914512299882857,
+      "uv_head_gradient_l2": 0.0017198248529615998,
+      "uv_head_gradient_inf": 0.0003305811665348553,
+      "conditioned_head_gradient_l2": 0.021211724396118802,
+      "conditioned_head_gradient_inf": 0.003749215394894249
+    },
+    {
+      "sequence": 8,
+      "stage": "head_4",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "closed_head",
+      "pair": 4,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.0052668355088611365,
+      "free_u_l2": 0.01351046635251891,
+      "uv_mass_rel_L2": 0.07539212692399996,
+      "uv_H1_rel": 0.5870848489375771,
+      "elastic_excess_relative_FEM": 0.21901234440833273,
+      "active_integral": 0.0052642761537182205,
+      "active_vs_FEM_absolute_L2": 0.04342981696911614,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.083573747155532,
+      "active_vs_FEM_correlation": 0.10308933378634969,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.0052642761537182205,
+      "raw_vs_FEM_absolute_L2": 51.132556956179734,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7191345164959461,
+      "raw_vs_FEM_correlation": 0.8329427895619129,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8194027127678271,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.06872866871255197,
+      "hidden_gradient_inf": 0.04101666930292136,
+      "uv_head_gradient_l2": 1.3917488710386626e-13,
+      "uv_head_gradient_inf": 2.6619223318646856e-14,
+      "conditioned_head_gradient_l2": 1.9318772932150076e-10,
+      "conditioned_head_gradient_inf": 3.667147835395568e-11
+    },
+    {
+      "sequence": 9,
+      "stage": "hidden_5",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "hidden_candidate_in_closed_pair",
+      "pair": 5,
+      "pair_completed": true,
+      "retained_closed_endpoint": false,
+      "E_el": 0.005266815779637073,
+      "free_u_l2": 0.013509608065392658,
+      "uv_mass_rel_L2": 0.07538879153652286,
+      "uv_H1_rel": 0.5870840766174898,
+      "elastic_excess_relative_FEM": 0.21900777806718952,
+      "active_integral": 0.005264263408293351,
+      "active_vs_FEM_absolute_L2": 0.04347128309486703,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.089382250428612,
+      "active_vs_FEM_correlation": 0.10299408908885906,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264263408293351,
+      "raw_vs_FEM_absolute_L2": 51.12156360563836,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7189799046733255,
+      "raw_vs_FEM_correlation": 0.8328404795283817,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8199232263096954,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.08998656730130662,
+      "hidden_gradient_inf": 0.0222291425450597,
+      "uv_head_gradient_l2": 5.378436241151048e-05,
+      "uv_head_gradient_inf": 9.635249121471307e-06,
+      "conditioned_head_gradient_l2": 0.003369456863456692,
+      "conditioned_head_gradient_inf": 0.0005115534704246173
+    },
+    {
+      "sequence": 10,
+      "stage": "head_5",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "closed_head",
+      "pair": 5,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.005266814145927487,
+      "free_u_l2": 0.013514641143518911,
+      "uv_mass_rel_L2": 0.07538807906651578,
+      "uv_H1_rel": 0.5870638331955091,
+      "elastic_excess_relative_FEM": 0.21900739994409268,
+      "active_integral": 0.005264265904609694,
+      "active_vs_FEM_absolute_L2": 0.04344987859938143,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.086383945671769,
+      "active_vs_FEM_correlation": 0.10302943486108201,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264265904609694,
+      "raw_vs_FEM_absolute_L2": 51.12596559343846,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7190418147665556,
+      "raw_vs_FEM_correlation": 0.8329395955052974,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8196600316275706,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.062292162412965466,
+      "hidden_gradient_inf": 0.03324696098326574,
+      "uv_head_gradient_l2": 1.5840980155734495e-13,
+      "uv_head_gradient_inf": 3.2461076148170573e-14,
+      "conditioned_head_gradient_l2": 2.107707646429947e-10,
+      "conditioned_head_gradient_inf": 3.693976981938851e-11
+    },
+    {
+      "sequence": 11,
+      "stage": "hidden_6",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "hidden_candidate_in_closed_pair",
+      "pair": 6,
+      "pair_completed": true,
+      "retained_closed_endpoint": false,
+      "E_el": 0.005266768071504583,
+      "free_u_l2": 0.013512104144320252,
+      "uv_mass_rel_L2": 0.07537594275573865,
+      "uv_H1_rel": 0.587063944111212,
+      "elastic_excess_relative_FEM": 0.21899673599034175,
+      "active_integral": 0.005264240372077171,
+      "active_vs_FEM_absolute_L2": 0.04357108143806545,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.103361829967786,
+      "active_vs_FEM_correlation": 0.10275242913715348,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264240372077171,
+      "raw_vs_FEM_absolute_L2": 51.094076888523716,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7185933281319012,
+      "raw_vs_FEM_correlation": 0.8326430265871678,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8211760410994549,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.2694808878837608,
+      "hidden_gradient_inf": 0.028695282652981578,
+      "uv_head_gradient_l2": 0.00019883063823997798,
+      "uv_head_gradient_inf": 3.603927362629076e-05,
+      "conditioned_head_gradient_l2": 0.009885436358939943,
+      "conditioned_head_gradient_inf": 0.0015129514873918337
+    },
+    {
+      "sequence": 12,
+      "stage": "head_6",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "closed_head",
+      "pair": 6,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.005266754071480828,
+      "free_u_l2": 0.01352737727864734,
+      "uv_mass_rel_L2": 0.07537660979249113,
+      "uv_H1_rel": 0.5870026018210899,
+      "elastic_excess_relative_FEM": 0.21899349567616233,
+      "active_integral": 0.005264237267836352,
+      "active_vs_FEM_absolute_L2": 0.043507317364311855,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.094429868652478,
+      "active_vs_FEM_correlation": 0.10285782738317116,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264237267836352,
+      "raw_vs_FEM_absolute_L2": 51.10694761468891,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7187743435942355,
+      "raw_vs_FEM_correlation": 0.8329339691967729,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8204011503171098,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.050511117789927486,
+      "hidden_gradient_inf": 0.02035834874100929,
+      "uv_head_gradient_l2": 3.362817493796798e-13,
+      "uv_head_gradient_inf": 5.166808821066571e-14,
+      "conditioned_head_gradient_l2": 1.911862217920866e-10,
+      "conditioned_head_gradient_inf": 3.444594696283554e-11
+    },
+    {
+      "sequence": 13,
+      "stage": "hidden_7",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "hidden_candidate_in_closed_pair",
+      "pair": 7,
+      "pair_completed": true,
+      "retained_closed_endpoint": false,
+      "E_el": 0.005266538266655156,
+      "free_u_l2": 0.013519089027867701,
+      "uv_mass_rel_L2": 0.07530426500610686,
+      "uv_H1_rel": 0.5869905698101626,
+      "elastic_excess_relative_FEM": 0.21894354751544332,
+      "active_integral": 0.005264079846000357,
+      "active_vs_FEM_absolute_L2": 0.043656545072762856,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.115333428299672,
+      "active_vs_FEM_correlation": 0.10253260084265524,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005264079846000357,
+      "raw_vs_FEM_absolute_L2": 51.06456618840962,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7181782860467539,
+      "raw_vs_FEM_correlation": 0.8326028486571782,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8223963750323992,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 1.6224035986202656,
+      "hidden_gradient_inf": 0.18020187406153787,
+      "uv_head_gradient_l2": 0.0012356953604985964,
+      "uv_head_gradient_inf": 0.00023264336827380846,
+      "conditioned_head_gradient_l2": 0.01774463176128739,
+      "conditioned_head_gradient_inf": 0.002826030848147491
+    },
+    {
+      "sequence": 14,
+      "stage": "head_7",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "closed_head",
+      "pair": 7,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.005266497799238657,
+      "free_u_l2": 0.013551945462680272,
+      "uv_mass_rel_L2": 0.07534870909601547,
+      "uv_H1_rel": 0.5868438717610072,
+      "elastic_excess_relative_FEM": 0.21893418130680153,
+      "active_integral": 0.00526401976078269,
+      "active_vs_FEM_absolute_L2": 0.04357013655533801,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.103229472427368,
+      "active_vs_FEM_correlation": 0.1026472991137021,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.00526401976078269,
+      "raw_vs_FEM_absolute_L2": 51.07735292445721,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7183581202618319,
+      "raw_vs_FEM_correlation": 0.8330288940039611,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8214920252748202,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.052674866903262854,
+      "hidden_gradient_inf": 0.02499737891942318,
+      "uv_head_gradient_l2": 3.1873657801848263e-13,
+      "uv_head_gradient_inf": 6.165510810229868e-14,
+      "conditioned_head_gradient_l2": 1.889187397763471e-10,
+      "conditioned_head_gradient_inf": 3.573620826341495e-11
+    },
+    {
+      "sequence": 15,
+      "stage": "hidden_8",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "hidden_candidate_in_closed_pair",
+      "pair": 8,
+      "pair_completed": true,
+      "retained_closed_endpoint": false,
+      "E_el": 0.005266463860614156,
+      "free_u_l2": 0.013551679720531411,
+      "uv_mass_rel_L2": 0.07534043119396526,
+      "uv_H1_rel": 0.5868398796405853,
+      "elastic_excess_relative_FEM": 0.21892632619111585,
+      "active_integral": 0.0052639851249232815,
+      "active_vs_FEM_absolute_L2": 0.04351311886243371,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.095242532488785,
+      "active_vs_FEM_correlation": 0.10278098865047218,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.0052639851249232815,
+      "raw_vs_FEM_absolute_L2": 51.0913977115164,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7185556478597527,
+      "raw_vs_FEM_correlation": 0.8331770124645664,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8208145757570018,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.2085741165455934,
+      "hidden_gradient_inf": 0.0229912211027149,
+      "uv_head_gradient_l2": 0.00015504773595189102,
+      "uv_head_gradient_inf": 3.0125358508553343e-05,
+      "conditioned_head_gradient_l2": 0.00399065112162904,
+      "conditioned_head_gradient_inf": 0.0005904707975582775
+    },
+    {
+      "sequence": 16,
+      "stage": "head_8",
+      "actual_observed": true,
+      "status": "verified_actual",
+      "classification": "closed_head",
+      "pair": 8,
+      "pair_completed": true,
+      "retained_closed_endpoint": true,
+      "E_el": 0.0052664615341527325,
+      "free_u_l2": 0.01354745258341672,
+      "uv_mass_rel_L2": 0.07534909504853779,
+      "uv_H1_rel": 0.5868483093512513,
+      "elastic_excess_relative_FEM": 0.2189257877301769,
+      "active_integral": 0.005263969498876137,
+      "active_vs_FEM_absolute_L2": 0.04354186331595296,
+      "active_vs_FEM_reference_norm": 0.007138865866370473,
+      "active_vs_FEM_relative_L2": 6.099269005889085,
+      "active_vs_FEM_correlation": 0.1027256808378238,
+      "active_vs_FEM_reference_integral": 0.004317519850105422,
+      "active_vs_FEM_candidate_integral": 0.005263969498876137,
+      "raw_vs_FEM_absolute_L2": 51.08424605960129,
+      "raw_vs_FEM_reference_norm": 71.10291021119133,
+      "raw_vs_FEM_relative_L2": 0.7184550661550957,
+      "raw_vs_FEM_correlation": 0.8330569783329262,
+      "raw_vs_FEM_reference_integral": 2.1736944777364178,
+      "raw_vs_FEM_candidate_integral": 0.8212073415179019,
+      "boundary_maxabs": 7.347873447003325e-18,
+      "fixed_FEM_damage_exact": true,
+      "hidden_gradient_l2": 0.052668316150094416,
+      "hidden_gradient_inf": 0.024650442618463934,
+      "uv_head_gradient_l2": 1.7722870930251318e-13,
+      "uv_head_gradient_inf": 4.183394082535319e-14,
+      "conditioned_head_gradient_l2": 1.8697250518987935e-10,
+      "conditioned_head_gradient_inf": 3.9319147113539565e-11
+    }
+  ],
+  "sources": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_block_preparation_20261017_v1/inputs_manifest.json",
+      "role": "bound input manifest",
+      "bytes": 19398,
+      "sha256": "3f5bdaa5959e2efc3ea996001b196478b6786f479c7b0f3dab0112a53041da41"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_block_preparation_20261017_v1/inputs/c20_peak.npz",
+      "role": "conditional accepted FEM c20 outer18 state",
+      "bytes": 15502614,
+      "sha256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/tools/s04_e011_analysis/analyze_pidl_tight_coupling_hidden_newton.py",
+      "role": "offline analyzer",
+      "bytes": 42506,
+      "sha256": "9088fb7b5071a955043c1efaaa270504fb615f28081299e948bcb9bcbb24678c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/tools/s04_e011_analysis/run_multicycle_cross_replay.py",
+      "role": "independent native NumPy Q4 operator",
+      "bytes": 10703,
+      "sha256": "4c029bdb00b19896af78f7bba4440eba046e4c5fe49795ee59e14da8e752b57a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/retrieved/archive/output/c20_s4/result.json",
+      "role": "common_initial accepted result",
+      "bytes": 21400,
+      "sha256": "bb6d22b16312c377913e75304bf21674d450eb7836ff264c5c73b0dffa31bae5"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/retrieved/archive/output/c20_s4/fields.npz",
+      "role": "common_initial accepted fields",
+      "bytes": 1361291,
+      "sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/retrieved/archive/output/c20_s4/result.json",
+      "role": "preceding_baseline accepted result",
+      "bytes": 71625,
+      "sha256": "77e09f4eed68a32c515f45fad54031f9bda467a0bcaceba6e70c1ab15f647787"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_persistphi_f72434a_20261019T112844Z_production/retrieved/archive/output/c20_s4/fields.npz",
+      "role": "preceding_baseline accepted fields",
+      "bytes": 1361051,
+      "sha256": "70d828c72a492d08abaaea1c8333737c1cb9e2fe34f26222ff726ca352e8e973"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/result.json",
+      "role": "same-actual-Phi stability probe result",
+      "bytes": 25667,
+      "sha256": "126cd2de4f5d87a753ac2aec17e72ac46a9762024e4829a9eddaec068422b0d3"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/bases/initial/metadata.json",
+      "role": "actual readout linked basis initial_learned_head",
+      "bytes": 1051,
+      "sha256": "f21e80203d82ddbf75d57fa11849bf3ad4f5ae32c49ee5e4e4ca2f381b6834cc"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/initial_learned_head_actual.json",
+      "role": "saved actual readout identity initial_learned_head",
+      "bytes": 6821,
+      "sha256": "4b9c5c84f806e05dcd821d6c35b0a9cbe71039a91b0cd04c27ac756c8b25ee9b"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/initial_learned_head_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient initial_learned_head",
+      "bytes": 6304,
+      "sha256": "b43ca82aa17d7795c4160f3f45f74d3750d649c8d137a426f101b4212c639073"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/initial_learned_head.npz",
+      "role": "actual nodal fields/forces/raw UV gradient initial_learned_head",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/bases/initial/transform.npy",
+      "role": "optional local actual basis identity initial_learned_head",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/bases/initial/metadata.json",
+      "role": "actual readout linked basis probe_repeat_1",
+      "bytes": 1051,
+      "sha256": "f21e80203d82ddbf75d57fa11849bf3ad4f5ae32c49ee5e4e4ca2f381b6834cc"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/probe_repeat_1_actual.json",
+      "role": "saved actual readout identity probe_repeat_1",
+      "bytes": 6815,
+      "sha256": "0b56e3329af662b91a82e40d393e277f1ff47163da8909d66831d7733f91ba86"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/probe_repeat_1_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient probe_repeat_1",
+      "bytes": 6304,
+      "sha256": "b43ca82aa17d7795c4160f3f45f74d3750d649c8d137a426f101b4212c639073"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/probe_repeat_1.npz",
+      "role": "actual nodal fields/forces/raw UV gradient probe_repeat_1",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/bases/initial/transform.npy",
+      "role": "optional local actual basis identity probe_repeat_1",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/bases/initial/metadata.json",
+      "role": "actual readout linked basis probe_repeat_2",
+      "bytes": 1051,
+      "sha256": "f21e80203d82ddbf75d57fa11849bf3ad4f5ae32c49ee5e4e4ca2f381b6834cc"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/probe_repeat_2_actual.json",
+      "role": "saved actual readout identity probe_repeat_2",
+      "bytes": 6815,
+      "sha256": "f1d352492434e7e3eea5f354bd16db4b197531087fca63ba93b3fa227d529c1e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/probe_repeat_2_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient probe_repeat_2",
+      "bytes": 6304,
+      "sha256": "b43ca82aa17d7795c4160f3f45f74d3750d649c8d137a426f101b4212c639073"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/readouts/probe_repeat_2.npz",
+      "role": "actual nodal fields/forces/raw UV gradient probe_repeat_2",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/c20_s4/bases/initial/transform.npy",
+      "role": "optional local actual basis identity probe_repeat_2",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/result.json",
+      "role": "tight coupling terminal result",
+      "bytes": 166357,
+      "sha256": "fca26c7e682331f104ab8ab89a637c04daab3ddcea7e34fc7d3ec9585bae0ef2"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/initial/result.json",
+      "role": "actual checkpoint/candidate initial",
+      "bytes": 6933,
+      "sha256": "46670627dee92f045d8ce4238279bc239d194cabf4352afd400c4dba4e35ba8e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/initial/metadata.json",
+      "role": "actual readout linked basis initial_learned_head",
+      "bytes": 1061,
+      "sha256": "ebc2ab7e0664764b3325220f124d6320a582dbe8604392ccd17004ffd9ce624c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/initial_learned_head_actual.json",
+      "role": "saved actual readout identity initial_learned_head",
+      "bytes": 6826,
+      "sha256": "e3df98483d2e6716df302aebd52236b1828c7ca3f0071182902da22de2a1842f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/initial_learned_head_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient initial_learned_head",
+      "bytes": 6304,
+      "sha256": "b43ca82aa17d7795c4160f3f45f74d3750d649c8d137a426f101b4212c639073"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/initial_learned_head.npz",
+      "role": "actual nodal fields/forces/raw UV gradient initial_learned_head",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/initial/transform.npy",
+      "role": "optional local actual basis identity initial_learned_head",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/initial/fields.npz",
+      "role": "actual fields initial",
+      "bytes": 1361291,
+      "sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_1/result.json",
+      "role": "actual checkpoint/candidate hidden_1",
+      "bytes": 6966,
+      "sha256": "5884bc8fee42fe4cda780ab22e508757ff305651ebbfa543a608de8588cd2a67"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_1/metadata.json",
+      "role": "actual readout linked basis hidden_1",
+      "bytes": 12350,
+      "sha256": "a71869df69432deb6f8f9e70d1ed8c0e2a1cd24a2f90222b7d28335fe3c2ee84"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_1_actual.json",
+      "role": "saved actual readout identity hidden_1",
+      "bytes": 6803,
+      "sha256": "9089412540b6dc98668da3753259429ed1139a5123f5f27c0ed4a103bd39b335"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_1_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient hidden_1",
+      "bytes": 6304,
+      "sha256": "642a8b3701dfde8603b17733b7006706112d957c0c64d2a4d189654e11fd5bad"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_1.npz",
+      "role": "actual nodal fields/forces/raw UV gradient hidden_1",
+      "bytes": 2689818,
+      "sha256": "36e1d821454a2253cdb1495ea07c24e2599602e211fe91a19f581120447a3f83"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_1/transform.npy",
+      "role": "optional local actual basis identity hidden_1",
+      "bytes": 1238416,
+      "sha256": "31bcf981627fb481fd7d5b370122f3d6e40fff2c399b21194db3967a2cad4cf6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_1/fields.npz",
+      "role": "actual fields hidden_1",
+      "bytes": 1361208,
+      "sha256": "0ecab1ff01bfd7a51f4efd4f1767e645e21706bc2ddec332114d7f2f3970183c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_1/result.json",
+      "role": "actual checkpoint/candidate head_1",
+      "bytes": 6913,
+      "sha256": "35a9abc07755f25e775090abe769bc87aeba779d7b8d1b0521eed5c4a6c98c4a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_1/metadata.json",
+      "role": "actual readout linked basis head_1",
+      "bytes": 12350,
+      "sha256": "a71869df69432deb6f8f9e70d1ed8c0e2a1cd24a2f90222b7d28335fe3c2ee84"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_1_actual.json",
+      "role": "saved actual readout identity head_1",
+      "bytes": 6802,
+      "sha256": "3ab8849e2de4db39344751a5e141ac148d46afdd40708c9c0cf5307dfeefc81e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_1_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient head_1",
+      "bytes": 6304,
+      "sha256": "196de4fef8609bfc4cfb75dc41aa291ff7ffe3fd3c9f669241aae03ec47a7c04"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_1.npz",
+      "role": "actual nodal fields/forces/raw UV gradient head_1",
+      "bytes": 2687184,
+      "sha256": "a8c25de00790502c40484e771b537e1da830aae845967062a4e8a3f8b16f42dc"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_1/transform.npy",
+      "role": "optional local actual basis identity head_1",
+      "bytes": 1238416,
+      "sha256": "31bcf981627fb481fd7d5b370122f3d6e40fff2c399b21194db3967a2cad4cf6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_1/fields.npz",
+      "role": "actual fields head_1",
+      "bytes": 1361279,
+      "sha256": "32a12b430e5c32f6487c974e4ce7b4040317c1ab7cf92526c7acf06dcbce47ac"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_2/result.json",
+      "role": "actual checkpoint/candidate hidden_2",
+      "bytes": 6950,
+      "sha256": "ae87efa6b736494fa066bf2c2e2b2f2469a02b5861dc63790d005cd414991a1e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_2/metadata.json",
+      "role": "actual readout linked basis hidden_2",
+      "bytes": 12345,
+      "sha256": "6c64d080773f50c68a5e31fa7d6ce294eddb9efe050454501f13dd8beb5a0518"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_2_actual.json",
+      "role": "saved actual readout identity hidden_2",
+      "bytes": 6787,
+      "sha256": "c490cd2c7456b03d2b7cd511b5d00e7a1e318e66fc0309872b8eddc83f155ad5"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_2_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient hidden_2",
+      "bytes": 6304,
+      "sha256": "348e8a5c9d5f2942bfd0358bf44ed3740676a89c13031ee8c17cca34b3d31c78"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_2.npz",
+      "role": "actual nodal fields/forces/raw UV gradient hidden_2",
+      "bytes": 2689776,
+      "sha256": "9bc846b201e2d618946097cb7386c93ed9279984f47ca1c901237a505c8b67cd"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_2/transform.npy",
+      "role": "optional local actual basis identity hidden_2",
+      "bytes": 1238416,
+      "sha256": "1f4961b06f8d5203b5892d2d00f9c890a1ac54501c5e94db28d7572e02447c94"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_2/fields.npz",
+      "role": "actual fields hidden_2",
+      "bytes": 1361174,
+      "sha256": "b0bf994adf3bab8149042a861adbc1b7b1db89307af869909a9a2a6cae52853a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_2/result.json",
+      "role": "actual checkpoint/candidate head_2",
+      "bytes": 6923,
+      "sha256": "5d736e5912e6048bdc2e8f29470c2ca9ab1ff3ed96329d2d990ca2a369091719"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_2/metadata.json",
+      "role": "actual readout linked basis head_2",
+      "bytes": 12345,
+      "sha256": "6c64d080773f50c68a5e31fa7d6ce294eddb9efe050454501f13dd8beb5a0518"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_2_actual.json",
+      "role": "saved actual readout identity head_2",
+      "bytes": 6812,
+      "sha256": "9fc9181ed839a0e7d006ebf22e1ceaad3da5d38acda6dae0999039face981b36"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_2_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient head_2",
+      "bytes": 6304,
+      "sha256": "f9d9d18ce4deb0951b054649dd7be404d785b826af8b62a6010e9aac0a174d8b"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_2.npz",
+      "role": "actual nodal fields/forces/raw UV gradient head_2",
+      "bytes": 2687434,
+      "sha256": "2edcb1a8b9765bec1b0c58231faec5c9df4e9596dd81b63493f77264fca0a6a4"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_2/transform.npy",
+      "role": "optional local actual basis identity head_2",
+      "bytes": 1238416,
+      "sha256": "1f4961b06f8d5203b5892d2d00f9c890a1ac54501c5e94db28d7572e02447c94"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_2/fields.npz",
+      "role": "actual fields head_2",
+      "bytes": 1361253,
+      "sha256": "db0e488d70fafa6dd39ee7bb991ac83cbf21e853f621dc6bf3d30af7e62ad69a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_3/result.json",
+      "role": "actual checkpoint/candidate hidden_3",
+      "bytes": 6970,
+      "sha256": "cd068a252541a4aa054980e19a453666c8088a296aca0273d5ee54bef70254a3"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_3/metadata.json",
+      "role": "actual readout linked basis hidden_3",
+      "bytes": 12366,
+      "sha256": "c12f2ec24089c21e52ca4c852d4b1001d9bab7db72511127d7c3e63f026312b8"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_3_actual.json",
+      "role": "saved actual readout identity hidden_3",
+      "bytes": 6807,
+      "sha256": "3d0478f5ea9b5f976a1d66ab8a2b87d3cb5dbf26e187bac7a62c474582908fd1"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_3_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient hidden_3",
+      "bytes": 6304,
+      "sha256": "441f359a75930263bb9187922905807389e7214ebc950cefbd7b48ce8885e637"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_3.npz",
+      "role": "actual nodal fields/forces/raw UV gradient hidden_3",
+      "bytes": 2689720,
+      "sha256": "9bcafb0b292c5c622afa270f8411cfbf7c8b008f46ad0e820ce26162e61d528a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_3/transform.npy",
+      "role": "optional local actual basis identity hidden_3",
+      "bytes": 1238416,
+      "sha256": "beddb1c0b0ecc70ce8a74f5a30af7f1759880d07402ed6ae111e4530a14beba6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_3/fields.npz",
+      "role": "actual fields hidden_3",
+      "bytes": 1361198,
+      "sha256": "f46b9d74b696ea818fe1c131a7d75c30c413bd451ce2a0955fe93ee100fbe7b4"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_3/result.json",
+      "role": "actual checkpoint/candidate head_3",
+      "bytes": 6918,
+      "sha256": "ea393a206c8750785fc97d88382a9edd64394a1ffcb94c78dbf1a19bd6bf59e9"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_3/metadata.json",
+      "role": "actual readout linked basis head_3",
+      "bytes": 12366,
+      "sha256": "c12f2ec24089c21e52ca4c852d4b1001d9bab7db72511127d7c3e63f026312b8"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_3_actual.json",
+      "role": "saved actual readout identity head_3",
+      "bytes": 6807,
+      "sha256": "249047018dc1e5754cec7fb34f88cd510d768ea9273dd1bfc948feeb425f4a26"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_3_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient head_3",
+      "bytes": 6304,
+      "sha256": "6fd4c5bb89eff0041a2c2d1ec6a75afaddb45149c15b2b85664c3c2daf323dc1"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_3.npz",
+      "role": "actual nodal fields/forces/raw UV gradient head_3",
+      "bytes": 2687214,
+      "sha256": "785d3901107749f9dd15c5759a59b11e9528971bffa75a20351435d025e43e06"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_3/transform.npy",
+      "role": "optional local actual basis identity head_3",
+      "bytes": 1238416,
+      "sha256": "beddb1c0b0ecc70ce8a74f5a30af7f1759880d07402ed6ae111e4530a14beba6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_3/fields.npz",
+      "role": "actual fields head_3",
+      "bytes": 1361066,
+      "sha256": "e39528c7b42f677ab3c45b71910f1dc9956ed523c7df35ce7cba44724ab8cec9"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_4/result.json",
+      "role": "actual checkpoint/candidate hidden_4",
+      "bytes": 6955,
+      "sha256": "94b09bfea6c85965fbcd2b8eea81d0b1ad9bd6821053ac5a3ef21ebe7cbb59fe"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_4/metadata.json",
+      "role": "actual readout linked basis hidden_4",
+      "bytes": 12324,
+      "sha256": "3daf0fd0c3e6181526fa715202418dfd21f29e78490a8ccacc7746cddcd71b31"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_4_actual.json",
+      "role": "saved actual readout identity hidden_4",
+      "bytes": 6792,
+      "sha256": "38abea1aaa80e7a1924aa6b5bc29d4be89e4af4bec5d42fde4447a4e56268d94"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_4_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient hidden_4",
+      "bytes": 6304,
+      "sha256": "cf9dbb34e4399a9f41194fc2bfa560881ca8718090ab1926e845f5ec14a3793e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_4.npz",
+      "role": "actual nodal fields/forces/raw UV gradient hidden_4",
+      "bytes": 2689808,
+      "sha256": "750b72cd0bc013f23339a8030011d682e5c020f4494d7a2e3a27757362f7da12"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_4/transform.npy",
+      "role": "optional local actual basis identity hidden_4",
+      "bytes": 1238416,
+      "sha256": "109a46d83bef75c9de001574431cf99c941f875a395a8fde17c7c31f1790bcc9"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_4/fields.npz",
+      "role": "actual fields hidden_4",
+      "bytes": 1361134,
+      "sha256": "32791acef1b4e17723ec1ea8a098472624ef54809b3513c3340ef3f6aac19535"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_4/result.json",
+      "role": "actual checkpoint/candidate head_4",
+      "bytes": 6915,
+      "sha256": "fc878df36566eef884ef45543353b91f09bd0bfbe386986f0437599bf43459bd"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_4/metadata.json",
+      "role": "actual readout linked basis head_4",
+      "bytes": 12324,
+      "sha256": "3daf0fd0c3e6181526fa715202418dfd21f29e78490a8ccacc7746cddcd71b31"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_4_actual.json",
+      "role": "saved actual readout identity head_4",
+      "bytes": 6804,
+      "sha256": "2f2ab4c867a2b79a4d39aea4012d5bec54840b05749e9aceb42239365631d35d"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_4_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient head_4",
+      "bytes": 6304,
+      "sha256": "1a2cca40c2c34afaa16e49ad2ec2ad1541c12030fa19fe3f40205e7f3e05e294"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_4.npz",
+      "role": "actual nodal fields/forces/raw UV gradient head_4",
+      "bytes": 2687243,
+      "sha256": "45257653f277a6fc3d1a22821fd1d1f7b153558e6a36c4e4ce7c87d705f51643"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_4/transform.npy",
+      "role": "optional local actual basis identity head_4",
+      "bytes": 1238416,
+      "sha256": "109a46d83bef75c9de001574431cf99c941f875a395a8fde17c7c31f1790bcc9"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_4/fields.npz",
+      "role": "actual fields head_4",
+      "bytes": 1361274,
+      "sha256": "6b7a49ce542cd2ef8780f52e18724d3b260b6891869a332d5c1ebe0cfaeb603d"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_5/result.json",
+      "role": "actual checkpoint/candidate hidden_5",
+      "bytes": 6962,
+      "sha256": "00b24550c1f40793402369349b0a1f859982aca0d9d80bb9c74c6115e6ed6d76"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_5/metadata.json",
+      "role": "actual readout linked basis hidden_5",
+      "bytes": 12307,
+      "sha256": "32e8eab35a1afc2c95c03063a2b6ced74c1f86eb20a307ff58778bab46610804"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_5_actual.json",
+      "role": "saved actual readout identity hidden_5",
+      "bytes": 6799,
+      "sha256": "017b0a806f9ae46c268327de25b8a735e520af71019eef6fb5a155ffe322e63e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_5_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient hidden_5",
+      "bytes": 6304,
+      "sha256": "6fb3ac7aa2f10d62745841bf490153e9029bdbf0e95e77021fe5348b6e67c305"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_5.npz",
+      "role": "actual nodal fields/forces/raw UV gradient hidden_5",
+      "bytes": 2689797,
+      "sha256": "ac0d7fecaa3976f1fa5c2599faed93d7800e2a6991f8711eab0f2aaad5c99cdd"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_5/transform.npy",
+      "role": "optional local actual basis identity hidden_5",
+      "bytes": 1238416,
+      "sha256": "b5e13f1799c50bfcbf9d14116950222cf6eb6b3ec2fec940f5c03158a894ed75"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_5/fields.npz",
+      "role": "actual fields hidden_5",
+      "bytes": 1361268,
+      "sha256": "aaaf605b120f28fff1c9aed792065a99cb9132864b89954b3713e557d9e587c7"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_5/result.json",
+      "role": "actual checkpoint/candidate head_5",
+      "bytes": 6921,
+      "sha256": "5d822dd1722278a45a454996c8a34b4469024c6f7fadeedf2499a485f98b1831"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_5/metadata.json",
+      "role": "actual readout linked basis head_5",
+      "bytes": 12307,
+      "sha256": "32e8eab35a1afc2c95c03063a2b6ced74c1f86eb20a307ff58778bab46610804"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_5_actual.json",
+      "role": "saved actual readout identity head_5",
+      "bytes": 6810,
+      "sha256": "3c3f73123566587479ee7db9fe0ca76dc5dba44e1ab7705edde4e39f1b56a834"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_5_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient head_5",
+      "bytes": 6304,
+      "sha256": "297556a477f1706af223b4710e2532caf7ae95b80ddc4c190c6d0a856433f407"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_5.npz",
+      "role": "actual nodal fields/forces/raw UV gradient head_5",
+      "bytes": 2687342,
+      "sha256": "f5751142825341cfae46c9da4fe3891c7cf61d3af92e3f2f2c56748f604228d3"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_5/transform.npy",
+      "role": "optional local actual basis identity head_5",
+      "bytes": 1238416,
+      "sha256": "b5e13f1799c50bfcbf9d14116950222cf6eb6b3ec2fec940f5c03158a894ed75"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_5/fields.npz",
+      "role": "actual fields head_5",
+      "bytes": 1361287,
+      "sha256": "859936bdd1b8985d4cc3ae28f03d410cb00b2ce28e9bd942ed7090251581a58b"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_6/result.json",
+      "role": "actual checkpoint/candidate hidden_6",
+      "bytes": 6962,
+      "sha256": "de921f30b26eb00b95fb36aed6d1b3b29f5c1f4b3f918a2755fa8fc11ad7c6f6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_6/metadata.json",
+      "role": "actual readout linked basis hidden_6",
+      "bytes": 12356,
+      "sha256": "bde7a2859ac1b823e49e704694fbe1157943c2c34706c3dc4a1355c17c4fccec"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_6_actual.json",
+      "role": "saved actual readout identity hidden_6",
+      "bytes": 6799,
+      "sha256": "2deedc7c9e3973c0d5471252b7561f8706abd4ddec59ceb409462adceb350690"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_6_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient hidden_6",
+      "bytes": 6304,
+      "sha256": "249bf520977a9c5471e84eca6891a714d00dd8909824db4d1d8c18a3aa834120"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_6.npz",
+      "role": "actual nodal fields/forces/raw UV gradient hidden_6",
+      "bytes": 2689848,
+      "sha256": "320913c5f2d5a2297851eb28bef64a846f70a0d7b452989d22bb25108ea92664"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_6/transform.npy",
+      "role": "optional local actual basis identity hidden_6",
+      "bytes": 1238416,
+      "sha256": "4c2afbe93f554c78ad88fc9dc61dc6fa5cf4bff0999a41055b85b12d1f51b651"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_6/fields.npz",
+      "role": "actual fields hidden_6",
+      "bytes": 1361151,
+      "sha256": "82b9839c63e5657a8be10a851f6965804a44c38986472451795c532eef491bb1"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_6/result.json",
+      "role": "actual checkpoint/candidate head_6",
+      "bytes": 6909,
+      "sha256": "b87d5ec334088b3a88131e54671793660ff622665f026208966fd6f73803b590"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_6/metadata.json",
+      "role": "actual readout linked basis head_6",
+      "bytes": 12356,
+      "sha256": "bde7a2859ac1b823e49e704694fbe1157943c2c34706c3dc4a1355c17c4fccec"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_6_actual.json",
+      "role": "saved actual readout identity head_6",
+      "bytes": 6798,
+      "sha256": "d070361cfbc11f0649ae65241f165e3f036d926665a38a77272ab2a224834cf0"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_6_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient head_6",
+      "bytes": 6304,
+      "sha256": "59cbb344fbbdd5dd09edcf66874c757b4ac655cd49ad1622a6b7dd7481502310"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_6.npz",
+      "role": "actual nodal fields/forces/raw UV gradient head_6",
+      "bytes": 2687323,
+      "sha256": "8517874958ee764b3852f53ccd69c5a07f121ac8c3a9a4b382c188a5f65d4629"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_6/transform.npy",
+      "role": "optional local actual basis identity head_6",
+      "bytes": 1238416,
+      "sha256": "4c2afbe93f554c78ad88fc9dc61dc6fa5cf4bff0999a41055b85b12d1f51b651"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_6/fields.npz",
+      "role": "actual fields head_6",
+      "bytes": 1361207,
+      "sha256": "6bb8167a54d00a86b44a9ac8f3975d6798b4216c1d9d48505f446d2f0a7f585e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_7/result.json",
+      "role": "actual checkpoint/candidate hidden_7",
+      "bytes": 6946,
+      "sha256": "d0a3f27a544ddea0389ecbfc5f7765be71ad3626b657b704ee7c498ebeb43727"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_7/metadata.json",
+      "role": "actual readout linked basis hidden_7",
+      "bytes": 12335,
+      "sha256": "b8a248d076ac64724c711beb59794c5bfa2387eab644538b4d87270a433fc26c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_7_actual.json",
+      "role": "saved actual readout identity hidden_7",
+      "bytes": 6783,
+      "sha256": "0cd5180ef517011363b7cd2a184f1f0afc8c33c57af399d176907eb133eeb645"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_7_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient hidden_7",
+      "bytes": 6304,
+      "sha256": "12f3d944832f4e6df7e31785d73401cf6cd7ca7bd657a18a4299facb790a9d42"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_7.npz",
+      "role": "actual nodal fields/forces/raw UV gradient hidden_7",
+      "bytes": 2690000,
+      "sha256": "95785321f0d16a9f819f5be5b86a4c33017c4cfb38a4f99828ae6d6a7001ab24"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_7/transform.npy",
+      "role": "optional local actual basis identity hidden_7",
+      "bytes": 1238416,
+      "sha256": "576e4606520841fff63fbf830ff954b373f2a367ef4aaec39870aac72b3670ab"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_7/fields.npz",
+      "role": "actual fields hidden_7",
+      "bytes": 1361256,
+      "sha256": "8630d7f9bb6d96e14aeae14298502cb73fea974c6ae264cd19fd307af3e7bf81"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_7/result.json",
+      "role": "actual checkpoint/candidate head_7",
+      "bytes": 6911,
+      "sha256": "13d2a536fe2d2a7fc8b61a449edfed9fa18c94b20e954d92f1e642998d1b09de"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_7/metadata.json",
+      "role": "actual readout linked basis head_7",
+      "bytes": 12335,
+      "sha256": "b8a248d076ac64724c711beb59794c5bfa2387eab644538b4d87270a433fc26c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_7_actual.json",
+      "role": "saved actual readout identity head_7",
+      "bytes": 6800,
+      "sha256": "3e466ed924d220e9bdbe923d0daad8f3faf9484b73e35792d9ee5c9cdb2101f5"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_7_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient head_7",
+      "bytes": 6304,
+      "sha256": "185ab28cd3d672dd1ba56e9e506f36df455587aa601a4b27cf25a9232df08ae5"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_7.npz",
+      "role": "actual nodal fields/forces/raw UV gradient head_7",
+      "bytes": 2687170,
+      "sha256": "9e73d3d6088a58ff0b3dcc6df2591e29f121191e2dd9fdc7e344630f0d64681b"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_7/transform.npy",
+      "role": "optional local actual basis identity head_7",
+      "bytes": 1238416,
+      "sha256": "576e4606520841fff63fbf830ff954b373f2a367ef4aaec39870aac72b3670ab"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_7/fields.npz",
+      "role": "actual fields head_7",
+      "bytes": 1361124,
+      "sha256": "8abc0633d6c69739389e1e90be2069b8a6fad491a6d842727e2236d29e3e7363"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_8/result.json",
+      "role": "actual checkpoint/candidate hidden_8",
+      "bytes": 6963,
+      "sha256": "63f4fdbc02ba46bedc455fdd13fef6a92eb5557d37f815ba8e70841a8e5c44bc"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_8/metadata.json",
+      "role": "actual readout linked basis hidden_8",
+      "bytes": 12324,
+      "sha256": "0ecbec4659210251d8d318fb75f096b03a5f152c6ed91bc93cf7ed69865f6cda"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_8_actual.json",
+      "role": "saved actual readout identity hidden_8",
+      "bytes": 6800,
+      "sha256": "b05b482ef299332dce16516867c0fe0b7353b81f570e9cf3a9a849c44ea9dcd2"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_8_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient hidden_8",
+      "bytes": 6304,
+      "sha256": "edbeee88c2c2c9169247afd2986a2cc29c7b70357b11ae4aa6e2b564c96cc428"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/hidden_8.npz",
+      "role": "actual nodal fields/forces/raw UV gradient hidden_8",
+      "bytes": 2689893,
+      "sha256": "e0e98d28c105e9850e696ab81e56979fb7b1fc16ab2921f3c92534118ebe0355"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_8/transform.npy",
+      "role": "optional local actual basis identity hidden_8",
+      "bytes": 1238416,
+      "sha256": "795d15a58e3038a434d84b9cc5376aca79a1d7813a6d5adca46c3eb9ecfdc964"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/hidden_8/fields.npz",
+      "role": "actual fields hidden_8",
+      "bytes": 1361198,
+      "sha256": "7391e3b70cc74caffacc533575965061c29536d5e09ddc8767a47d0f2710ae39"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_8/result.json",
+      "role": "actual checkpoint/candidate head_8",
+      "bytes": 6928,
+      "sha256": "3571dbd4eb1decd2ce4e19e7dd559cdba27a95641c12e5afd04308a701b03c28"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_8/metadata.json",
+      "role": "actual readout linked basis head_8",
+      "bytes": 12324,
+      "sha256": "0ecbec4659210251d8d318fb75f096b03a5f152c6ed91bc93cf7ed69865f6cda"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_8_actual.json",
+      "role": "saved actual readout identity head_8",
+      "bytes": 6817,
+      "sha256": "795b90c7b0c2d0e0dd60df843d523fc7a75517005c4a158e63a616743b55d9f9"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_8_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient head_8",
+      "bytes": 6304,
+      "sha256": "8876f00849f2259bdb98ad5460a784231ffd111982614fcf17bfd6c774156af5"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/head_8.npz",
+      "role": "actual nodal fields/forces/raw UV gradient head_8",
+      "bytes": 2687215,
+      "sha256": "7543b4ae5b8f3faca96980bcfdc057f5d5d66e588475014ad439fe7b24538d54"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_8/transform.npy",
+      "role": "optional local actual basis identity head_8",
+      "bytes": 1238416,
+      "sha256": "795d15a58e3038a434d84b9cc5376aca79a1d7813a6d5adca46c3eb9ecfdc964"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/checkpoints/head_8/fields.npz",
+      "role": "actual fields head_8",
+      "bytes": 1361077,
+      "sha256": "d6091be41dd271751d31508d1fe5ca9ba0e467b5c7688d080f33f275c0965a19"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/fields.npz",
+      "role": "restored latest CLOSED terminal fields",
+      "bytes": 1361077,
+      "sha256": "d6091be41dd271751d31508d1fe5ca9ba0e467b5c7688d080f33f275c0965a19"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_8/metadata.json",
+      "role": "actual readout linked basis final",
+      "bytes": 12324,
+      "sha256": "0ecbec4659210251d8d318fb75f096b03a5f152c6ed91bc93cf7ed69865f6cda"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/final_actual.json",
+      "role": "saved actual readout identity final",
+      "bytes": 6816,
+      "sha256": "72c5e4eb4c02a2da1b5c06698875e1f63ecf5aaeb3b7e2f1ea165792e2d91a0f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/final_actual_projected_gradient.npy",
+      "role": "same actual-Phi projected gradient final",
+      "bytes": 6304,
+      "sha256": "8876f00849f2259bdb98ad5460a784231ffd111982614fcf17bfd6c774156af5"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/readouts/final.npz",
+      "role": "actual nodal fields/forces/raw UV gradient final",
+      "bytes": 2687215,
+      "sha256": "7543b4ae5b8f3faca96980bcfdc057f5d5d66e588475014ad439fe7b24538d54"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_8/transform.npy",
+      "role": "optional local actual basis identity final",
+      "bytes": 1238416,
+      "sha256": "795d15a58e3038a434d84b9cc5376aca79a1d7813a6d5adca46c3eb9ecfdc964"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_1/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 12350,
+      "sha256": "a71869df69432deb6f8f9e70d1ed8c0e2a1cd24a2f90222b7d28335fe3c2ee84"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_2/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 12345,
+      "sha256": "6c64d080773f50c68a5e31fa7d6ce294eddb9efe050454501f13dd8beb5a0518"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_3/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 12366,
+      "sha256": "c12f2ec24089c21e52ca4c852d4b1001d9bab7db72511127d7c3e63f026312b8"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_4/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 12324,
+      "sha256": "3daf0fd0c3e6181526fa715202418dfd21f29e78490a8ccacc7746cddcd71b31"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_5/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 12307,
+      "sha256": "32e8eab35a1afc2c95c03063a2b6ced74c1f86eb20a307ff58778bab46610804"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_6/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 12356,
+      "sha256": "bde7a2859ac1b823e49e704694fbe1157943c2c34706c3dc4a1355c17c4fccec"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_7/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 12335,
+      "sha256": "b8a248d076ac64724c711beb59794c5bfa2387eab644538b4d87270a433fc26c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_8/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 12324,
+      "sha256": "0ecbec4659210251d8d318fb75f096b03a5f152c6ed91bc93cf7ed69865f6cda"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/initial/metadata.json",
+      "role": "persisted actual basis metadata",
+      "bytes": 1061,
+      "sha256": "ebc2ab7e0664764b3325220f124d6320a582dbe8604392ccd17004ffd9ce624c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/head_stage_1/basis_ref.json",
+      "role": "head actual-Phi reference",
+      "bytes": 314,
+      "sha256": "4ee4e6a3a7c7038f0e6f3eb1f53c11491e029223898bc3d25b159e3c625ae7b6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_1/metadata.json",
+      "role": "head linked basis metadata",
+      "bytes": 12350,
+      "sha256": "a71869df69432deb6f8f9e70d1ed8c0e2a1cd24a2f90222b7d28335fe3c2ee84"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/head_stage_2/basis_ref.json",
+      "role": "head actual-Phi reference",
+      "bytes": 314,
+      "sha256": "9612d088bcab20c93c6664dff93452e885cf15b0410fa63fb8f0316998545faa"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_2/metadata.json",
+      "role": "head linked basis metadata",
+      "bytes": 12345,
+      "sha256": "6c64d080773f50c68a5e31fa7d6ce294eddb9efe050454501f13dd8beb5a0518"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/head_stage_3/basis_ref.json",
+      "role": "head actual-Phi reference",
+      "bytes": 314,
+      "sha256": "c4f9eb64b729a557da1f410a62e150b2b43a72a5804530fe73ec0e2d6e68f2c8"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_3/metadata.json",
+      "role": "head linked basis metadata",
+      "bytes": 12366,
+      "sha256": "c12f2ec24089c21e52ca4c852d4b1001d9bab7db72511127d7c3e63f026312b8"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/head_stage_4/basis_ref.json",
+      "role": "head actual-Phi reference",
+      "bytes": 314,
+      "sha256": "f2403c47c0b4659c88318fe2956b5858493e7e17c4fff39cd6a91f6cbb9bfad0"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_4/metadata.json",
+      "role": "head linked basis metadata",
+      "bytes": 12324,
+      "sha256": "3daf0fd0c3e6181526fa715202418dfd21f29e78490a8ccacc7746cddcd71b31"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/head_stage_5/basis_ref.json",
+      "role": "head actual-Phi reference",
+      "bytes": 314,
+      "sha256": "80e6f5d38259ece6d24f5e7e681a6d6be01dac16496371006fbdb20d8a7ccac6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_5/metadata.json",
+      "role": "head linked basis metadata",
+      "bytes": 12307,
+      "sha256": "32e8eab35a1afc2c95c03063a2b6ced74c1f86eb20a307ff58778bab46610804"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/head_stage_6/basis_ref.json",
+      "role": "head actual-Phi reference",
+      "bytes": 314,
+      "sha256": "0ee8fe34fc2982634bd0442efbc434d14d5d84b93f5941803df98afca95a5cb1"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_6/metadata.json",
+      "role": "head linked basis metadata",
+      "bytes": 12356,
+      "sha256": "bde7a2859ac1b823e49e704694fbe1157943c2c34706c3dc4a1355c17c4fccec"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/head_stage_7/basis_ref.json",
+      "role": "head actual-Phi reference",
+      "bytes": 314,
+      "sha256": "b81df3ace423fa6a3f30418680426d6eac28ffd9778d90c3dcc32e47f6d7695b"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_7/metadata.json",
+      "role": "head linked basis metadata",
+      "bytes": 12335,
+      "sha256": "b8a248d076ac64724c711beb59794c5bfa2387eab644538b4d87270a433fc26c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/head_stage_8/basis_ref.json",
+      "role": "head actual-Phi reference",
+      "bytes": 314,
+      "sha256": "6963b8524be9bc6bb394be943df7e9a4a39ee4fbccb4d16da9a96cffea2b6c22"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/bases/hidden_8/metadata.json",
+      "role": "head linked basis metadata",
+      "bytes": 12324,
+      "sha256": "0ecbec4659210251d8d318fb75f096b03a5f152c6ed91bc93cf7ed69865f6cda"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/stages.json",
+      "role": "producer stages",
+      "bytes": 156516,
+      "sha256": "ec017ca5a31636acf71b440c71561c71953ff10f2935ded9fc618ded6480dbb6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/accepted.json",
+      "role": "producer accepted",
+      "bytes": 11072,
+      "sha256": "9901e53427d82e831c3f2ac554b872dfd7cd8dc93ff7240956ecc37ee5e2d05c"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/gradient_readouts.json",
+      "role": "producer gradient_readouts",
+      "bytes": 131915,
+      "sha256": "ad3e26b2a3f9fd3fd56d6f7aaa5ce8db643d9842f992c62ca552471dce463fc8"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/retrieved/archive/output/c20_s4/trace.json",
+      "role": "producer trace",
+      "bytes": 79492,
+      "sha256": "4ffaecece60cc529e15ce48641ff099110155dc2dd89768f6eff62e13fd40b80"
+    }
+  ],
+  "claim_boundary": "Frozen FEM/PIDL c20s4 peak, physical cycle20/substep4/rawstep99/U=.11999988, native Q4/2x2GP, eta=0. Same unique e2dc learned-head initial network and audit-saved actual Phi/T; no initial SVD/reconstruction. Mechanical damage is exact conditional FEM outer18 damage, original UV boundary and Smooth B0 anchor are fixed. Intervention combines one completed hidden L-BFGS step with immediate Newton correction and per-pair L-BFGS history reset; not true variable projection or an isolated cadence ablation. Only head-closed complete pairs may become subsequent starts/final endpoints. All actual candidates are retained, including failed-head observations; no FEM-error endpoint selection. No whole-network convergence/capacity, physical-teacher, coupled fatigue-evolution or equal-cost optimizer ranking claim. RAW psi+ in fully degraded regions is secondary to ACTIVE g(d)psi+.",
+  "analysis_directory": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_tight_coupling",
+  "production_receipt": {
+    "run_id": "pf_s04e011_tightcouple_137cb03_20261019T122720Z_production",
+    "phase": "production",
+    "commit": "137cb031bad7c5f656d08c642e65627bcdd6076c",
+    "branch": "codex/hard5-q4-t3-2x2-20261005",
+    "dirty": false,
+    "pid": 971629,
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "/usr/bin/python3",
+      "-u",
+      "/mnt/data2/drtao/wennie/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/code/tools/s04_e011_analysis/run_pidl_tight_coupling_hidden_newton.py",
+      "--contract",
+      "/mnt/data2/drtao/wennie/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/contract.json",
+      "--out",
+      "/mnt/data2/drtao/pidl_archives/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/output",
+      "--phase",
+      "production"
+    ],
+    "root": "/mnt/data2/drtao/wennie/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production",
+    "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production",
+    "GPU": 5,
+    "GPU_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "log": "/mnt/data2/drtao/wennie/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/worker.log",
+    "started_utc": "2026-10-19T12:38:30.110795+00:00"
+  },
+  "retrieval": {
+    "remote_files": 213,
+    "remote_bytes": 2669365121,
+    "local_selected_files": 186,
+    "local_selected_bytes": 96042119,
+    "local_mirror_complete": false,
+    "verification": "selected paths and exact sizes; full Phi/model identity and projections checked remotely by independent reviewer; no reconstruction of missing local Phi"
+  },
+  "final_independent_review": "passed"
+}

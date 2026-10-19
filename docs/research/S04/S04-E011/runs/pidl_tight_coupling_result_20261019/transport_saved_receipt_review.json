@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "reviewed_utc": "2026-10-19T12:48:08.098625+00:00",
+  "method": "Local prelaunch evidence/source plus independently read remote recovery receipt and bundle/worker/contract SHA",
+  "no_previous_scientific_launch_evidence": true,
+  "timeout_partial_bytes": 783360,
+  "timeout_partial_SHA": "6f5737be13962d218b90aeb55cce7044b9da20a2e43d29940c01a4d56ee824da",
+  "expected_probe_bundle_bytes": 966356,
+  "expected_probe_bundle_SHA": "b1c3dbc3f9bc29ed5b760182859a2de8e131a474663f40d38f3856a11d66827a",
+  "transport_recovery_receipt_matches_remote": true,
+  "reviewed_execute_unchanged": true,
+  "recovery_has_no_Popen": true,
+  "recovery_script_sha256": "7ed7715b0b820a55553868584c80a74e43c0b10133c72c9cd8ecb26dec440d30",
+  "science_retry": false,
+  "notes": "Recovery only copies exact reviewed probe archive inside same producer and preserves partial artifact; six fixed inputs and original contract staged/verified. Subsequent reviewed launcher makes one atomic-claim Popen. This is transport repair, not new optimizer run. Partial original artifact digest is recorded from parent read-only snapshot, not independently re-read by reviewer."
+}

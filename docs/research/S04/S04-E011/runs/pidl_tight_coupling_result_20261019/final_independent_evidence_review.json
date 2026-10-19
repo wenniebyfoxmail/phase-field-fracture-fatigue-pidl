@@ -1,0 +1,65 @@
+{
+  "status": "passed",
+  "report_review": "passed",
+  "reviewer": "b0_route_inventory",
+  "reviewed_utc": "2026-10-19T12:53:53.321007+00:00",
+  "scope": "Final focused report/field metric/actual four-figure review, carrying completed independent saved-state and transport audits; no new producer or physics replay.",
+  "source_commit": "137cb031bad7c5f656d08c642e65627bcdd6076c",
+  "run_id": "pf_s04e011_tightcouple_137cb03_20261019T122720Z_production",
+  "checks": {
+    "primary": "Same unique e2dc61d common start, audit actualPhi load-only; newchronologicallastCLOSEDhead8 E=.0052664615341527325 beats fixed precedingbaseline .005267089573071509 by6.280389e-7>1e-10,8/8closedpairs plus realhiddenchange; supports small bounded directional gain only.",
+    "mechanics": "Independent nativeNumPyQ4 metrics preserve unchangedFEMdamage/originalUV boundary and conditionalFEMouter18 role. Active weightedrelL2 remains6.099269,improvementonly.0582395%,correlationdecreases.102731963->.102725681;Ru increases.190787%, energy remains21.8926% aboveFEM. No overall fieldrecovery certificate.",
+    "cost_policy": "Newproduction316calls114.927s/32hiddencalls8completedsteps8heads versuspreceding156calls66.839s/80hiddencalls24steps2heads. FreshLBFGS-firststep resets have no crosssteps/y curvature; cadence/reset/workallocation jointlychanged, not purecadence/truevarpro/equalcost efficiency ranking.",
+    "stage_interpretation": "All17actualchronologicalcandidate/closed stages retained; hiddencandidates neverterminal. Closedheadenergy decreasesmonotonically but activeerror athead4=6.083573747 rises tohead8=6.099269006; posthocdescriptive, noFEM-errorselection.",
+    "gradient_scope": "All8headsaved-Phi closures and independentCPUlabels agree at unchanged1e-10;final3.931914711e-11. Rawnodal/rawUV/rawhidden/currentPhi coordinates kept separate;rawhidden.02465044 remainsnonzero, no full-networkstationary/capacity claim.",
+    "saved_state": "Independentread-only producerCPU audit passed full9actualPhi/T spaces and all savedreadouts (maxCPU/GPUprojectiondifference1.673e-15),17checkpointmodel/fields,source6SHA,perpairclosedstart,23hiddenchanged/dheadfrozen/terminalexacthead8. No NNforward/SVD/solve.",
+    "budget": "Currentprobe36+production316=352<=365,hidden32<=80,8pairscompleted,16assemblies/16solves/80products. Historical227calls retained separately. No extra useofremainingcap or newRun after result.",
+    "transport": "PrelaunchSCPtimeout0rootclaim/PID/output/calls; exactprobe bundle recovery with6lockedinputs/contract, unchangedreviewedlauncher then singleatomicclaimPopen; source plus local/remote receipt independently reviewed. Not scientificretry.",
+    "storage": "Remote213files2669365121bytes,selective186files96042119bytes count/path/size verification stated.9largeactualPhi and18models remain remote; no full localmirroring or outputSHA claim from size-only retrieval.",
+    "visuals": "All4PNG actually viewed: stage/gradient chart uses explicitcandidate-vsCLOSED markers and originalheadline; zoomedenergyaxis accompanied by .0119% exactmagnitude. FEM-first baseline/newsharedscales,correctsignedphysicalerrors and documentedSymLogNorm raw/active;4sidecarvalidatorpass. EmbeddedmainPNG byte-identical.",
+    "records": "Canonical plus only E011_TIGHT_COUPLING ownerblock/latestPIDLc20line/unique2026-10-19E011Roadmap bound. OtherD6/FP32 text unmodified/unbound. Compact CSV decodedcells identical to analysis. No newscope/threshold/physicalteacher/evolution claim."
+  },
+  "checked_percent_changes": {
+    "energy_gain": 0.011923832128964392,
+    "active_error_improvement": 0.05823945442155887,
+    "Ru_increase": 0.19078721770777238
+  },
+  "bindings": {
+    "canonical_report_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_tight_coupling_result_20261019.md",
+    "canonical_report_sha256": "1680f1901ddd869432ec416f5c22c33d555b626a10039c3e03e486fa0d5297a1",
+    "obsidian_owner_block_sha256": "6e8cb385998fa825c18ca466acffb1a729325bb60bde34c89fa317f7a0ed421f",
+    "obsidian_latest_PIDLc20_line": "> \u6700\u65b0\u72b6\u6001\uff082026-10-19\uff0cPIDL c20\uff09\uff1a\u5355\u9690\u85cf\u6b65\uff0bNewton\u59348\u5bf9\u5b8c\u6210\uff1b\u6bd4\u4e0a\u4e00\u8f6e\u989d\u5916\u964d\u80fd0.0119%\uff0cactive\u8bef\u5dee6.1028\u21926.0993\u500d\uff0cRu\u53cd\u53470.1908%\u3002\u5934\u90e8g\u221e3.93e-11\u8fbe\u6807\uff0c\u9690\u85cf\u4ecd\u975e\u9a7b\u5b9a\uff1b\u672a\u590d\u73b0FEM\u3002\u8be6\u89c1\u6587\u672b\u5355\u9690\u85cf\u6b65\u8026\u5408\u7ed3\u679c\u3002",
+    "obsidian_latest_PIDLc20_line_sha256": "44ac9a954803ab9cf2aae686d2ca900750b4574edd02970eae0255b6e2904d10",
+    "roadmap_E011_line": "2026-10-19 E011\uff1a[[mesh\u5bf9\u9f50]] \u540c\u521d\u6001\u5355\u9690\u85cf\u6b65\uff0bNewton\u59348\u5bf9\u5b8c\u6210\uff1b\u5b9e\u9645Phi/FEMd/\u539fUV/1e-10\u4e0d\u53d8\u3002\u6bd4\u4e24block\u57fa\u51c6\u989d\u5916\u964d\u80fd0.0119%\uff0cactive6.1028\u21926.0993\u500d\u3001Ru+0.1908%\uff1b316\u5bf9156\u6b21\u8c03\u7528\uff0c\u975e\u7b49\u6210\u672c\uff0f\u7eaf\u9891\u7387\u6bd4\u8f83\uff0c\u672a\u590d\u73b0FEM\u3002\u4fdd\u7559B0\u4e0e\u7ea6\u675fQ4 damage\u8def\u7ebf\uff0c\u4e0d\u8986\u76d6D6\u6df7\u5408\u65b9\u6848\u3002",
+    "roadmap_E011_line_sha256": "1dc81bd4a27a28fc15b3047b6c8509b87ba1d3004757e6d1b288fa10865abac5",
+    "main_attachment_sha256": "768f44053cbced573064a14a5a974c23da7fade623effe68f7ab50045224650f",
+    "summary_sha256": "1fbe3909293944be045e2cbd53df480e779890adc2d101fab831d9cff89f919b",
+    "compact_result_sha256": "8caa0a9c07af0a4deda81a6c39e7fe511b04aee2c9e5b1483a4dedabe8069b0a",
+    "independent_probe_sha256": "4b3cb24eb94d510cb5085a59faa43eb24009f1ed9f6f667ef72a641f2673e0ee",
+    "independent_production_sha256": "8ade43bdd8effb5a69ccd61b867fb90fa9fef6f76bc3594da571105bdc75af9d",
+    "transport_review_sha256": "053051be8dc691a493f0cae291f983170667d4d97600df5e1b94fa81bacb2c42",
+    "PNG_sha256": {
+      "tight_coupling_stage_decision.png": "768f44053cbced573064a14a5a974c23da7fade623effe68f7ab50045224650f",
+      "c20_tight_coupling_errors.png": "0cb67acea13ea40dc563e2da764f4f2434db873f5841e3d4537fdec3deb0d09c",
+      "tight_coupling_gradient_spaces.png": "3521c7ebc141a731c1668e09c15d93ed10ca9c97570610adc72e34271881988a",
+      "c20_tight_coupling_fields.png": "0736fd936bb3c262c92d95e81d29fa8a1600a78e0b272904148163f8d1df0df5"
+    }
+  },
+  "blockers": [],
+  "remaining_limits": [
+    "Conditional fixed-FEMdamage Ublock only, not coupled damage/history/rollout or physicalteacher validation.",
+    "B0anchor/history have no separatelysavedbefore-afterarrays; reviewedsource/frozenflags support those claims, no independenttensorcomparison asserted.",
+    "Budget/endpoint gain supports only this combined policy, not isolated frequency or complete nonlinear optimization capacity."
+  ],
+  "finalization": "Completed: final reviewed status wording bound, no new audit or numerical/producer change.",
+  "status_wording_only_addendum": {
+    "status": "passed",
+    "bound_utc": "2026-10-19T12:57:02.058177+00:00",
+    "proof": "Reversing only pending-to-passed phrases exactly reconstructs previously reviewed canonical and ownerblock hashes. Reversing two compact status values and identical JSON serializer exactly reconstructs original compact SHA. All4PNG and summary SHA unchanged.",
+    "changed_compact_fields": [
+      "status",
+      "final_independent_review"
+    ],
+    "shared_MD_scope": "Only ownerblock/latestPIDLc20line/uniqueE011Roadmapline/attachment bound; unrelated D6/FP32 content unbound."
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "status": "passed",
+  "method": "read-only saved arrays/tensors CPU single thread; no NNforward/SVD/solve/new physical operator",
+  "phase": "probe",
+  "run_id": "pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe",
+  "producer_commit": "137cb031bad7c5f656d08c642e65627bcdd6076c",
+  "worker_pid": 964660,
+  "worker_exited": true,
+  "atomic_launch_claim_present": true,
+  "transport_recovery": null,
+  "evaluations": 36,
+  "cap": 40,
+  "deadline_seconds": 60,
+  "producer_elapsed_seconds": 6.488950436003506,
+  "all_trace_completed": true,
+  "actual_basis_count": 1,
+  "bases": {
+    "/mnt/data2/drtao/pidl_archives/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/output/c20_s4/bases/initial": {
+      "retained_rank": 386,
+      "phi_sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b",
+      "transform_sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149",
+      "bound_hidden_sha256": "4ac4184626f19670efb864b277e010e2996605f8655dbaaeb7a0a13cdd34e8a4",
+      "originating_weights_sha256": "599c9b2d12dbcc66b558a750bc46e1463b1243b90bc6fbee2a72755e0f80e592",
+      "initial_SVD_calls": 0
+    }
+  },
+  "actual_projection_readouts": [
+    {
+      "label": "initial_learned_head",
+      "basis": "initial",
+      "rank": 386,
+      "saved_g_inf": 3.3665696098916786e-11,
+      "numpy_g_inf": 3.3665509333339994e-11,
+      "maxabs_vector_difference": 1.0192239457610221e-15,
+      "saved_label": true,
+      "numpy_label": true,
+      "field_maxabs_vs_unique_initial": {
+        "u": 0.0,
+        "v": 0.0,
+        "d": 0.0
+      }
+    },
+    {
+      "label": "probe_repeat_1",
+      "basis": "initial",
+      "rank": 386,
+      "saved_g_inf": 3.3665696098916786e-11,
+      "numpy_g_inf": 3.3665509333339994e-11,
+      "maxabs_vector_difference": 1.0192239457610221e-15,
+      "saved_label": true,
+      "numpy_label": true,
+      "field_maxabs_vs_unique_initial": {
+        "u": 0.0,
+        "v": 0.0,
+        "d": 0.0
+      }
+    },
+    {
+      "label": "probe_repeat_2",
+      "basis": "initial",
+      "rank": 386,
+      "saved_g_inf": 3.3665696098916786e-11,
+      "numpy_g_inf": 3.3665509333339994e-11,
+      "maxabs_vector_difference": 1.0192239457610221e-15,
+      "saved_label": true,
+      "numpy_label": true,
+      "field_maxabs_vs_unique_initial": {
+        "u": 0.0,
+        "v": 0.0,
+        "d": 0.0
+      }
+    }
+  ],
+  "checkpoint_weights": [],
+  "hidden_changed_tensor_names": [],
+  "hidden_changed_count": 0,
+  "preceding_baseline_completed_hidden_steps": 24,
+  "true_completed_hidden_steps": 0,
+  "total_hidden_evaluations": 0,
+  "closed_pairs": 0,
+  "last_closed_checkpoint": null,
+  "operational_coupling_closure": null,
+  "head_closure_failure_encountered": null,
+  "stages_summary": [],
+  "dhead_exact_all_checkpoints": true,
+  "mechanical_FEM_damage_exact_all_observations": true,
+  "original_UV_boundary_maxabs_tolerance": 1e-12,
+  "history_commits": 0,
+  "rollout_steps": 0,
+  "anchor_independent_before_after_tensor_available": false,
+  "anchor_evidence": "reviewed unchanged construction/no-mutation source plus producer frozen-check flag; no separately saved anchor tensor snapshot",
+  "review_elapsed_seconds": 1.1302603501826525
+}
