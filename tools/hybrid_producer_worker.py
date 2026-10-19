@@ -24,6 +24,9 @@ if __name__ == '__main__':
     if ctypes.CDLL(None,use_errno=True).prctl(1,signal.SIGTERM,0,0,0)!=0:
         raise RuntimeError('cannot install parent-death safeguard')
     if os.getppid()!=expected:raise RuntimeError('supervisor changed before worker admission')
+    gate=int(os.environ['HYBRID_START_FD'])
+    if os.read(gate,1)!=b'1':raise RuntimeError('deadline guardian did not admit worker')
+    os.close(gate)
 
 import numpy as np
 
@@ -31,9 +34,12 @@ from hybrid_inputs import load_backend, read_manifest, sha256
 from hybrid_incremental import SolverSettings, solve_step, StepFailure
 from hybrid_producer_common import write_json, append_event, classical_guess, compare_states,object_sha
 from hybrid_transaction import StateStore
+from hybrid_work_trace import PersistentWorkTrace
+from hybrid_guard_client import notify
 
 
 def marker(out, **values):
+    notify("step_start",values["step"])
     write_json(Path(out) / "active_step.json", dict(start_epoch=time(),start_monotonic=perf_counter(), **values))
 
 
@@ -74,19 +80,20 @@ def trajectory(card, spec, inputs, out, archive):
         marker(out, phase=spec["id"], step=index+1, role="numerical_substep")
         initial = (classical_guess(old, previous, target, current_load, previous_load)
                    if spec["initializer"]=="classical" else None)
+        trace=PersistentWorkTrace(phase/"work_trace.jsonl",spec["id"],index+1)
         try:
             proposal = solve_step(backend, old, dofs, bc*target,
                                   next_load_id=f'{spec["id"]}:c{cycle+1}:s{substep+1}:{target:.17g}',
                                   settings=settings, predictor=predictor, classical_initial=initial,
-                                  return_prediction_context=spec["role"]=="labels")
+                                  return_prediction_context=spec["role"]=="labels",work_observer=trace.call)
         except StepFailure as exc:
             write_json(phase/"failure.json", dict(step=index+1, reason=str(exc), work=exc.work,
                                                  accepted_id=old.fingerprint(), version=old.version))
             raise
-        store.commit(proposal)
+        trace.call("durable_commit",lambda:store.commit(proposal))
         io_tick = perf_counter()
         state_path = phase/f"states/state{index+1:04d}.npz"
-        shutil.copy2(store.path, state_path)
+        trace.call("snapshot_save",lambda:shutil.copy2(store.path, state_path))
         record = dict(step=index+1, cycle=cycle+1, substep=substep+1, load=target,
                       certificate=proposal.certificate, state_file=str(state_path.relative_to(archive)),
                       state_sha256=sha256(state_path), commit_io_seconds=store.last_io_seconds,
@@ -95,10 +102,10 @@ def trajectory(card, spec, inputs, out, archive):
         if spec["role"] == "labels":
             from hybrid_network import features_for, FEATURES
             u_pred, psi_pred = proposal.prediction_context
-            x = features_for(backend, old, u_pred, psi_pred, dofs, bc*target)
+            x = trace.call("label_features",lambda:features_for(backend, old, u_pred, psi_pred, dofs, bc*target))
             fpath = phase/f"features{index+1:04d}.npz"
-            np.savez_compressed(fpath, x=x.astype(np.float32), d_old=old.damage.astype(np.float32),
-                                d_target=proposal.state.damage.astype(np.float32),u_pred=u_pred,psi_pred=psi_pred)
+            trace.call("label_feature_save",lambda:np.savez_compressed(fpath, x=x.astype(np.float32), d_old=old.damage.astype(np.float32),
+                                d_target=proposal.state.damage.astype(np.float32),u_pred=u_pred,psi_pred=psi_pred))
             predictor_hash=__import__('hashlib').sha256(u_pred.tobytes()+psi_pred.tobytes()).hexdigest()
             record.update(features_file=str(fpath.relative_to(archive)), features_sha256=sha256(fpath),
                           feature_names=list(FEATURES), predecessor_id=old.fingerprint(),
@@ -113,7 +120,8 @@ def trajectory(card, spec, inputs, out, archive):
                           input_state_sha256=sha256(phase/f'states/state{index:04d}.npz'),
                           load_index_in=index,load_index_out=index+1)
         record["total_step_wall_seconds"] = perf_counter()-tick
-        append_event(phase/"events.jsonl", record)
+        trace.call("accepted_event_save",lambda:append_event(phase/"events.jsonl", record))
+        notify("step_done",index+1)
         records.append({k:record[k] for k in ("step","state_file","state_sha256","certificate","f_min")})
         previous, old = old, proposal.state
         previous_load, current_load = current_load, target
@@ -145,6 +153,15 @@ def analyze(card,inputs,out,archive):
             nr=np.array(meta['certificate']['mechanics']['reaction_values'])
             rr=np.array(refmeta['certificate']['mechanics']['reaction_values'])
             r['reaction_relative_l2']=float(np.linalg.norm(nr-rr)/max(np.linalg.norm(rr),1.e-8))
+            from hybrid_diagnostics import compare_diagnostics,plot_fields
+            prevref,_=StateStore(archive/f'test_reference/states/state{step-1:04d}.npz').load()
+            prevcan,_=StateStore(archive/name/f'states/state{step-1:04d}.npz').load()
+            r['diagnostics']=compare_diagnostics(backend,candidate,reference,prevcan,prevref)
+            r['correction']={k:meta['certificate'][k] for k in ('initialization_source','initial_to_final_damage_rms','initial_to_final_damage_inf')}
+            if name=='test_hybrid' and step in (4,304,599,600):
+                classic,_=StateStore(archive/f'test_classical/states/state{step:04d}.npz').load()
+                plot_fields(backend,[reference,classic,candidate],step,phase/'figures',
+                            dict(run=card['run_id'],reference=refmeta['state_id'],candidate=meta['state_id'],source='sealed states; common posthoc only'))
             rows.append(dict(step=step,**r))
         append_event(phase/'comparison.jsonl',dict(candidate=name,rows=rows))
         summary[name]=dict(mean_J=float(np.mean([r['J'] for r in rows])),
@@ -152,7 +169,12 @@ def analyze(card,inputs,out,archive):
                            max_A_relative=max(r['A_relative_rms'] for r in rows),
                            max_r_relative=max(r['r_relative_rms'] for r in rows),
                            max_f_rms=max(r['f_gp_rms'] for r in rows),
-                           max_reaction_relative=max(r['reaction_relative_l2'] for r in rows))
+                           max_reaction_relative=max(r['reaction_relative_l2'] for r in rows),
+                           max_nodal_healing=max(r['diagnostics']['candidate']['nodal_healing'] for r in rows),
+                           max_negative_damage=max(r['diagnostics']['candidate']['negative_amplitude'] for r in rows),
+                           fallback_steps=sum('fallback' in r['correction']['initialization_source'] for r in rows),
+                           max_damage_correction=max(r['correction']['initial_to_final_damage_inf'] for r in rows))
+    (phase/'README_analysis.md').write_text('Common posthoc sealed-state analysis. comparison.jsonl contains u/v/d,A/r/f,reaction, raw/active full and fixed-window errors, reference diffuse-zone errors, elastic/fracture energy, trace-branch mismatch, d=.5 support/front, own-predecessor healing/negative damage, correction and fallback. Figures selected by fixed steps4,304,599,600; no checkpoint selection or online scoring. GP/field scalars nondimensional; absent fronts/zones reported null. Supplemental diagnostics do not rescue primary quality/speed failures. Figure sidecars state provenance and display interpolation.')
     write_json(phase/'summary.json',dict(completed=True,methods=summary,
                                         scoring_role='post-hoc common evaluation, excluded from CF/CC/CH and charged as study cost'))
     return dict(completed=True,methods=summary)

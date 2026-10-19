@@ -32,6 +32,19 @@ def inspect(root):
                        reconciliation_needed=bool(errors) or state.version!=max(steps,default=0))
         except Exception as exc:
             row.update(inspection_error=str(exc),reconciliation_needed=True)
+        trace=path.parent/'work_trace.jsonl';active={};trace_errors=[]
+        if trace.exists():
+            try:
+                for n,line in enumerate(trace.read_text().splitlines(),1):
+                    try:
+                        event=json.loads(line);key=(event['step'],event['block_id'])
+                        if event['event']=='start':active[key]=event
+                        elif event['event']=='end':active.pop(key,None)
+                    except (ValueError,KeyError,TypeError) as exc:
+                        trace_errors.append(dict(line=n,error=str(exc)));break
+            except OSError as exc:trace_errors.append(dict(error=str(exc)))
+        row.update(unfinished_work_blocks=list(active.values()),work_trace_errors=trace_errors,
+                   work_evidence_incomplete=bool(active or trace_errors))
         rows.append(row)
     return rows
 

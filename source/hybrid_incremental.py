@@ -105,6 +105,9 @@ class NativeQ4Backend:
         self.physics_id = digest_config(dict(**self.material, gc=gc, ell=length_scale,
                                             alpha_t=alpha_t, power=power,
                                             law="AT1-Amor-Carrara-nodalK-v1"))
+        from hybrid_mechanics import MechanicsWorkspace
+        self.mechanics_workspace=MechanicsWorkspace(self.kin,self.material)
+        self.mechanics_observer=None
         self.setup_seconds = perf_counter() - setup_started
 
     def validate_state(self, state):
@@ -114,15 +117,10 @@ class NativeQ4Backend:
                 or np.any(state.damage[self.crack] != 1)):
             raise ValueError("accepted state/backend identity mismatch")
 
-    def mechanics(self, d, dofs, values, settings):
-        result = solve_amor_equilibrium(self.kin, d, dofs, values, **self.material,
-                                       max_iterations=settings.max_mechanics,
-                                       residual_tolerance=settings.force_tolerance)
-        return result.displacement, {"iterations": result.iterations,
-                                     "minimum_pivot_ratio": result.minimum_pivot_ratio,
-                                     "stiffness_assemblies": result.iterations + 1,
-                                     "factorizations": ((result.iterations + int(not result.active_set_stable))
-                                                        if len(dofs) < len(result.displacement) else 0)}
+    def mechanics(self,d,dofs,values,settings,initial_u=None):
+        if self.material!=self.mechanics_workspace.material:raise ValueError('workspace material changed; new identity/backend required')
+        return self.mechanics_workspace.solve(d,dofs,values,settings,initial_u=initial_u,
+                                               observe=self.mechanics_observer)
 
     def trial(self, old, u, d):
         psi, _ = tensile_energy(self.kin, u, youngs_modulus=self.material["youngs_modulus"],
@@ -152,7 +150,7 @@ class NativeQ4Backend:
 
 
 def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id,
-               settings, predictor=None, classical_initial=None, return_prediction_context=False):
+               settings, predictor=None, classical_initial=None, return_prediction_context=False, work_observer=None):
     """One complete coupled physical substep; no retry, commit or training.
 
     ``predictor.predict(old, u_pred, psi_pred, next_load_id, dofs, values)``
@@ -174,7 +172,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
         row = dict(work_id=len(work), kind=kind, status="failed")
         work.append(row)
         try:
-            result = fn()
+            result = work_observer(kind,fn) if work_observer else fn()
             row["status"] = "returned"
             return result
         finally:
@@ -183,6 +181,11 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             # producer watchdog is required for a hard process wall budget.
 
     try:
+        if isinstance(backend,NativeQ4Backend):backend.mechanics_observer=work_observer
+        def mechanics(d,initial):
+            if isinstance(backend,NativeQ4Backend):
+                return backend.mechanics(d,dofs,values,settings,initial_u=initial)
+            return backend.mechanics(d,dofs,values,settings)
         backend.validate_state(old)
         previous_id = old.fingerprint()
         attempted_model_id = "NN_OFF"
@@ -202,7 +205,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
         dofs = dofs.astype(np.int64)
         lower = old.damage
         u_pred, info = call("common_mechanics_predictor",
-                            lambda: backend.mechanics(lower, dofs, values, settings))
+                            lambda: mechanics(lower,old.displacement))
         work[-1]["solver"] = info
         d = lower.copy() if classical_initial is None else np.asarray(classical_initial, float).copy()
         initialization_source = "previous_state" if classical_initial is None else "classical"
@@ -230,11 +233,12 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                 initialization_source = "classical_fallback"
                 work.append(dict(work_id=len(work), kind="initial_guess_fallback",
                                  reason=str(exc), wall_seconds=0., status="baseline_initial"))
+        initial_damage=d.copy()
         # The common mechanics result is reusable only if d is identical.
         u_cache = u_pred if np.array_equal(d, lower) else None
         for outer in range(1, settings.max_outer + 1):
             if u_cache is None:
-                u, info = call("mechanics", lambda: backend.mechanics(d, dofs, values, settings))
+                u, info = call("mechanics", lambda: mechanics(d,u_pred))
                 work[-1]["solver"] = info
             else:
                 u = u_cache
@@ -247,7 +251,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                 final_u = u
             else:
                 final_u, info = call("mechanics_re_equilibration",
-                                     lambda: backend.mechanics(new_d, dofs, values, settings))
+                                     lambda: mechanics(new_d,u))
                 work[-1]["solver"] = info
             final_psi, final_q = call("final_trial_history", lambda: backend.trial(old, final_u, new_d))
             final_qp = call("fresh_final_damage_assembly",
@@ -284,7 +288,9 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                                    total_wall_seconds=perf_counter() - start,
                                    model_id=attempted_model_id if neural_used else "NN_OFF",
                                    attempted_model_id=attempted_model_id,
-                                   initialization_source=initialization_source)
+                                   initialization_source=initialization_source,
+                                   initial_to_final_damage_rms=float(np.sqrt(np.mean((new_d-initial_damage)**2))),
+                                   initial_to_final_damage_inf=float(np.max(abs(new_d-initial_damage))))
                 return StepProposal(previous_id, state, certificate, tuple(work), prediction_context)
             d, u_cache = new_d, final_u
         raise RuntimeError("joint iteration cap reached; no accepted proposal")

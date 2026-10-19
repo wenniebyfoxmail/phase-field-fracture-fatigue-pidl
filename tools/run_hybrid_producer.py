@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import platform
 import resource
+import select
 import signal
 import socket
 import subprocess
@@ -45,9 +46,11 @@ def validate_card(card):
     if (b["gpu_hours"]!=12 or b["cpu_wall_hours"]!=136 or b["cpu_core_hours"]!=2176
             or b["cpu_cores"]!=16 or card["solver"]["wall_seconds"]!=120):
         raise ValueError("resource card differs from reviewed envelope")
-    if (card["training"]["max_updates"]!=20000 or card["training"]["wall_seconds"]!=28800
+    if (card["training"]["max_updates"]!=20000 or card["training"]["wall_seconds"] not in (21600,28800)
             or card["training"]["fits"]!=1):
         raise ValueError("training allowance differs")
+    if next(p["wall_seconds"] for p in phases if p["id"]=="test_hybrid")+card["training"]["wall_seconds"]!=43200:
+        raise ValueError("GPU phase allocation must stay within exact12h split")
     if (card["producer"]["hostname"]!="GPUServer8" or not card["producer"]["gpu_uuid"].startswith("GPU-")):
         raise ValueError("unidentified producer")
 
@@ -73,14 +76,16 @@ def gpu_admission(card):
     return dict(index=int(selected[0]),uuid=selected[1].strip(),used_mib=float(selected[2]),total_mib=float(selected[3]))
 
 
-def gpu_usage(card, allowed_pids):
+def gpu_usage(card, allowed_pids,usage=None):
     text=subprocess.check_output(['nvidia-smi','--query-compute-apps=pid,gpu_uuid,used_memory',
                                   '--format=csv,noheader,nounits'],text=True,timeout=2)
-    rows=list(csv.reader(io.StringIO(text)));used=0.
+    rows=list(csv.reader(io.StringIO(text)));used=0.;foreign=[]
     for row in rows:
         if len(row)==3 and row[1].strip()==card['producer']['gpu_uuid']:
             pid=int(row[0]);used+=float(row[2])
-            if pid not in allowed_pids:raise RuntimeError('GPU acquired by another process; stop only our worker')
+            if pid not in allowed_pids:foreign.append(pid)
+    if usage is not None:usage.update(peak_gpu_mib=max(used,usage.get('peak_gpu_mib',0.)),foreign_gpu_pids=foreign)
+    if foreign:raise RuntimeError('GPU acquired by another process; stop only our worker')
     if used>card['budget']['gpu_vram_gib']*1024:raise RuntimeError('owned GPU memory cap')
     return used
 
@@ -109,17 +114,24 @@ def host_admission(card,runroot,archive):
 
 def stop_owned(proc):
     if proc.poll() is None:
-        if os.getpgid(proc.pid)!=proc.pid:raise RuntimeError("child process-group identity changed")
-        os.killpg(proc.pid,signal.SIGTERM)
+        try:
+            if os.getpgid(proc.pid)!=proc.pid:raise RuntimeError("child process-group identity changed")
+            os.killpg(proc.pid,signal.SIGTERM)
+        except ProcessLookupError:
+            proc.wait(timeout=10);return
         try:proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
             os.killpg(proc.pid,signal.SIGKILL);proc.wait(timeout=10)
 
 
-def supervise(proc,spec,card,runroot,archive,totals):
+def supervise(proc,spec,card,runroot,archive,totals,usage=None,guardian=None):
+    usage={} if usage is None else usage
     start=perf_counter();reserve=card['budget']['termination_reserve_seconds'];peak=0;last_scan=-1.;storage={};gpu_peak=0.;gpu_last=-10.
     try:
         while proc.poll() is None:
+            if guardian is not None and guardian.poll() is not None:
+                if proc.poll() is not None:break
+                raise RuntimeError('independent deadline controller exited')
             elapsed=perf_counter()-start
             if elapsed>spec['wall_seconds']-reserve:raise RuntimeError('phase hard wall cap')
             if perf_counter()-totals['start_monotonic']>card['budget']['cpu_wall_hours']*3600-reserve:
@@ -141,40 +153,82 @@ def supervise(proc,spec,card,runroot,archive,totals):
                 rss=sum(p.memory_info().rss for p in tree if p.is_running())
             except psutil.NoSuchProcess:rss=0
             peak=max(peak,rss)
+            usage.update(peak_rss_bytes=peak,peak_gpu_mib=gpu_peak,storage=storage,last_sample_monotonic=perf_counter())
             if rss>card['budget']['ram_gib']*2**30:raise RuntimeError('process-tree RAM cap')
             if spec['gpu'] and elapsed-gpu_last>=5:
-                gpu_peak=max(gpu_peak,gpu_usage(card,{proc.pid,*[p.pid for p in tree]}))
+                gpu_peak=max(gpu_peak,gpu_usage(card,{proc.pid,*[p.pid for p in tree]},usage=usage))
                 gpu_last=elapsed
             if elapsed-last_scan>=10:
-                storage={'primary_bytes':bytes_under(runroot),'archive_bytes':bytes_under(archive)}
+                storage['primary_bytes']=bytes_under(runroot);usage['storage']=dict(storage)
+                storage['archive_bytes']=bytes_under(archive);usage['storage']=dict(storage)
                 last_scan=elapsed
                 if storage['primary_bytes']>card['budget']['primary_gib']*2**30 or storage['archive_bytes']>card['budget']['archive_gib']*2**30:
                     raise RuntimeError('attributed storage cap')
+            usage.update(peak_rss_bytes=peak,peak_gpu_mib=gpu_peak,storage=dict(storage),last_sample_monotonic=perf_counter())
             write_json(runroot/'monitor.json',dict(phase=spec['id'],pid=proc.pid,elapsed=elapsed,
                                                     rss_bytes=rss,peak_rss_bytes=peak,storage=storage,
                                                     peak_gpu_mib=gpu_peak,
                                                     totals_before_phase=totals))
             sleep(1)
+        if perf_counter()-start>spec['wall_seconds']:raise RuntimeError('late successful phase exit')
+        if perf_counter()-totals['start_monotonic']>card['budget']['cpu_wall_hours']*3600:raise RuntimeError('late total exit')
         if proc.returncode:raise RuntimeError(f"worker exit {proc.returncode}")
         return dict(wall_seconds=perf_counter()-start,peak_rss_bytes=peak,peak_gpu_mib=gpu_peak,storage=storage)
-    except BaseException:
-        stop_owned(proc)
+    except BaseException as exc:
+        usage.update(stop_reason=str(exc),peak_rss_bytes=max(peak,usage.get('peak_rss_bytes',0)),peak_gpu_mib=max(gpu_peak,usage.get('peak_gpu_mib',0)),storage=dict(storage))
+        t=perf_counter();stop_owned(proc);usage["termination_seconds"]=perf_counter()-t
         raise
 
 
-def run_owned_worker(command,code,env,log,spec,card,runroot,archive,totals):
-    """Guard every post-spawn action, including first receipt/IO and signals."""
-    proc=None
+def wait_guard_ready(fd):
+    if not select.select([fd],[],[],5)[0] or os.read(fd,1)!=b'1':
+        raise RuntimeError('deadline guardian admission failed; worker gate stays closed')
+
+
+def run_owned_worker(command,code,env,log,spec,card,runroot,archive,totals,usage=None):
+    """Guard from spawn onward; no monitor IO participates in deadline control."""
+    usage={} if usage is None else usage
+    proc=None;guardian=None;left=None;right=None;fds=[]
     try:
+        left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_DGRAM)
+        start_r,start_w=os.pipe();ready_r,ready_w=os.pipe();fds=[start_r,start_w,ready_r,ready_w]
+        env=dict(os.environ if env is None else env);env['HYBRID_GUARD_FD']=str(right.fileno());env['HYBRID_START_FD']=str(start_r)
         with Path(log).open('w') as handle:
             proc=subprocess.Popen(command,cwd=code,env=env,stdout=handle,stderr=subprocess.STDOUT,
-                                  stdin=subprocess.DEVNULL,start_new_session=True)
-            append_event(runroot/'phases.jsonl',dict(phase=spec['id'],pid=proc.pid,command=command,
-                                                    log=str(log),start_epoch=time()))
-            return supervise(proc,spec,card,runroot,archive,totals)
+                                  stdin=subprocess.DEVNULL,start_new_session=True,pass_fds=(right.fileno(),start_r))
+            reserve=card['budget']['termination_reserve_seconds'];now=perf_counter()
+            deadlines=[now+spec['wall_seconds']-reserve,totals['start_monotonic']+card['budget']['cpu_wall_hours']*3600-reserve]
+            if spec['gpu']:deadlines.append(now+card['budget']['gpu_hours']*3600-totals['gpu_seconds']-reserve)
+            if spec['id'] in ('native_replay','analysis'):deadlines.append(now+card['budget']['replay_analysis_hours']*3600-totals.get('shared_analysis_seconds',0)-reserve)
+            report=runroot/f"guard_{spec['id']}.json"
+            guardian=subprocess.Popen([sys.executable,str(Path(code)/'tools/hybrid_deadline_guard.py'),
+                '--worker',str(proc.pid),'--supervisor',str(os.getpid()),'--fd',str(left.fileno()),
+                '--deadline',str(min(deadlines)),'--step-seconds',str(card['solver']['wall_seconds']),
+                '--report',str(report),'--ready-fd',str(ready_w)],cwd=code,env=env,stdout=handle,stderr=subprocess.STDOUT,
+                start_new_session=True,pass_fds=(left.fileno(),ready_w))
+            os.close(ready_w);fds.remove(ready_w)
+            wait_guard_ready(ready_r)
+            if spec['gpu']:usage['gate_gpu_admission']=gpu_admission(card)
+            os.write(start_w,b'1')
+            append_event(runroot/'phases.jsonl',dict(phase=spec['id'],pid=proc.pid,guardian_pid=guardian.pid,
+                                                    command=command,log=str(log),start_epoch=time()))
+            result=supervise(proc,spec,card,runroot,archive,totals,usage=usage,guardian=guardian)
+            guardian.wait(timeout=5)
+            audit=read_manifest(report);usage['deadline_guard']=audit
+            if guardian.returncode or audit['reason'] is not None:raise RuntimeError('independent deadline stop: '+str(audit.get('reason')))
+            return result
     finally:
-        if proc is not None:
-            stop_owned(proc)
+        if proc is not None:stop_owned(proc)
+        if guardian is not None:
+            try:guardian.wait(timeout=2)
+            except subprocess.TimeoutExpired:stop_owned(guardian)
+            report=runroot/f"guard_{spec['id']}.json"
+            if report.exists():
+                try:usage['deadline_guard']=read_manifest(report)
+                except Exception as exc:usage['guard_report_error']=str(exc)
+        for fd in fds:os.close(fd)
+        for s in (left,right):
+            if s is not None:s.close()
 
 
 def outcome(card,archive,totals):
@@ -186,16 +240,20 @@ def outcome(card,archive,totals):
     cf=totals['phases']['test_reference']['wall_seconds']
     cc=totals['phases']['test_classical']['wall_seconds'];ch=totals['phases']['test_hybrid']['wall_seconds']
     criteria=card['criteria']
+    if set(comparisons)!={'test_classical','test_hybrid'}:raise RuntimeError('both matched quality reports required')
     n=comparisons['test_hybrid']
-    quality=(n['mean_J']<=criteria['mean_J_max'] and n['max_J']<=criteria['max_J_max']
+    def quality_for(n):
+        return (n['mean_J']<=criteria['mean_J_max'] and n['max_J']<=criteria['max_J_max']
              and max(n['max_A_relative'],n['max_r_relative'])<=criteria['history_relative_max']
              and n['max_f_rms']<=criteria['fatigue_absolute_max']
              and n['max_reaction_relative']<=criteria['reaction_relative_max'])
+    qualities={k:quality_for(v) for k,v in comparisons.items()}
+    quality=qualities['test_hybrid']
     speed=(ch<=(1-criteria['speed_fraction_min'])*min(cf,cc))
     fatigue=all(read_manifest(archive/x/'summary.json')['f_min']<1. for x in ['train_A','train_B','validation','test_reference','test_classical','test_hybrid'])
     offline=sum(totals['phases'][x]['wall_seconds'] for x in ['native_replay','train_A','train_B','validation','training'])
-    return dict(complete=True,quality_pass=quality,online_speed_pass=speed,fatigue_coverage=fatigue,
-                supports_neural_online_acceleration=bool(quality and speed and fatigue),
+    return dict(complete=True,quality_pass=quality,matched_quality=qualities,online_speed_pass=speed,fatigue_coverage=fatigue,
+                supports_neural_online_acceleration=bool(all(qualities.values()) and speed and fatigue),
                 cost=dict(reference_wall=cf,classical_wall=cc,hybrid_wall=ch,offline_wall=offline,
                           study_evaluation_wall=totals['phases']['analysis']['wall_seconds'],
                           break_even_tasks=offline/(cf-ch) if ch<cf else None),
@@ -215,6 +273,7 @@ def main():
     if sha256(args.inputs/'inputs.json')!=card['inputs_sha256']:raise RuntimeError('input manifest differs')
     if args.check:
         print(json.dumps(dict(card_valid=True,artifact_id=package['artifact_id'],execution=False),indent=2));return
+    if card.get('execution_enabled') is not True:raise RuntimeError('preparation package has no execution authority; R1 remains stopped')
     if not args.execute or args.review is None:raise RuntimeError('explicit execution and exact review required')
     review=read_manifest(args.review)
     if (review.get('verdict')!='REVIEW_PASS' or review.get('card_sha256')!=sha256(args.card)
@@ -250,7 +309,8 @@ def main():
             phase_started=perf_counter();use_before=resource.getrusage(resource.RUSAGE_CHILDREN)
             usage={};phase_ok=False
             try:
-                usage=run_owned_worker(cmd,code,env,log,spec,card,runroot,archive,totals)
+                result_usage=run_owned_worker(cmd,code,env,log,spec,card,runroot,archive,totals,usage=usage)
+                usage.update(result_usage)
                 phase_ok=True
             finally:
                 use_after=resource.getrusage(resource.RUSAGE_CHILDREN)

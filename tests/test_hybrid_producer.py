@@ -81,7 +81,7 @@ def test_history_mismatch_blocks_acceleration_even_if_field_and_time_pass(tmp_pa
     for name in ['train_A','train_B','validation','test_reference','test_classical','test_hybrid']:
         write_json(tmp_path/name/'summary.json',dict(completed=True,f_min=.5))
     metrics=dict(mean_J=0.,max_J=0.,max_A_relative=.8,max_r_relative=0.,max_f_rms=0.,max_reaction_relative=0.)
-    write_json(tmp_path/'analysis/summary.json',dict(methods={'test_hybrid':metrics}))
+    write_json(tmp_path/'analysis/summary.json',dict(methods={'test_hybrid':metrics,'test_classical':metrics}))
     totals={'phases':{name:{'wall_seconds':100.} for name in ['native_replay','train_A','train_B','validation','training','test_reference','test_classical','test_hybrid','analysis']}}
     totals['phases']['test_hybrid']['wall_seconds']=50.
     result=outcome(c,tmp_path,totals)
@@ -117,11 +117,12 @@ def test_first_postspawn_event_write_failure_reaps_owned_worker(tmp_path,monkeyp
     def fail_event(*args):raise OSError('injected first receipt IO fault')
     monkeypatch.setattr(run.subprocess,'Popen',record_spawn)
     monkeypatch.setattr(run,'append_event',fail_event)
+    monkeypatch.setattr(run,'wait_guard_ready',lambda fd:None)
     with pytest.raises(OSError,match='receipt IO'):
         run.run_owned_worker([sys.executable,'-c','import time;time.sleep(30)'],tmp_path,None,tmp_path/'worker.log',
                              dict(id='unit',kind='replay',gpu=False,wall_seconds=30),card(),tmp_path,archive,
                              dict(wall_seconds=0.,gpu_seconds=0.,start_monotonic=perf_counter()))
-    assert len(processes)==1 and processes[0].poll() is not None
+    assert len(processes)==2 and all(p.poll() is not None for p in processes)
 
 
 def test_recovery_inspection_reports_truncated_prefix_and_isolates_bad_store(tmp_path):
