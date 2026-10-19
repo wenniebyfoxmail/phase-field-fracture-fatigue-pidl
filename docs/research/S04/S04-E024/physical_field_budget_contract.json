@@ -1,0 +1,123 @@
+{
+  "step": "E024-D013",
+  "stage": "DESIGN_ONLY_AWAITING_INDEPENDENT_REVIEW",
+  "authority": "2026-10-19 direct user: physical-field-defined budget, plan and independent review only",
+  "source_baseline": "ab403ff58a5d014b293a059fb5d94a0c5168e5c9",
+  "states": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "origin": "each own E023 joint10000 seed7; never a D012-corrected or E024 head-tail origin",
+  "head_dimension": 568,
+  "fixed": [
+    "producer_D",
+    "hidden_features",
+    "backbone",
+    "leak",
+    "coordinate_map",
+    "BC",
+    "compact_window",
+    "nodal_damage",
+    "history",
+    "fatigue",
+    "FEM_reference",
+    "nodal_and_GP_masks",
+    "native_mass_and_GP_weights"
+  ],
+  "parameter_relative_norm_cap": null,
+  "parameter_ridge_penalty": null,
+  "physical_radius_levels": [
+    0.1,
+    0.3,
+    1.0
+  ],
+  "budget": "max(full nodal UV change / origin FEM UV error, full GP engineering-strain change / origin FEM strain error, full GP instantaneous elastic-driver change / origin FEM driver error, native dual free-force change / origin force norm) <= eta",
+  "budget_center": "immutable own E023 origin, including after relinearization",
+  "normalization": "raw dimensional norm of own origin error; force uses same rho scaling; no FEM-near-zero denominator or arbitrary epsilon floor",
+  "primary_guards": [
+    "UV_full",
+    "UV_damage",
+    "UV_background",
+    "UV_inside_background",
+    "native_weak_norm",
+    "driver_background",
+    "driver_inside_background",
+    "strain_full",
+    "strain_damage",
+    "strain_background",
+    "strain_inside_background",
+    "driver_full",
+    "driver_damage"
+  ],
+  "guard_ceiling": "own E023 origin squared error / weak norm squared, no actual physical slack",
+  "background_cost_primary": "0 allowed aggregate error increase in background and inside-background UV, strain and elastic driver; not pointwise protection or application tolerance",
+  "main_profiles_per_state": 3,
+  "diagnostic_ablation": {
+    "eta": 0.3,
+    "guards": "original seven only",
+    "purpose": "separate extra strain/full-damage-driver protection cost from field-budget benefit; never admitted as primary repair"
+  },
+  "profiles_total": 12,
+  "max_relinearizations_per_profile": 3,
+  "max_convex_solves_total": 36,
+  "max_trials_per_solve": 9,
+  "max_actual_candidate_trials_total": 324,
+  "solver": {
+    "method": "SciPy SLSQP, analytical objective and constraint Jacobians, full568 variables, one zero increment start",
+    "maxiter": 200,
+    "ftol": 1e-10,
+    "preconditioner": "invertible eigenscale of exact full nodal UV + engineering-strain change Grams; floor1e-10*lambda_max only in coordinate transform, no rank truncation or parameter penalty",
+    "proxy_feasibility_tolerance_normalized_squared": 1e-08,
+    "actual_guard_tolerance": 0,
+    "line_search_k": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "line_search": "first actual feasible with positive actual improvement and actual/predicted reduction >= .1",
+    "minimum_predicted_and_actual_reduction_normalized_MSE": 1e-08,
+    "unresolved_inner_return": "finite proxy-feasible may furnish an actual feasible witness; never a ceiling or converged optimum"
+  },
+  "resource_caps": {
+    "cpu_threads": 2,
+    "GPU_hours": 0,
+    "numerical_execution_wall_s": 1800,
+    "independent_replay_wall_s": 900,
+    "nontraining_checks_wall_s": 300,
+    "render_wall_s": 120,
+    "all_compute_wall_s": 3120,
+    "max_process_RSS_bytes": 3221225472,
+    "legacy_loader_RSS_limit_unchanged": true,
+    "new_archive_bytes": 1073741824,
+    "processes": "serial fresh process per state; no repeated loader after large arrays"
+  },
+  "stops": [
+    "identity/hash/finite/physical-map mismatch",
+    "resource cap",
+    "no proxy-feasible returned step",
+    "all9 finite candidates rejected",
+    "accepted improvement below numerical threshold",
+    "3 accepted-or-attempted linearizations reached",
+    "solver exception; no alternate solver/multistart/retry"
+  ],
+  "application_tolerance": null,
+  "background_strain_application_tolerance": null,
+  "legacy_001_role": "historical diagnostic only",
+  "this_turn_permissions": {
+    "write_plan_and_records": true,
+    "independent_Codex_design_review": true,
+    "new_head_optimization": false,
+    "new_model_or_FEM_forward": false,
+    "training": false,
+    "remote_or_external_send": false,
+    "install_dependencies": false
+  },
+  "future_execution_permissions": "implementation + exact-source Code Ready and a separately approved final execution scope required; current design review is not launch permission"
+}
