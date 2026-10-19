@@ -1,0 +1,25 @@
+{
+  "experiment_id": "HQ-ROAD-UQ-FEAS-002",
+  "protocol": "D2-backbone-repair-r0-draft",
+  "seed": 20261011,
+  "max_epochs": 40,
+  "gpu_budget_hours": 6,
+  "train_budget_hours": 5.5,
+  "train_crop": [320, 320],
+  "batch_size": 8,
+  "threshold": 0.5,
+  "optimizer": "Adam(lr=1e-3)",
+  "loss": "0.5*BCE + 0.5*soft_dice_loss",
+  "single_repair": "replace scratch U-Net encoder with official ImageNet-pretrained ResNet18 encoder",
+  "checkpoint_rule": "maximum CRACK500 A validation mean Dice only",
+  "a_data": "same frozen CRACK500 train/validation/test and exclusions as HQ-ROAD-UQ-FEAS-001 D1",
+  "b_data": "GAPS384 FPHBN published pixel reannotations; 382 nonempty masks are the primary cohort and 2 empty masks are reported separately",
+  "expected": {"train_pairs": 1860, "train_groups": 245, "val_pairs": 341, "val_groups": 49, "test_pairs": 200, "gaps_labeled": 384, "gaps_nonempty": 382, "gaps_empty": 2},
+  "inference": {"native_pixels": true, "multiple": 16, "tile": 640, "overlap": 96},
+  "road420_access": "PROHIBITED; remains sealed and is not an unseen-C resource for this package",
+  "gates": {
+    "F1": "among 382 nonempty GAPS384 masks, Dice>0 on at least 287 images and degenerate predictions on fewer than 191 images",
+    "F2": "at least one frozen score has first-95 accepted mean error no greater than full-cohort mean error minus 0.05",
+    "F3": "U_Z is retained only if its first-95 risk is strictly lower than U_LC first-95 risk; F3 is reported separately and does not override F1/F2"
+  }
+}

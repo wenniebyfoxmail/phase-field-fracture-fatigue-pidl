@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-19",
+  "status": "pass",
+  "checks": [
+    "official_weights_strict_load",
+    "even_and_odd_forward",
+    "finite_logits_and_512d_features",
+    "gaps_384_pair_decode_382_nonempty",
+    "frozen_gate_arithmetic"
+  ],
+  "training_or_optimizer_steps": 0,
+  "road420_access": false
+}

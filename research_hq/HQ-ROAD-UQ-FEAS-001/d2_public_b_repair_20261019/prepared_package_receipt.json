@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-19",
+  "status": "PREPARED_NOT_EXECUTION_AUTHORIZED",
+  "experiment_id": "HQ-ROAD-UQ-FEAS-002",
+  "proposed_run_id": "HQ-ROAD-UQ-FEAS-002-R001",
+  "code_snapshot": "79132eecb1d8d80a486a92475eab7226cf7324cce2d0258fc76254a036cc4b65",
+  "data_lock_sha256": "ff95bd1e005f8ef3cccde8024eee7da7b4b2fdce338ca2acd6e199b25319a2a0",
+  "environment_observed_local": {
+    "python": "3.12.2",
+    "torch": "2.11.0",
+    "torchvision": "0.26.0",
+    "numpy": "2.2.6",
+    "pillow": "10.4.0",
+    "matplotlib": "3.9.2",
+    "cuda": null
+  },
+  "verified_input_hashes": true,
+  "argparse_surface": [
+    "--approval",
+    "--lock",
+    "--trainzip",
+    "--valzip",
+    "--testzip",
+    "--gapszip",
+    "--weights",
+    "--cache",
+    "--output"
+  ],
+  "local_validation": {
+    "status": "pass",
+    "checks": [
+      "official_weights_strict_load",
+      "even_and_odd_forward",
+      "finite_logits_and_512d_features",
+      "gaps_384_pair_decode_382_nonempty",
+      "frozen_gate_arithmetic"
+    ],
+    "training_or_optimizer_steps": 0,
+    "road420_access": false
+  },
+  "producer_started": false,
+  "training_or_optimizer_steps": 0,
+  "road420_access": false
+}

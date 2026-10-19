@@ -1,0 +1,156 @@
+{
+  "date": "2026-10-19",
+  "source_outer": "/Users/wenxiaofang/Downloads/CRACK500_official_20261011/pavement_crack_datasets_official.zip",
+  "outer_sha256": "2a75847f15a4384ca37fe1b0b0cb70fb50189354638b6590d2331e5284f6b075",
+  "inner_sha256": {
+    "raw": "e40e8eec77d09cb76896a4fa5bdb28f1a4df9d14602b13dbd998c5d361f0a2a6",
+    "cropped_images": "80ff6e9d3442b95afd122aa23719eb99d7b9f0ad0558083db2d36477142deb16",
+    "cropped_masks": "d7e55ed93baf44eb88e6b0b519607e56df4eed21dca1e3e826f4157b0b1a64ad"
+  },
+  "gaps384": {
+    "raw_images": 404,
+    "labeled_pairs": 384,
+    "unpaired_image_count": 20,
+    "unpaired_images": [
+      "test_0030",
+      "train_0600",
+      "train_0624",
+      "train_0625",
+      "train_0644",
+      "train_0646",
+      "train_0647",
+      "train_0648",
+      "train_0663",
+      "train_0929",
+      "train_0930",
+      "train_0937",
+      "train_0958",
+      "train_0978",
+      "train_1079",
+      "train_1249",
+      "train_1261",
+      "train_1262",
+      "train_1310",
+      "train_1363"
+    ],
+    "shape": [
+      1080,
+      1920
+    ],
+    "mask_values": [
+      0,
+      255
+    ],
+    "nonempty_masks": 382,
+    "foreground_ratio": {
+      "min": 0.0,
+      "median": 0.002893759645061728,
+      "max": 0.021749131944444444
+    },
+    "cropped_pairs": 509,
+    "cropped_parent_ids": 286
+  },
+  "cracktree200": {
+    "pairs": 206,
+    "shape": [
+      600,
+      800
+    ],
+    "nonempty": 206,
+    "foreground_ratio": {
+      "min": 0.00103125,
+      "median": 0.0028864583333333333,
+      "max": 0.0099
+    }
+  },
+  "overlap_screen": {
+    "known_images": 2519,
+    "comparisons_with_four_rotations": 3869184,
+    "exact_decoded_pixel_matches": 0,
+    "phash_hamming_le_8": 0,
+    "exact": [],
+    "near": [],
+    "closest": [
+      {
+        "gaps": "train_1158",
+        "known": "CFD/002",
+        "rotation": 1,
+        "hamming": 11
+      },
+      {
+        "gaps": "train_0543",
+        "known": "CRACK500/20160328_153612_641_1",
+        "rotation": 2,
+        "hamming": 12
+      },
+      {
+        "gaps": "train_0665",
+        "known": "CRACK500/20160326_142349_641_721",
+        "rotation": 3,
+        "hamming": 12
+      },
+      {
+        "gaps": "train_1241",
+        "known": "CRACK500/20160321_185557_1921_1081",
+        "rotation": 0,
+        "hamming": 12
+      },
+      {
+        "gaps": "train_1347",
+        "known": "CRACK500/20160328_151247_1_1",
+        "rotation": 3,
+        "hamming": 12
+      },
+      {
+        "gaps": "train_1375",
+        "known": "CRACK500/20160402_150938_641_361",
+        "rotation": 1,
+        "hamming": 12
+      },
+      {
+        "gaps": "test_0041",
+        "known": "CRACK500/IMG_2917_1_485",
+        "rotation": 2,
+        "hamming": 13
+      },
+      {
+        "gaps": "test_0193",
+        "known": "CRACK500/20160328_153714_1921_1",
+        "rotation": 1,
+        "hamming": 13
+      },
+      {
+        "gaps": "train_0460",
+        "known": "CFD/063",
+        "rotation": 1,
+        "hamming": 13
+      },
+      {
+        "gaps": "train_0528",
+        "known": "CRACK500/20160328_151814_1281_361",
+        "rotation": 3,
+        "hamming": 13
+      },
+      {
+        "gaps": "train_0531",
+        "known": "CRACK500/20160328_153556_1281_361",
+        "rotation": 2,
+        "hamming": 13
+      },
+      {
+        "gaps": "train_0556",
+        "known": "CRACK500/20160326_142349_641_721",
+        "rotation": 3,
+        "hamming": 13
+      }
+    ],
+    "road420_accessed": false
+  },
+  "qualification": "GAPS384_PROVISIONAL_B_FOR_FINITE_PUBLISHED_LABEL_TRANSFER_ONLY",
+  "limits": [
+    "FPHBN derivative package has no recognized repository license; local academic research only, no redistribution",
+    "derivative package has no road/site mapping",
+    "new-B versus sealed Road420 duplication remains unchecked",
+    "published masks are author reannotations, not physical crack width truth"
+  ]
+}

@@ -1,0 +1,110 @@
+[
+  {
+    "selection_group": "low_UZ",
+    "id": "112",
+    "recorded_dice": 0.2350320245057087,
+    "U_Z": 0.4854317379009516,
+    "recorded_pred_empty": false,
+    "recomputed_pred_fraction": 0.0148046875,
+    "reference_fraction": 0.008561197916666667
+  },
+  {
+    "selection_group": "low_UZ",
+    "id": "113",
+    "recorded_dice": 0.2591230551626591,
+    "U_Z": 0.5408704910857892,
+    "recorded_pred_empty": false,
+    "recomputed_pred_fraction": 0.013860677083333333,
+    "reference_fraction": 0.009153645833333333
+  },
+  {
+    "selection_group": "low_UZ",
+    "id": "066",
+    "recorded_dice": 0.316063017703427,
+    "U_Z": 0.5516319102462572,
+    "recorded_pred_empty": false,
+    "recomputed_pred_fraction": 0.027278645833333334,
+    "reference_fraction": 0.012805989583333333
+  },
+  {
+    "selection_group": "low_UZ",
+    "id": "063",
+    "recorded_dice": 0.30903656012876524,
+    "U_Z": 0.5525104408216819,
+    "recorded_pred_empty": false,
+    "recomputed_pred_fraction": 0.017740885416666668,
+    "reference_fraction": 0.010572916666666666
+  },
+  {
+    "selection_group": "high_UZ",
+    "id": "017",
+    "recorded_dice": 0.0,
+    "U_Z": 8.243882935632108,
+    "recorded_pred_empty": true,
+    "recomputed_pred_fraction": 0.0,
+    "reference_fraction": 0.004934895833333334
+  },
+  {
+    "selection_group": "high_UZ",
+    "id": "015",
+    "recorded_dice": 0.0,
+    "U_Z": 8.15787810291425,
+    "recorded_pred_empty": true,
+    "recomputed_pred_fraction": 0.0,
+    "reference_fraction": 0.005397135416666666
+  },
+  {
+    "selection_group": "high_UZ",
+    "id": "006",
+    "recorded_dice": 0.0,
+    "U_Z": 8.15207098164646,
+    "recorded_pred_empty": true,
+    "recomputed_pred_fraction": 0.0,
+    "reference_fraction": 0.007311197916666666
+  },
+  {
+    "selection_group": "high_UZ",
+    "id": "047",
+    "recorded_dice": 0.0,
+    "U_Z": 8.14787581104335,
+    "recorded_pred_empty": true,
+    "recomputed_pred_fraction": 0.0,
+    "reference_fraction": 0.012174479166666667
+  },
+  {
+    "selection_group": "degenerate",
+    "id": "052",
+    "recorded_dice": 0.0,
+    "U_Z": 0.7533562013822286,
+    "recorded_pred_empty": true,
+    "recomputed_pred_fraction": 0.0,
+    "reference_fraction": 0.008430989583333333
+  },
+  {
+    "selection_group": "degenerate",
+    "id": "086",
+    "recorded_dice": 0.0,
+    "U_Z": 0.866322642587758,
+    "recorded_pred_empty": true,
+    "recomputed_pred_fraction": 0.0,
+    "reference_fraction": 0.00607421875
+  },
+  {
+    "selection_group": "degenerate",
+    "id": "106",
+    "recorded_dice": 0.0,
+    "U_Z": 0.903054480699462,
+    "recorded_pred_empty": true,
+    "recomputed_pred_fraction": 0.0,
+    "reference_fraction": 0.0104296875
+  },
+  {
+    "selection_group": "degenerate",
+    "id": "042",
+    "recorded_dice": 0.0,
+    "U_Z": 0.9326882380499365,
+    "recorded_pred_empty": true,
+    "recomputed_pred_fraction": 0.0,
+    "reference_fraction": 0.0097265625
+  }
+]
