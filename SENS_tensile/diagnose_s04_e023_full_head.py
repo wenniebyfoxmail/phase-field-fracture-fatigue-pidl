@@ -7,7 +7,7 @@ from threadpoolctl import threadpool_limits
 from s04_e024_three_head import admit_finite,GUARDS
 from s04_e024_joint_head import write_trials
 from s04_e024_full_head import build_proxies,solve_full
-from s04_e024_full_head_recovery import restore_solution
+from s04_e024_full_head_recovery import restore_solution,revalidate_once
 from s04_e023_head_scale import physical_features
 from scipy.linalg.blas import dgemm
 from s04_e024_head_cone import elastic_driver
@@ -110,19 +110,23 @@ def run(a):
             raise RuntimeError('full proxy build/solve resource cap')
         accepted=False;chosen=theta.copy();uv=origin.copy();fraction=0.;accepted_k=None
         visited=0;k=-1
-        for k in (range(9) if solve['feasible'] else []):
+        if cached is not None and not solve['feasible']:
+            raise ValueError('saved c20 proxy not admissible; no new fallback')
+        for k in ((range(1) if cached is not None else range(9)) if solve['feasible'] else []):
             visited+=1
             t=2.**(-k);coef=theta+radius*t*full_z.reshape(theta.shape)
-            candidate=network_order(model,data['xy'],base,coef,1024)
             if cached is not None:
                 assert k==0
                 np.testing.assert_array_equal(coef,cached['head_coefficients'])
-                np.testing.assert_allclose(candidate,cached['uv'],rtol=0,atol=1e-12)
-                candidate=cached['uv'].copy()
+                candidate,vals=revalidate_once(cached,lambda c:network_order(model,data['xy'],base,c,1024),actual_values,origin_values,
+                    float(np.linalg.norm(coef-theta)/np.linalg.norm(theta)))
+            else:
+                candidate=network_order(model,data['xy'],base,coef,1024)
+                vals=actual_values(candidate)
             np.testing.assert_array_equal(candidate[window==0],origin[window==0])
             bc=(data['xy'][:,1]==-.5)|(data['xy'][:,1]==.5)
             np.testing.assert_array_equal(candidate[bc],origin[bc])
-            vals=actual_values(candidate);delta_relative=float(np.linalg.norm(coef-theta)/np.linalg.norm(theta))
+            delta_relative=float(np.linalg.norm(coef-theta)/np.linalg.norm(theta))
             ok,reasons=admit_finite(vals,origin_values,delta_relative)
             branch=float(np.mean((mech.strains(candidate)[...,:2].sum(2)>=0)!=mech.branches))
             for key in GUARDS:

@@ -99,3 +99,25 @@ def test_saved_solution_recovery_never_calls_an_optimizer(monkeypatch):
     assert trace[0]['dual_lower_bound'] == pytest.approx(-1.5)
     cache['raw_z'][0] = .9
     with pytest.raises(AssertionError):restore_solution(cache, record)
+
+
+def test_cached_guard_failure_stops_after_one_saved_forward():
+    from s04_e024_full_head_recovery import revalidate_once
+    from s04_e024_three_head import GUARDS
+    calls = []
+    cache = dict(head_coefficients=np.ones((1, 2)), uv=np.zeros((3, 2)))
+    def forward(coeff):
+        calls.append(coeff.copy())
+        return cache['uv'].copy()
+    baseline = dict.fromkeys(GUARDS, 1.)
+    failed = baseline.copy(); failed['weak_squared'] = 2.
+    with pytest.raises(ValueError, match='cached c20 failed actual'):
+        revalidate_once(cache, forward, lambda uv:failed, baseline, .02)
+    assert len(calls) == 1
+    np.testing.assert_array_equal(calls[0], cache['head_coefficients'])
+
+
+def test_recovery_budget_includes_preserved_failed_attempt():
+    from s04_e024_full_head_recovery import remaining_seconds
+    assert remaining_seconds(100., 12.6264)==pytest.approx(787.3736)
+    with pytest.raises(TimeoutError):remaining_seconds(888., 12.6264)
