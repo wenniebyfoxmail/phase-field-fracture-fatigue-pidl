@@ -85,6 +85,15 @@ class StateContract(unittest.TestCase):
   with patch('numpy.load',side_effect=AssertionError('array access')),patch('subprocess.Popen',side_effect=AssertionError('producer launch')):
    with self.assertRaises(PermissionError):worker.main(['--run'])
    with self.assertRaises(PermissionError):supervise.main([])
+ def test_hq_authority_receipt_is_truthful_sourced_and_exact(self):
+  import tempfile,json,copy
+  code=Path(__file__).parent;cfg=contract.read(code/'config.producer.json');chain=contract.read(code/'hq_authority_chain.json')
+  a=dict(authority_mode='hq_delegated',human_approved=False,hq_approved=True,package_sha256=contract.package_id(code),run_id=cfg['run_id'],implementation_commit='fixture-not-an-execution',authority_source=chain['hq_thread_id'],approval_text=chain['hq_approval_text'],authority_revision=chain['revision'],authority_chain_sha256=contract.sha(code/'hq_authority_chain.json'),producer=chain['producer'],config_sha256=chain['config_sha256'],input_manifest_sha256=chain['input_manifest_sha256'],cohort_sha256=chain['cohort_sha256'],budgets=chain['budgets'])
+  with tempfile.TemporaryDirectory() as d:
+   receipt=Path(d)/'fixture_receipt.json';receipt.write_text(json.dumps(a));self.assertEqual(contract.approval(code,cfg,receipt)[0],a['package_sha256'])
+   for key,value in [('human_approved',True),('hq_approved',False),('package_sha256','wrong'),('run_id','wrong'),('authority_source',''),('approval_text','paraphrase'),('authority_chain_sha256','wrong'),('config_sha256','wrong'),('input_manifest_sha256','wrong'),('cohort_sha256','wrong'),('budgets',{}),('producer','other'),('authority_mode','unknown')]:
+    bad=copy.deepcopy(a);bad[key]=value;receipt.write_text(json.dumps(bad))
+    with self.assertRaises(PermissionError,msg=key):contract.approval(code,cfg,receipt)
  def test_signed_and_exact_zero_reference_are_not_clipped_or_dropped(self):
   out=diagnostic(-np.ones((2,128,128)),-2*np.ones((2,128,128)),np.ones(2),64)
   self.assertEqual(out['pred_positive_mass_0'],0.);self.assertEqual(out['pred_negative_mass_0'],1.);self.assertEqual(out['l1_mass_ratio_0'],.5)

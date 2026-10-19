@@ -2,8 +2,9 @@
   "protocol": "BRIDGE-PS-v1.0",
   "design_commit": "569cc865a9090e050042c7daf037cd2f0e535bba",
   "files": {
+    "hq_authority_chain.json": "49ce0de52815549b7a8f8cc9c0d3397ccd7e8d4be824a33c691549ef7d58b865",
     "state.py": "5bff0d293be761e1b6b08d8f14d9e2e2d58987f666d5e48d38d894cc90ccf39d",
-    "contract.py": "bab5e13d9ce1da4e5214ff601359afb076fac8acbf3faa9ffe1a22ced6c51e6c",
+    "contract.py": "51b63d341d503d5c98cdcca6d04976e3a95e0e42e1e30f2a70f2357aec3f5a13",
     "supervise.py": "57cad67e6e69169bb0efd66589a585ccbcdecb04bd554e7bbd98c609dc96bc90",
     "worker.py": "2b74e86e2e6b79a11ba8c6b738c35cb2b2e692da2415eeeb67aed95075589789",
     "analysis.py": "7b3d1010ecbf446e389398dd241c56897d23597e91aa6ef7ed8d555b89b42ac4",
@@ -18,6 +19,6 @@
     "design_source_manifest.json": "ac56be5b8a9de2ca191c4f8ba48d2730d8a805672b7144eb5779132cefeb01df",
     "interface_fixture.py": "f50ae7017c21be31a93c764513053a5f71dc56d0e44a8dd75a3b48e006d4de4a",
     "test_interface_fixture.py": "5c38cbd3f7d237fc9b7d9084f1d3e5ea863e7524991e72a9fd9788a9f135fc18",
-    "test_state_contract.py": "35b0262b0aa226720e0d998fd05ae124130ebcd6fdddbd71e08abf2602db7a0e"
+    "test_state_contract.py": "8d325796d6d1e9d55df546f00df92ee3b0b1e5de6c5787a58f57a87ec48fdf79"
   }
 }

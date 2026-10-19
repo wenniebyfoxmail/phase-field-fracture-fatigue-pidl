@@ -48,7 +48,27 @@ def approval(code,cfg,path):
  digest=package_id(code)
  if path is None:raise PermissionError('NO EXECUTION AUTHORITY: approval receipt absent')
  a=read(path)
- if not(a.get('human_approved') is True and a.get('package_sha256')==digest and a.get('run_id')==cfg['run_id'] and a.get('authority_source') and a.get('approval_text') and a.get('implementation_commit')):raise PermissionError('exact human/run/package approval missing')
+ if not(a.get('package_sha256')==digest and a.get('run_id')==cfg['run_id'] and a.get('authority_source') and a.get('approval_text') and a.get('implementation_commit')):raise PermissionError('exact authority/run/package identity missing')
+ if a.get('authority_mode','direct_human')=='direct_human':
+  if a.get('human_approved') is not True:raise PermissionError('direct human approval missing')
+ elif a.get('authority_mode')=='hq_delegated':
+  chain=read(Path(code)/'hq_authority_chain.json')
+  expected_budget={k:cfg[k] for k in ('wall_seconds','threads','memory_gib','max_output_gib','max_archive_gib')}
+  expected_budget.update(gpu=0,predictor_fits=cfg['expected']['predictor_fits'],input_fits=cfg['expected']['input_fits'])
+  if not(a.get('human_approved') is False and a.get('hq_approved') is True
+         and a.get('authority_chain_sha256')==sha(Path(code)/'hq_authority_chain.json')
+         and a.get('authority_source')==chain['hq_thread_id']
+         and a.get('approval_text')==chain['hq_approval_text']
+         and a.get('authority_revision')==chain['revision']
+         and a.get('producer')==chain['producer']=='gpu-taobo/GPUServer8'
+         and a.get('config_sha256')==chain['config_sha256']==sha(Path(code)/'config.producer.json')
+         and a.get('input_manifest_sha256')==chain['input_manifest_sha256']==sha(Path(code)/'input_manifest.json')
+         and a.get('cohort_sha256')==chain['cohort_sha256']==COHORT_SHA
+         and a.get('budgets')==chain['budgets']==expected_budget
+         and chain['run_id']==cfg['run_id'] and chain['human_final_package_approval'] is False
+         and len(chain['direct_user_sources'])==2 and all(x.get('thread_id')==chain['hq_thread_id'] and x.get('message_id') and x.get('text') for x in chain['direct_user_sources'])):
+   raise PermissionError('exact sourced HQ delegation missing or mismatched')
+ else:raise PermissionError('unsupported authority mode')
  return digest,a
 
 def budget_reason(elapsed,rss_bytes,output_bytes,archive_bytes,returncode=None):

@@ -1,0 +1,38 @@
+{
+  "revision": "2026-10-19-hq-delegated-v1",
+  "authority_mode": "hq_delegated",
+  "human_final_package_approval": false,
+  "hq_thread_id": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+  "owner_thread_id": "01a10e77-8832-7371-b4cc-e5cbdadceced",
+  "direct_user_sources": [
+    {
+      "thread_id": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+      "message_id": "01a15505-4a0d-7762-b930-e1cdcaebd017",
+      "text": "请你托管其他的对话框"
+    },
+    {
+      "thread_id": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+      "message_id": "01a15517-96b1-7cb3-9037-3724e62cab0e",
+      "text": "请你打开一个新的对话窗，帮我推进这些连接任务。我需要通过第一性原理，看如何能有一个最好的 突破"
+    }
+  ],
+  "hq_approval_text": "HQ已读完整 EXECUTION_CARD.md、IMPLEMENTATION.md、REVIEW_RECEIPT.md、v2复审和package_manifest：科学实现d67f0ac68f4baa8c665ad4b9ee8eea83a1006782，包6d03ace1cf6550756d127cea99f1e24737a290368b0c1bfbe87e3420760a47a2，32人工检查，静态复审通过；Mac BLAS警告与Linux/真实输入未验证的限制保留。\n\n本条结束我此前对你这一阶段的“仅准备”内部委派限制，并基于用户直接授权的持续科研托管、推进跨主线连接，以及本项目既有计算预算，批准原B owner将这一个BRIDGE-PS完整比较推进到真实结果。授权仅限本卡IU-BRIDGE-PS-20261019-R003、既有gpu-taobo/GPUServer8 CPU路径、19已曝光发布组/180既有输入、H10/H40/2288案例、原6臂与等价复核、912+最多76solve、全包1800s/1CPUthread/8GiB/0GPU/输出4GiB+归档4GiB，不换科学方案、阈值、机器、数据或RunID，不访问新holdout/私人新数据。批准包括必要SSH资源准入、既有输入身份核验、精确包部署、一次受控执行、取回、独立数值/图证复核和Obsidian结果更新；不批准失败后的重试。其他窗口的具体禁跑/首停不受本条影响。\n\n先处理当前回执的语义：这是HQ在既有人方委派下作出的具体执行授权，并不是用户逐字批准了新包。不得伪填或声称不存在的“人方对本包最终批准”。现卡human_approved字段若要求这种不存在的逐包人方动作，请只在授权合同/回执层作一个带日期的同范围修订，使其能核验真实的hq_delegated授权链：记录原直接人方托管和连接请求、本条HQ批准全文、exact package/source/config/run/input/budget，并严格拒绝无出处/包身份不符的回执。保留原候选和历史条款溯源，不改科学代码、no-retry、warnings-as-errors、<1e-11、输出范围或预算。对这处确切差异取得独立只读复审，固定新commit/digest后才执行；不要把旧digest说成已覆盖修改版。若代码本已真实支持HQ委派授权且无需修改，则在独立复核里说明实际语义，不能借字段名伪造human approval。\n\n这不是重新审批科学假设，也不允许绕过失败。任何原对话中比本条更晚/更具体的真实用户禁跑指令若存在，先列出原文并park；本条只解除HQ自身准备阶段限制。源版本或准入不符、首次警告/异常/超限/重放差异均保留首停，不换ID/卡/方法重试，不删除旧结果。不要另跑科学smoke来规避唯一attempt。通过前述合同差异复审与本次准入后，连续推进这一完整比较至取回的逐组/逐H真实增量、幅值/位置场图与路线结论，不停在CodeReady。",
+  "previous_source_commit": "d67f0ac68f4baa8c665ad4b9ee8eea83a1006782",
+  "previous_package_sha256": "6d03ace1cf6550756d127cea99f1e24737a290368b0c1bfbe87e3420760a47a2",
+  "run_id": "IU-BRIDGE-PS-20261019-R003",
+  "producer": "gpu-taobo/GPUServer8",
+  "config_sha256": "8c339efce6964aa4e2efcf4c654a11b5ace9b0fee319d362370dfaa6ff98804f",
+  "input_manifest_sha256": "f54753600f76dec7a5c153f413bb27a311d9d8551b966cc91fa6b21b663151de",
+  "cohort_sha256": "19a75f76d68d63294744031b9369864185bb3da313f520699242132a5b7ae553",
+  "budgets": {
+    "wall_seconds": 1800,
+    "threads": 1,
+    "memory_gib": 8,
+    "gpu": 0,
+    "max_output_gib": 4,
+    "max_archive_gib": 4,
+    "predictor_fits": 912,
+    "input_fits": 76
+  },
+  "amendment_scope": "Authority contract, provenance receipts and their tests only; no scientific/config/controller/budget changes; no retry."
+}
