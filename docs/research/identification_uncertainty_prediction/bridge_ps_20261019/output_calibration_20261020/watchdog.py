@@ -7,7 +7,9 @@ import os,json,time,signal,subprocess,resource,sys
 from resource_contract import storage,storage_reason,LIMITS,TOTAL
 from runtime_guard import durable_write
 
-class DeadlineExceeded(TimeoutError):pass
+class DeadlineExceeded(TimeoutError):
+ def __init__(self,message):
+  super().__init__(message);self.trigger_monotonic=time.monotonic();self.trigger_unix=time.time()
 
 def arm_deadline(seconds):
  def alarm(signum,frame):raise DeadlineExceeded('whole_lifecycle_wall_deadline')
@@ -46,25 +48,35 @@ def sample_memory(pgid):
  if not any(r['pid']==os.getpid() for r in records):raise RuntimeError('watchdog /proc memory observation missing')
  return combined_memory(records,pgid,os.getpid())
 
-def stop_group(child,owned_members=()):
- # Never signal a stale/reused PGID after the controller was reaped.
- # A live unreaped child owns its new session. Post-exit orphan cleanup needs
- # a matching previously observed PID/start-time/session identity.
- live=child.poll() is None
- if not live and owned_members:
-  old={(r['pid'],r['start_ticks']) for r in owned_members if r['pgid']==child.pid and r['sid']==child.pid}
-  live=any((r['pid'],r['start_ticks']) in old and r['pgid']==child.pid and r['sid']==child.pid for r in proc_records())
- if live:
+def stop_group(child,owned_members=(),*,records_provider=None,cleanup_timeout=5):
+ # Retained PID/start-time/SID identities remain usable if the monitor is interrupted.
+ # A reaped controller is NOT evidence that its known worker/helpers stopped.
+ provider=records_provider if records_provider is not None else (proc_records if sys.platform=='linux' else None)
+ known={(r['pid'],r['start_ticks']) for r in owned_members if r['pgid']==child.pid and r['sid']==child.pid}
+ def group_records():return [] if provider is None else [r for r in provider() if r['pgid']==child.pid and r['sid']==child.pid]
+ before=group_records();controller_live=child.poll() is None
+ verified=any((r['pid'],r['start_ticks']) in known for r in before)
+ if controller_live or verified:
+  known.update((r['pid'],r['start_ticks']) for r in before)
   try:os.killpg(child.pid,signal.SIGKILL)
   except ProcessLookupError:pass
   except PermissionError as denied:
-   # Darwin may deny signalling a group already in terminal teardown before waitpid reaps.
-   # Accept only observed process exit, never ignore denial for a still-running child.
+   # Teardown race is accepted ONLY if the controller exits and no active owned group remains.
    try:child.wait(timeout=.2)
    except subprocess.TimeoutExpired:raise denied
-   if sys.platform=='linux' and any(r['pgid']==child.pid and r['sid']==child.pid and r.get('state')!='Z' for r in proc_records()):raise denied
- try:child.wait(timeout=5)
- except subprocess.TimeoutExpired:raise RuntimeError('owned process group did not reap after KILL')
+   if any(r.get('state')!='Z' for r in group_records()):raise denied
+ elif any(r.get('state')!='Z' for r in before):
+  raise RuntimeError('unverified remaining session members; cleanup not established')
+ exit_code=child.wait(timeout=cleanup_timeout)
+ if provider is None:
+  if known:raise RuntimeError('known descendant verification unavailable')
+  return {'controller_exit_code':exit_code,'known_descendants_verified':None,'note':'artificial non-Linux controller-only cleanup; no production claim'}
+ deadline=time.monotonic()+cleanup_timeout
+ while True:
+  remaining=[r for r in provider() if r.get('state')!='Z' and ((r['pgid']==child.pid and r['sid']==child.pid) or (r['pid'],r['start_ticks']) in known)]
+  if not remaining:return {'controller_exit_code':exit_code,'known_descendants_verified':True,'verified_identity_count':len(known),'remaining_active_members':[]}
+  if time.monotonic()>=deadline:raise RuntimeError('owned descendants still active after KILL: '+str([r['pid'] for r in remaining]))
+  time.sleep(.02)
 
 def lifecycle_error(root):
  root=Path(root)
@@ -77,13 +89,14 @@ def lifecycle_error(root):
   if p.exists() and p.stat().st_size:return name+'_nonempty'
  return None
 
-def watch_process(child,root,started,*,wall=1200,rss_cap=2*2**30,sampler=sample_memory,interval=.25):
+def watch_process(child,root,started,*,wall=1200,rss_cap=2*2**30,sampler=sample_memory,interval=.25,state=None):
  """Actual shared outer monitor; artificial subprocess fixtures use short wall limits."""
- root=Path(root);peak=0;last_members=[]
+ root=Path(root);peak=0;last_members=[];state={} if state is None else state
  while True:
   elapsed=time.monotonic()-started
   if elapsed>=wall:return {'reason':'whole_lifecycle_wall_deadline','peak_combined_hwm_bytes':peak,'elapsed':elapsed,'members':last_members}
-  rss,members=sampler(child.pid);peak=max(peak,rss);last_members=members
+  rss,members=sampler(child.pid);state['members']=members;peak=max(peak,rss);last_members=members
+  state.update(peak_combined_hwm_bytes=peak,last_observation_monotonic=time.monotonic(),last_observation_unix=time.time())
   reason=lifecycle_error(root) or ('combined_process_rss_budget' if rss>rss_cap else None) or storage_reason(root)
   if reason:return {'reason':reason,'peak_combined_hwm_bytes':peak,'elapsed':elapsed,'members':members}
   rc=child.poll()

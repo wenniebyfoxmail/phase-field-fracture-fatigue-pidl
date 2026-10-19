@@ -296,4 +296,61 @@ class CleanupRaceTests(unittest.TestCase):
   with patch.object(w.os,'killpg',side_effect=PermissionError('ARTIFICIAL_DENIAL')):
    with self.assertRaises(PermissionError):w.stop_group(Live())
 
+class InterruptedCleanupTests(unittest.TestCase):
+ def member(self,pid=42,start=17,pgid=41,state='S'):
+  return dict(pid=pid,start_ticks=start,pgid=pgid,sid=pgid,state=state,rss=12,hwm=20)
+ def test_interrupted_monitor_retains_observed_identity(self):
+  import watchdog as w,time
+  class Child:
+   pid=41
+   def poll(self):return None
+  for error in (RuntimeError('artificial storage failure'),w.DeadlineExceeded('artificial deadline')):
+   with self.subTest(error=type(error).__name__),tempfile.TemporaryDirectory() as t:
+    state={};member=self.member()
+    with patch.object(w,'storage_reason',side_effect=error):
+     with self.assertRaises(type(error)):w.watch_process(Child(),t,time.monotonic(),sampler=lambda pg:(20,[member]),state=state)
+    self.assertEqual(state['members'],[member]);self.assertEqual(state['peak_combined_hwm_bytes'],20)
+    self.assertGreater(state['last_observation_monotonic'],0)
+ def test_reaped_controller_known_worker_is_killed_and_verified(self):
+  import watchdog as w
+  class Reaped:
+   pid=41
+   def poll(self):return 0
+   def wait(self,timeout):return 0
+  member=self.member();snapshots=iter([[member],[],[]])
+  with patch.object(w.os,'killpg') as kill:
+   result=w.stop_group(Reaped(),[member],records_provider=lambda:next(snapshots))
+  kill.assert_called_once_with(41,w.signal.SIGKILL)
+  self.assertTrue(result['known_descendants_verified']);self.assertEqual(result['verified_identity_count'],1)
+ def test_surviving_known_worker_never_claims_cleanup(self):
+  import watchdog as w
+  class Reaped:
+   pid=41
+   def poll(self):return 0
+   def wait(self,timeout):return 0
+  member=self.member()
+  with patch.object(w.os,'killpg') as kill:
+   with self.assertRaisesRegex(RuntimeError,'still active'):w.stop_group(Reaped(),[member],records_provider=lambda:[member],cleanup_timeout=0)
+  kill.assert_called_once_with(41,w.signal.SIGKILL)
+ def test_reused_group_without_retained_identity_is_not_signalled(self):
+  import watchdog as w
+  class Reaped:
+   pid=41
+   def poll(self):return 0
+   def wait(self,timeout):return 0
+  with patch.object(w.os,'killpg',side_effect=AssertionError('unowned group')):
+   with self.assertRaisesRegex(RuntimeError,'unverified'):w.stop_group(Reaped(),[self.member(start=17)],records_provider=lambda:[self.member(start=99)])
+ def test_deadline_and_actual_exit_seal_have_comparable_clocks(self):
+  import watchdog as w,time
+  start_m=time.monotonic();start_u=time.time();event=w.DeadlineExceeded('artificial');cleanup_m=time.monotonic();cleanup_u=time.time()
+  self.assertLessEqual(start_m,event.trigger_monotonic);self.assertLessEqual(event.trigger_monotonic,cleanup_m)
+  self.assertLessEqual(start_u,event.trigger_unix);self.assertLessEqual(event.trigger_unix,cleanup_u)
+  code=Path(__file__).parent.resolve()
+  with tempfile.TemporaryDirectory() as t:
+   root=Path(t);(root/'logs').mkdir()
+   script="from runtime_guard import install; import sys; f=install(sys.argv[1],seal_name='watchdog_exit.json'); f[0]=True"
+   p=subprocess.run([sys.executable,'-c',script,t],cwd=code,capture_output=True,timeout=10)
+   self.assertEqual(p.returncode,0,p.stderr);seal=json.loads((root/'logs/watchdog_exit.json').read_text())
+   self.assertLessEqual(cleanup_m,seal['time_monotonic']);self.assertLessEqual(cleanup_u,seal['time_unix'])
+
 if __name__=='__main__':unittest.main()

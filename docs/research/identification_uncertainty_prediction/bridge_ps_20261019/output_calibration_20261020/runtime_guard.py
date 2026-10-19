@@ -23,7 +23,7 @@ def install(root,*,on_fatal=None,event_name='runtime_fatal.jsonl',seal_name='run
  logs=Path(root)/'logs';event=str(logs/event_name);seal=str(logs/seal_name)
  returned=[False];pid=os.getpid()
  def fatal(kind,exc_type,message,tb=None, _event=event,_pid=pid,_emit=durable_write,
-           _exit=os._exit,_write=os.write,_clock=time.time,_str=str,
+           _exit=os._exit,_write=os.write,_clock=time.time,_mono=time.monotonic,_str=str,
            _replace=os.replace,_lock=threading.Lock(),_format=traceback.format_tb,_on_fatal=on_fatal):
   if not _lock.acquire(blocking=False):
    try:_write(2,b'RUNTIME_FATAL_REENTRANT\n')
@@ -35,7 +35,7 @@ def install(root,*,on_fatal=None,event_name='runtime_fatal.jsonl',seal_name='run
    except BaseException:description='unprintable exception'
    try:trace=_format(tb) if tb is not None else []
    except BaseException:trace=[]
-   record={'kind':kind,'pid':_pid,'time_unix':_clock(),
+   record={'kind':kind,'pid':_pid,'time_unix':_clock(),'time_monotonic':_mono(),
            'exception_type':getattr(exc_type,'__name__','unknown'),
            'message':description,'traceback':trace}
    _emit(_event+'.partial',record)
@@ -58,11 +58,11 @@ def install(root,*,on_fatal=None,event_name='runtime_fatal.jsonl',seal_name='run
  threading.excepthook=thread_exception
  warnings.simplefilter('error')
  def finish(_returned=returned,_gc=gc.collect,_emit=durable_write,_seal=seal,
-            _pid=pid,_clock=time.time,_fatal=fatal):
+            _pid=pid,_clock=time.time,_mono=time.monotonic,_fatal=fatal):
   if not _returned[0]:return
   try:
    _gc()
-   _emit(_seal,{'status':'RETURNED_AND_EXIT_CALLBACKS_COMPLETE','pid':_pid,'time_unix':_clock()})
+   _emit(_seal,{'status':'RETURNED_AND_EXIT_CALLBACKS_COMPLETE','pid':_pid,'time_unix':_clock(),'time_monotonic':_mono()})
   except BaseException as exc:_fatal('exit_guard',type(exc),'exit callback/clean evidence failure')
  # Registered before target: later target callbacks execute before this seal.
  # This seal is provisional: controller still waits for process exit and checks stderr/events.

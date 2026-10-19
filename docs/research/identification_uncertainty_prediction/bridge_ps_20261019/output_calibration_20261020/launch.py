@@ -10,7 +10,7 @@ from watchdog import arm_deadline,watch_process,verify_controller_exit,stop_grou
 from runtime_guard import install,durable_write
 
 def main(argv=None):
- started=time.monotonic();arm_deadline(1200)
+ started=time.monotonic();started_unix=time.time();arm_deadline(1200)
  p=argparse.ArgumentParser();p.add_argument('--config',type=Path,default=Path(__file__).with_name('config.json'));p.add_argument('--approval-receipt',type=Path);a=p.parse_args(argv)
  code=Path(__file__).resolve().parent;cfg=package.load_config(code,a.config)
  # No run/resource/scientific access until the real later authority is provided.
@@ -22,14 +22,15 @@ def main(argv=None):
   if (root/name).exists():raise FileExistsError('fresh new comparison only; no retry: '+name)
  root.mkdir(parents=True,exist_ok=True)
  for name in ('logs','cache','tmp'):(root/name).mkdir()
- atomic(root/'watchdog_claim.json',{'watchdog_pid':os.getpid(),'package_sha256':digest,'source_commit':auth['source_commit'],'started_monotonic':started,'deadline_monotonic':started+1200,'authority_scope':auth['scope'],'human_approved':auth['human_approved']})
- context={'child':None}
- def fatal(event,_killpg=os.killpg,_kill=signal.SIGKILL,_write=durable_write,_root=str(root),_context=context):
-  c=_context['child']
-  if c is not None and c.poll() is None:
-   try:_killpg(c.pid,_kill)
-   except ProcessLookupError:pass
-  _write(_root+'/watchdog_receipt.json',{'status':'STOPPED_NO_RETRY','reason':'watchdog_lifetime_fatal','event':event})
+ atomic(root/'watchdog_claim.json',{'watchdog_pid':os.getpid(),'package_sha256':digest,'source_commit':auth['source_commit'],'started_monotonic':started,'started_unix':started_unix,'deadline_monotonic':started+1200,'authority_scope':auth['scope'],'human_approved':auth['human_approved']})
+ context={'child':None,'members':[],'peak_combined_hwm_bytes':0}
+ def fatal(event,_stop=stop_group,_write=durable_write,_root=str(root),_context=context,_clock=time.time,_mono=time.monotonic):
+  cleanup=None;cleanup_error=None;c=_context['child']
+  try:
+   if c is not None:cleanup=_stop(c,_context.get('members',()))
+  except BaseException as failure:cleanup_error=type(failure).__name__+': '+str(failure)
+  _write(_root+'/watchdog_receipt.json',{'status':'STOPPED_NO_RETRY','reason':'watchdog_lifetime_fatal','event':event,'started_monotonic':started,'started_unix':started_unix,'cleanup_finished_monotonic':_mono(),'cleanup_finished_unix':_clock(),'cleanup':cleanup,'cleanup_error':cleanup_error})
+
  flag=install(root,on_fatal=fatal,event_name='watchdog_fatal.jsonl',seal_name='watchdog_exit.json')
  child=None;outcome={};reason=None
  try:
@@ -42,25 +43,29 @@ def main(argv=None):
   with (root/'logs/controller.stdout').open('xb') as stdout,(root/'logs/controller.stderr').open('xb') as stderr:
    child=subprocess.Popen([sys.executable,str(code/'supervise.py'),'--config',str(a.config.resolve()),'--approval-receipt',str(a.approval_receipt.resolve())],cwd=code,env=env,stdout=stdout,stderr=stderr,start_new_session=True)
    context['child']=child
-   outcome=watch_process(child,root,started)
+   outcome=watch_process(child,root,started,state=context)
   reason=outcome['reason']
   if reason:raise RuntimeError(reason)
   controller=verify_controller_exit(root,child.pid)
   # Includes controller final hashing/manifest/receipt AND its actual process exit.
   if time.monotonic()-started>=1200:raise TimeoutError('whole lifecycle deadline before final receipt')
-  completion={'status':'COMPLETE_CONTROLLER_EXIT_VERIFIED','watchdog_pid':os.getpid(),'controller_pid':child.pid,'package_sha256':digest,'source_commit':auth['source_commit'],'human_approved':auth['human_approved'],'scope':auth['scope'],'wall_seconds':time.monotonic()-started,'resources':outcome,'memory_semantics':'sampled conservative sum of process HWMs in controller session/group plus watchdog; not hard2GiB RSS cap','controller_receipt_status':controller['status']}
+  completion={'status':'COMPLETE_CONTROLLER_EXIT_VERIFIED','watchdog_pid':os.getpid(),'controller_pid':child.pid,'package_sha256':digest,'source_commit':auth['source_commit'],'human_approved':auth['human_approved'],'scope':auth['scope'],'wall_seconds':time.monotonic()-started,'started_monotonic':started,'started_unix':started_unix,'completion_candidate_monotonic':time.monotonic(),'completion_candidate_unix':time.time(),'resources':outcome,'memory_semantics':'sampled conservative sum of process HWMs in controller session/group plus watchdog; not hard2GiB RSS cap','controller_receipt_status':controller['status']}
   atomic(root/'watchdog_completion_candidate.json',completion)
   atomic(root/'watchdog_receipt.json',completion)
   flag[0]=True # Guard/seal and alarm remain active through watchdog shutdown.
   return 0
  except BaseException as exc:
-  reason=reason or type(exc).__name__+': '+str(exc);cleanup_error=None
+  trigger_monotonic=getattr(exc,'trigger_monotonic',time.monotonic());trigger_unix=getattr(exc,'trigger_unix',time.time())
+  reason=reason or type(exc).__name__+': '+str(exc);cleanup_error=None;cleanup=None
+  if not outcome:outcome={k:context.get(k) for k in ('members','peak_combined_hwm_bytes','last_observation_monotonic','last_observation_unix')}
   try:
-   if child is not None:stop_group(child,outcome.get('members',()))
-  except BaseException as cleanup:
-   cleanup_error=type(cleanup).__name__+': '+str(cleanup)
-  first_stop(root,reason,{'elapsed':time.monotonic()-started,'controller_pid':None if child is None else child.pid,'package_sha256':digest,'cleanup_error':cleanup_error,'last_case_context':'last_context.json; last observed context only, not a numerical cause'})
-  atomic(root/'watchdog_receipt.json',{'status':'STOPPED_NO_RETRY','reason':reason,'cleanup_error':cleanup_error,'resources':outcome,'wall_seconds':time.monotonic()-started,'controller_pid':None if child is None else child.pid,'package_sha256':digest,'scope':auth['scope']})
+   if child is not None:cleanup=stop_group(child,context.get('members',()))
+  except BaseException as failure:cleanup_error=type(failure).__name__+': '+str(failure)
+  clocks={'started_monotonic':started,'started_unix':started_unix,'trigger_monotonic':trigger_monotonic,'trigger_unix':trigger_unix,'trigger_elapsed_seconds':trigger_monotonic-started,'cleanup_finished_monotonic':time.monotonic(),'cleanup_finished_unix':time.time()}
+  first_stop(root,reason,{'clocks':clocks,'controller_pid':None if child is None else child.pid,'package_sha256':digest,'cleanup':cleanup,'cleanup_error':cleanup_error,'last_case_context':'last_context.json; last observed context only, not a numerical cause'})
+  atomic(root/'watchdog_receipt.json',{'status':'STOPPED_NO_RETRY','reason':reason,'clocks':clocks,'cleanup':cleanup,'cleanup_error':cleanup_error,'resources':outcome,'wall_seconds':time.monotonic()-started,'controller_pid':None if child is None else child.pid,'package_sha256':digest,'scope':auth['scope']})
+
+  flag[0]=True # A stopped attempt also needs its final callback seal; status stays STOPPED.
   return 1
 
 if __name__=='__main__':raise SystemExit(main())
