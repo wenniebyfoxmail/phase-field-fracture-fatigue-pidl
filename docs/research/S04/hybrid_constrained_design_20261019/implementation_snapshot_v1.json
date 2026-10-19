@@ -1,0 +1,23 @@
+{
+  "schema": "hybrid-implementation-review-snapshot-v1",
+  "files": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "8ba755546220b30922b26ad2d89080bfe2ec1589cab68fbdb5d682e4692c5d80",
+    "source/hybrid_incremental.py": "d5030cf49406abbeef2c7409c2fcdbfacd369fadce68f5413889b269253179cc",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "tools/audit_hybrid_labels.py": "5fdd8f8fb28478de4c16462ac17fbd2a65a5ec8503272b6bd0d173f33d5bbc65",
+    "tests/test_hybrid_incremental.py": "5fbcc45316b9325dd267298cb471e2ccdf5033423a7e9269de59c43656f660e5",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/implementation_v1.md": "e591c6d5efc8465195728416d91c669d94b7f6894277f4eb74a1b10a229b15c8",
+    "docs/research/S04/hybrid_constrained_design_20261019/implementation_checks_v1.json": "5edbfab0ea26e85795dcb79c67b95a7eef05ba69ed656f6536e729864ed45565",
+    "docs/research/S04/hybrid_constrained_design_20261019/existing_label_audit_v1.json": "1130719da792d06dd8f630b9515a44c0463203e626a68ada0120f0d42cc4fdb7",
+    "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v1.md": "abe13c7465c5aa7813286dd47418c1da36525ec7e3e6ef28697c375fd2112d27",
+    "docs/research/S04/hybrid_constrained_design_20261019/validation_budget_v1.json": "5afd9b2265d21cde0c65e4c7f75a7a896ef794f124de26e4c80f816efad5f841",
+    "docs/research/S04/hybrid_constrained_design_20261019/design_v1.md": "ca50ad0e4913308165745311ece5ff1226f93b8c5c3b5e17512e7df240531b0d"
+  },
+  "scope": "complete library/API, seen-data audit, contracts and integrated validation budget; no training/FEM/producer authorization"
+}
