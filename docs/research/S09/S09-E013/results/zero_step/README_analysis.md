@@ -92,6 +92,39 @@ pair improvements, protected-pair flips, and spatial gain--under a new,
 prospectively reviewed staged criterion.  The observed `8/8` and `17/17`
 counts are diagnostics, not a newly imposed all-or-nothing scientific gate.
 
+## Recorded displacement-mixture decision
+
+A final receipt-only audit tested the line segment
+
+`delta(lambda) = (1-lambda) delta_G25 + lambda delta_L25`, `lambda in [0,1]`.
+
+The two arms share the same model state
+`4d353f6e...ab684f` and AdamW state `c7a4b497...b1e64`.  The audit interpolates
+the recorded parameter-displacement inner products; it does not interpolate
+losses and pass them through AdamW, execute an optimiser, or evaluate a new
+field.
+
+All global wrong-pair directions improve and all global protected-pair
+directions regress throughout the segment; the categorical result is governed
+by their relative magnitudes.  The last interval with any of G25's eight
+predicted global repairs ends at `lambda=0.0686942444990416`.  The first
+interval where local total wins exceed the G25 endpoint begins only at
+`lambda=0.09782925602211034`.  These intervals do not overlap.
+
+There is one narrow open interval,
+`0.2186957629804058 < lambda < 0.232740643526109`, that recovers the initial
+B25 totals of 17 global wins and eight local wins.  It does so by repairing six
+local losses while flipping six different local wins; it repairs none of the
+eight global losses.  No interval improves both global and local win counts
+over the initial B25 counts.
+
+The decision is therefore negative for this specific first-order segment:
+there is no count-level local gain while retaining any predicted G25 global
+repair.  This does not bound the operator's capacity and does not reject other
+constrained directions.  The next intervention must change the direction
+construction rather than select a scalar mixture of these two recorded
+displacements.
+
 ## Files
 
 - `zero_step_receipt.json`: canonical 25-pair, two-arm receipt.
@@ -102,6 +135,14 @@ counts are diagnostics, not a newly imposed all-or-nothing scientific gate.
 - `pair_observable_audit.csv`: complete 25-pair truth, prediction, and
   first-order table.
 - `zero_step_global_local_conflict.png`: three-panel diagnostic figure.
+- `displacement_mixture_summary.json`: exact segment-level decision and
+  identities.
+- `displacement_mixture_breakpoints.csv`: all 55 recorded zero-crossing events.
+- `displacement_mixture_intervals.csv`: exact piecewise-constant count table.
+- `displacement_mixture_tradeoff.png`: global/local count trade-off and
+  recorded `L_D/L_P` side effects.
 - `scripts/plot_s09_e013_zero_step.py`: reproducible receipt-only analysis.
 - `scripts/analyse_s09_e013_observable_semantics.py`: reproducible packet and
   receipt-only semantic audit.
+- `scripts/analyse_s09_e013_displacement_mixture.py`: reproducible
+  receipt-only displacement-segment audit.
