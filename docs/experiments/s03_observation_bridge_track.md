@@ -410,3 +410,21 @@ negative/structure-preservationpositivecontrolsandreal-imagecorrespondence,
 samefixedsupport;89/132design,175exposeddevelopment. Onlyplanned,notexecuted;
 ifrealopeningunidentifiable,identifyneededlocalindependentopening/DICevidence
 orproposeobservationredirectratherthanthresholdmicrorepairs. D01untouched.
+
+### D3 grouped observability executed — 2026-10-19
+
+Userapprovedexisting3imagegroup. [Pre-execution protocol](../research/S03/S03-E049-MD03/grouped_observability_protocol.md)
+fixes819probes,sixsideNCCpatches,side-linearextrapolationJ,relative-darkeningQ,
+8source89controls;noresult-tunedcutoff. Clean1a8a89a3,3.829swall/3.776sCPU,
+445oldhashesunchanged. NuisancecontrolscentreJmedians−.0083…−.01495px;
+injected1/2/4recover.99415/1.98977/3.98977px;gap2+nuisances1.98505.
+Mechanism-sensitivecontrolcapabilityadvances;favourablesyntheticgenerator,
+notrealaccuracy. Bothrealpairs819/819assessable,centreJ−.02608/.16394px;
+175pairhasopening-likebands,butweak/mixedQandnorealopeningreference.
+Opening4control6offcentrecensoredpointsretained;notexactpath/physicalwidth.
+SeparateNumPyNCC/J/Q/footprint/hashQAand3PNG/sidecarcheckscompleted.
+Evidenceparentlocal_archive/experiments/S03-E049-MD03/D3_grouped_20261019/README_analysis.md.
+ActiveD3: retainstructurecandidate,seeklocatedlocalopening/DICcorrespondence
+beforeinterpretingrealJascrack,notperfectwhole-maskprerequisite. Norepeat
+thresholdtuning,nonewforecastcomparison/referenceacquisitionexecuted;old
+observer/halfdepth/scoresandD01independentowneruntouched.
