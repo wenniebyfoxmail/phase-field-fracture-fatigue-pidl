@@ -1,5 +1,10 @@
 # HQ D-step actionability check — 2026-10-19
 
+Later update: this is a historical actionability snapshot, not a requirement
+to choose the smallest experiment. The subsequent
+[first-principles HQ check](../hq_first_principles_20261019/report.md) evaluates
+whether the proposed evidence can change the route and records current plans.
+
 Owner: research-workflow governance. This is a dated inspection of existing
 owners, not a new scientific registry or permission to execute their plans.
 
