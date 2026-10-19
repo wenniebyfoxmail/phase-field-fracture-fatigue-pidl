@@ -255,3 +255,25 @@ next, no automatic numeric follow-up or representation expansion. Installed
 workflow core/adapters supersede generic historical skill snapshots without
 changing this frozen protocol. Main alone updated Obsidian/Roadmap and retains
 all old results. See PC16 readback sections13–14 and owner result_gpu7_20261018.md.
+
+### 2026-10-19 — Reuse FN776 design; predeployment timeout is not a numerical result
+
+Main read coupling's direct human approval and completed turn01a15417, existing
+proposal/card/static review and result98e060d9, without arrays, recomputation,
+SSH or another review. Full776 square-root branch Newton is already implemented
+and statically reviewed (Devf1ed1ed9 / Producere72d36e1 / Card7db121b7).
+Its authorised r1 stopped at the sole60s read-only SSH preflight timeout:
+no deployment, scientific input access, guard/worker, or scientific work.
+Remote progress within that read-only script is unknown; no network-specific
+cause or FN776 convergence conclusion follows. Old PC16 negatives remain.
+
+Main proposal now reuses that exact scientific design rather than another
+rank/weight sweep. New control handoff should preserve stage/partial-timeout
+evidence and bind changed launcher/card identities, with focused static review
+only. A fresh single-attempt card must obtain execution approval; oldr1 is not
+restarted. Proposed scientific caps remain25424units/900s/8GiB each/100MiB,
+4GiB free, GPU7, with60s preflight separately stated. Stationarity, energy,
+field error, teacher truth and trajectory generalisation stay separate.
+Outcome branches and authority boundaries are in main readback section15.
+No new run/card/code or cross-chat dispatch was created here; coupling keeps
+producer ownership and main updates only its records and shared task milestone.
