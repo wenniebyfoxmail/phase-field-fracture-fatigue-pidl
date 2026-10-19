@@ -1,0 +1,35 @@
+# E024-D011 — joint coefficients in the unchanged three-axis output-head space
+
+2026-10-19 direct user authorisation. Goal anchor: reproduce qualified FEM conditional UV, then assess relevance to damage/crack/fatigue decisions. Continue D010, not a new network or history model. Active D011 asks whether exact UV curvature and three joint coefficients avoid the tiny verified-ray gains, particularly c60. E005 cross-history and own-history results retain distinct meanings; this static diagnostic makes no coupled-evolution claim. The requested offline solve is authorised, no producer/remote/training/holdout/FEM action.
+
+D1 reuse: existing D009 gradient/native mechanics, D010 frozen 3D basis/accepted ray/7 actual checks, D008 historical control and scored-field plotter; E023 joint10000 checkpoints and qualified conditional FEM UV unchanged. Existing core/bootstrap and road/PIDL adapters govern workflow. No literature round is needed to compute this known three-dimensional quadratic. Owner S04/E024; retain D010 r1 negative and r2 small finite gains.
+
+## Frozen identities and criterion
+
+c20s4/c60s4/c83s4 own E023 joint10000/seed7. Load D010 r2 basis byte-identically, including old two axes and its sole added saved-witness axis, pin archive manifest and receipt to tracked three_head_r2_archive/three_head_receipt. Original D/BC/window/map/bias/leak/hidden/backbone/damage/target and information set fixed. Shared scaled-head Frobenius radius R=.02||theta0|| across both UV weights and bias. No actual 2% spend is implied by this cap. History/fatigue untouched; absent maxH and c20/c83 missing optional fatigue/prior channels remain missing.
+
+Comparator: original E023 plus independently rescored accepted D010 r2 and historical D008 on the same host. Primary exploratory question: measured relative full/damage UV gain and background costs after actual seven-guard admission; c60 magnitude is compared with D010's full −.000370%/damage −.000032%, not an invented new practical threshold. `.001` historical only; application/physical-background acceptance tolerances remain undefined. No offline result proves trajectory/equilibrium/usefulness. Report full absolute/relative scores and remaining gaps, not just accepted flags.
+
+## One deterministic joint coefficient solve per state
+
+External coefficients theta(z)=theta0+R sum_i z_i B_i, same orthonormal 3D B. Actual layer-order velocity V_i=R*network_order(model,xy,zero_base,B_i) includes D/BC/window exactly once. Original saved UV is the centre. Four UV region errors are exact quadratics c_r+2b_r.z+z.Q_r.z; conditional native nodal mass and absUs normalisation identical to D010. Objective is half the full UV squared-error change, divided by its own original error².
+
+Seven convex candidate proxies: four exact UV quadratics; original-branch AMOR tangent free-force mass-dual error²; two background GP instantaneous driver-error² Gauss–Newton quadratics using p=2(1-d)psi0 and dp_i=2(1-d)sigma_plus:epsilon(V_i). All Hessians Gram/PSD; each divided by its own original error² or force², never by the nearly zero FEM driver norm. The weak and driver models generate candidates only, not physical admission. Engineering shear uses gamma and shear stress consistently.
+
+Full UV Hessian eigenvalues and numerical rank at1e-12*max reported. Require strictly positive three eigenvalues; no basis truncation. Inner transformation H_uv eigenvectors /sqrt(max(eigenvalue,1e-12*lambda_max)) is preconditioning only; keep every original Hessian and original z.z<=1, transformed as its exact ellipsoid. Do not modify D, basis, objective curvature or parameter metric. Hessians/gradients/scales/transform/original error² saved.
+
+One SLSQP solve/state from zero, analytic Jacobians, maxiter200/ftol1e-12. Seven relative squared-error changes<=0 plus shared ball; candidate proxy validation <=1e-9 (numerical solver check ONLY), not actual physical slack. No multistart, solver substitution, retune, extra basis or second solve. Save original solver return even if rejected. Finite solver failure/infeasible -> exact original fallback with no candidate forward; unresolved singular/nonfinite/schema/identity/resource -> stop, preserve attempt. A zero/failure is not proof of 3D infeasibility. Saved D010 coefficients and their seven proxy values provide explicit known-point comparison, not another solve or a silent fallback selection.
+
+## Actual finite-field selection and stopping
+
+If solver succeeds and proxy is admissible, test theta0+R*2^-k sum z_i B_i for k=0..8, take FIRST actual feasible and stop; not best-of-grid. Seven actual original-E023 nonincrease guards identical to D010: full/damage/background/inside-window-background UV MSE, true nonlinear native AMOR free-force normalised-mass dual norm², GP background/inside-background elastic-driver error integral. Shared actual headnorm cap .02*(1+1e-12), BC/outside UV exact, digest/gradNone/original33file hashes/input hashes unchanged. No physical slack; actual nonfinite error stops. All rejected -> exact saved original coefficient/UV fallback; no smaller step appended or automatic retry. Report every visited candidate/branch change, candidate proxy versus actual final values, all guards, coordinates and actual parameter spend.
+
+Secondary strain/active-energy/full and damage driver errors must be measured separately, including increases. Driver is instantaneous elastic amplitude, not history/fatigue/net-fracture drive. Regional average nondegradation is not pointwise preservation. Native rho portability failures and existing NumPy warnings retained, not relabelled fixed.
+
+## Evidence, resources and next decision
+
+Fresh local archive joint_head_curvature_v1; CPU2threads, numerical wall<=600s/RSS<=3GiB, no GPU or NN optimiser/CPwrite. Pre-use deterministic tests and independent exact-source Code Ready; independent actual raw encoder/nativeQ4/AMOR/GP/regions/coefficients/input hashes/solver-model and final graph/prose review. No reviewer creates a new candidate or alternate accepted solution. Pin source commit; preserve stdout/stderr/execution receipt. UV/physical tables with E023/D008/D010/new, relative and absolute driver errors, raw UV/coef/B/z/quadratics, all visited trials and parameter/branch audits. External fields only.
+
+Decision figure: exact three-state UV/weak/background-driver changes comparing D010 with joint coefficients; c60 field atlas with damage/window overlays, same quantity colour scales and contribution-to-rho² definition. README/sidecars/provenance, inspect figures; sync concise censor milestone and one Roadmap line, owner experiment/storyline.
+
+If useful c60 relative gain emerges with admitted actual fields, retain the component and separately evaluate physical costs; application tolerance remains unresolved. If gain remains microscopic or fails, use saved curvature/proxy-versus-actual/active-constraint evidence to identify the limiting term and propose ONE minimal diagnostic or repair. No next solve, new model, training or downstream history update automatically follows this task.
