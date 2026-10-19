@@ -1,14 +1,14 @@
 # S09-E016 factorised damage-increment readiness audit
 
-Status: `DRAFT_ONLY_NOT_REVIEWED_NOT_AUTHORISED`
+Status: `DRAFT_CARD_COMPLETE_NO_EXECUTION`
 
 Primary storyline: S09 Neural Operator fracture-development representation.
 
-This document is the current active D-step card. It defines a read-only audit
-against already retrieved exposed-development arrays. It does not authorise a
-run, training, new data access, FEM work, a new holdout, or producer use. The
-project planning-review gate remains outstanding before this experiment can
-enter `ready`.
+This document completes the current active D-step planning delivery. It defines
+a read-only audit against already retrieved exposed-development arrays. Closing
+this card needs no additional review. The card itself does not execute or
+authorise analysis, a checkpoint forward, training, new data access, FEM work,
+a new holdout, or producer use.
 
 ## One mechanism question
 
@@ -174,14 +174,27 @@ Its minimum claim-bearing delivery is:
    rows, and existing A25 scalar rows; an A25 shape block is conditional on a
    separately authorised node-field export;
 2. `factorisation_decision.md` with numerical validity and route selection;
-3. one figure with FEM/A25/B25 amplitude by cycle and FEM/B25 normalised
-   shapes for the existing selected cycles `1, 69, 73`; add exact A25 shapes
-   only if the separate node-field export is later authorised;
+3. one figure with FEM/A25/B25 amplitude by cycle and **FEM/B25** normalised
+   shapes for the existing selected cycles `1, 69, 73`; A25 remains a scalar
+   curve and an explicitly labelled existing display reference, not a required
+   nodewise shape panel;
 4. `factorisation_arrays.npz` containing reconstructed `A`, `S`, and residuals;
 5. one `README_analysis.md` covering the figure set and claim boundary.
 
 No per-file hash forest is required. A path/file-count/size receipt and the Git
 commit of the analysis code are sufficient unless a later result is promoted.
+
+## Current delivery versus future execution
+
+- Current delivery: this active D card is complete.
+- Future E016 offline execution: use the existing local E015 NPZ and E010 A25
+  scalar table under the project's existing local-analysis scope; it still
+  needs an explicit decision to execute, but no new data, producer or external
+  communication permission.
+- Optional A25 node-shape extension: requires a separately authorised read-only
+  checkpoint forward/export because the raw A25 node arrays do not yet exist.
+- E017 short training: remains a separate experiment with its own frozen card,
+  implementation review and execution authorisation.
 
 ## Route after the audit
 
