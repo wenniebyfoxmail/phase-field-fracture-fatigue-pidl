@@ -1,15 +1,16 @@
 # S09-E017 first-principles factorised-head pilot card (draft)
 
-Status: `DRAFT_DESIGN_ONLY__NO_TRAINING_OR_FORWARD_AUTHORISED`
+Status: `REVISED_DESIGN_ONLY__AWAITING_STATIC_REREVIEW`
 Owner: Mac-PIDL
 Date: 2026-10-19
 
 ## Decision question
 
-Does the present damage decoder fail because one nodewise output must learn two
-different things at once—**how much** new damage occurs and **where** its
-spatial mass belongs—or because the shared state/operator does not contain the
-information needed for either task?
+Under one frozen input information set, trunk representation and optimiser
+contract, how do a direct damage readout, a factorised amplitude-only readout
+and a factorised amplitude-plus-shape readout differ over one fixed short
+budget? In particular, does allowing spatial shape to adapt add a measurable
+gain over keeping the B25 shape fixed?
 
 E016 answers only the prerequisite question. Its independent result review
 returned `E016_RESULT_REVIEW_PASS`. On all 16 exposed cycles the
@@ -36,6 +37,7 @@ The proposed damage branch predicts the peak increment through
 ```text
 A_hat >= 0
 sum_i wbar_i S_hat_i = 1, S_hat_i >= 0
+S_hat_i = 0 whenever c_i = 0
 Delta d_hat_i = c_i * (1 - exp(-A_hat * S_hat_i))
 c_i = clip(1 - d_pre_i, 0, 1).
 ```
@@ -65,8 +67,10 @@ live:
 4. **Optimisation scale/initialisation**: a useful factorised head exists but a
    short update budget or unmatched zero-step state hides it.
 
-The experiment must distinguish these explanations rather than merely produce
-one more aggregate loss value.
+The pilot can compare the three readouts and expose gradient conflicts. It
+cannot uniquely identify those four causes. A short negative result remains
+compatible with inadequate optimisation, an unsuitable objective or missing
+state/trunk information; it is not proof that the trunk lacks information.
 
 ## Three matched arms
 
@@ -79,8 +83,10 @@ claim about full-operator capacity. No arm receives a target support mask as an
 input or output correction.
 
 1. `D_DIRECT`: the existing direct bounded damage-increment head. Its predicted
-   field is factorised after the forward pass so the same amplitude and shape
-   diagnostics can be computed.
+   field is differentiably factorised after the forward pass. The resulting
+   decoded-field amplitude and shape are used by the same common objectives and
+   diagnostics as the full factorised arm, with the exact zero/saturation rules
+   below. This is a readout comparison, not a change of supervision.
 2. `F_AMP`: the capacity-aware `A x S` decoder with an explicit amplitude
    objective, reconstruction and equilibrium objectives. Its `S` is the
    detached, frozen B25 step-0 shape mapping for each input; no shared or shape
@@ -93,41 +99,94 @@ input or output correction.
 
 The two factorised arms use the same amplitude residual head. At update 0 it is
 zero-initialised around the factorised B25 amplitude, so `A_hat=A_B25`. `F_AMP`
-uses exactly `S_B25`. `F_AMP_SHAPE` starts from the same `S_B25` plus a
-predeclared at-most-`1e-6` weighted-mass exploratory component, whose residual
-shape head is the only mechanism that can move mass into nodes where B25 has
-zero increment. The implementation review must prove the step-0 total-variation
-bound and freeze the mass-entry formula before any run. Endpoint comparisons
-alone are insufficient; every arm is also compared with its own update-0 state.
-No result may be called an architecture effect if zero-step mismatch dominates
-the observed change.
+uses exactly `S_B25`. For `F_AMP_SHAPE`, freeze `epsilon=1e-6` and define a
+target-independent capacity-supported seed
+
+```text
+U_i = 1[c_i > 0] / sum_j wbar_j 1[c_j > 0]
+S_0 = (1 - epsilon) S_B25 + epsilon U.
+```
+
+Thus `U` is strictly positive on every node with remaining capacity, zero where
+`c_i=0`, and weighted-normalised. Parameterise the learnable shape as
+
+```text
+S_i(z) = 1[c_i>0] S_0_i exp(z_i)
+         / sum_j wbar_j 1[c_j>0] S_0_j exp(z_j),  z_i=0 at update 0.
+```
+
+This gives every capacity-positive node finite nonzero mass-reallocation
+sensitivity, including nodes where B25 increment is zero. Implementation review
+must prove `TV_wbar(S_0,S_B25)<=epsilon`, verify nonzero sensitivities, and
+bound the decoded-field step-0 difference. Endpoint comparisons are never used
+alone: for every primary metric report the initial inter-arm difference, final
+inter-arm difference and difference between each arm's update-0-to-64 change.
+The full intervention is described as a factorised head with a predeclared
+mass-entry seed; it is not called a pure architecture effect.
 
 ## Multi-objective update
 
-Keep four loss groups separate:
+Keep four loss groups separate. All trainable common losses use observables
+recomputed from the decoded increment field with the frozen E016 transform:
+`effective_hazard_amplitude` and, only when it is nonzero,
+`effective_hazard_shape`. Log the factorised head's latent `head_amplitude` and
+conditional latent shape separately. Do not substitute a latent improvement
+for decoded-field evidence. Require zero shape mass where `c=0`; report any
+remaining head/effective amplitude difference caused by the frozen `q_max`
+saturation. If decoded-field amplitude is zero, its common shape is undefined
+and `L_S` is inactive for that cycle while `L_A` and `L_R` remain active.
 
-- `L_A`: hazard-amplitude regression in the frozen E016 scaled-log coordinate,
-  plus the existing 25 growth/stagnant hazard-amplitude pairs;
+The active-loss matrix is frozen as follows:
+
+| Arm | `L_A` | `L_S` | `L_R` | `L_P` |
+|---|---:|---:|---:|---:|
+| `D_DIRECT` | train | train through differentiable field factorisation | train | train |
+| `F_AMP` | train | diagnostic only; excluded from projection/update | train | train |
+| `F_AMP_SHAPE` | train | train | train | train |
+
+Loss definitions are:
+
+- `L_A`: let `z=log1p(effective_hazard_amplitude/A_scale)`. Use equal internal
+  weights for mean squared `z-z_target` regression and mean squared pair
+  contrast regression. For every frozen pair `(g,s)`, the target is the signed
+  FEM contrast `(z_g^*-z_s^*)`; ties therefore target zero. Pair identities are
+  unchanged, but the three reverse FEM hazard orderings remain reverse rather
+  than inheriting growth-first physical-increment labels;
 - `L_S`: support-free weighted shape half-L1 and cosine terms on nonzero FEM
   events; target-support capture, spill and centroid remain evaluation
   diagnostics rather than hidden correction masks;
 - `L_R`: bounded increment-field reconstruction, scaled per cycle without
   changing the frozen target;
-- `L_P`: native-Q4 free-DOF equilibrium residual with `beta=0.25`.
+- `L_P`: native-Q4 free-DOF equilibrium residual. Its external gradient weight
+  is `beta=0.25`.
 
-Use PCGrad across the applicable groups after the existing per-group
-normalisation and before one global clip. Freeze the projection order seed.
-Persist raw group norms, all pairwise gradient cosines, conflict counts, the
-projected update, and each group's dot product with the realised update.
-`F_AMP` omits `L_S` from the update, logs it, and keeps `S` bitwise frozen; the
-other two arms apply all groups available to their parameterisation. This is multi-objective
-optimisation evidence, not proof that PCGrad is optimal.
+Use the following unique PCGrad contract. For each arm and active group `k`,
+compute the raw gradient `g_k` at update 0 and freeze
+`scale_k=||g_k||_2` when that norm exceeds `1e-12`, otherwise `scale_k=1` and
+record the zero-scale case. At every update compute
+`h_k = weight_k * g_k / scale_k`, with weights `(1,1,1,0.25)` for
+`(A,S,R,P)`. Weighting occurs after scale normalisation, so beta cannot be
+cancelled. Starting from working copy `p_k=h_k`, project `p_k` against the
+unmodified `h_j` when `p_k dot h_j < 0`, using a permutation generated from
+the frozen seed plus update index. Skip a projection denominator only when
+`||h_j||<=1e-12` and record it. Aggregate by the arithmetic mean over the
+arm's active groups, then apply exactly one global norm clip at `1.0`.
+`F_AMP` uses three active groups in that mean; its withheld shape gradient is
+logged but never enters a projection or denominator.
+
+All arms use a fresh empty-state AdamW on their trainable damage-head
+parameters only: learning rate `3e-4`, betas `(0.9,0.999)`, epsilon `1e-8`,
+weight decay `0`, float64, with no scheduler. Persist raw and scaled group
+norms, weights, all pairwise cosines/conflicts, seeded permutations, projected
+vectors, aggregate pre/post clip norms, and each raw group's dot product with
+the realised update. This is multi-objective optimisation evidence, not proof
+that PCGrad caused a result or is optimal.
 
 Hazard-amplitude ranking and weighted-mean absolute-increment ranking remain
 separate observables. E016 showed their FEM scores differ (`44` versus `50`),
 so they must not be substituted for one another in the loss or verdict.
 
-## Cheapest grouped mechanical validation (P0)
+## Bounded grouped mechanical validation (P0)
 
 P0 uses all 16 representative cycles on every update. It is not a single-cycle
 or selected-easy-cycle test. Proposed budget: 64 updates per arm, 192 total,
@@ -136,6 +195,12 @@ coefficient sweeps, fresh holdout, new FEM, checkpoint search or A25 node-field
 export are allowed. The current packet contains no target zero event; the
 strict zero-event branch therefore receives synthetic unit/integration tests
 but cannot be reported as a real-data zero-event result.
+
+This is a small predeclared signal probe; static design cannot establish that
+64 updates are sufficient to identify a failure cause. Fairness means matched
+updates and data exposure. Because head sizes and active groups differ, persist
+per-arm wall time, peak memory and forward/backward counts; do not claim equal
+FLOPs and do not transfer unused budget.
 
 At every evaluation, report one vector rather than a conjunctive headline:
 
@@ -155,31 +220,47 @@ At every evaluation, report one vector rather than a conjunctive headline:
 
 The pilot has only one hard validity floor: complete identities and scheduled
 evidence, finite values, no hard constraint violation, and readable receipts.
-Performance is classified as a profile, not as all-or-nothing PASS/FAIL:
+The performance decision uses update 64 only; intermediate points remain
+descriptive and cannot be selected post hoc.
 
-- `VALID_FACTORISATION_SIGNAL`: `F_AMP_SHAPE` improves both amplitude and shape
-  relative to its own start and separates from `D_DIRECT`; reconstruction and
-  limited physics remain interpretable. This earns a separately approved
-  longer exposed-development run.
-- `VALID_SHAPE_OBJECTIVE_SIGNAL`: `F_AMP_SHAPE` improves localisation relative
-  to `F_AMP` while amplitude is comparable. Keep the full factorised head and
-  refine the amplitude path without changing the information set.
-- `VALID_AMPLITUDE_ONLY_SIGNAL`: `F_AMP` repairs amplitude but the full arm loses
-  it when `L_S` is applied, with recorded gradient conflict. The next action is
-  multi-objective update repair, not another head sweep.
-- `VALID_NO_HEAD_SEPARATION`: both factorised arms remain comparable to or worse
-  than `D_DIRECT` across the predeclared vector. Stop head-only tuning and test
-  state/trunk sufficiency.
-- `VALID_MIXED_TRADEOFF`: different components improve and worsen without a
-  dominance relation. Preserve the Pareto evidence and choose the next
-  intervention from the recorded conflicts; do not relabel it as failure.
+Convert each primary metric to an error orientation where lower is better:
+amplitude uses median absolute hazard log-ratio plus exact mismatch count
+against the 25 FEM hazard pair outcomes; shape uses half-L1, `1-cosine`,
+`1-capture`, spill and centroid offset; reconstruction and limited physics use
+their reported nonnegative errors. For a continuous metric, values tie when
+their difference is no larger than
+`max(1e-12, 64*eps_float64*max(1,abs(x),abs(y)))`; discrete pair mismatches tie
+only exactly. A group Pareto-improves when at least one component improves and
+none worsens, and Pareto-worsens by the reverse rule. Every arm reports both
+its update-0-to-64 error change and the inter-arm difference of those changes.
+
+Profiles are deterministic multi-label flags, except `INVALID_EXECUTION`,
+which is exclusive:
+
+- `VALID_FACTORISATION_SIGNAL`: `F_AMP_SHAPE` Pareto-improves both amplitude and
+  shape from its own start, and its change vector Pareto-dominates
+  `D_DIRECT` over amplitude, shape and reconstruction while limited physics is
+  no worse.
+- `VALID_SHAPE_OBJECTIVE_SIGNAL`: the shape change of `F_AMP_SHAPE`
+  Pareto-dominates that of `F_AMP`, while its amplitude change is no worse.
+- `VALID_AMPLITUDE_ONLY_SIGNAL`: `F_AMP` Pareto-improves amplitude and its
+  amplitude change Pareto-dominates `F_AMP_SHAPE`. Gradient conflicts may be
+  reported as associated geometry, never as the proven cause.
+- `VALID_NO_HEAD_SEPARATION`: neither factorised arm's change vector
+  Pareto-dominates `D_DIRECT` over amplitude, shape and reconstruction. This
+  means no predeclared separation signal was observed within 64 updates; it
+  does not imply state/trunk insufficiency.
+- `VALID_MIXED_TRADEOFF`: at least one arm both improves and worsens primary
+  components, or the valid arm change vectors are mutually non-dominating.
+  Preserve the Pareto evidence and do not relabel it as failure.
 - `INVALID_EXECUTION`: identity, evidence, finite-value or hard-constraint
   failure. Repair implementation only; do not interpret optimisation.
 
 No fixed scientific-success threshold is introduced at P0. Directional
-changes, per-cycle distributions and Pareto dominance are reported exactly.
-Fresh holdout or rollout is considered only after a valid exposed-development
-mechanism signal and a new approved card.
+changes, per-cycle distributions and Pareto relations are reported exactly.
+Only `VALID_FACTORISATION_SIGNAL` or `VALID_SHAPE_OBJECTIVE_SIGNAL` may motivate
+a separately reviewed longer exposed-development card; neither automatically
+earns it. Fresh holdout or rollout still requires a new approved card.
 
 ## Evidence and current authority
 
