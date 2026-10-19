@@ -1,5 +1,5 @@
 {
-  "status": "SCIENTIFIC_PRODUCER_STARTED_NO_OUTCOME_YET",
+  "status": "PRODUCER_RUNNING_ACCEPTED_INITIAL_SUBSTEPS_NO_TRAINED_COMPARISON",
   "run_id": "pf_hybrid_full_20261019_r1",
   "source_commit": "43af56d43150f4ae8cf8799ceec4669564d67ef0",
   "artifact_id": "6b0ef3bf36ffbedf3c33170b2f641c06873684276a18be3f6726537e4d7c4585",
@@ -269,5 +269,109 @@
     "f<1 behavior not established by old five-state replay",
     "failed numerical work charged; no retries/resume/tolerance changes",
     "single synthetic mesh/material family; no physical/generalization claim"
-  ]
+  ],
+  "first_accepted_progress": {
+    "observed_epoch": 1792417928.93485,
+    "accepted_steps": 1,
+    "active": {
+      "start_epoch": 1792417840.4072185,
+      "start_monotonic": 5439922.914303228,
+      "phase": "train_A",
+      "step": 2,
+      "role": "numerical_substep"
+    },
+    "failure": null,
+    "terminal": null,
+    "last_accepted": {
+      "step": 1,
+      "total_step_wall_seconds": 56.95242438558489,
+      "solver_wall_seconds": 55.18392532970756,
+      "outer": 2,
+      "state_id": "8e103380a44f5f49abc98acab93b64cb6c8eddec8fd52d21b1dca126297e4e9c",
+      "damage": {
+        "operator_id": "084d86a84db29704893d2d63c3e101a3aee5efbbb6ce7f6adb0349bcd8eac7c6",
+        "primal_inf": 0.0,
+        "kkt_scaled_inf": 1.4798688769274216e-08,
+        "kkt_l2": 1.4799524972927877e-07,
+        "projected_inf": 1.4798688718897779e-08
+      },
+      "force_l2": 2.2022191809458867e-15,
+      "fatigue_residual": 0.0,
+      "f_min": 1.0,
+      "work": [
+        {
+          "kind": "common_mechanics_predictor",
+          "wall_seconds": 15.36683792527765
+        },
+        {
+          "kind": "prediction_features",
+          "wall_seconds": 0.044956622645258904
+        },
+        {
+          "kind": "trial_history",
+          "wall_seconds": 0.04367760941386223
+        },
+        {
+          "kind": "damage_assembly",
+          "wall_seconds": 0.46542011946439743
+        },
+        {
+          "kind": "damage_qp",
+          "wall_seconds": 2.8355109374970198
+        },
+        {
+          "kind": "mechanics_re_equilibration",
+          "wall_seconds": 15.548054844141006
+        },
+        {
+          "kind": "final_trial_history",
+          "wall_seconds": 0.043932581320405006
+        },
+        {
+          "kind": "fresh_final_damage_assembly",
+          "wall_seconds": 0.449431786313653
+        },
+        {
+          "kind": "fresh_final_kkt",
+          "wall_seconds": 0.0027843592688441277
+        },
+        {
+          "kind": "fresh_final_force",
+          "wall_seconds": 0.6276946440339088
+        },
+        {
+          "kind": "trial_history",
+          "wall_seconds": 0.039050545543432236
+        },
+        {
+          "kind": "damage_assembly",
+          "wall_seconds": 0.43258844316005707
+        },
+        {
+          "kind": "damage_qp",
+          "wall_seconds": 2.8505084589123726
+        },
+        {
+          "kind": "mechanics_re_equilibration",
+          "wall_seconds": 15.265370070002973
+        },
+        {
+          "kind": "final_trial_history",
+          "wall_seconds": 0.0411462252959609
+        },
+        {
+          "kind": "fresh_final_damage_assembly",
+          "wall_seconds": 0.4411917757242918
+        },
+        {
+          "kind": "fresh_final_kkt",
+          "wall_seconds": 0.008589568547904491
+        },
+        {
+          "kind": "fresh_final_force",
+          "wall_seconds": 0.6305820625275373
+        }
+      ]
+    }
+  }
 }
