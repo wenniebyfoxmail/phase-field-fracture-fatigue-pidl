@@ -6,6 +6,16 @@ Source base: b387f246; branch codex/crack-route-priorities-20261019.
 
 ## Decision
 
+### Result update — 19 October, after D2 retrieval
+
+The approved `HQ-ROAD-UQ-FEAS-002-R001` has finished, rather than remaining unstarted: 40/40 epochs, exit 0, all 13 result files hash-verified and primary quantities independently recomputed. GAPS nonempty mean Dice is 0.01393; 331/382 images have any overlap and none is degenerate, yet 375/382 have error >=0.9. At the frozen 25% acceptance budget, LC risk is 0.975264 and U_Z risk 0.978837. The necessary selection criterion fails: `FEASIBILITY_NO_GO`. This does not establish that the new package repaired the old CFD failure, because source and model changed together.
+
+**Priority adjustment:** Reliable remains the immediate decision owner, not an open-ended training priority. Do not expand backbones, seeds or complex UQ. The sole proposed next computation is the complete paired source/model attribution matrix; meaningful cross-source absolute overlap, not mere nondegeneracy or a favourable relative delta, must govern any continuation. Macro semantic compatibility and the separate observable-DIC information-value branch continue within their direct user permissions. If the matrix leaves absolute overlap unusable, redirect effort to source/target compatibility rather than keep repairing confidence scores.
+
+`HQ-ROAD-UQ-MATRIX-001-R001` has **now received separate direct user approval in its owner chat**, verified in turn `01a1541a-2ade-7960-a6ff-11f2e16b52bc`. This supersedes the earlier pending-authorisation snapshot; no duplicate approval is needed. Exact scope: frozen old/new checkpoints × existing CFD/GAPS development sources, one common-backend no-training evaluation, D-26-09 GPU0, maximum 2 GPU hours, no retry, Road420 sealed. Reuse the frozen diagonals; stop on identity drift, diagonal strict-metric mismatch >1e-5, nonfinite output or time limit. Owner HQ is in preflight, not yet confirmed running. [Exact package card](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hq-road-uq-feas-001-20261011/research_hq/HQ-ROAD-UQ-FEAS-001/paired_source_model_matrix_20261019/MATRIX_RUN_REQUEST_CARD_2026-10-19.md); [complete D2 result audit](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hq-road-uq-feas-001-20261011/research_hq/HQ-ROAD-UQ-FEAS-001/runs/HQ-ROAD-UQ-FEAS-002-R001/03_RESULT_CLAIM_AUDIT_AND_FINAL_DECISION_2026-10-19.md).
+
+The original decision below records the pre-result allocation. This update supersedes its pending-run status, without rewriting frozen protocols. Portfolio monitoring now checks the three existing HQs quietly; only substantive results or necessary decisions trigger a user update.
+
 **Current main effort: Reliable Crack Identification. Strategic second route: identification uncertainty to prediction. Keep precision metrology parked; its user-authorised macro-identification successor contributes a semantic-confusion comparison to the main effort.**
 
 The decision optimises time to consequential evidence, relevance to real road observations, and a credible route to a research contribution. It does not equate data volume, training success or benchmark gains with novelty. No numeric scores or arbitrary weighted ranking are used.
