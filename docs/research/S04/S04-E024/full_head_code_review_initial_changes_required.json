@@ -1,0 +1,22 @@
+{
+  "verdict": "CHANGES_REQUIRED_BEFORE_RECOVERY",
+  "source_commit": "e70fb2aac7d888912d767e7c92dcbf352dd269b6",
+  "independent_targeted_tests_passed": 23,
+  "issues": [
+    {
+      "id": "REC-1",
+      "severity": "blocking",
+      "trigger": "Pinned c20 k0 replay fails a strict guard",
+      "effect": "range(9) reaches k1 and network_order evaluates an unvisited candidate before cached assert k==0",
+      "fix": "Restrict cached state to one k0 forward before loop; reject failed replay as recovery failure with no new selection."
+    },
+    {
+      "id": "REC-2",
+      "severity": "execution_contract_confirmation",
+      "issue": "Each worker has900s cap, whereas amendment promises failed+recovery+remaining combined900s",
+      "fix": "Provide or confirm coordinator uses remaining cumulative wall budget per subprocess and stops on exhaustion."
+    }
+  ],
+  "unchanged_math_helper_and_original_protocol_verified": true,
+  "extra_actual_candidates_or_solves_by_reviewer": 0
+}

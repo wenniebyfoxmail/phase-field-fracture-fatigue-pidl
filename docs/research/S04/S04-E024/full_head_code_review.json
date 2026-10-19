@@ -1,0 +1,28 @@
+{
+  "verdict": "BOUNDED_RECOVERY_CODE_READY_PASS",
+  "source_commit": "deacd1bd13306aa3a22db798fab714e42910fa5a",
+  "initial_recovery_review": "code_review_initial_changes_required.json",
+  "resolved_findings": [
+    "REC-1 fixed range1 plus revalidate_once fail-closed before any additional candidate",
+    "REC-2 isolated controller cumulative900s includes original12.626s and timeoutremaining for each worker"
+  ],
+  "independent_targeted_tests_passed": 25,
+  "blocking_findings": [],
+  "original_math_helper_protocol_byte_unchanged": true,
+  "cache_lock_files_sha_verified": 6,
+  "scientific_solve_sources": {
+    "c20s4": "c328235e08d7c9067043b41b45579421cfae716c",
+    "c60s4": "deacd1bd13306aa3a22db798fab714e42910fa5a",
+    "c83s4": "deacd1bd13306aa3a22db798fab714e42910fa5a"
+  },
+  "reviewer_actual_model_solves_or_candidates": 0,
+  "source_sha256": {
+    "SENS_tensile/diagnose_s04_e023_full_head.py": "797bbd1b0a3e8552b9be1c79e6325f0685c1a346b4dd74fa9324a42cc96fac52",
+    "SENS_tensile/s04_e024_full_head_recovery.py": "6170ff5be4c3e78fb3ef906d2f8de19ca8f6b4a384978d2a2cc03742c8344ea3",
+    "SENS_tensile/run_s04_e024_full_head_isolated.py": "a4ebf80b798e1c00d0a464bfed16430d7d33d9c2c22591ebab0073a25b1e1b4d",
+    "SENS_tensile/s04_e024_full_head.py": "a79867cad2239eecc862991fe07582122234bdb3316a91031704cbdebfc6a9c7",
+    "tests/test_s04_e024_full_head.py": "2ffdad1d762674579d6f65816e824ad4ed84e8e688055fe678927cbf6199e269",
+    "docs/research/S04/S04-E024/full_head_execution_amendment.md": "f2a4f9a0fce840b4b2e0d93b3ac458f8d9c5c2bba5d150f26696da3bf32f270e",
+    "docs/research/S04/S04-E024/full_head_c20_recovery_lock.json": "dbdc6f63d2a70f819de54cc5cd7170a4ea8f82f0f408d45f32e52cda9b58d49a"
+  }
+}

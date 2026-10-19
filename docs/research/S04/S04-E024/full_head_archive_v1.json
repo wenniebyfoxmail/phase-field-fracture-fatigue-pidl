@@ -1,0 +1,10 @@
+{
+  "execution_source": "c328235e08d7c9067043b41b45579421cfae716c",
+  "c20_solve_source": "c328235e08d7c9067043b41b45579421cfae716c",
+  "status": "INCOMPLETE_LOADER_RSS_STOP_C20_REUSED",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/full_head_attainable_v1",
+  "file_count": 14,
+  "total_bytes": 11651363,
+  "manifest_sha256": "d7e49fa5912efbc6c723a0447abb35338e229484e8d5dad015e050926eadcdb2",
+  "scope": "same seven protections, original2% cap, fixed features/D/BC/window; frozen damage/history/fatigue; no neural training; physical/evolution application unqualified"
+}

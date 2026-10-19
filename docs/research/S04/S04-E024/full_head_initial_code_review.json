@@ -1,0 +1,22 @@
+{
+  "verdict": "BOUNDED_CODE_READY_PASS",
+  "source_commit": "c328235e08d7c9067043b41b45579421cfae716c",
+  "blocking_findings": [],
+  "independent_tests_passed": 22,
+  "additional_synthetic_active_guard_case": "PASS; no real endpoint/model/head candidate solved",
+  "actual_model_solves_by_reviewer": 0,
+  "source_sha256": {
+    "SENS_tensile/s04_e024_full_head.py": "a79867cad2239eecc862991fe07582122234bdb3316a91031704cbdebfc6a9c7",
+    "SENS_tensile/diagnose_s04_e023_full_head.py": "038e506b4b332857016259710e51f10c8897eca438f0bd5296594901d6864341",
+    "tests/test_s04_e024_full_head.py": "4082f23786e308fababad9da0146609dabc3ed33a7d03736bdf81d8e755ed834",
+    "docs/research/S04/S04-E024/full_head_protocol.md": "09b39f42bd9bf4a37879dcfcd6dc5ba28f9de80168c1c5ee2c74a80ad24a0812"
+  },
+  "scope": "Single full-coordinate convex proxy per exposed state; predeclared norm repair and finite first-feasible seven actual guards; no NN training/history or new reference.",
+  "limits": [
+    "Positive mu floor limits dual search, not validity of nonnegative dual lower bounds.",
+    "Finite proxy-eligible unresolved result can be an actual witness, not a proxy ability ceiling.",
+    "Numerical primal tolerance is not physical slack; actual seven guards remain strict.",
+    "All untruncated original-coordinate g/H and raw/repaired candidate must remain saved.",
+    "Result review must independently verify primal/dual/certificate in original coordinates and authoritative nonlinear fields."
+  ]
+}

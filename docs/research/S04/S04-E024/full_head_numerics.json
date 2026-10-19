@@ -1,0 +1,299 @@
+[
+  {
+    "state": "c20s4",
+    "dimension": 568,
+    "accepted": true,
+    "accepted_k": 0,
+    "accepted_fraction": 1.0,
+    "visited_candidates": 1,
+    "radius": 0.001743214045824267,
+    "delta_relative": 0.019999999999948174,
+    "affine_max_abs": 1.1796119636642288e-16,
+    "outside_max_abs": 0.0,
+    "bc_max_abs": 0.0,
+    "branch_changed_gp_fraction": 0.0020628876955837423,
+    "full_z_norm": 0.9999999999974087,
+    "outside_old3D_norm_fraction": 0.41182726555116095,
+    "operator": {
+      "parameters": 568,
+      "features": 284,
+      "incident_elements": 10787,
+      "halo_nodes": 11134,
+      "sparse_tangent_3D_max_abs": 1.0711917464156784e-16
+    },
+    "D011_projection": {
+      "gradient_max_abs": 7.105427357601002e-15,
+      "hessian_max_abs": 2.546585164964199e-11
+    },
+    "solver": {
+      "success": true,
+      "message": "CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL",
+      "iterations": 0,
+      "function_evaluations": 1,
+      "feasible": true,
+      "numerically_resolved": true,
+      "primal_half_relative_change": -0.002260799633661297,
+      "dual_lower_bound": -0.0022607996336655193,
+      "primal_dual_gap": 4.2223169405275485e-15,
+      "half_proxy_changes": [
+        -0.002260799633661297,
+        -0.0024186551790361275,
+        -0.0010034962318987862,
+        -0.009698697320837946,
+        -0.00038496109227397044,
+        -0.00010002970540784505,
+        -0.0001685313060859686
+      ],
+      "raw_ball": 0.9999999999948175,
+      "candidate_ball": 0.9999999999948175,
+      "multipliers": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0016679046380796174
+      ],
+      "dual_mu_coordinate_scale": 0.0016679046380796174,
+      "UV_only_relaxation_half_dual": -0.0022607996336691323,
+      "linear_solve_stationarity_relative": 2.3653113717436202e-14,
+      "hessian_spectra_extremes": [
+        [
+          -8.499856515351068e-15,
+          602.2181486052712
+        ],
+        [
+          -3.41615334747453e-14,
+          285.90547006536195
+        ],
+        [
+          -2.7993788349316484e-13,
+          3235.6596714554953
+        ],
+        [
+          -1.508675020852131e-12,
+          31272.348404741664
+        ],
+        [
+          -7.632225444481553e-15,
+          106.34821151554982
+        ],
+        [
+          -4.247686260027115e-14,
+          190.03927629769615
+        ],
+        [
+          -4.196423951800188e-14,
+          320.2845720248518
+        ]
+      ],
+      "full_uv_rank_relative_1e12": 488,
+      "preconditioner_floor": 6.022181486052718e-06,
+      "all_coordinates_retained": true,
+      "mu_search_floor": 1e-12,
+      "domain": "original untruncated head coordinates",
+      "scope": "convex tangent/GN proxy certificate, not true nonlinear attainable ceiling"
+    },
+    "recovered_prior_solve": true,
+    "scientific_solve_source": "c328235e08d7c9067043b41b45579421cfae716c"
+  },
+  {
+    "state": "c60s4",
+    "dimension": 568,
+    "accepted": true,
+    "accepted_k": 1,
+    "accepted_fraction": 0.5,
+    "visited_candidates": 2,
+    "radius": 0.0017705456513495562,
+    "delta_relative": 0.009999999999358997,
+    "affine_max_abs": 8.465450562766819e-16,
+    "outside_max_abs": 0.0,
+    "bc_max_abs": 0.0,
+    "branch_changed_gp_fraction": 0.0017301638737153967,
+    "full_z_norm": 0.9999999999359013,
+    "outside_old3D_norm_fraction": 0.6804381113826677,
+    "operator": {
+      "parameters": 568,
+      "features": 284,
+      "incident_elements": 15273,
+      "halo_nodes": 15746,
+      "sparse_tangent_3D_max_abs": 1.4181364416110398e-16
+    },
+    "D011_projection": {
+      "gradient_max_abs": 6.572520305780927e-14,
+      "hessian_max_abs": 4.3655745685100555e-11
+    },
+    "solver": {
+      "success": true,
+      "message": "CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL",
+      "iterations": 14,
+      "function_evaluations": 15,
+      "feasible": true,
+      "numerically_resolved": true,
+      "primal_half_relative_change": -0.004263766142373768,
+      "dual_lower_bound": -0.0042637661424845584,
+      "primal_dual_gap": 1.1079071687847275e-13,
+      "half_proxy_changes": [
+        -0.004263766142373768,
+        -0.004597847060388942,
+        -0.0007840801216612429,
+        -0.006280875918420319,
+        5.094050181675414e-13,
+        -0.0033710727669631763,
+        -0.0058918077141261885
+      ],
+      "raw_ball": 0.9999999998718025,
+      "candidate_ball": 0.9999999998718025,
+      "multipliers": [
+        0.0,
+        0.0,
+        0.0,
+        0.04972828490971104,
+        0.0,
+        0.0,
+        0.0021207697892418904
+      ],
+      "dual_mu_coordinate_scale": 0.0028726862031374094,
+      "UV_only_relaxation_half_dual": -0.00463464127355842,
+      "linear_solve_stationarity_relative": 3.951081089670739e-14,
+      "hessian_spectra_extremes": [
+        [
+          1.5893256384719717e-12,
+          1998.7696874756966
+        ],
+        [
+          3.868261606308029e-13,
+          912.8200545490454
+        ],
+        [
+          -1.5249591793102278e-13,
+          13326.776759292077
+        ],
+        [
+          -1.630674278442799e-12,
+          106754.18098909257
+        ],
+        [
+          2.796532418721689e-12,
+          210.7459192410716
+        ],
+        [
+          -2.012603900981509e-15,
+          462.7634351112844
+        ],
+        [
+          -2.3916117890582696e-15,
+          808.7660737289136
+        ]
+      ],
+      "full_uv_rank_relative_1e12": 488,
+      "preconditioner_floor": 1.9987696874756973e-05,
+      "all_coordinates_retained": true,
+      "mu_search_floor": 1e-12,
+      "domain": "original untruncated head coordinates",
+      "scope": "convex tangent/GN proxy certificate, not true nonlinear attainable ceiling"
+    },
+    "recovered_prior_solve": false,
+    "scientific_solve_source": "deacd1bd13306aa3a22db798fab714e42910fa5a"
+  },
+  {
+    "state": "c83s4",
+    "dimension": 568,
+    "accepted": true,
+    "accepted_k": 1,
+    "accepted_fraction": 0.5,
+    "visited_candidates": 2,
+    "radius": 0.0014171275903012346,
+    "delta_relative": 0.00999999977244455,
+    "affine_max_abs": 1.0505919051384538e-16,
+    "outside_max_abs": 0.0,
+    "bc_max_abs": 0.0,
+    "branch_changed_gp_fraction": 0.0029597953893158043,
+    "full_z_norm": 0.9999999772444551,
+    "outside_old3D_norm_fraction": 0.3744124618074438,
+    "operator": {
+      "parameters": 568,
+      "features": 284,
+      "incident_elements": 18772,
+      "halo_nodes": 19342,
+      "sparse_tangent_3D_max_abs": 4.134537222137691e-17
+    },
+    "D011_projection": {
+      "gradient_max_abs": 5.329070518200751e-15,
+      "hessian_max_abs": 5.4569682106375694e-12
+    },
+    "solver": {
+      "success": true,
+      "message": "CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL",
+      "iterations": 26,
+      "function_evaluations": 33,
+      "feasible": true,
+      "numerically_resolved": true,
+      "primal_half_relative_change": -0.0005593799599563237,
+      "dual_lower_bound": -0.0005593799683465889,
+      "primal_dual_gap": 8.390265262073204e-12,
+      "half_proxy_changes": [
+        -0.0005593799599563237,
+        -0.0005506675967277082,
+        -0.0009980508699131657,
+        -0.005048111824166899,
+        1.6475590726774958e-10,
+        -7.211459686073951e-07,
+        9.334657526116619e-11
+      ],
+      "raw_ball": 0.9999999544889108,
+      "candidate_ball": 0.9999999544889108,
+      "multipliers": [
+        0.0,
+        0.0,
+        0.0,
+        0.004566102603756603,
+        0.0,
+        0.0003276809623519989,
+        0.000403132629695928
+      ],
+      "dual_mu_coordinate_scale": 0.0004373100852667601,
+      "UV_only_relaxation_half_dual": -0.0005807633985123729,
+      "linear_solve_stationarity_relative": 6.669870717050679e-14,
+      "hessian_spectra_extremes": [
+        [
+          -1.280966004056477e-14,
+          147.64444240621023
+        ],
+        [
+          -3.4899427117102484e-15,
+          73.60390806652566
+        ],
+        [
+          -1.0605443760804019e-13,
+          4038.985741837828
+        ],
+        [
+          -2.3832693750299698e-12,
+          20429.070597602775
+        ],
+        [
+          -2.910661129188332e-16,
+          33.14557401591569
+        ],
+        [
+          -1.0955938035491074e-14,
+          679.2755959399512
+        ],
+        [
+          -9.798698472429197e-15,
+          826.0750604943765
+        ]
+      ],
+      "full_uv_rank_relative_1e12": 472,
+      "preconditioner_floor": 1.476444424062102e-06,
+      "all_coordinates_retained": true,
+      "mu_search_floor": 1e-12,
+      "domain": "original untruncated head coordinates",
+      "scope": "convex tangent/GN proxy certificate, not true nonlinear attainable ceiling"
+    },
+    "recovered_prior_solve": false,
+    "scientific_solve_source": "deacd1bd13306aa3a22db798fab714e42910fa5a"
+  }
+]

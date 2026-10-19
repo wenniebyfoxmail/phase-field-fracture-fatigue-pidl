@@ -1,0 +1,98 @@
+[
+  {
+    "state": "c20s4",
+    "H0_max_abs_gap": 2.2168933355715126e-12,
+    "g0_max_abs_gap": 2.248201624865942e-15,
+    "mu_initial": 0.0016679046380796174,
+    "original_UV_only_dual": -0.0022607996336691323,
+    "residual_corrected_UV_only_lower": -0.0022607996336651047,
+    "UV_only_RMS_maximum_improvement_pct": 0.2263361035253042,
+    "actual_RMS_improvement_pct": 0.2263361035248379,
+    "actual_half_error_minus_UV_lower": 4.6672735121155995e-15,
+    "certificate_linear_residual_relative": 1.824080763783967e-14,
+    "certificate_point_ball": 0.9999999999934053,
+    "complementarity": -5.499686012262987e-15,
+    "minimum_eigenvalue_A": 0.0016679046380520047,
+    "review_matmul_warning_records": {
+      "numpy_matmul": [
+        "divide by zero encountered in matmul",
+        "overflow encountered in matmul",
+        "invalid value encountered in matmul"
+      ],
+      "explicit_einsum": [],
+      "scipy_dgemm": []
+    },
+    "review_multiply_max_abs_differences": {
+      "numpy_matmul": 2.435551760271437e-15,
+      "explicit_einsum": 0.0,
+      "scipy_dgemm": 3.1086244689504383e-15
+    },
+    "numpy_warning_root_cause": "NOT_IDENTIFIED",
+    "raw_stationarity_einsum": 2.3653113717436202e-14,
+    "scope": "Fixed saved mu only; full UV+original2%ball relaxation, no physics, no newly selected head/field"
+  },
+  {
+    "state": "c60s4",
+    "H0_max_abs_gap": 6.139089236967266e-12,
+    "g0_max_abs_gap": 1.942890293094024e-15,
+    "mu_initial": 0.0028726862031374094,
+    "original_UV_only_dual": -0.00463464127355842,
+    "residual_corrected_UV_only_lower": -0.0046346412735687485,
+    "UV_only_RMS_maximum_improvement_pct": 0.4645431289501567,
+    "actual_RMS_improvement_pct": 0.2535704078815204,
+    "actual_half_error_minus_UV_lower": 0.002102152092341189,
+    "certificate_linear_residual_relative": 7.93364129762345e-15,
+    "certificate_point_ball": 1.0000000000100904,
+    "complementarity": 1.449323762438818e-14,
+    "minimum_eigenvalue_A": 0.0028726862047267743,
+    "review_matmul_warning_records": {
+      "numpy_matmul": [
+        "divide by zero encountered in matmul",
+        "overflow encountered in matmul",
+        "invalid value encountered in matmul"
+      ],
+      "explicit_einsum": [],
+      "scipy_dgemm": []
+    },
+    "review_multiply_max_abs_differences": {
+      "numpy_matmul": 2.7200464103316335e-15,
+      "explicit_einsum": 0.0,
+      "scipy_dgemm": 3.941291737419306e-15
+    },
+    "numpy_warning_root_cause": "NOT_IDENTIFIED",
+    "raw_stationarity_einsum": 3.951081089670739e-14,
+    "scope": "Fixed saved mu only; full UV+original2%ball relaxation, no physics, no newly selected head/field"
+  },
+  {
+    "state": "c83s4",
+    "H0_max_abs_gap": 1.4921397450962104e-13,
+    "g0_max_abs_gap": 1.8735013540549517e-16,
+    "mu_initial": 0.0004373100852667601,
+    "original_UV_only_dual": -0.0005807633985123729,
+    "residual_corrected_UV_only_lower": -0.0005807633985128817,
+    "UV_only_RMS_maximum_improvement_pct": 0.058093213958831935,
+    "actual_RMS_improvement_pct": 0.03146834308528357,
+    "actual_half_error_minus_UV_lower": 0.0002661294804908814,
+    "certificate_linear_residual_relative": 1.3651827136099214e-14,
+    "certificate_point_ball": 1.0000000000104636,
+    "complementarity": 2.2879254555475465e-15,
+    "minimum_eigenvalue_A": 0.000437310085264385,
+    "review_matmul_warning_records": {
+      "numpy_matmul": [
+        "divide by zero encountered in matmul",
+        "overflow encountered in matmul",
+        "invalid value encountered in matmul"
+      ],
+      "explicit_einsum": [],
+      "scipy_dgemm": []
+    },
+    "review_multiply_max_abs_differences": {
+      "numpy_matmul": 4.423544863740858e-16,
+      "explicit_einsum": 0.0,
+      "scipy_dgemm": 6.47051856539349e-16
+    },
+    "numpy_warning_root_cause": "NOT_IDENTIFIED",
+    "raw_stationarity_einsum": 6.669870717050679e-14,
+    "scope": "Fixed saved mu only; full UV+original2%ball relaxation, no physics, no newly selected head/field"
+  }
+]

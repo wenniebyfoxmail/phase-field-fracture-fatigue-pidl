@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "original_files": 33,
+  "D011_inputs": 3,
+  "map_table_attainability_input_hash_checks": 22,
+  "aggregate_NPZ_copies": 3,
+  "original_c20_lock_files": 6,
+  "unchanged_math_and_protocol": true,
+  "obsidian_image_sidecar_copies": 4,
+  "zero_new_optimisation_or_field_evaluation": true
+}

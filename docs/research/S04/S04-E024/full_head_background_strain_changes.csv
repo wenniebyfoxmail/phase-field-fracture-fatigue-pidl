@@ -1,0 +1,13 @@
+state,arm,region,change_percent
+c20s4,D011,background,0.02256880331772404
+c60s4,D011,background,-0.003970769054806311
+c83s4,D011,background,0.05398805490806069
+c20s4,full_head,background,0.1389742650103054
+c60s4,full_head,background,-0.08409665202332439
+c83s4,full_head,background,0.1393106744906003
+c20s4,D011,inside_background,0.05885013419739682
+c60s4,D011,inside_background,-0.010548343368377289
+c83s4,D011,inside_background,0.10024115053968163
+c20s4,full_head,inside_background,0.36192276078996777
+c60s4,full_head,inside_background,-0.22390936889062907
+c83s4,full_head,inside_background,0.258550046864503
