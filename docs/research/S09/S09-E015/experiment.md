@@ -1,6 +1,6 @@
 # S09-E015 output-space trust-region assay
 
-Status: `DESIGN_REREVIEW_PENDING`
+Status: `DESIGN_READY_IMPLEMENTATION`
 
 Primary storyline: S09 Neural Operator fracture-development representation.
 
