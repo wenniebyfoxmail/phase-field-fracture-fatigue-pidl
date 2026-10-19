@@ -34,8 +34,10 @@ fracture-PINO claims.
 - Frozen SHA256 identities are `24bbea27...cf05` (S0),
   `7a3f83e2...b057` (C500), `a3f2f83b...24c8d` (R500),
   `2f38ead9...247e` (E010 per-cycle CSV), `8acc97ba...e52` (E011
-  per-cycle CSV), `be399942...2b4` (config), and `1658d2a2...2a6` (packet
-  manifest).  The implementation stores and compares the full values.
+  per-cycle CSV), `0cf59c58...e4b` (executable P1 base config),
+  `be399942...2b4` (E010 resolved arm/provenance config), and
+  `1658d2a2...2a6` (packet manifest).  The implementation stores and compares
+  the full values.
 - Reuse the existing S0 global-amplitude pair Jacobian and E011 zero-step/log
   evidence.  Do not recompute an unchanged broad global audit.
 - New autograd is one forward/gradient collection per unique cycle and state;
@@ -161,4 +163,15 @@ eight old errors and loss of five old correct pairs remains visible.
 - one decision-facing figure comparing global versus local pair response across
   S0/C500/R500 and the actual control/ranking displacements;
 - one `README_analysis.md` stating the allowed and blocked conclusions.
+
+## 2026-10-19 implementation identity clarification
+
+The prelaunch producer preflight found that the frozen E010 resolved config is
+an arm/provenance receipt and does not contain the executable operator width,
+rank, normalisers, geometry contract, or complete gradient-vector contract
+required by `build_runtime`.  The inherited reviewed P1 base config is the
+executable runtime contract.  E012 therefore freezes and records both files:
+the P1 base config constructs the runtime, while the E010 resolved config binds
+the analysed B25 experiment provenance.  No data, state, observable, threshold,
+pair, or decision rule changed.
 

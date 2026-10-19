@@ -75,7 +75,8 @@ EXPECTED_INPUT_SHA256 = {
     "ranking_checkpoint": "a3f2f83bd2c86f8bc3a455c899ddc5ea0d5e394b8b6f5930950d4e5dbb024c8d",
     "e010_per_cycle_csv": "2f38ead95c9596418f42a7d8aaaa2050fac938040ebd3804209f196c1ebc247e",
     "e011_per_cycle_csv": "8acc97ba34aa3f936a949b49cb36a7ff4fde35015b06eb9d23868e062c37de52",
-    "config": "be399942c28d640da8e61a2f47f680433b546ce502c5791bb88ee7297a9542b4",
+    "base_config": "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b",
+    "resolved_config": "be399942c28d640da8e61a2f47f680433b546ce502c5791bb88ee7297a9542b4",
 }
 EXPECTED_PACKET_MANIFEST_SHA256 = (
     "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6"
@@ -894,7 +895,8 @@ def plot_decision(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--packet-dir", type=Path, required=True)
-    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--base-config", type=Path, required=True)
+    parser.add_argument("--resolved-config", type=Path, required=True)
     parser.add_argument("--start-checkpoint", type=Path, required=True)
     parser.add_argument("--control-checkpoint", type=Path, required=True)
     parser.add_argument("--ranking-checkpoint", type=Path, required=True)
@@ -937,18 +939,25 @@ def run(args: argparse.Namespace) -> None:
         "ranking_checkpoint": args.ranking_checkpoint,
         "e010_per_cycle_csv": args.e010_per_cycle_csv,
         "e011_per_cycle_csv": args.e011_per_cycle_csv,
-        "config": args.config,
+        "base_config": args.base_config,
+        "resolved_config": args.resolved_config,
     }
     for name, path in input_paths.items():
         _require(path.is_file(), f"missing frozen input: {name}")
         _require(sha256(path) == EXPECTED_INPUT_SHA256[name], f"input identity drift: {name}")
     args.output_dir.mkdir(parents=True)
-    config = json.loads(args.config.read_text())
+    config = json.loads(args.base_config.read_text())
+    resolved_config = json.loads(args.resolved_config.read_text())
+    _require(
+        resolved_config.get("planned_run_id")
+        == "S09-E010-R001-support-amplitude-three-arm",
+        "resolved E010 config identity drift",
+    )
     torch.manual_seed(int(config["model"]["seed"]))
     device = torch.device(args.device)
     runtime = build_runtime(
         packet_dir=args.packet_dir,
-        config_path=args.config,
+        config_path=args.base_config,
         device=device,
         executable=False,
     )
@@ -1161,7 +1170,16 @@ protection loss are reported together; no subset was selected after inspection.
             "sha256": sha256(Path(__file__).resolve()),
         },
         "inputs": {
-            "config": {"path": str(args.config), "sha256": sha256(args.config)},
+            "base_config": {
+                "path": str(args.base_config),
+                "sha256": sha256(args.base_config),
+                "role": "executable P1 architecture, data, and normaliser contract",
+            },
+            "resolved_config": {
+                "path": str(args.resolved_config),
+                "sha256": sha256(args.resolved_config),
+                "role": "frozen E010 arm and execution provenance",
+            },
             "packet_manifest_sha256": runtime.packet_identity["manifest_sha256"],
         },
         "checkpoints": {
