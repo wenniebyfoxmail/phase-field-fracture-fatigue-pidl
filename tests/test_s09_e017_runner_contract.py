@@ -412,6 +412,28 @@ def test_f_amp_projection_never_accepts_s_as_target_or_reference():
         contract.validate_gradient_row(row)
 
 
+def _single_large_reference_fixture(value):
+    row = gradient_fixture()
+    for representation in ("raw", "scaled", "projected"):
+        row["vectors"][representation]["A"][0] = value
+    for item in row["projection_log"]:
+        if item["reference"] == "A":
+            item["skipped_near_zero"] = False
+    row["preclip_norm"] = value / len(contract.ACTIVE_GROUPS[contract.ARM_DIRECT])
+    row["postclip_norm"] = contract.GLOBAL_CLIP_NORM
+    return row
+
+
+def test_projection_rejects_overflowing_reference_self_dot_even_without_application():
+    finite_boundary = math.sqrt(sys.float_info.max)
+    overflowing_boundary = math.nextafter(finite_boundary, math.inf)
+    contract.validate_gradient_row(_single_large_reference_fixture(finite_boundary))
+    with pytest.raises(ValueError, match="projection denominator must be finite"):
+        contract.validate_gradient_row(
+            _single_large_reference_fixture(overflowing_boundary)
+        )
+
+
 def test_f_amp_requires_separate_withheld_shape_gradient_and_never_activates_s():
     row = gradient_fixture(contract.ARM_AMPLITUDE)
     assert "S" not in row["active_groups"]

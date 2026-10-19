@@ -1,10 +1,12 @@
 # S09-E017 static runner integration status
 
-Status: `RUNNER_CONFIG_EVIDENCE_REVISED__NO_SCIENCE_IO__AWAITING_REREVIEW`
+Status: `RUNNER_CONFIG_EVIDENCE_REVISED_R2__NO_SCIENCE_IO__AWAITING_REREVIEW`
 Date: 2026-10-19
 Reviewed numerical core: `5ac6b7955b56309ac8ff2fda50b16b2e1669110a`
 Round-1 candidate: `1d30506e25fa990460e97c5b9376abee24c4bc92`
 Round-1 verdict: `E017_RUNNER_INTEGRATION_REVISE`
+Round-2 candidate: `c14ed37b871840f309be8e82d448412aa62c9886`
+Round-2 verdict: `E017_RUNNER_INTEGRATION_REVISE`
 
 ## What this gate implements
 
@@ -41,6 +43,9 @@ The revised validator now:
   receipt verbatim; and
 - uses strict non-Boolean integer and Boolean checks for the reviewed metadata
   examples.
+- unconditionally checks every projection-reference self-dot before the
+  skip/apply decision, matching the reviewed core even when no projection is
+  applied.
 
 The failure receipt is the only filesystem writer. No scientific or execution
 I/O route exists in this gate.
@@ -57,7 +62,7 @@ PYTHONPATH=source /Users/wenxiaofang/miniconda3/bin/python -m pytest -q \
   tests/test_s09_e017_runner_contract.py \
   tests/test_s09_e017_factorised_pilot.py \
   tests/test_s09_e016_factorisation.py
-115 passed in 0.70s
+116 passed in 1.00s
 
 /Users/wenxiaofang/miniconda3/bin/python -m py_compile \
   source/s09_e017_runner_contract.py \

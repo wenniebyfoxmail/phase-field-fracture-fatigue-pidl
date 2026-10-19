@@ -839,8 +839,11 @@ def validate_gradient_row(row: Mapping[str, Any]) -> None:
                 "projection flags drift",
             )
             reference_vector = numeric_vectors["scaled"][reference]
-            reference_norm = _norm(reference_vector, "projection reference norm")
-            skipped = reference_norm <= GRADIENT_EPSILON
+            denominator = _dot(
+                reference_vector, reference_vector, "projection denominator"
+            )
+            _require(denominator >= 0.0, "negative projection denominator")
+            skipped = math.sqrt(denominator) <= GRADIENT_EPSILON
             dot_before = _dot(working, reference_vector, "projection dot_before")
             actual_dot = _finite_number(entry["dot_before"], "projection dot_before")
             _require_close(actual_dot, dot_before, "projection dot_before")
@@ -854,9 +857,6 @@ def validate_gradient_row(row: Mapping[str, Any]) -> None:
                 "projection applied flag inconsistent",
             )
             if applied:
-                denominator = _dot(
-                    reference_vector, reference_vector, "projection denominator"
-                )
                 working = [
                     value - dot_before / denominator * reference_value
                     for value, reference_value in zip(
