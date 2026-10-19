@@ -42,7 +42,7 @@ def install_controller_guard(r,digest,started_at,started,context):
  # Keep captured low-level functions available even during controller teardown.
  def reject(event,_r=str(r),_digest=digest,_started_at=started_at,_started=started,
             _context=context,_write=durable_write,_mono=time.monotonic,
-            _gmtime=time.gmtime,_strftime=time.strftime,_killpg=os.killpg,
+            _gmtime=time.gmtime,_strftime=time.strftime,_killpg=os.kill,
             _term=signal.SIGTERM,_kill=signal.SIGKILL,_timeout=subprocess.TimeoutExpired):
   child=_context.get('child')
   try:
@@ -56,8 +56,23 @@ def install_controller_guard(r,digest,started_at,started,context):
       'ended_at_utc':_strftime('%Y-%m-%dT%H:%M:%SZ',_gmtime()),
       'wall_seconds':_mono()-_started,'worker_pid':None if child is None else child.pid,
       'reason':'controller_unraisable_or_thread_exception','fatal_event':event})
- install(r,on_fatal=reject,event_name='controller_fatal.jsonl')
+ return install(r,on_fatal=reject,event_name='controller_fatal.jsonl',seal_name='controller_exit.json')
 
+
+
+def finalize_delivery(root):
+ """The REAL final hash/manifest path; independently monitored by launch.py."""
+ root=Path(root);inventory=[]
+ volatile={'watchdog_progress.json','watchdog_progress.json.partial','launch.stdout','launch.stderr','logs/controller.stdout','logs/controller.stderr'}
+ for f in sorted(root.rglob('*')):
+  relative=str(f.relative_to(root))
+  if relative in volatile:continue # Still counted by watchdog storage; not a stable controller snapshot.
+  try:
+   if f.is_file():inventory.append({'path':relative,'bytes':f.stat().st_size,'sha256':contract.sha(f)})
+  except FileNotFoundError:
+   if relative=='watchdog_progress.json.partial':continue
+   raise
+ contract.write(root/'delivery_manifest.json',{'stable_files_before_controller_exit':inventory,'volatile_watchdog_and_controller_streams_retrieved_separately':sorted(volatile),'excludes_self_final_controller_watchdog_receipts':True})
 
 def main(argv=None):
  p=argparse.ArgumentParser();p.add_argument('--config',type=Path,default=Path(__file__).with_name('config.json'));p.add_argument('--approval-receipt',type=Path);args=p.parse_args(argv)
@@ -66,6 +81,8 @@ def main(argv=None):
  if sys.platform!='linux':raise RuntimeError('producer must be Linux; no machine fallback')
  r=Path(cfg['run_root'])
  if code!=(r/'code').resolve():raise ValueError('run must use its sealed code snapshot')
+ watchdog=contract.read(r/'watchdog_claim.json')
+ if watchdog.get('watchdog_pid')!=os.getppid() or watchdog.get('package_sha256')!=digest or os.getpgid(0)!=os.getpid() or os.getsid(0)!=os.getpid():raise PermissionError('independent watchdog/session claim missing')
  r.mkdir(parents=True,exist_ok=True)
  started=time.monotonic();started_at=utc()
  with (r/'run_claim.json').open('x') as f:json.dump({'package_sha256':digest,'authority':auth,'controller_pid':os.getpid(),'started_at_utc':started_at,'source_code':str(code),'command':sys.argv},f)
@@ -74,11 +91,11 @@ def main(argv=None):
   for name in ('outputs','results.tar','results.tar.partial'):
    if (r/name).exists():raise FileExistsError('fresh run required; no retry')
   for name in ('tmp','cache','logs'):(r/name).mkdir(exist_ok=True)
-  context={'child':None};install_controller_guard(r,digest,started_at,started,context)
+  context={'child':None};controller_flag=install_controller_guard(r,digest,started_at,started,context)
   env=os.environ.copy();env.update(OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',NUMEXPR_NUM_THREADS='1',VECLIB_MAXIMUM_THREADS='1',CUDA_VISIBLE_DEVICES='',TMPDIR=str(r/'tmp'),XDG_CACHE_HOME=str(r/'cache'),MPLCONFIGDIR=str(r/'cache/matplotlib'),TORCH_HOME=str(r/'cache/torch'),PYTHONPYCACHEPREFIX=str(r/'cache/pycache'))
   def limits():resource.setrlimit(resource.RLIMIT_AS,(8*2**30,8*2**30))
   with (r/'logs/worker.log').open('wb') as log, (r/'logs/worker.stderr').open('xb') as error_log:
-   child=subprocess.Popen([sys.executable,str(code/'runtime_guard.py'),'--root',str(r),'--target',str(code/'worker.py'),'--','--run','--config',str(args.config.resolve()),'--approval-receipt',str(args.approval_receipt.resolve())],cwd=code,env=env,stdout=log,stderr=error_log,start_new_session=True,preexec_fn=limits)
+   child=subprocess.Popen([sys.executable,str(code/'runtime_guard.py'),'--root',str(r),'--target',str(code/'worker.py'),'--','--run','--config',str(args.config.resolve()),'--approval-receipt',str(args.approval_receipt.resolve())],cwd=code,env=env,stdout=log,stderr=error_log,start_new_session=False,preexec_fn=limits)
    context['child']=child
    peak,reason=monitor_child(child,r,started)
   if reason:raise RuntimeError(reason)
@@ -86,24 +103,22 @@ def main(argv=None):
   if reason:raise RuntimeError(reason)
   if contract.read(r/'outputs/receipt.json')['status']!='CANDIDATE_COMPLETE_REQUIRES_CONTROLLER':raise RuntimeError('worker lacked complete receipt')
   if not(r/'results.tar').exists():raise RuntimeError('archive missing')
-  import hashlib
-  inventory=[]
-  for f in sorted(r.rglob('*')):
-   if f.is_file():inventory.append({'path':str(f.relative_to(r)),'bytes':f.stat().st_size,'sha256':contract.sha(f)})
-  contract.write(r/'delivery_manifest.json',{'files_before_final_receipt':inventory,'excludes_self_and_final_receipt':True})
+  finalize_delivery(r)
   reason=contract.storage_reason(r) or contract.budget_reason(time.monotonic()-started,peak,size(r),size(r/'results.tar'),0)
   if reason:raise RuntimeError(reason)
-  complete=finish_record('COMPLETE',digest,started_at,time.monotonic()-started,peak,child.pid,exit_code=0)
+  complete=finish_record('CANDIDATE_COMPLETE_REQUIRES_WATCHDOG',digest,started_at,time.monotonic()-started,peak,child.pid,exit_code=0)
   complete['worker_exit_evidence']=contract.read(r/'logs/runtime_exit.json')
   complete['worker_stderr_bytes']=(r/'logs/worker.stderr').stat().st_size
+  contract.write(r/'controller_completion_candidate.json',complete)
   contract.write(r/'controller_receipt.json',complete)
+  controller_flag[0]=True
  except BaseException as exc:
   if child is not None and child.poll() is None:
-   # Only the new child process group owned by this controller; never a shared-user kill.
-   try:os.killpg(child.pid,signal.SIGTERM)
+   # Signal only our worker PID here; the independent watchdog owns the whole controller session/group.
+   try:os.kill(child.pid,signal.SIGTERM)
    except ProcessLookupError:pass
    try:child.wait(timeout=5)
-   except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);child.wait()
+   except subprocess.TimeoutExpired:os.kill(child.pid,signal.SIGKILL);child.wait()
   contract.write(r/'controller_receipt.json',finish_record('STOPPED_NO_RETRY',digest,started_at,time.monotonic()-started,peak,None if child is None else child.pid,reason=str(exc)))
   raise
 if __name__=='__main__':main()

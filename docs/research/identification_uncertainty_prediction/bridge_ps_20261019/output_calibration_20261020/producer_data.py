@@ -68,4 +68,14 @@ def load(code,audit):
   states=z['states'].copy();origins=z['origin_stage'].copy()
  if states.shape!=(1144,3,138) or list(origins)!=[c['origin_stage'] for c in frozen['cases']]:raise ValueError('origin state identity')
  finite(states,'origin states')
- return ProductionData(frozen['cases'],frames,states,BoundedLoader(root),{'input_manifest':sha(code/'input_manifest.json'),'cohort':sha(code/'frozen_cohort.json'),'origin_features':cfg['origin_feature_sha256']})
+ # Formal admission streams EVERY required native current/future field before the first solve.
+ # This validates the frozen float32 native representation, not an inferred physical clock.
+ loader=BoundedLoader(root);required=sorted({(c['group'],c['origin_stage']+offset) for c in frozen['cases'] for offset in (0,10,40)})
+ for group,stage in required:
+  audit.enter('native_schema_admission_before_any_fit',group=group,stage=stage)
+  if (group,stage) not in frames:raise ValueError('native target/source frame mapping missing')
+  field=loader.get(frames[(group,stage)])
+  if field.shape!=(2,128,128) or field.dtype!=np.float32 or not np.isfinite(field).all():raise ValueError('native current/target schema')
+ from evidence import write
+ write(audit.root/'native_schema_admission.json',{'status':'ALL_REQUIRED_NATIVE_FRAMES_VALIDATED_BEFORE_FIRST_SOLVE','unique_frames':len(required),'representation':'explicit source float32 conversion;2x128x128 finite','inputs_manifest_sha256':sha(code/'input_manifest.json'),'cohort_sha256':sha(code/'frozen_cohort.json'),'fits_at_this_stage':0},True)
+ return ProductionData(frozen['cases'],frames,states,loader,{'input_manifest':sha(code/'input_manifest.json'),'cohort':sha(code/'frozen_cohort.json'),'origin_features':cfg['origin_feature_sha256']})

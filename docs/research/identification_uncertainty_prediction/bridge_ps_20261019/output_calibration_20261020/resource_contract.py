@@ -14,7 +14,7 @@ def category(relative):
  if p.name in ('results.tar','results.tar.partial'):return 'archive'
  if parts[0]=='code':return 'code'
  if parts[0]=='cache':return 'cache'
- if parts[0]=='logs' or p.name=='font_dependency.log':return 'logs'
+ if parts[0]=='logs' or p.name in ('font_dependency.log','launch.stdout','launch.stderr'):return 'logs'
  if parts[0]=='tmp' or p.name.endswith('.partial'):return 'temporary'
  if parts[0]=='outputs' and p.name in ARRAYS:return 'raw_arrays'
  if parts[0]=='outputs' and p.name.startswith('model_') and p.suffix=='.npz':return 'models'

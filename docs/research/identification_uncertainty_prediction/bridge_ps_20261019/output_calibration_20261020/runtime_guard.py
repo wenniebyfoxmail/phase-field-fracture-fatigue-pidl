@@ -18,9 +18,9 @@ def durable_write(path, payload, *, append=False, _open=os.open, _write=os.write
  finally:_close(fd)
 
 
-def install(root,*,on_fatal=None,event_name='runtime_fatal.jsonl'):
+def install(root,*,on_fatal=None,event_name='runtime_fatal.jsonl',seal_name='runtime_exit.json'):
  """Fatal hooks retain low-level functions through Python shutdown."""
- logs=Path(root)/'logs';event=str(logs/event_name);seal=str(logs/'runtime_exit.json')
+ logs=Path(root)/'logs';event=str(logs/event_name);seal=str(logs/seal_name)
  returned=[False];pid=os.getpid()
  def fatal(kind,exc_type,message,tb=None, _event=event,_pid=pid,_emit=durable_write,
            _exit=os._exit,_write=os.write,_clock=time.time,_str=str,

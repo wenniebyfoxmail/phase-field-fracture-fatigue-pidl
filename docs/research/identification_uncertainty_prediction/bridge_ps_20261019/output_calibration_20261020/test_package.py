@@ -117,7 +117,6 @@ class Tests(unittest.TestCase):
   with patch.object(Path,'rglob',return_value=iter([Denied()])):
    with self.assertRaises(PermissionError):supervise.size(self.root)
 
-if __name__=='__main__':unittest.main()
 
 class LifecycleTests(unittest.TestCase):
  def test_actual_guard_child_exit_and_first_fatal_lifetime(self):
@@ -167,7 +166,7 @@ class LifecycleTests(unittest.TestCase):
 class DisabledTests(unittest.TestCase):
  def test_sealed_cli_default_denial_before_scientific_open(self):
   code=Path(__file__).parent.resolve()
-  for entry in ('worker.py','supervise.py'):
+  for entry in ('worker.py','supervise.py','launch.py'):
    script="""import sys,runpy
 from pathlib import Path
 def forbid(event,args):
@@ -178,7 +177,7 @@ sys.argv=[target]
 runpy.run_path(target,run_name='__main__')
 """
    result=subprocess.run([sys.executable,'-c',script,str(code/entry)],cwd=code,capture_output=True,timeout=10)
-   self.assertNotEqual(result.returncode,0);self.assertIn(b'DISABLED: preparation only',result.stderr);self.assertNotIn(b'SCIENTIFIC_OPEN_FORBIDDEN',result.stderr)
+   self.assertNotEqual(result.returncode,0);self.assertIn(b'Exact execution authority absent',result.stderr);self.assertNotIn(b'SCIENTIFIC_OPEN_FORBIDDEN',result.stderr)
 
 class ResourceTests(unittest.TestCase):
  def test_actual_category_scan_includes_copies_and_temporary(self):
@@ -188,3 +187,113 @@ class ResourceTests(unittest.TestCase):
    (root/'outputs/inner_losses.f64').write_bytes(b'1234');(root/'results.tar.partial').write_bytes(b'12345');(root/'tmp/owned').write_bytes(b'12')
    counts=r.storage(root);self.assertEqual((counts['raw_arrays'],counts['archive'],counts['temporary']),(4,5,2));self.assertEqual(sum(counts.values()),11)
    self.assertEqual(r.storage_reason(root,{'archive':4}),'storage_category_archive');self.assertIsNone(r.storage_reason(root,{'archive':5}))
+
+class WholeLifecycleTests(unittest.TestCase):
+ def test_real_controller_final_hash_timeout_and_exception(self):
+  import watchdog as w,time
+  code=Path(__file__).parent.resolve()
+  for failure in ('sleep','exception'):
+   with self.subTest(failure=failure),tempfile.TemporaryDirectory() as t:
+    root=Path(t);(root/'logs').mkdir();(root/'payload.bin').write_bytes(b'artificial-final-payload')
+    script="""import sys,time
+from pathlib import Path
+import supervise
+root=Path(sys.argv[1])
+def injected_hash(path):
+ if Path(path).name=='payload.bin':
+  if sys.argv[2]=='sleep':time.sleep(5)
+  else:raise RuntimeError('artificial final controller hash failure')
+ return 'artificial-hash-for-non-scientific-fixture'
+supervise.contract.sha=injected_hash
+supervise.finalize_delivery(root)
+"""
+    with (root/'logs/controller.stderr').open('xb') as err:
+     child=subprocess.Popen([sys.executable,'-c',script,str(root),failure],cwd=code,stderr=err,stdout=subprocess.DEVNULL,start_new_session=True)
+     try:
+      result=w.watch_process(child,root,time.monotonic(),wall=.4 if failure=='sleep' else 3,sampler=lambda pg:(0,[]),interval=.02)
+      self.assertIsNotNone(result['reason'])
+      if failure=='sleep':self.assertEqual(result['reason'],'whole_lifecycle_wall_deadline')
+      else:self.assertIn(result['reason'],('controller.stderr_nonempty','controller_exit_nonzero'))
+      w.stop_group(child);self.assertIsNotNone(child.poll())
+      w.first_stop(root,result['reason'],{'scope':'ARTIFICIAL_FINAL_CONTROLLER_IO'});before=(root/'watchdog_first_stop.json').read_bytes();w.first_stop(root,'second',{});self.assertEqual(before,(root/'watchdog_first_stop.json').read_bytes())
+      self.assertFalse((root/'delivery_manifest.json').exists())
+     finally:
+      if child.poll() is None:w.stop_group(child)
+ def test_combined_memory_includes_controller_worker_helper_and_monitor(self):
+  import watchdog as w
+  def r(pid,pg,sid,rss,hwm):return dict(pid=pid,pgid=pg,sid=sid,rss=rss,hwm=hwm,start_ticks=1)
+  records=[r(1,9,9,10,15),r(2,20,20,30,40),r(3,20,20,50,60),r(4,20,20,5,8),r(5,88,88,10000,10000)]
+  value,owned=w.combined_memory(records,20,1);self.assertEqual(value,123);self.assertEqual({x['pid'] for x in owned},{1,2,3,4})
+ def test_outer_monitor_counts_all_archive_copies_and_combined_memory(self):
+  import watchdog as w,time
+  from unittest.mock import patch
+  class Child:
+   pid=987654321
+   def poll(self):return None
+  with tempfile.TemporaryDirectory() as t:
+   root=Path(t);(root/'logs').mkdir();(root/'results.tar').write_bytes(b'123');(root/'results.tar.partial').write_bytes(b'456')
+   with patch.dict(w.storage_reason.__globals__['LIMITS'],{'archive':5}):
+    r=w.watch_process(Child(),root,time.monotonic(),wall=1,sampler=lambda pg:(0,[]),interval=.01)
+   self.assertEqual(r['reason'],'storage_category_archive')
+   r=w.watch_process(Child(),root,time.monotonic(),wall=1,rss_cap=100,sampler=lambda pg:(101,[]),interval=.01);self.assertEqual(r['reason'],'combined_process_rss_budget')
+ def test_posix_alarm_interrupts_actual_blocking_final_io_wait(self):
+  import watchdog as w,signal,time
+  previous=signal.getsignal(signal.SIGALRM)
+  try:
+   w.arm_deadline(.05);start=time.monotonic()
+   with self.assertRaises(w.DeadlineExceeded):time.sleep(1)
+   self.assertLess(time.monotonic()-start,.5)
+  finally:signal.setitimer(signal.ITIMER_REAL,0);signal.signal(signal.SIGALRM,previous)
+ def test_worker_controller_seals_are_separate_and_late_exception_stops(self):
+  code=Path(__file__).parent.resolve()
+  with tempfile.TemporaryDirectory() as t:
+   root=Path(t);(root/'logs').mkdir()
+   script="""import sys
+from pathlib import Path
+from runtime_guard import install
+root=Path(sys.argv[1]);flag=install(root,event_name='controller_fatal.jsonl',seal_name='controller_exit.json');flag[0]=True
+"""
+   p=subprocess.run([sys.executable,'-c',script,str(root)],cwd=code,capture_output=True,timeout=10)
+   self.assertEqual(p.returncode,0,p.stderr);self.assertTrue((root/'logs/controller_exit.json').exists());self.assertFalse((root/'logs/runtime_exit.json').exists())
+ def test_actual_controller_late_exit_failure_rejects_candidate(self):
+  code=Path(__file__).parent.resolve()
+  with tempfile.TemporaryDirectory() as t:
+   root=Path(t);(root/'logs').mkdir()
+   script="""import sys,atexit,time
+from pathlib import Path
+import supervise
+root=Path(sys.argv[1]);flag=supervise.install_controller_guard(root,'ARTIFICIAL','ARTIFICIAL',time.monotonic(),{'child':None})
+supervise.contract.write(root/'controller_receipt.json',{'status':'CANDIDATE_COMPLETE_REQUIRES_WATCHDOG'})
+def broken():raise RuntimeError('artificial late controller callback')
+atexit.register(broken);flag[0]=True
+"""
+   result=subprocess.run([sys.executable,'-c',script,str(root)],cwd=code,capture_output=True,timeout=10)
+   self.assertNotEqual(result.returncode,0);self.assertTrue((root/'logs/controller_fatal.jsonl').exists())
+   self.assertEqual(json.loads((root/'controller_receipt.json').read_text())['status'],'STOPPED_NO_RETRY')
+ def test_resource_only_decision_cannot_authorize_execution(self):
+  code=Path(__file__).parent
+  cfg=json.loads((code/'config.json').read_text());decision=json.loads((code/'resource_decision.json').read_text())
+  with self.assertRaises(PermissionError):package.validate_authority(decision,cfg,'artificial-digest','artificial-config')
+  self.assertFalse(cfg['execution_authority_granted']);self.assertEqual(cfg['run_id'],'IU-OUTPUT-CALIBRATION-C27A25-20261020-R001')
+
+
+
+
+class CleanupRaceTests(unittest.TestCase):
+ def test_reaped_child_never_signals_a_stale_group(self):
+  import watchdog as w
+  class Reaped:
+   pid=987654321
+   def poll(self):return 1
+   def wait(self,timeout):return 1
+  with patch.object(w.os,'killpg',side_effect=AssertionError('stale group must not be signalled')):w.stop_group(Reaped())
+ def test_signal_denial_for_live_child_is_not_hidden(self):
+  import watchdog as w
+  class Live:
+   pid=987654321
+   def poll(self):return None
+   def wait(self,timeout):raise subprocess.TimeoutExpired('ARTIFICIAL',timeout)
+  with patch.object(w.os,'killpg',side_effect=PermissionError('ARTIFICIAL_DENIAL')):
+   with self.assertRaises(PermissionError):w.stop_group(Live())
+
+if __name__=='__main__':unittest.main()

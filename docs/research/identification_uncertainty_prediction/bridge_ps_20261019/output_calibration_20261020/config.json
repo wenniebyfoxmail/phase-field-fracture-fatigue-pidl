@@ -1,8 +1,15 @@
 {
-  "status": "DISABLED_PREPARATION_ONLY_BUDGET_PROPOSAL_UNAPPROVED",
-  "enabled": false,
-  "run_root": null,
-  "approved_budget": null,
+  "status": "FINAL_LAUNCH_CANDIDATE_NO_EXECUTION_AUTHORITY",
+  "enabled": true,
+  "run_root": "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001",
+  "approved_budget": {
+    "wall_seconds": 1200,
+    "threads": 1,
+    "rss_bytes": 2147483648,
+    "total_generated_bytes": 1610612736,
+    "archive_bytes": 734003200,
+    "gpu": 0
+  },
   "proposed_budget": {
     "wall_seconds": 1200,
     "threads": 1,
@@ -39,9 +46,28 @@
     "outer_scores": 16016
   },
   "dependencies": {
-    "numpy": "2.2.6",
-    "matplotlib": "3.9.2",
-    "torch": "2.11.0"
+    "numpy": "1.24.4",
+    "torch": "2.7.0",
+    "matplotlib": "3.10.3"
   },
-  "original100MiB_not_feasible": "Two complete copies of inner native-loss triples and outer bases alone are126444032bytes; self-contained native anchors/outer targets add449839104bytes before copies. No real data or timing measured."
+  "original100MiB_not_feasible": "Two complete copies of inner native-loss triples and outer bases alone are126444032bytes; self-contained native anchors/outer targets add449839104bytes before copies. No real data or timing measured.",
+  "run_id": "IU-OUTPUT-CALIBRATION-C27A25-20261020-R001",
+  "resource_decision": "HQ_RESOURCES_APPROVED_ONLY_NOT_EXECUTION",
+  "expected_hostname": "GPUServer8",
+  "producer_alias": "gpu-taobo",
+  "python_version": "3.10.12",
+  "dependency_basis": "Historical R003 admission record2026-10-19 only; not rechecked; mismatch must first-stop before scientific bytes",
+  "memory_scope": "sampled sum of process HWMs for watchdog + controller session/group including worker/helpers; no hard combined RSS guarantee",
+  "execution_authority_granted": false,
+  "category_caps": {
+    "raw_arrays": 513802240,
+    "models": 16777216,
+    "metadata": 33554432,
+    "figures": 25165824,
+    "logs": 16777216,
+    "cache": 67108864,
+    "code": 8388608,
+    "temporary": 16777216,
+    "archive": 734003200
+  }
 }

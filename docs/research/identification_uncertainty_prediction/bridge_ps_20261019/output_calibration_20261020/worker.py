@@ -8,9 +8,10 @@ def main(argv=None):
  code=Path(__file__).resolve().parent;cfg=package.load_config(code,a.config);digest,auth=package.approval(code,cfg,a.approval_receipt)
  if not a.run or sys.platform!='linux':raise PermissionError('future Linux producer only')
  r=Path(cfg['run_root']);claim=package.read(r/'run_claim.json')
- if code!=(r/'code').resolve() or claim.get('controller_pid')!=os.getppid() or claim.get('package_sha256')!=digest:raise PermissionError('bounded parent/code claim')
+ if code!=(r/'code').resolve() or claim.get('controller_pid')!=os.getppid() or claim.get('package_sha256')!=digest or os.getpgid(0)!=claim.get('controller_pid') or os.getsid(0)!=claim.get('controller_pid'):raise PermissionError('bounded parent/code claim')
  package.write(r/'last_context.json',{'stage':'dependency_admission','case':None,'missing_reason':'no scientific row or arrays opened yet'})
- package.verify_dependencies(cfg)
+ from admission import admit
+ admit(code,cfg,r)
  import warnings
  warnings.simplefilter('error')
  import numpy as np
@@ -37,7 +38,8 @@ def main(argv=None):
   # Uncompressed tar: resource plan does not rely on beneficial scientific compression.
   with (r/'results.tar.partial').open('xb') as f:
    with tarfile.open(fileobj=f,mode='w') as tar:
-    tar.add(code,arcname='code',filter=lambda x:None if '__pycache__' in x.name else x)
+    lock=package.read(code/'package_lock.json')
+    for name in sorted(list(lock['files'])+['package_lock.json']):tar.add(code/name,arcname='code/'+name)
     tar.add(r/'outputs',arcname='outputs')
   (r/'results.tar.partial').replace(r/'results.tar')
   package.write(r/'archive_receipt.json',{'format':'uncompressed tar','bytes':(r/'results.tar').stat().st_size,'sha256':package.sha(r/'results.tar')})
