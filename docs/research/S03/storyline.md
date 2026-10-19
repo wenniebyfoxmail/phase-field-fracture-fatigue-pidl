@@ -834,3 +834,16 @@
   recomputation, SVDQR, B003 source read, real/held/C/D or frozen edits.
   Outcome limited to local display/description, not scientific acceptance;
   awaiting user approval before any acceptance command or visual action.
+
+- **2026-10-19 — Independent F01 acceptance paused on sidecar semantics.**
+  Reviewer e019_d02_review atclean426f9de9 verified planc7f0c205; exact
+  command1 once, chunk63a0b9 exit0/PENDING_VISUAL_QA, preprint0.039477375s
+  and finalsoft60s passed. Seven derived hashes/XML-JSON/point attributes/
+  saved ledger marks checked without source arrays or scientific recompute.
+  MODIFY_AND_REREVIEW: residuals.md says RGB interpolation but also blanket
+  no interpolation, not distinguishing colour from spatial interpolation.
+  First semantic blocker stopped review; commands2/3 not run, SVG opens0,
+  screenshots0, no visual acceptance or postvisual identity check. See
+  S03-E019/font_svg_display_evidence_review.md. Structural progress retained,
+  no scientific fail or B003 rescue; no frozen edits/retry/real/held/C/D.
+  Propose separately approved derived-description clarification, no redraw.
