@@ -23,7 +23,7 @@ Historical skill copies remain for reproducibility, not as current workflow
 entrypoints. Existing D1 work may be reused; a continuation need not restart it.
 
 Use the core's `Keep The Goal Continuous` and `Design Route Changes From First
-Principles` sections when a route changes or is handed off. Keep the goal and
+Principles（第一性原理）` sections when a route changes or is handed off. Keep the goal and
 mechanism visible; choose evidence that resolves the research decision rather
 than a compulsory chain of smallest tests. This supersedes old micro-first
 workflow wording, not frozen scientific protocols or execution permissions.

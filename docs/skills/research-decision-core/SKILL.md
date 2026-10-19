@@ -67,7 +67,9 @@ an in-scope alternative; continue useful unblocked work or park that dependency.
 A request sent, file obtained or waiting status is not an answered research
 question. Keep the HQ's next scientific decision visible.
 
-## Design Route Changes From First Principles
+## Design Route Changes From First Principles（第一性原理）
+
+每次分析研究路线调整，必须从第一性原理出发：回到目标、机制、关键假设与实测瓶颈，设计足以改变路线判断的突破性验证，而不是默认继续最小验证。
 
 At a material route choice, return to the goal rather than the last failed
 patch. State the governing mechanism or information-generating process,
