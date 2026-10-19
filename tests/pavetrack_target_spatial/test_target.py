@@ -166,3 +166,35 @@ def test_prediction_tamper_denied_before_reference_loader(tmp_path):
     scope,_,_,_,cfg=fixture()
     with pytest.raises(ValueError):r.finish_evaluation(scope,tmp_path,cfg,lambda:called.append(True))
     assert called==[]
+
+
+def test_resource_sampler_ignores_exited_child_and_reads_info_once():
+    import psutil
+    from types import SimpleNamespace
+    class Process:
+        def __init__(self,peak,exited=False,name='python.exe'):self.peak=peak;self.exited=exited;self.calls=0;self.label=name
+        def memory_info(self):
+            self.calls+=1
+            if self.exited:raise psutil.NoSuchProcess(123)
+            assert self.calls==1
+            return SimpleNamespace(peak_wset=self.peak,rss=self.peak-1)
+        def name(self):return self.label
+    root=Process(100);gone=Process(40,exited=True);live=Process(200);parent=Process(20);shell=Process(50,name='powershell.exe')
+    root.children=lambda recursive:[gone,live];root.parents=lambda:[parent,shell]
+    assert r.aggregate_rss(root)==320 and live.calls==1 and shell.calls==0
+
+
+def test_watchdog_unreadable_state_explicitly_stops_and_records(tmp_path):
+    cfg=json.loads((ROOT/'docs/research/S01/S01-E028/run_config.json').read_text())
+    def inaccessible():raise RuntimeError('own memory query unavailable')
+    guard=r.Guard(cfg,tmp_path,memory=inaccessible);exits=[]
+    assert r.watchdog_tick(guard,die=exits.append) is True and exits==[124]
+    assert json.loads((tmp_path/'watchdog_stop.json').read_text())['reason']=='resource supervision unavailable'
+
+
+def test_watchdog_still_stops_if_receipt_write_fails(tmp_path,monkeypatch):
+    cfg=json.loads((ROOT/'docs/research/S01/S01-E028/run_config.json').read_text());guard=r.Guard(cfg,tmp_path,memory=lambda:5*1024**3);exits=[]
+    def bad_write(*a):raise OSError('disk full')
+    monkeypatch.setattr(r,'write',bad_write)
+    with pytest.raises(OSError):r.watchdog_tick(guard,die=exits.append)
+    assert exits==[124]

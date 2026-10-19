@@ -17,6 +17,39 @@ metrics=module('e028_metrics',Path(__file__).with_name('evaluate.py'))
 sha=source.sha;write=source.write
 
 
+
+def aggregate_rss(process):
+    """Missing transient children are gone; unreadable live/own state is fatal."""
+    import psutil
+    info=process.memory_info()
+    total=getattr(info,'peak_wset',info.rss)
+    for child in process.children(recursive=True):
+        try:info=child.memory_info()
+        except psutil.NoSuchProcess:continue
+        total+=getattr(info,'peak_wset',info.rss)
+    for parent in process.parents():
+        try:
+            if not parent.name().lower().startswith('python'):continue
+            info=parent.memory_info()
+        except psutil.NoSuchProcess:continue
+        total+=getattr(info,'peak_wset',info.rss)
+    return total
+
+
+def watchdog_tick(guard,die=os._exit):
+    failure=None
+    try:
+        elapsed=time.monotonic()-START
+        if elapsed>guard.cfg['budget']['wall_seconds'] or guard.memory()>guard.cfg['budget']['RSS_bytes']:
+            failure=dict(reason='wall/RSS cap',elapsed_seconds=elapsed)
+    except Exception as exc:
+        failure=dict(reason='resource supervision unavailable',exception=repr(exc))
+    if failure is None:return False
+    failure['counts']=guard.counts.copy()
+    try:write(guard.out/'watchdog_stop.json',failure)
+    finally:die(124)
+    return True
+
 class Guard:
     def __init__(self,cfg,out,memory=None):
         self.cfg,self.out=cfg,out;self.counts=dict(source_image_decodes=0,native_tiles=0,cached_forwards=0)
@@ -24,9 +57,7 @@ class Guard:
         if memory is None:
             import psutil
             process=psutil.Process()
-            def memory():
-                own=[process]+process.children(recursive=True)+[p for p in process.parents() if p.name().lower().startswith('python')]
-                return sum(getattr(p.memory_info(),'peak_wset',p.memory_info().rss) for p in own)
+            def memory():return aggregate_rss(process)
         self.memory=memory
     def take(self,key):
         self.counts[key]+=1
@@ -192,8 +223,7 @@ def main():
     args.run.mkdir(parents=True,exist_ok=False);guard=Guard(cfg,args.run);stop=threading.Event()
     def watchdog():
         while not stop.wait(.25):
-            if time.monotonic()-START>3600 or guard.memory()>4*1024**3:
-                write(args.run/'watchdog_stop.json',dict(reason='wall/RSS cap',counts=guard.counts.copy(),elapsed_seconds=time.monotonic()-START));os._exit(124)
+            if watchdog_tick(guard):return
     threading.Thread(target=watchdog,daemon=True).start()
     sys.addaudithook(path_auditor(scope,args.run))
     try:
