@@ -1,0 +1,28 @@
+{
+  "execute_matrix": true,
+  "producer_alias": "gpu-server",
+  "experiment_id": "HQ-ROAD-UQ-MATRIX-001",
+  "run_id": "HQ-ROAD-UQ-MATRIX-001-R001",
+  "protocol": "paired-source-model-matrix-r0",
+  "user_authorization_reference": "User message 2026-10-19: 授权 HQ-ROAD-UQ-MATRIX-001-R001.",
+  "hostname": "D-26-09",
+  "reviewed_code_commit": "908dc4ea14dbaaa5a206ff0ac5c6f2841473d967",
+  "code_snapshot": "49271e498b9019ed6d239e9df368ed9474a9bcb5e9a373efb12f2f26654e89b8",
+  "data_lock_sha256": "1a4a80fb370e89258c24eb623cd166d81ba53da22f3db7321f3a7e71211d51ba",
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "numpy": "2.5.2",
+    "pillow": "11.3.0",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2",
+    "cuda": "12.8"
+  },
+  "gpu": "0",
+  "gpu_budget_hours": 2,
+  "retry_authorized": false,
+  "training_steps": 0,
+  "road420_access_authorized": false,
+  "output_root": "C:\\Users\\xw436\\jobs\\HQ-ROAD-UQ-MATRIX-001-R001"
+}
