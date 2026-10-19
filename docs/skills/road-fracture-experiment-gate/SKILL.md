@@ -92,8 +92,10 @@ review. These resource checks do not add scientific acceptance criteria.
 Shared-resource conflict, storage and protected-data requirements apply at
 any run size.
 
-Prefer existing evidence, offline diagnostics, minimal mappings, and bounded
-discriminating tests before another producer Run. Each execution uses a fresh
+Use the core's first-principles route design to select a comparison with enough
+states, horizons and fields to resolve the actual claim. Reuse existing evidence;
+an offline or reduced test comes first only when it resolves a real blocker,
+not as a compulsory prerequisite to a decisive producer study. Each execution uses a fresh
 Run ID and receipt: hostname, code/snapshot and dirty status, command/runtime,
 process/job/GPU where relevant, logs/outputs, start time and retrieval route.
 

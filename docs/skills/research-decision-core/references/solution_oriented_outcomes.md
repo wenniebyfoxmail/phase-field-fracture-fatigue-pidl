@@ -59,10 +59,18 @@ available signal -> candidate/representation coverage -> scoring or fitting
 -> state estimate -> transition -> decision
 ```
 
-For each stage, report observed performance, attainable ceiling, loss passed to
-the next stage, and one controllable lever. Choose the earliest stage whose
-repair can materially lift the final ceiling. Prefer one intervention over a
-broad sweep.
+Use the core's first-principles route design before choosing another repair.
+For each relevant stage, report observed performance, attainable ceiling and
+loss passed to the next stage. Select the binding mechanism, not automatically
+the earliest or easiest component. A coherent representation/objective/workflow
+redesign may need coordinated changes; compare it with the baseline and use
+targeted ablations only where attribution changes the next decision.
+
+Size the validation to expose a consequential route-level effect. Existing
+diagnostics can replace preliminary experiments; a chain of tiny improvements
+that leaves the main limitation unchanged is a reason to consolidate or redesign,
+not an obligation to continue patching. Component gains remain useful evidence,
+but do not constitute a breakthrough by themselves.
 
 The repair record should contain:
 
@@ -71,14 +79,16 @@ Claim verdict:
 Component progress:
 Binding bottleneck:
 Evidence for that bottleneck:
-Chosen controllable lever:
+First-principles hypothesis and competing explanation:
+Chosen coherent intervention:
 Expected observable change:
-Smallest repair experiment:
+Decision-scale validation and why it discriminates:
 Fresh evidence / leakage boundary:
 Budget and stop rule:
 Research disposition:
 ```
 
 Do not end with “more data”, “try another model”, or “threshold too strict”.
-Name what information is missing, why it caps the result, and the smallest
-change that tests the proposed solution.
+Name what information is missing, why it caps the result, and a validation
+capable of changing that decision. Choose a small test when it suffices, not
+because it is the default.

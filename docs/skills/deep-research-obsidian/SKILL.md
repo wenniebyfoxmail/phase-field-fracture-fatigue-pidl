@@ -19,7 +19,8 @@ existing report, or resume after manually downloading papers.
 - **After brainstorming:** check the shortlisted mechanism, contrary evidence,
   transfer assumptions and simplest comparator.
 - **At a measured bottleneck:** identify approaches used in this field and
-  structurally similar problems, then select the smallest useful repair test.
+  structurally similar problems, then design a mechanism-led, decision-scale
+  validation rather than automatically proposing another small patch.
 
 Choose the relevant point; there is no required pair of before/after reports.
 Reuse an existing report when its question and coverage still fit. A new model
@@ -31,18 +32,20 @@ Stop when the live decision can be made, or record the precise missing evidence.
 Read the existing task/Obsidian note and local source/code inventory. Define
 the research question, active D step, intended decision, domain, search scope,
 and time/cost limit. Use `orientation` or `bottleneck` as a purpose label, not
-as another approval stage. Keep the request compact.
+as another approval stage. For route adjustment, follow the core's first-
+principles design: identify the binding assumption/mechanism and compare a
+root-level redesign with local repairs where relevant. Keep the request compact.
 
 For solution-design delegation, honour the user's advanced-model preference
-and record the actual model. Give the sub-agent the bottleneck measurements,
-current baseline, feasible changes, source workspace and Obsidian destination.
+and record the actual model. Give the sub-agent the goal, bottleneck evidence,
+baseline, assumptions open to redesign, resource scope and archive destination.
 The HQ integrates the result and maintains one report. Do not start a new
 user-owned chat or cloud research task without the user's request for one.
 
 ## Research And Acquire Materials
 
 Use `research-evidence-workflow` for multi-source discovery and synthesis;
-choose its smallest useful mode. Reuse its existing registry/inventory rather
+choose a mode whose coverage answers the live question. Reuse its registry rather
 than creating another source ledger. Use suitable scholarly search/retrieval
 skills for primary papers, official code, datasets and technical reports.
 
@@ -89,7 +92,9 @@ language answer, then the comparison and evidence needed to act. Use
 - the question, purpose, active D step and research date;
 - a concise synthesis with source-linked findings and contrary evidence;
 - a small comparison of candidate solutions, transfer conditions and cost;
-- one recommended action, its smallest test and redirect condition;
+- one recommended route, its discriminating validation and redirect condition;
+- for route changes, why the mechanism and evidence scope can resolve the
+  main bottleneck rather than merely add another component check;
 - a source list distinguishing full text, abstract/preview and pending access;
 - actual PDF/analysis links for archived sources, plus code/data pointers;
 - search/coverage limits and an exact manual-download queue when needed.

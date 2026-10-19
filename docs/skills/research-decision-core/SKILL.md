@@ -1,6 +1,6 @@
 ---
 name: research-decision-core
-description: Advance a research goal in any field using local reuse search, decision substeps, stage-appropriate criteria, visual result interpretation, and concise milestone records. Use when choosing or executing a research route or interpreting an attempt; not for routine edits, a factual lookup, or prose polishing.
+description: Advance a research goal in any field through first-principles route design, decision-scale validation, local reuse, stage-appropriate criteria and visual interpretation. Use when choosing or executing a research route or interpreting an attempt; not for routine edits, a factual lookup, or prose polishing.
 ---
 
 # Research Decision Core
@@ -67,18 +67,58 @@ an in-scope alternative; continue useful unblocked work or park that dependency.
 A request sent, file obtained or waiting status is not an answered research
 question. Keep the HQ's next scientific decision visible.
 
+## Design Route Changes From First Principles
+
+At a material route choice, return to the goal rather than the last failed
+patch. State the governing mechanism or information-generating process,
+necessary constraints, measured bottleneck and competing explanations. Use
+equations when useful, or an explicit causal/information argument; do not add
+ceremonial derivations to routine fixes.
+
+Design a hypothesis-led solution that can remove the binding limitation,
+including a coherent redesign of representation, objective or workflow when
+needed. Do not restrict every proposal to one parameter or one component.
+An integrated candidate can test one central hypothesis against a strong
+simple baseline; add only ablations that distinguish a live alternative.
+Name the actual intervention, why it should change the limiting mechanism,
+and its predicted signature against the alternatives. A generic “stronger
+model” or “more cases” does not specify that causal design.
+
+Choose validation at the scale needed to change the research decision:
+representative states, cases, horizons and outputs that can expose the actual
+failure mode and reveal a useful new capability or meaningful gap reduction.
+Explain what different outcomes would establish and which route each selects.
+A breakthrough-oriented design seeks consequential evidence, not a guaranteed
+breakthrough, a prestigious label or merely more compute.
+
+Do not default to the smallest possible test or require a toy -> micro-test ->
+pilot staircase. Use a small preliminary check only for a specific unresolved
+feasibility or implementation blocker; skip or combine it when existing
+evidence already resolves that blocker. Otherwise proceed directly to a
+decision-scale comparison within the applicable data, budget and authority.
+Minimise unnecessary work, not the question or the experiment's resolving power.
+
+When a proposed next micro-test would only reconfirm a known sign, improve an
+incidental component, or leave the main route equally uncertain, consolidate
+the relevant checks into a stronger comparison or redesign the route. Preserve
+small gains, but do not let their accumulation substitute for progress on the
+central goal. A larger test is not automatically more decisive either.
+
 ## Decision Ladder
 
 Keep a short ladder inside the existing goal, Experiment, or task note.
 Usually three to six steps are enough; an atomic task may use one. Use the
 fewest steps that expose the actual decisions, with one active `D#`:
 
-| Step | Purpose / uncertainty | Smallest action and evidence asset | Advance condition -> next step | Redirect condition -> alternative |
+| Step | Purpose / uncertainty | Decision-scale action and evidence asset | Advance condition -> next step | Redirect condition -> alternative |
 |---|---|---|---|---|
 | D1 | Prior work and reuse | Targeted local search | Useful existing route -> continue it | No suitable route -> define the new question |
 
-Every step resolves an uncertainty or selects an action. Implementation,
-plotting, transfer, and review are tasks within that step unless they answer
+Every step resolves a consequential uncertainty or selects a research action.
+A step may contain a coherent multi-part validation; do not split every
+engineering check or ablation into another serial decision or approval.
+Implementation, plotting, transfer, and review are tasks within that step unless
+they answer
 an independent feasibility question. Detail the active step enough to execute;
 future steps may stay provisional. Identify the next step or mark the task
 finished. After an attempt, attach its result pointer and update the active step.
@@ -93,7 +133,8 @@ or a new experiment under the project's rules.
 **Exploration:** state the question, simplest useful comparator, observable,
 resource cap, and next decision. Run relevant local checks and preserve an
 attributable result. A directional or component gain, working capability, or
-diagnostic that selects a repair can justify a bounded follow-up. Show its
+diagnostic that selects a repair can justify a bounded follow-up when it has a
+credible path to the central goal. Show its
 magnitude and available uncertainty. A first prototype need not meet the final
 performance target. Independent review is used for a concrete risk or project
 requirement, not automatically for every small iteration.
@@ -132,14 +173,17 @@ insufficient evidence to decide -> inconclusive
 
 Preserve measured component progress. Choose `advance | repair | redirect |
 park | stop` from the evidence and remaining budget. A negative claim can still
-justify a repair. Identify the bottleneck, one controllable change, and the
-smallest test that distinguishes it from alternatives. Prefer existing analysis
-or a diagnostic before another expensive run. Park if no action is currently
-available; stop if the route is invalid, its ceiling inadequate, or budget spent.
+justify a repair. For a route adjustment, use the first-principles design above:
+select the binding mechanism, a coherent intervention and evidence strong
+enough to choose between the alternatives. Reuse existing analysis; do not
+insert another diagnostic merely because it is cheaper or easier. Check whether
+cumulative work is reducing the central gap, not just producing completed
+subtasks. Park if no action is currently available; stop if the route is invalid,
+its ceiling inadequate, or budget spent.
 
 When useful, follow [the repair guide](references/solution_oriented_outcomes.md).
-For a requested solution-search sub-agent, give the measured bottleneck,
-baseline, feasible changes, and budget; use `research-evidence-workflow` for
+For a requested solution-search sub-agent, give the goal, bottleneck evidence,
+baseline, assumptions open to redesign, and budget; use `research-evidence-workflow` for
 literature work. Seek solutions in this field and analogous problems elsewhere,
 then return a short set of mechanisms, sources, transfer conditions, costs,
 and discriminating tests. For solution-design delegation, honour the user's
@@ -187,8 +231,10 @@ For an exploratory task, a short plan/record suffices:
 Purpose / evidence stage:
 Goal anchor / existing scope-decision pointer:
 D1 reuse decision and source pointers:
+Route-change mechanism / hypothesis and alternatives (when applicable):
 Decision ladder / active step:
-Smallest action / comparator / observable / resource cap:
+Decision-scale action / comparator / observable / resource cap:
+Why this evidence can change the route; preliminary blocker only if unresolved:
 Measured result and visual interpretation (or pending):
 Conclusion / next step:
 ```
@@ -199,7 +245,8 @@ this core does not require new IDs, duplicate records, or extra approval stages.
 ## HQ And Sub-Agent Handoffs
 
 Each HQ passes the current core path, relevant domain adapter, goal anchor,
-active D step, evidence/code pointers, permitted scope, budget, expected output
+active D step, mechanism/hypothesis, evidence/code pointers, permitted scope,
+budget, decision-scale validation and expected output
 and advance/return/redirect condition to its executors. Make clear how the
 helper's subquestion serves the current goal. Executors return the result,
 its evidence pointer and its impact on that goal and next decision. Carry scope

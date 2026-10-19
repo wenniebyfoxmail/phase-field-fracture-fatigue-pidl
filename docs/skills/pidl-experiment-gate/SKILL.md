@@ -22,8 +22,11 @@ Also use the shared solution-oriented outcome rule. A failed Hard-5, teacher,
 surrogate, or mechanism gate remains negative for that bounded claim, but it
 must be decomposed into reference qualification, representational ceiling,
 optimisation, state alignment, active-driver support, damage/history coupling,
-and transfer. Preserve any component that passed, identify the first component
-that caps the end result, and select one physics-grounded repair. Do not stop at
+and transfer. Preserve any component that passed, identify the binding mechanism
+and use the core's first-principles route design for a physics-grounded repair
+or coherent redesign. Match field/state/evolution coverage to that hypothesis;
+do not mandate another single-state micro-test when its limitations are known.
+Do not stop at
 “mechanics misaligned” or “capacity insufficient” when an executable diagnostic
 or repair can distinguish the alternatives.
 

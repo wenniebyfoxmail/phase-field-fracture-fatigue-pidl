@@ -16,13 +16,15 @@ coverage: provisional-or-checked
 
 ## Evidence and alternatives
 
-| Finding / option | Source and locator | Transfer condition / contrary evidence | Cost and smallest test |
+| Mechanism / option | Source and locator | Transfer condition / contrary evidence | Cost and decisive comparison |
 |---|---|---|---|
 
 ## Recommended next step
 
 - Active D step / uncertainty:
+- Mechanism/hypothesis and competing explanation:
 - Action, comparator and resource cap:
+- Evidence coverage and why the result can change the route:
 - Observable progress / redirect condition:
 
 ## Source library

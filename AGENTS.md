@@ -141,11 +141,17 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   or gate requires a dated amendment and renewed review; do not rewrite a used
   protocol silently.
 - Each active multi-step research goal must keep a three-to-six-step Decision
-  Ladder in its `experiment.md` or task note: purpose/uncertainty, smallest
+  Ladder in its `experiment.md` or task note: purpose/uncertainty, decision-scale
   action and evidence asset, advance condition, and redirect condition. Mark
   one active `D#` and one next step. D steps organise choices; they are not
   extra scientific gates, Runs, or ledger objects. Add them when work is
   created or next touched; do not bulk-retrofit historical records.
+- At a material route adjustment, use the core's first-principles design:
+  goal, governing mechanism/information, binding bottleneck, competing
+  hypotheses and a validation large enough to choose the route. Do not impose
+  a micro-test staircase or reduce the question to the cheapest available task.
+  Small checks resolve actual blockers; coherent redesigns and direct
+  decision-scale comparisons are allowed within existing authority and budget.
 - Before substantive research or implementation work, complete the active
   ladder's D1 source/overlap/reuse screen: search the relevant local research
   records, Obsidian notes, docs, and likely code entrypoints. State the concise

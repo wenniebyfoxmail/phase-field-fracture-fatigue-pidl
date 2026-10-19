@@ -1,4 +1,4 @@
 interface:
   display_name: "Research Decision Core"
-  short_description: "Advance research through small evidence-based decisions."
-  default_prompt: "Use $research-decision-core to find reusable work, define the active decision step, and advance this research goal with concise evidence and visual explanations."
+  short_description: "Design mechanism-led, decisive research validation."
+  default_prompt: "Use $research-decision-core to design this route from first principles, reuse existing evidence, and choose validation strong enough to resolve the research decision."

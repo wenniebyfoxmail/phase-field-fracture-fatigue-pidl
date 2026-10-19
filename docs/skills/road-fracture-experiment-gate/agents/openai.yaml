@@ -1,4 +1,4 @@
 interface:
   display_name: "Road-Fracture Experiment Gate"
   short_description: "Calibrate, gate, and repair road-fracture experiments."
-  default_prompt: "Use $road-fracture-experiment-gate to calibrate an attainable criterion, freeze the smallest valid experiment, and turn the result into an advance, repair, redirect, or supported stop decision."
+  default_prompt: "Use $road-fracture-experiment-gate with the research core to design a mechanism-led, decision-scale experiment, calibrate an attainable criterion, and interpret the bounded result."

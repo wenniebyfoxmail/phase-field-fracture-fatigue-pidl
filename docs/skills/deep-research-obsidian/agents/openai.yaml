@@ -1,4 +1,4 @@
 interface:
   display_name: "Deep Research To Obsidian"
   short_description: "Archive actionable research reports and linked papers."
-  default_prompt: "Use $deep-research-obsidian to investigate this topic or bottleneck, archive the report and supporting papers in Obsidian, and identify the next smallest test."
+  default_prompt: "Use $deep-research-obsidian to investigate mechanisms and solution routes, archive the report and supporting papers, and propose validation that resolves the central research decision."

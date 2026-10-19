@@ -22,10 +22,14 @@ boundaries, budgets and execution authority retain their exact conditions.
 Historical skill copies remain for reproducibility, not as current workflow
 entrypoints. Existing D1 work may be reused; a continuation need not restart it.
 
-Use the core's `Keep The Goal Continuous` section when a route changes or is
-handed off: keep the current question and its relation to the earlier goal visible.
+Use the core's `Keep The Goal Continuous` and `Design Route Changes From First
+Principles` sections when a route changes or is handed off. Keep the goal and
+mechanism visible; choose evidence that resolves the research decision rather
+than a compulsory chain of smallest tests. This supersedes old micro-first
+workflow wording, not frozen scientific protocols or execution permissions.
 HQs pass these installed paths, goal anchor, active D step, task/evidence
-pointers, scope, budget and return/redirect condition to live and future sub-agents.
+pointers, mechanism/hypothesis, decision-scale validation, scope, budget and
+return/redirect condition to live and future sub-agents.
 Keep one owner record and carry material scope changes into portfolio summaries.
 A refresh alone never launches a run, retry, cloud task or producer operation.
 

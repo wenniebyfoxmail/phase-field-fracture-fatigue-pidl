@@ -1,4 +1,4 @@
 interface:
   display_name: "PIDL/FEM Experiment Gate"
   short_description: "Gate and repair PIDL/FEM physics routes."
-  default_prompt: "Use $pidl-experiment-gate to calibrate, gate, and select a physics-grounded repair for this PIDL, FEM, teacher, residual, or surrogate claim."
+  default_prompt: "Use $pidl-experiment-gate with the research core to identify the governing physics bottleneck and design decisive field or evolution validation for a coherent repair or redesign."
