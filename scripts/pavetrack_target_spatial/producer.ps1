@@ -6,7 +6,7 @@ if($env:COMPUTERNAME -ne 'D-26-09' -or (whoami) -ne 'ad\xw436'){throw 'producer 
 if(@(Get-Process python* -ErrorAction SilentlyContinue).Count -ne 0){throw 'shared compute conflict'}
 $os=Get-CimInstance Win32_OperatingSystem;$load=(Get-CimInstance Win32_Processor|Measure-Object LoadPercentage -Average).Average
 if($os.FreePhysicalMemory -lt 8388608 -or $load -ge 50 -or (Get-PSDrive C).Free -lt 17179869184){throw 'CPU/RAM/disk conflict'}
-$env:CUDA_VISIBLE_DEVICES='1';$env:OMP_NUM_THREADS='1';$env:MKL_NUM_THREADS='1';$env:OPENBLAS_NUM_THREADS='1';$env:PYTHONPATH='';$env:MPLBACKEND='Agg'
+$env:CUDA_VISIBLE_DEVICES='0';$env:OMP_NUM_THREADS='1';$env:MKL_NUM_THREADS='1';$env:OPENBLAS_NUM_THREADS='1';$env:PYTHONPATH='';$env:MPLBACKEND='Agg'
 New-Item -ItemType Directory $logs|Out-Null
 # Keep a native Process handle; do not Refresh() away the observed exit state.
 $p=New-Object System.Diagnostics.Process

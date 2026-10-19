@@ -198,3 +198,26 @@ def test_watchdog_still_stops_if_receipt_write_fails(tmp_path,monkeypatch):
     monkeypatch.setattr(r,'write',bad_write)
     with pytest.raises(OSError):r.watchdog_tick(guard,die=exits.append)
     assert exits==[124]
+
+
+def test_gpu0_mapping_cannot_admit_gpu1_or_fallback():
+    cfg=json.loads((ROOT/'docs/research/S01/S01-E028/run_config.json').read_text());env=r.environment
+    env.placement(cfg)
+    name=cfg['producer']['gpu_name'];uuid=env.GPU_UUID
+    assert env.physical_gpu(f'1, wrong, {name}, 96000\n0, {uuid}, {name}, 8192',cfg)[0]=='0'
+    for text in [f'1, {uuid}, {name}, 96000',f'0, wrong, {name}, 96000',f'0, {uuid}, {name}, 8191',f'0, {uuid}, {name}, nan',f'0, {uuid}, {name}, 96000\n0, {uuid}, {name}, 96000']:
+        with pytest.raises(ValueError):env.physical_gpu(text,cfg)
+    for key,value in [('gpu_physical_index',1),('CUDA_VISIBLE_DEVICES','1'),('gpu_uuid','wrong'),('fallback',True)]:
+        altered=copy.deepcopy(cfg);altered['producer'][key]=value
+        with pytest.raises(PermissionError):r.validate_config(altered)
+
+
+def test_gpu0_baseline_still_rejects_unknown_compute_or_changed_binary():
+    baseline=json.loads((ROOT/'docs/research/S01/S01-E028/gpu_desktop_baseline.json').read_text());runtime=r.source.prior.runtime
+    path,h=next(iter(baseline['approved_desktop_executables'].items()))
+    def xml(kind='C+G',name=path,uuid=baseline['gpu_uuid']):
+        return f'<nvidia_smi_log><gpu><uuid>{uuid}</uuid><driver_model><current_dm>WDDM</current_dm></driver_model><utilization><gpu_util>0 %</gpu_util></utilization><processes><process_info><pid>123</pid><type>{kind}</type><process_name>{name}</process_name></process_info></processes></gpu></nvidia_smi_log>'
+    assert runtime.desktop_inventory(xml(),baseline,lambda p:h)['gpu_uuid']==r.environment.GPU_UUID
+    for x in [xml(kind='C'),xml(name=r'C:\Realtek\RtkUWP.exe'),xml(uuid='GPU1')]:
+        with pytest.raises((ValueError,RuntimeError)):runtime.desktop_inventory(x,baseline,lambda p:h)
+    with pytest.raises(ValueError):runtime.desktop_inventory(xml(),baseline,lambda p:'changed')

@@ -1,0 +1,19 @@
+{
+  "revision": "S01-E028-GPU0-env1",
+  "hostname": "D-26-09",
+  "gpu_uuid": "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+  "driver_model": "WDDM",
+  "maximum_sampled_GPU_utilization_percent": 0,
+  "allowed_process_type": "C+G",
+  "approved_desktop_executables": {
+    "C:\\Windows\\explorer.exe": "87811a107eed62900b230c49a252170d6a7307e94a08307ce972f9b9b8155d54",
+    "C:\\Windows\\System32\\dwm.exe": "00eb3d5e6092e1246bd0956ff0a341c2afa6f96bb805b93d36a7192a9c29e475",
+    "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe": "46b3c6ac9169416cc2ee76b23ee3d9db0eb8daefb914b1d9cc0f5d2387b033ac",
+    "C:\\Windows\\System32\\LogonUI.exe": "56346443a0d60b793c9a15b49dc12b885d21aa835e4b22e3d66d30158b70c1ab",
+    "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe": "9d6d7b37ba8f6db67c3c33111ab32842abb5b4a940ff61c106899b4be5ecfc00",
+    "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe": "3c440d9004ef5195a93b5b934623bf02032f74d40b9a9fbe33934e57e5f1f117",
+    "C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe": "a842e6022f438de1bf45bc21cc39090a95596c27aea90d9cd1bb49035765124c"
+  },
+  "rule": "Exact full Windows path and file SHA256; unknown/type C/path/hash/utilization mismatch stops; snapshot is not a guarantee of future idle GPU",
+  "scope": "GPU0 placement amendment only; all observed executable Authenticode signatures valid; Realtek is not admitted"
+}

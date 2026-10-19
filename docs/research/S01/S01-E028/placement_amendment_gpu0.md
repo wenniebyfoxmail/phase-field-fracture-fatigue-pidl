@@ -1,0 +1,13 @@
+# S01-E028 R001 placement-only amendment — 2026-10-19
+
+User explicitly authorised Taobo or gpu-server physical GPU0 after the original GPU1 admission stopped. No producer was started: R001 directory, wrapper logs and launch request were absent. The one R001 and all 3600 seconds remain unused.
+
+Choose gpu-server GPU0 (UUID GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7), logical cuda:0 with CUDA_VISIBLE_DEVICES=0. Same host/account/Python/Torch/hardware model, source images and nine private inputs already deployed. No automatic fallback. This amendment supersedes only the GPU1 placement and its desktop inventory pointer; experiment.md v1 remains the scientific protocol.
+
+GPU0's observed contexts were eight processes / seven exact executables. All eight Authenticode checks were Valid (Microsoft/OpenAI); full paths and SHA256 appear in the new E028-owned gpu_desktop_baseline.json. This includes current Microsoft EdgeWebView, LogonUI and Teams; the historical E012 GPU1 baseline is unmodified. Realtek is not admitted. Unknown executable, type C, path/hash/UUID mismatch or nonzero utilization still stops. Private timestamped admission evidence lives in owner local_archive/experiments/S01-E028/execution_R001/.
+
+Use E028-owned environment.py so historical E012/E026/E027 runtime code remains byte-identical. It pins physical GPU0 and separately checks logical mapping, software versions, CPU1, all Python peers, desktop identity and memory. Wrapper retains CPU<50%, available RAM>=8GiB, disk>=16GiB and strict 3600-second cap. Old E027 query PID41884 was verified against the exact local status.ps1, owner, parent, start time and no children, then stopped; it was a stale monitor consuming ~250GB, not a producer or another person's application. Recheck resources live before launch.
+
+Unchanged: 338 images / 12238 contexts / 25758 frozen-model forwards, 3600 seconds, RSS/GPU allocated/reserved each4GiB, output/archive each6GiB, no fitting, same A0/A1 and eight combinations / baseline comparisons / main criterion / prediction-reference barrier. No selector or OOF; E003/capacity/abstention/positive-intersection/no threshold sweep/sealed sites unchanged. A placement change is not a scientific result.
+
+Before execution: tests and independent gpt-6.1-sol / High review bound to exact revised source/config/baseline/manifest; fresh v2 source stage, reuse exact private inputs, designated branch push, live admission, then a single R001. User's explicit GPU0 authority covers this placement; no extra experiment or budget is requested.

@@ -14,6 +14,7 @@ def module(name,path):
 source=module('e028_reviewed_e027',ROOT/'scripts/pavetrack_spatial_source/run.py')
 geom=module('e028_geometry',Path(__file__).with_name('geometry.py'))
 metrics=module('e028_metrics',Path(__file__).with_name('evaluate.py'))
+environment=module('e028_environment',Path(__file__).with_name('environment.py'))
 sha=source.sha;write=source.write
 
 
@@ -76,6 +77,7 @@ class Guard:
 
 
 def validate_config(cfg):
+    environment.placement(cfg)
     expected=dict(contexts=12238,images=338,pixels=700876800,native_tiles=13520,cached_forwards=12238,total_forwards=25758)
     budget=dict(wall_seconds=3600,RSS_bytes=4*1024**3,GPU_allocated_bytes=4*1024**3,GPU_reserved_bytes=4*1024**3,output_bytes=6*1024**3,archive_bytes=6*1024**3,minimum_free_disk_bytes=16*1024**3,source_image_decodes=338,models=1,model_fits=0,updates=0,selector=False,OOF=False)
     if cfg['protocol']!='S01-E028-v1' or cfg['run_id']!='S01-E028-R001' or cfg['counts']!=expected or cfg['budget']!=budget:raise ValueError('frozen identity/count/budget')
@@ -206,7 +208,7 @@ def path_auditor(scope,run):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--input',type=Path,required=True);parser.add_argument('--run',type=Path,required=True);parser.add_argument('--reviewed-commit',required=True);parser.add_argument('--manifest-sha256',required=True);args=parser.parse_args()
     cfg=json.loads((ROOT/'docs/research/S01/S01-E028/run_config.json').read_text());validate_config(cfg)
-    source.prior.runtime.production_environment(cfg) # Producer check precedes torch/data/model use.
+    environment.production_environment(cfg) # Producer check precedes torch/data/model use.
     manifest=ROOT/'docs/research/S01/S01-E028/source_manifest.json'
     if sha(manifest)!=args.manifest_sha256:raise ValueError('manifest identity')
     for n,h in json.loads(manifest.read_text())['files'].items():
@@ -229,7 +231,7 @@ def main():
     try:
         import PIL
         if PIL.__version__!='12.3.0':raise ValueError('Pillow12.3.0 required')
-        t,identity=source.prior.production_checks(cfg,guard);engine=source.Engine(t,cfg,args.input)
+        t,identity=environment.production_checks(cfg,guard,source.prior.runtime.desktop_inventory,sha);engine=source.Engine(t,cfg,args.input)
         write(args.run/'launch.json',dict(reviewed_commit=args.reviewed_commit,manifest_sha256=args.manifest_sha256,identity=identity,checkpoint=cfg['checkpoint'],model_fits=0,updates=0))
         shutil.copyfile(args.input/'scope.json',args.run/'scope.json')
         cache=np.load(args.input/'rgb_contexts.npy',mmap_mode='r')

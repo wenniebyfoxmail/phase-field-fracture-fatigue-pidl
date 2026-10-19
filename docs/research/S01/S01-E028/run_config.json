@@ -8,10 +8,10 @@
     "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
     "torch": "2.11.0+cu128",
     "torchvision": "0.26.0+cu128",
-    "gpu_physical_index": 1,
+    "gpu_physical_index": 0,
     "gpu_logical_index": 0,
-    "CUDA_VISIBLE_DEVICES": "1",
-    "gpu_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+    "CUDA_VISIBLE_DEVICES": "0",
+    "gpu_uuid": "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
     "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
     "fallback": false,
     "GPU": true
