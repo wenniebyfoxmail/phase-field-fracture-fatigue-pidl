@@ -51,12 +51,14 @@ schedule remain valid local implementation evidence.
 
 ## Next gate
 
-Prepare and independently review a narrow real-head-adapter design amendment.
-It must freeze the checkpoint-preserving D_DIRECT split, the shared latent
-feature and exact amplitude/shape head definitions, zero-step equivalence, the
-E017-to-Stage0A config bridge, real parameter inventories, operation-bound
-counters, full evidence streaming and retrieval verification. Do not implement
-or enable the real adapter until that architecture amendment is reviewed.
+The real-head-adapter design amendment received
+`E017_REAL_HEAD_ADAPTER_DESIGN_READY_PASS` at exact commit
+`06bf5fef693be5321ce7daf9d2384b8fa3953fde`. The next gate is a disabled local
+implementation candidate with checkpoint conversion, the common frozen `h_i`
+feature, independent damage/amplitude/shape parameters, exact operation-bound
+counters, failure-safe streaming evidence and retrieval verification. Obtain an
+exact-commit implementation review before enabling any real adapter or reading
+scientific assets.
 
 ## Prohibited and not performed
 

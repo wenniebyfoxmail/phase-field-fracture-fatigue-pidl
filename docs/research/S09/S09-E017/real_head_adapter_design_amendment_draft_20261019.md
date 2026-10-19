@@ -1,7 +1,7 @@
 # S09-E017 real-head-adapter design amendment (draft)
 
 Date: 2026-10-19  
-Status: `ROUND1_REVISED_DESIGN_CANDIDATE__NO_IMPLEMENTATION__NO_EXECUTION`
+Status: `DESIGN_READY__NO_IMPLEMENTATION__NO_EXECUTION`
 
 ## Purpose
 
@@ -195,3 +195,12 @@ No source implementation, scientific-asset access, checkpoint load, model
 forward, optimiser construction, autograd, producer/GPU access or training is
 authorised by this draft. The amendment must receive an independent design
 verdict before implementation.
+
+## Independent review closure
+
+ChatGPT Pro on the Haofan account returned
+`E017_REAL_HEAD_ADAPTER_DESIGN_READY_PASS` for exact commit
+`06bf5fef693be5321ce7daf9d2384b8fa3953fde`. The review closed round-1 B1–B4
+in the static design scope. The next admissible action is a disabled local
+implementation candidate with synthetic and no-science tests; all execution
+prohibitions above remain in force.
