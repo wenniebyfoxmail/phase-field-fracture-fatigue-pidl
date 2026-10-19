@@ -1,0 +1,46 @@
+{
+  "protocol": "Response-state information value v0.2 exploratory",
+  "data_root": "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley",
+  "history_stage_offsets": [
+    -20,
+    -10,
+    0
+  ],
+  "horizon_stage_steps": [
+    10,
+    40
+  ],
+  "nominal_cycles_per_stage": 30,
+  "origin_stride": 5,
+  "max_origins_per_group": 80,
+  "minimum_origins_per_group": 6,
+  "pool_input_side": 8,
+  "pool_output_side": 16,
+  "ridge_alphas": [
+    0.1,
+    10.0,
+    1000.0
+  ],
+  "local_band_half_height": 16,
+  "wall_seconds": 14400,
+  "threads": 1,
+  "max_output_gib": 8,
+  "arms": [
+    "span_only",
+    "span_progress",
+    "current_response",
+    "history_response",
+    "global_history",
+    "centered_history",
+    "rich_history",
+    "compact_noclock",
+    "rich_noclock"
+  ],
+  "status": "USER_APPROVED_CHECK_AND_PROCEED_20261019_RESPONSE_STATE",
+  "metadata_sha256": {
+    "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley/pt_frame_inventory.csv": "5e9d79cd99064952f675383b8069873020a77ac1f035b9ea6311b8eedf783127",
+    "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley/probe_v1_concentration/candidate_trajectories.csv": "17d67823e51833a329dc44c3839ffd85e7e986919273075ed3b4583be6f74bf1",
+    "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley/pt_structure_summary.json": "3031ea68a78759bbb1c2131ba56ace07b932386fbb293ecbeac01cdd3458c7db",
+    "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley/full_csv_header_audit.json": "218958ac1cf9cc708ca823959fdedbf82f36ff0850484cfe2c3d545e8acc08f8"
+  }
+}
