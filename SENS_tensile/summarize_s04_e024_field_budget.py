@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import numpy as np
 from s04_e024_field_budget import (PROFILES, STATES, GUARDS, InvalidEvidence,
-    quantize_head, safe_json, finite)
+    quantize_head, safe_json, finite,preconditioner,digest_array)
 from s04_e024_field_runtime import sha,write_json
 
 
@@ -39,6 +39,20 @@ def replay_profile(adapter,folder,eta,strict,check=lambda:None):
             if pack.fingerprint()!=ev['model_sha256']:raise InvalidEvidence('proxy model fingerprint')
             direction=None if ev['direction'] is None else np.array(ev['direction'])
             info=ev['info'];last_feasible=bool(info['feasible'])
+            transform=info.get('preconditioner_transform_file')
+            if transform is None:raise InvalidEvidence('missing full preconditioner transform')
+            name=f"outer_{outer}_preconditioner.npy"
+            if transform['path']!=name or sha(folder/name)!=transform['sha256']:
+                raise InvalidEvidence('preconditioner transform file identity')
+            t=np.load(folder/name,allow_pickle=False)
+            expected_t,spectrum=preconditioner(pack,metrics.scales_sq)
+            if digest_array(t)!=transform['array_sha256']:raise InvalidEvidence('transform array identity')
+            np.testing.assert_array_equal(t,expected_t)
+            close_record(safe_json(spectrum),info['preconditioner'])
+            if direction is not None:
+                coordinates=np.asarray(info['solver_coordinates']);finite(coordinates)
+                if coordinates.shape!=(theta0.size,):raise InvalidEvidence('full solver coordinates')
+                np.testing.assert_allclose(np.einsum('ij,j->i',t,coordinates),direction,rtol=1e-12,atol=0)
             if direction is not None:
                 if direction.shape!=(theta0.size,):raise InvalidEvidence('full-head direction schema')
                 finite(direction)

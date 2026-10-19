@@ -142,6 +142,32 @@ class FieldAdapter:
         return dict(**out,secondary=extra)
 
 
+def raw_network_forward(model,xy,base,head,check=lambda:None,chunk=1024):
+    """Use the frozen producer encoder/D/BC/window with a representable head.
+
+    No model mutation or optimizer. Tiny artificial Torch fixtures exercise this
+    exact helper without importing/loading a real endpoint.
+    """
+    import torch
+    from s04_e018_global_local import compact_window
+    layer=model.residual.output_layer;dtype=layer.weight.dtype
+    expected=(layer.in_features+1,layer.out_features)
+    producer_dtype=layer.weight.detach().numpy().dtype
+    if head.shape!=expected or head.dtype!=producer_dtype:
+        raise InvalidEvidence('raw head producer dtype/layout')
+    if any(p.device.type!='cpu' for p in model.parameters()):raise InvalidEvidence('CPU-only raw model')
+    finite(head,xy,base);result=np.empty_like(base)
+    with torch.no_grad():
+        weight=torch.as_tensor(head[:-1].T.copy(),dtype=dtype);bias=torch.as_tensor(head[-1].copy(),dtype=dtype)
+        for start in range(0,len(base),chunk):
+            check();sl=slice(start,start+chunk);x=torch.tensor(xy[sl],dtype=dtype)
+            h=model.residual.encode((x-model.local_center)/model.local_scale)
+            raw=torch.nn.functional.linear(h*model.head_scale[:-1],weight,bias*model.head_scale[-1])
+            correction=(((x[:,1]+.5)*(.5-x[:,1]))[:,None]*compact_window(x,model.lower,model.upper))*raw
+            result[sl]=base[sl]+correction.numpy()
+    finite(result);return result
+
+
 def load_real_adapter(project,state,check=lambda:None):
     """Scientific entry; caller must validate explicit approval before calling."""
     import torch
@@ -172,16 +198,7 @@ def load_real_adapter(project,state,check=lambda:None):
         window=compact_window(torch.tensor(data['xy'],dtype=dtype),model.lower,model.upper).numpy()[:,0]
     phi=np.concatenate(phi)
     def raw_forward(head):
-        result=np.empty_like(base)
-        with torch.no_grad():
-            weight=torch.as_tensor(head[:-1].T.copy(),dtype=dtype);bias=torch.as_tensor(head[-1].copy(),dtype=dtype)
-            for start in range(0,len(base),1024):
-                check();sl=slice(start,start+1024);x=torch.tensor(data['xy'][sl],dtype=dtype)
-                h=model.residual.encode((x-model.local_center)/model.local_scale)
-                raw=torch.nn.functional.linear(h*model.head_scale[:-1],weight,bias*model.head_scale[-1])
-                correction=(((x[:,1]+.5)*(.5-x[:,1]))[:,None]*compact_window(x,model.lower,model.upper))*raw
-                result[sl]=base[sl]+correction.numpy()
-        return result
+        return raw_network_forward(model,data['xy'],base,head,check)
     def integrity():
         if state_digest(model)!=original_digest or any(p.grad is not None or p.requires_grad for p in model.parameters()):
             raise InvalidEvidence('fixed model/gradNone drift')

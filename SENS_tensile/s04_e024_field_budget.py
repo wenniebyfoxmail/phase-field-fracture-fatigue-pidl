@@ -202,7 +202,7 @@ def solve_proxy(pack,metrics,eta,strict,check=lambda:None):
             constraints=[dict(type='ineq',fun=cons,jac=cjac)],callback=cb,
             options=dict(maxiter=200,ftol=1e-10))
     except (ResourceStop,InvalidEvidence):raise
-    except Exception as e:return None,dict(feasible=False,solver_exception=type(e).__name__+': '+str(e),trace=trace)
+    except Exception as e:return None,dict(feasible=False,solver_exception=type(e).__name__+': '+str(e),trace=trace,preconditioner=spectrum,preconditioner_transform=t)
     p=np.einsum('ij,j->i',t,r.x);finite(p)
     vals=pack.values(p);normalized=(vals-limits)/scale
     feasible=bool(np.max(normalized[active])<=1e-8)
@@ -223,7 +223,7 @@ def solve_proxy(pack,metrics,eta,strict,check=lambda:None):
         normalized_violations=normalized.tolist(),active_constraint_indices=active,
         tight_indices=tight,nonnegative_multipliers=lam.tolist(),stationarity_norm=None if residual is None else float(residual),kkt_error=kkt_error,
         gram_spectra_extremes=np.stack([spectra[:,0],spectra[:,-1]],axis=1).tolist(),
-        preconditioner=spectrum,trace=trace,model_sha256=pack.fingerprint(),
+        preconditioner=spectrum,preconditioner_transform=t,solver_coordinates=r.x.copy(),trace=trace,model_sha256=pack.fingerprint(),
         scope='finite convex proxy return only; no nonlinear/full-head optimum claim')
 
 

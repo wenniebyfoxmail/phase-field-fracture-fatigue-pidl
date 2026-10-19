@@ -1,4 +1,8 @@
 """D013 source/approval and parent-enforced phase limits. No scientific imports."""
+from datetime import datetime, timezone
+from importlib import metadata
+import socket
+import numpy as np
 import hashlib
 import json
 import math
@@ -24,6 +28,30 @@ def write_json(path,value):
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
     data=json.dumps(safe_json(value),indent=2,allow_nan=False)+'\n'
     tmp=path.with_name(path.name+'.tmp');tmp.write_text(data);tmp.replace(path)
+
+def runtime_provenance():
+    versions={}
+    for name in ('numpy','scipy','torch','psutil','threadpoolctl'):
+        try:versions[name]=metadata.version(name)
+        except metadata.PackageNotFoundError:versions[name]=None
+    return dict(utc=datetime.now(timezone.utc).isoformat(),host=socket.gethostname(),
+        platform=platform.platform(),python=sys.version,executable=sys.executable,pid=os.getpid(),
+        versions=versions,cuda_visible_devices=os.environ.get('CUDA_VISIBLE_DEVICES'))
+
+
+def persist_event(folder,event):
+    """Persist full solver transform separately; never expand 568x568 into JSON."""
+    from s04_e024_field_budget import digest_array
+    folder=Path(folder);event=dict(event)
+    if event['kind']=='solver':
+        info=dict(event['info']);t=info.pop('preconditioner_transform',None)
+        if t is not None:
+            path=folder/f"outer_{event['outer']}_preconditioner.npy"
+            with path.open('xb') as f:np.save(f,t,allow_pickle=False)
+            info['preconditioner_transform_file']=dict(path=path.name,sha256=sha(path),array_sha256=digest_array(t))
+        event['info']=info
+    return safe_json(event)
+
 
 def code_tree_sha(source=SOURCE):
     files=subprocess.check_output(['git','-C',str(source),'ls-files','SENS_tensile','scripts','tests'],text=True).splitlines()
@@ -105,9 +133,9 @@ def supervise(command,cwd,out_root,log_dir,seconds,rss_cap=RSS_CAP,storage_cap=S
     import psutil
     if not math.isfinite(seconds) or seconds<=0 or storage_bytes(out_root)>storage_cap:raise ResourceStop('pre-spawn phase/storage cap')
     log_dir=Path(log_dir);log_dir.mkdir(parents=True,exist_ok=True)
-    start=time.monotonic();deadline=start+seconds;record=dict(command=command,timeout_seconds=seconds)
+    start=time.monotonic();deadline=start+seconds;record=dict(command=command,timeout_seconds=seconds,provenance=runtime_provenance())
     write_json(log_dir/'command.json',record)
-    env=os.environ.copy();env.update(OMP_NUM_THREADS='2',OPENBLAS_NUM_THREADS='2',MKL_NUM_THREADS='2',VECLIB_MAXIMUM_THREADS='2',NUMEXPR_NUM_THREADS='2')
+    env=os.environ.copy();env.update(CUDA_VISIBLE_DEVICES='',OMP_NUM_THREADS='2',OPENBLAS_NUM_THREADS='2',MKL_NUM_THREADS='2',VECLIB_MAXIMUM_THREADS='2',NUMEXPR_NUM_THREADS='2')
     if storage_bytes(out_root)>storage_cap:raise ResourceStop('pre-spawn archive cap after metadata')
     observed=0;stop=None
     with (log_dir/'stdout.log').open('w') as stdout,(log_dir/'stderr.log').open('w') as stderr:

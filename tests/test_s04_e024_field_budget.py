@@ -11,7 +11,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'SENS_tensile'))
 from s04_e024_field_budget import (Metrics, Quadratics, GUARDS, PROFILES, InvalidEvidence,
     ResourceStop, ratio_norm, solve_proxy, run_profile, safe_json, quantize_head)
 from s04_e024_field_physics import FieldAdapter
-from s04_e024_field_runtime import PhaseLedger,supervise,write_json,validate_approval
+from s04_e024_field_runtime import PhaseLedger,supervise,write_json,validate_approval,persist_event
 from summarize_s04_e024_field_budget import replay_profile
 
 
@@ -47,7 +47,7 @@ def fixed_direction(value):
 
 def save_profile(tmp,adapter,eta=.1,strict=True,solver=solve_proxy):
     tmp.mkdir();events=[]
-    def emit(e):events.append(safe_json(e))
+    def emit(e):events.append(persist_event(tmp,e))
     head,f,counts=run_profile(adapter,adapter.metrics,eta,strict,lambda:None,emit,solver)
     (tmp/'events.jsonl').write_text(''.join(json.dumps(e)+'\n' for e in events))
     np.savez_compressed(tmp/'final.npz',head=head,original_head=adapter.theta,**f)
@@ -309,3 +309,56 @@ def test_storage_cap_blocks_spawn_instead_of_launching_and_then_stopping(tmp_pat
     (tmp_path/'owned.bin').write_bytes(b'X'*1000)
     monkeypatch.setattr(rt.subprocess,'Popen',lambda *a,**k:pytest.fail('must stop before spawn'))
     with pytest.raises(ResourceStop,match='pre-spawn'):rt.supervise([sys.executable,'-c','pass'],Path.cwd(),tmp_path,tmp_path/'log',10,storage_cap=100)
+
+
+@pytest.mark.parametrize('dtype_name',['float32','float64'])
+def test_exact_raw_helper_tiny_Torch_nonunit_D_BC_window_and_no_mutation(dtype_name):
+    import torch
+    from torch import nn
+    from s04_e024_field_physics import raw_network_forward
+    from s04_e018_global_local import compact_window
+    dtype=getattr(torch,dtype_name)
+    class Residual(nn.Module):
+        def __init__(self):
+            super().__init__();self.output_layer=nn.Linear(3,2,dtype=dtype)
+        def encode(self,x):return torch.stack([x[:,0],x[:,1],x[:,0]*x[:,1]],1)
+    class Tiny(nn.Module):
+        def __init__(self):
+            super().__init__();self.residual=Residual()
+            for k,v in dict(local_center=[.02,.01],local_scale=[.4,.3],
+                lower=[-.1,-.2],upper=[.1,.2],head_scale=[.2,1.3,2.,.7]).items():
+                self.register_buffer(k,torch.tensor(v,dtype=dtype))
+    model=Tiny();model.requires_grad_(False)
+    before={k:v.clone() for k,v in model.state_dict().items()}
+    xy=np.array([[0.,-.5],[0.,.5],[.4,0.],[0.,0.],[.05,.1]],dtype=dtype_name)
+    base=np.arange(10,dtype=dtype_name).reshape(5,2)*.01
+    head=np.arange(8,dtype=dtype_name).reshape(4,2)*.03
+    actual=raw_network_forward(model,xy,base,head,chunk=2)
+    x=torch.tensor(xy,dtype=dtype)
+    with torch.no_grad():
+        h=model.residual.encode((x-model.local_center)/model.local_scale)
+        raw=(h*model.head_scale[:-1])@torch.tensor(head[:-1])+torch.tensor(head[-1])*model.head_scale[-1]
+        expected=base+((((x[:,1]+.5)*(.5-x[:,1]))[:,None]*compact_window(x,model.lower,model.upper))*raw).numpy()
+    np.testing.assert_allclose(actual,expected,rtol=1e-6 if dtype_name=='float32' else 1e-14,atol=1e-15)
+    np.testing.assert_array_equal(actual[:3],base[:3])
+    assert all(torch.equal(v,before[k]) for k,v in model.state_dict().items())
+    assert all(p.grad is None and not p.requires_grad for p in model.parameters())
+    with pytest.raises(InvalidEvidence,match='dtype/layout'):
+        raw_network_forward(model,xy,base,head.astype('float64' if dtype_name=='float32' else 'float32'))
+
+
+def test_full_transform_persisted_and_replay_rejects_tamper(tmp_path):
+    folder=tmp_path/'p';_,_,_,events=save_profile(folder,ScalarAdapter())
+    solver=events[0];path=folder/solver['info']['preconditioner_transform_file']['path']
+    assert np.load(path,allow_pickle=False).shape==(2,2)
+    path.write_bytes(path.read_bytes()+b'tampered')
+    with pytest.raises(InvalidEvidence,match='transform file identity'):
+        replay_profile(ScalarAdapter(),folder,.1,True)
+
+
+def test_owned_child_CPU_visibility_and_provenance(tmp_path):
+    record=supervise([sys.executable,'-c',"import os; assert os.environ['CUDA_VISIBLE_DEVICES']==''"],
+        Path.cwd(),tmp_path,tmp_path/'log',10)
+    assert record['exit_code']==0
+    provenance=record['provenance']
+    assert provenance['host'] and provenance['utc'] and provenance['versions']['numpy']

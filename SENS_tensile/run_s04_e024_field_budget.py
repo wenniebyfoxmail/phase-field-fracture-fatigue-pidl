@@ -12,7 +12,7 @@ from threadpoolctl import threadpool_limits
 from s04_e024_field_budget import (STATES, PROFILES, InvalidEvidence, ResourceStop,
     run_profile, safe_json)
 from s04_e024_field_runtime import (SOURCE, CAPS, PhaseLedger, LocalGuard, sha, write_json,
-    validate_approval, worker_context, supervise, peak_rss,code_tree_sha)
+    validate_approval, worker_context, supervise, peak_rss,code_tree_sha,persist_event,runtime_provenance)
 
 
 def worker(a):
@@ -27,7 +27,7 @@ def worker(a):
     if a.worker_phase=='replay':
         from summarize_s04_e024_field_budget import replay_state
         record=replay_state(adapter,a.out,a.worker_state,check,expected_commit=a.expected_commit)
-        record.update(source_commit=a.expected_commit,wall_seconds=time.monotonic()-start,
+        record.update(provenance=runtime_provenance(),source_commit=a.expected_commit,wall_seconds=time.monotonic()-start,
                       peak_rss_bytes=peak_rss(),code_tree_sha256=code_tree_sha())
         write_json(a.out/'replay'/a.worker_state/'verified.json',record);check();return
     case=a.out/'states'/a.worker_state;case.mkdir(parents=True,exist_ok=False)
@@ -43,7 +43,7 @@ def worker(a):
         events=folder/'events.jsonl'
         with events.open('x') as out:
             def emit(event):
-                check();out.write(json.dumps(safe_json(event),allow_nan=False)+'\n');out.flush();check()
+                check();out.write(json.dumps(persist_event(folder,event),allow_nan=False)+'\n');out.flush();check()
             head,fields,counts=run_profile(adapter,adapter.metrics,eta,strict,check,emit)
         check()
         np.savez_compressed(folder/'final.npz',head=head,original_head=adapter.theta,
@@ -55,7 +55,7 @@ def worker(a):
                 if np.linalg.norm(adapter.theta)>0 else None))
         profiles[name]=counts
     adapter.final_identity();check()
-    record=dict(state=a.worker_state,source_commit=a.expected_commit,code_tree_sha256=code_tree_sha(),
+    record=dict(provenance=runtime_provenance(),state=a.worker_state,source_commit=a.expected_commit,code_tree_sha256=code_tree_sha(),
         assets=adapter.assets,profiles=profiles,D012_report=historical,
         wall_seconds=time.monotonic()-start,load_wall_seconds=load_wall,peak_rss_bytes=peak_rss(),
         offline_solver_calls=sum(x['solves'] for x in profiles.values()),
@@ -87,7 +87,7 @@ def parent(a):
              '--approval',str(a.approval),'--worker-state',state,'--worker-phase',stage]
         record=supervise(cmd,SOURCE,a.out,a.out/'logs'/stage/state,remaining)
         children.append(dict(state=state,phase=stage,**record));charge()
-    write_json(a.out/'execution_command.json',dict(command=sys.argv,project=str(a.project.resolve()),source_commit=a.expected_commit,
+    write_json(a.out/'execution_command.json',dict(provenance=runtime_provenance(),command=sys.argv,project=str(a.project.resolve()),source_commit=a.expected_commit,
         code_tree_sha256=code_tree_sha(),approval_sha256=sha(a.approval),approval=approval,
         nontraining_used_seconds=nontraining_used,NN_training=False,CPU_threads=2,GPU_hours=0))
     try:
