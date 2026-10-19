@@ -1,0 +1,63 @@
+{
+  "files": {
+    "scope.json": {
+      "bytes": 2666170,
+      "sha256": "a414473eb65a51b242b7799a5653368d40425317650face52444a2523500e160"
+    },
+    "rgb_contexts.npy": {
+      "bytes": 1531379840,
+      "sha256": "783b2c77c472e4dccaa3e0b1227f2cf6c9a164972ed7cc34ddc2684628a6e97c"
+    },
+    "candidate_identity.json": {
+      "bytes": 40570166,
+      "sha256": "807d48894475b8619e58b057efaa44a80939c2d1868190171605880654c187da"
+    },
+    "pixel_contexts.json": {
+      "bytes": 1967747,
+      "sha256": "eba16f6623e7eaf209f7e40f8ca0368a41fb7b4a9b93021ebcda57eae7c4a325"
+    },
+    "spatial_extraction_receipt.json": {
+      "bytes": 386115,
+      "sha256": "59a2e6829acb362f847c811ed1176402550f15616540014c34c70377edfe6d07"
+    },
+    "annotations.json": {
+      "bytes": 1546138,
+      "sha256": "98542eb41ec03eebf7a1f73ddf372dc36bb4432aefa259a6e4e3e168e202e3e9"
+    },
+    "DeepCrack_CT260_FT1.pth": {
+      "bytes": 123636774,
+      "sha256": "945239375c2b3de45abccc2dbdc374e3259b55d16298b298fb9e0cd13be5ad63"
+    },
+    "deepcrack.py": {
+      "bytes": 4885,
+      "sha256": "92650883b6f6c993bc29635450035e066c968c4f5a9022a6c1966a0b9f0d3360"
+    }
+  },
+  "counts": {
+    "contexts": 12238,
+    "images": 338,
+    "pixels": 700876800,
+    "native_tiles": 13520
+  },
+  "per_site": {
+    "24": {
+      "images": 116,
+      "contexts": 4509
+    },
+    "1638": {
+      "images": 109,
+      "contexts": 4122
+    },
+    "2027": {
+      "images": 113,
+      "contexts": 3607
+    }
+  },
+  "sites": [
+    "24",
+    "1638",
+    "2027"
+  ],
+  "source_images": 338,
+  "annotation_semantics": "partial region envelopes; outside is unknown, not exhaustive crack truth"
+}
