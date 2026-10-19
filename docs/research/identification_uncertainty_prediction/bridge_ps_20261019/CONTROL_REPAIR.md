@@ -1,0 +1,22 @@
+# Local first-stop control repair — no scientific rerun authority
+
+Purpose: close R003's unraisable ResourceWarning loophole. R003's original executed source0faf16f8 / digest7baafbd0 and all original artifacts, warnings, COMPLETE receipts, noncompliance audit and exploratory findings remain unchanged. This is local repair preparation only, not a producer attempt, revised R003 result, or retry approval. Historical execution and authority documents are historical; the repaired package has a different source/digest and no new execution receipt.
+
+## Changes
+
+- `verify.read_score_rows` closes the CSV using a context manager; an artificial CSV exercises the actual helper. Scoring arithmetic is unchanged.
+- `runtime_guard.py` runs the unchanged scientific worker in the controller-owned child PID using runpy. Errors during destructors, callbacks or threads produce a low-level fsynced JSON event, atomically published before parent observation, then exit86. A recursion/write-failure fallback writes stderr and exits nonzero. No warning category is exempted or filtered: warnings-as-errors remains active before worker imports.
+- The clean seal is provisional. Explicit GC and target atexit callbacks occur before its creation; the controller still waits for full child process exit, requires exit0, empty stderr, absence of fatal events and an exact-PID clean seal. Thus a later finalizer, replaced child unraisable hook, emitted warning or direct exit0 without seal cannot authorise acceptance. Any child stderr is conservatively fatal, rather than regex-filtered.
+- Worker completion receipt now means `CANDIDATE_COMPLETE_REQUIRES_CONTROLLER`; it is not final acceptance and may legitimately remain a candidate when a later fatal exit stops the job. The controller accepts only after actual exit and all lifetime checks. Its final receipt embeds the clean-exit evidence; the clean seal itself may postdate the worker-created archive.
+- Controller itself installs the same fatal hooks. A controller finalizer warning, even after a provisional COMPLETE write, atomically records its fatal event, stops only its owned child if still alive, durably writes STOPPED_NO_RETRY and exits nonzero. This closes the receipt-boundary case as well as the original worker leak.
+- `monitor_child` is extracted from the existing controller loop and directly used by the artificial subprocess fixtures. Existing wall/RSS/output/archive caps, owned-process termination, source/config/data/threshold identities and no-retry remain unchanged.
+
+## Checks and scope
+
+22 lifetime fixtures run locally on Python3.14 and established Miniconda Python3.12; all pass. They cover the old exit0/ignored-warning reproduction; actual CSV helper; ordinary/cyclic/late destructors; atexit warnings/exceptions; candidate serialization/open/after-write boundaries; controller late/receipt-boundary failure and clean completion; strict stderr fallback; write failure; reentrant hook failure; uncaught thread; missing/stale clean seal; and normal clean return. All targets, CSVs and child processes are hand-authored and temporary. Each artificial subprocess has an independent8-second test deadline. Four existing no-array/no-launch, size-race, UTC and budget fixtures also pass. No mathematical/scientific fitting or model forward occurs in these checks.
+
+Raw logs are in `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/reviews/BRIDGE-PS-20261019/control_repair/`. Exact source/digest and independent difference-review disposition are recorded in `control_repair_receipt.json` after review. Prior unchanged scientific-review findings carry forward only for their original scope.
+
+## Remaining limits
+
+No SSH, resource admission, original scientific arrays, fresh holdout, scientific computation or production retry occurred. Actual Linux/proc/RLIMIT integration, producer Python3.10/dependencies and real-pipeline overhead are unmeasured. A future authorised job must retrieve post-exit controller receipt and all lifetime event/stderr/clean records separately; worker archive alone cannot attest to events after archive creation. Filesystem failure cannot guarantee durable writes; stderr/nonzero exit are the fallback and cannot be accepted as clean. The guard is a fail-closed protocol for this sealed owned job, not a sandbox against arbitrary code deleting evidence or disabling every guard. No future execution follows automatically.

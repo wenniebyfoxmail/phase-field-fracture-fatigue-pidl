@@ -124,7 +124,7 @@ def run(code,cfg,r):
  render(out,records,cases,groups,selectors,loader,frames,cfg)
  from verify import verify
  verify(out,cfg,m,loader,frames)
- contract.write(out/'receipt.json',{'status':'COMPLETE','predictor_fits':fits.predictor,'input_fits':fits.input,'score_rows':20592,'selector_rows':2288,'clock':'release_step'})
+ contract.write(out/'receipt.json',{'status':'CANDIDATE_COMPLETE_REQUIRES_CONTROLLER','predictor_fits':fits.predictor,'input_fits':fits.input,'score_rows':20592,'selector_rows':2288,'clock':'release_step'})
  archive=r/'results.tar.gz.partial'
  with tarfile.open(archive,'w:gz') as t:
   t.add(out,arcname='outputs');t.add(code,arcname='code');t.add(r/'logs',arcname='logs');t.add(r/'provenance.json',arcname='provenance.json')

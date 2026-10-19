@@ -3,10 +3,15 @@ from pathlib import Path
 import csv
 import contract
 
+def read_score_rows(path):
+ with Path(path).open(newline='') as source:
+  return list(csv.DictReader(source))
+
 def verify(out,cfg,manifest,loader,frames):
  import numpy as np
  from state import ARMS,choose_baseline
- out=Path(out);cases=manifest['cases'];groups=sorted({c['group'] for c in cases});rows=list(csv.DictReader((out/'per_case_scores.csv').open()))
+ out=Path(out);cases=manifest['cases'];groups=sorted({c['group'] for c in cases})
+ rows=read_score_rows(out/'per_case_scores.csv')
  lookup={(r['group'],int(r['horizon_stages']),int(r['case_index']),r['arm']):r for r in rows}
  if len(rows)!=22880 or len(lookup)!=22880:raise ValueError('case-method or selector count')
  selectors=contract.read(out/'selectors.json')
