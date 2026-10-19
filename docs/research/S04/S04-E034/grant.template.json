@@ -1,0 +1,22 @@
+{
+  "protocol": "S04-E034/v1-finite-raw-reaction-F8-F802-20261019",
+  "execution_authorized": false,
+  "approved_commit": null,
+  "review_reference": null,
+  "human_approval_reference": null,
+  "hostname": "GPUServer8",
+  "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+  "cuda_visible_devices": "5",
+  "gpu_hours_cap": 0.5,
+  "ram_gib_cap": 32,
+  "output_gib_cap": 2,
+  "total_gpu_hours_cap": 2,
+  "prior_conservative_gpu_hours": 1.108339654581623,
+  "run_root": "/mnt/data2/drtao/wennie/UNASSIGNED_E034_FRESH_RUN_ID",
+  "output": "/mnt/data2/drtao/wennie/UNASSIGNED_E034_FRESH_RUN_ID/output",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/UNASSIGNED_E034_FRESH_RUN_ID",
+  "s0": "/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018/output/S_1500.pt",
+  "control_output": "/mnt/data2/drtao/pidl_archives/pf_s04e032_jointUV_v1_20261018T224109Z/output",
+  "e033_output": "/mnt/data2/drtao/pidl_archives/pf_s04e033_fullhead_axis1_a02_20261019T093116Z/output",
+  "data_root": "/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/data"
+}
