@@ -60,3 +60,5 @@
 从producer的code目录，用本Run deps/source/tools组成PYTHONPATH，唯一启动命令为`python3 tools/launch_hybrid_detached.py --card docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json --package ../producer_source_manifest.json --inputs ../inputs --review ../producer_review.json`。launcher在spawn之前独占创建launch_reservation.json，任何未知结果都先读reservation、PID/cmdline、launch/terminal/cost receipts，绝不再次执行该命令。Linux worker在数值模块导入前安装parent-death信号，supervisor异常退出时不遗留计算worker。
 
 恢复只读命令为`python3 tools/inspect_hybrid_run.py --archive /mnt/data2/drtao/pidl_archives/pf_hybrid_full_20261019_r1`。日志截断仅承认完整有效前缀，明确标出坏行及reconciliation_needed；损坏store单独列错，不掩盖其他phase。没有自动解锁、续算或重新提交入口。
+
+最终静态复审源为e4f5215e、artifact e96e3c0e，见producer_review_v3。Linux实际Python3.10.12已通过全部依赖导入/源包校验，OSQP仅本Run deps，实际worker-prefix父进程死亡保护测试通过。phase墙钟上限与replay+analysis合计4h相加为116h；136h仍为含监督开销的全作业独立总上限，2176coreh为16核占用保守上界，均非预测。初始Mac回放2.808秒为已测成本；正式全输入Linux回放/数值标签/训练/在线成本以各阶段真实收据更新。

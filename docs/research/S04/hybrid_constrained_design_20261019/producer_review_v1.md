@@ -1,0 +1,18 @@
+# Independent producer/card review — v1
+
+**MODIFY_AND_REREVIEW** for commit `d05fd5834468f04e200d70e7f4dce7873241af6d`, artifact `73f617acd9d23fc6706c6493665e3d92035d29f4e317bc3e3b3566a43c62d276`, card SHA256 `5603ff641bd8d4fdf97dd8e208447785cc1dff2bc0a78e40157cb6dc74486097`. This receipt does not admit execution.
+
+Required repairs:
+
+- **P1:** `run_hybrid_producer.py:234–251`: a failure/interruption between successful Popen and entering supervise leaves the worker alive. Independently reproduced with a harmless sleep process: supervisor wrote failure/terminal while the child still ran; reviewer then precisely killed/reaped the artificial process. Own the complete lifecycle immediately after spawn, and test initial-log IO failure. Parent-death behavior must not allow uncontrolled scientific orphans.
+- **P2:** `inspect_hybrid_run.py:15–24`: a partially written crash JSONL raises JSONDecodeError and blocks durable-state inspection. Independently reproduced using a four-node artificial StateStore. Report valid prefix, malformed/truncated journal, locks/snapshots and required reconciliation; never silently promote bad lines or auto-retry.
+- **P2:** replay and analysis each have4h phase caps, while the plan grants them4h combined. Enforce their cumulative allowance including failure/cleanup or freeze a corrected allocation; keep overall136wall/2176core/12GPU-hour envelope.
+- **P2:** watchdog checks can block in15s nvidia-smi, storage traversal and1s sleep, followed by10s TERM/10s KILL waits. These are detection thresholds rather than the declared strict120s bound. Provide independent monotonic deadlines and explicit cleanup reserves/operational termination bounds inside the total budget; test blocked-resource-poll handling.
+
+Verified all25 files from exact committed manifest, artifact and card identities. Exported the exact d05 source to a temporary directory and independently ran the authorized suite: **41passed in1.08s**. This avoids later worktree edits/launcher additions entering the v1 verdict. No new scientific arrays, trained model loading, training, project FEM solves, SSH or GPU work. Existing native five-field replay receipt was inspected, not recomputed.
+
+No additional decisive method/data-isolation/timing defect found: explicit native adapters; accepted-chain/common-predictor feature labels;1200train/600validation complete contracts; train-only normalization/validation-only model selection; frozen model before test; candidates use own state; final fresh same-u/d/f force/KKT; strictRuL2 and jointL2 retained. CF/CC/CH include startup/setup/correction/IO; scoring occurs afterward separately. Failed phase wall/CPU/occupied-GPU time is charged. Exact GPU/runtime/input/source contracts and verified own-group termination scope are present. New practical accuracy/speed margins are exploratory criteria, not statistical confidence or old-result changes.
+
+Runtime admission remains unverified: Linux staging had SSH/SCP timeout, OSQP run-local install/runtime/cross-platform input identity/replay/capacity are not closed. A forthcoming detached O_EXCL launcher requires exact focused review. Keep the human's conditional execution scope separate from review. Preserve no retry/resume/eta/tolerance changes. Current analysis coversu/v/d,A/r/f and full prescribed-DOF reaction-vector errors; it does not independently establish raw/energy/critical-stage claims just because120cycles/f<1 were planned.
+
+After repairs, focus-review the changed lifecycle/recovery/deadline/card/launcher plus actual runtime admission. Do not repeat unchanged design/core review or initiate new scientific computation from this receipt.

@@ -1,0 +1,115 @@
+{
+  "verdict": "REVIEW_PASS",
+  "review_type": "independent exact producer/card focused static code review; live admission separately mandatory",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-19T13:31:26.898286+00:00",
+  "commit": "d887aa2811f64c797b2963a9a991e94e4ccbd69a",
+  "artifact_id": "f0dfee8c43e87d26e5af2eefd9c2f93532ce9953c0e9e3d61afdf8bb65919331",
+  "card_sha256": "e0bdc3e911aea98ebda023d582f4822850f4b4cfce1c0f737d31e1110bd82101",
+  "manifest_sha256": "729d98a7f99c7f5f35ce2492d36970268c17332b24fba381ecf417f5fea7f350",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "53c20ce7cec2a8828fc7ce7b85380223839eda81f85971253c5339bc18371dac",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "6c561c191e87b5880e7572a3d4363daf5d559e48b7e460d37727a71c1f14bd11",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "9c72f660e341cf36b2d28574c49cfca811276276379070ac0bfb0c4a54374d64",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "b2971fe4c5a4807146bddde82ec8fb08a45620b2221162b4068ae2a8f9d9f83c",
+    "tools/run_hybrid_producer.py": "76e773f978704be0c7afe8a9e4762f8c2079983fc410ce721eb5ec013f70bd60",
+    "tools/inspect_hybrid_run.py": "cd3d9c94be866eb0b4453b8faec86cb36c8b147b6cb991e1ee77ada5828f3cbd",
+    "tests/test_hybrid_incremental.py": "5a8b24ae0ae1a33c65ea60e593131b8cf4d3a8757f57a9c0509014c8995b4a3e",
+    "tests/test_hybrid_producer.py": "cbf3401e68d5d732d22684a63fd8a710285b082fa63de10e024b8cd2875ba4b9",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "e0bdc3e911aea98ebda023d582f4822850f4b4cfce1c0f737d31e1110bd82101",
+    "tools/launch_hybrid_detached.py": "fb515b236551d441b4cfb11667c200dff61999b4c4119b965a9caac861e47730"
+  },
+  "decisive_blockers": [],
+  "resolved_findings": [
+    {
+      "id": "P1",
+      "status": "resolved",
+      "files": [
+        "tools/run_hybrid_producer.py",
+        "tools/hybrid_producer_worker.py"
+      ],
+      "evidence": "run_owned_worker guards every post-spawn operation, including first-event IO, with verified own-group stop/reap in finally. New real sleep-child fault test passes. Worker installs Linux PR_SET_PDEATHSIG(SIGTERM) before NumPy/physics imports and checks expected PPID after installation; true Linux parent-death execution remains a runtime-admission check."
+    },
+    {
+      "id": "P2",
+      "status": "resolved",
+      "file": "tools/inspect_hybrid_run.py",
+      "evidence": "Inspection retains only valid event prefix, marks malformed/truncated journal as reconciliation-needed, still reports durable version and isolates unreadable stores per phase. New artificial state/truncated-log/corrupt-store regression passes. No unlock/resume/recommit introduced."
+    },
+    {
+      "id": "P3",
+      "status": "resolved",
+      "files": [
+        "tools/run_hybrid_producer.py",
+        "execution_card_v1.json"
+      ],
+      "evidence": "shared_analysis_seconds accumulates replay and analysis, including failed phases. Each phase checks remaining combined4h minus45s cleanup reserve. New exhausted-combined-allowance child-termination regression passes; total136wall/2176core and12GPU-hour caps unchanged."
+    },
+    {
+      "id": "P4",
+      "status": "resolved_under_explicit_revised_operational_deadline_contract",
+      "files": [
+        "tools/run_hybrid_producer.py",
+        "tools/hybrid_producer_worker.py",
+        "execution_card_v1.json",
+        "execution_plan_v1.md"
+      ],
+      "evidence": "Physical step marker now uses cross-process monotonic time; GPU query timeout2s;45s termination reserves subtracted from phase/shared-analysis/global-host/GPU triggers. Exact card/plan now correctly say120s is cooperative deadline/watchdog trigger, not an absolute OS kill instant. Blocking filesystem/OS scheduling caveat and actual cleanup charging are explicit. This review does not assert a hard-real-time guarantee or infer one from unit tests."
+    }
+  ],
+  "new_launcher": {
+    "status": "reviewed",
+    "file": "tools/launch_hybrid_detached.py",
+    "evidence": "Verifies exact source/card review, refuses existing archive, creates O_EXCL reservation and fsyncs its contents BEFORE spawn, starts detached supervisor with attributed log/deps/tmp/cache, retains reservation after unknown result/error, refuses second invocation. Mock spawn/reservation regression passes. A reserved-without-PID or post-spawn write failure requires inspection rather than retry."
+  },
+  "checks": {
+    "exact_git_object_export": true,
+    "files_verified": 26,
+    "canonical_manifest_object_sha_verified": true,
+    "independent_tests": "45 passed in0.73s; exit0",
+    "test_command": "PYTHONPATH=source:tools:.:tests <approved dev venv>/bin/python -m pytest -q tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py",
+    "unchanged_core_design_findings": "Carry forward review_v1, code_review_v2, producer_review_v1 unchanged method/state/label-isolation/fair-timing checks.",
+    "metadata_correction": "585d207f differs only in invalid compact-serialization artifact field. d887aa28 corrects to canonical object_sha; only final f0dfee8c... artifact is admitted."
+  },
+  "runtime_admission": {
+    "status": "NOT_YET_VERIFIED",
+    "must_complete_before_scientific_execution": [
+      "Actual GPUServer8/drtao runtime/dependency import identity, run-local OSQP and exact package/inputs check.",
+      "Linux same-saved-field replay and canonical state0/mesh/GP identity; mismatch stops for diagnosis, no tolerance/identity relaxation.",
+      "Actual shared CPU/RAM/disk availability and fresh GPU5 UUID/process ownership at each GPU stage; no assumed reservation.",
+      "Display exact final executable package under existing conditional human instruction; independent review is not a substitute for human scope/budget authority.",
+      "Ensure all stage receipts/unknown-commit or crash-lock inspection are resolved before any continuation; no retry/resume or alternate run-ID workaround."
+    ]
+  },
+  "limits": [
+    "Pass is for exact static producer/card implementation only; it does not claim producer runtime replay/capacity is already verified.",
+    "120s cooperative substep limit and watchdog monitoring are not absolute real-time OS termination guarantees. Actual overshoot/cleanup remains charged and cannot justify automatic budget extension.",
+    "No trained model/label-production/full scientific trajectory or speed/field outcome has been demonstrated. Existing five-state parity is f=1 only.",
+    "Preserve whole-trajectory train/validation/test isolation, own-state candidate rollout, strong same-problem NN-off/classical comparators and posthoc scoring separate from online CF/CC/CH.",
+    "Do not extend current u/v/d,A/r/f/reaction results into raw/energy/critical-branch or physical/generalization claims without corresponding analysis/evidence."
+  ],
+  "not_executed": [
+    "No SSH/GPU/producer operations",
+    "No scientific arrays or holdout reads",
+    "No trained checkpoint/model load",
+    "No training or new project FEM solves",
+    "Only exact exported-package tests, artificial child/state regressions and byte/hash checks"
+  ],
+  "conclusion": "Prior producer findings are resolved within the corrected operational card. Exact d887aa28/f0dfee8c static package is reviewed ready, subject to live runtime/input/resource admission and retained human conditional execution requirements. No scientific success is asserted."
+}

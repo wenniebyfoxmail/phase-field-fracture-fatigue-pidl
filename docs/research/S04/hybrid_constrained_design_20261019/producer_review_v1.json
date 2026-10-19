@@ -1,0 +1,113 @@
+{
+  "verdict": "MODIFY_AND_REREVIEW",
+  "review_type": "independent exact producer/card static review",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-19T13:28:46.826940+00:00",
+  "commit": "d05fd5834468f04e200d70e7f4dce7873241af6d",
+  "artifact_id": "73f617acd9d23fc6706c6493665e3d92035d29f4e317bc3e3b3566a43c62d276",
+  "card_sha256": "5603ff641bd8d4fdf97dd8e208447785cc1dff2bc0a78e40157cb6dc74486097",
+  "manifest_sha256": "fe310a26c0dece816642d479f9e1d7fcf626814c5e4665c2429db0e2a6c25872",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "53c20ce7cec2a8828fc7ce7b85380223839eda81f85971253c5339bc18371dac",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "6c561c191e87b5880e7572a3d4363daf5d559e48b7e460d37727a71c1f14bd11",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "9c72f660e341cf36b2d28574c49cfca811276276379070ac0bfb0c4a54374d64",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "c826c59a4f2576f56312baea00518768e56e4163072c4f914f325ba463ec7fc3",
+    "tools/run_hybrid_producer.py": "3816d93770d6b0e192981aa4b6b31511ab84e059eae3de56d7ecf9b55a50b8ca",
+    "tools/inspect_hybrid_run.py": "2bb857a29823e69fb0e70b8a721e0180961c51f6a594bca29607af8e9ed91ef3",
+    "tests/test_hybrid_incremental.py": "5a8b24ae0ae1a33c65ea60e593131b8cf4d3a8757f57a9c0509014c8995b4a3e",
+    "tests/test_hybrid_producer.py": "f2184b1397cfae8c07fa4d26ae31004c6136a60042d4665e4ec3090e14fb8f47",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "5603ff641bd8d4fdf97dd8e208447785cc1dff2bc0a78e40157cb6dc74486097"
+  },
+  "findings": [
+    {
+      "id": "P1",
+      "priority": "P1",
+      "file": "tools/run_hybrid_producer.py",
+      "lines": "234-251",
+      "title": "Own the child immediately after Popen, including first-log failures",
+      "problem": "Popen succeeds before append_event and before entering supervise. If that append or a parent interruption fails, main writes failed/cost/terminal output but never stops the still-running scientific child. supervise owns cleanup only once entered.",
+      "evidence": "Exact d05 source with artificial sleep child and injected first phase-event OSError: failure/terminal files existed while owned child remained alive. Reviewer killed/reaped that exact artificial group afterward.",
+      "required_fix": "Guard the complete post-Popen lifetime with finally termination/reap of verified own PGID on all abnormal paths; regression must inject initial event IO failure. Also preserve safe attribution if the supervisor itself disappears (e.g. explicit Linux parent-death contract) and do not infer process death from SSH loss."
+    },
+    {
+      "id": "P2",
+      "priority": "P2",
+      "file": "tools/inspect_hybrid_run.py",
+      "lines": "15-24",
+      "title": "Recover durable identity even with a truncated crash journal",
+      "problem": "A killed append_event can leave incomplete JSONL. Direct json.loads of every line aborts all recovery inspection rather than returning latest durable state/lock/snapshot and an explicit uncertain journal.",
+      "evidence": "Exact d05 inspect on an artificial valid StateStore plus setup line and truncated {\"step\": raised JSONDecodeError.",
+      "required_fix": "Report valid prefix, truncation/malformed line diagnostics and reconciliation_required; do not silently accept a broken event. Report store errors separately so other phases remain inspectable. Keep inspection read-only and never auto-retry/delete locks/recommit."
+    },
+    {
+      "id": "P3",
+      "priority": "P2",
+      "file": "tools/run_hybrid_producer.py; execution_card_v1.json",
+      "lines": "119-157,222-254; native_replay/analysis phase caps",
+      "title": "Enforce the declared combined replay plus analysis CPU allowance",
+      "problem": "The plan/budget allocates4CPU wall hours jointly to replay/setup/evaluation, but native_replay and analysis each allow14400s and no category-total check bounds them jointly. The exact card can therefore spend8h on these two phases.",
+      "required_fix": "Keep total136wall/2176core/12GPUh unchanged and explicitly enforce their combined4h including failures/cleanup, or prospectively allocate separate phase limits summing to4h. Charge all evaluation work without contaminating online CF/CC/CH."
+    },
+    {
+      "id": "P4",
+      "priority": "P2",
+      "file": "tools/run_hybrid_producer.py",
+      "lines": "65-85,110-155; worker marker",
+      "title": "Reserve monitoring and termination latency inside hard resource caps",
+      "problem": "The physical120s/phase/global checks share a loop with up-to15s nvidia-smi calls, recursive storage scans and1s sleep; stop_owned can then consume10s TERM plus10s KILL waits. Thus declared120.0s hard substep caps and exact-budget GPU phase sums are not enforced as stated. Physical timer also uses epoch time rather than monotonic duration.",
+      "required_fix": "Use a deadline path independent of blocking resource scans, monotonic step markers and explicit cleanup reserve/operational bounds within total caps. Document the actual worker/termination limits rather than describing polling thresholds as a zero-overshoot hard bound; test the deadline with blocking synthetic resource polling."
+    }
+  ],
+  "checks": {
+    "exact_git_snapshot_exported_to_temporary_directory": true,
+    "manifest_files_verified": 25,
+    "independent_regression": "41 passed in1.08s; exit0",
+    "tests": "tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py",
+    "artificial_fault_probes": [
+      "post-Popen first-event write failure",
+      "crash-truncated JSONL recovery"
+    ],
+    "native_operator_replay": "Reviewed existing five-state receipt and prepare/replay source; did not rerun scientific-array replay in this producer review."
+  },
+  "passed_static_scope": [
+    "Native blocked/interleaved and GP/history adapters are explicit and source-bound; state0 reused as prescribed initial condition, not promoted label.",
+    "Strengthened final acceptance retains RuL2<=1e-8 and RuL2+feasibleRdL2<=4e-6 in addition to fixed-scaleLinf criteria; no old tolerance relaxation.",
+    "Labels originate from full sequential accepted chains and common pre-update mechanical prediction context. Training verifies hashes/predecessor/certificate/physics/settings; complete1200/600 counts required.",
+    "Normalization uses training only, model selection validation only, one fit and fixed seed/update cap. Test reference/candidates occur only after frozen training receipt; candidates advance own states and do not access test reference during solve.",
+    "Matched CF/CC/CH include worker startup, backend/model setup, physical correction, commit/snapshot/IO. Reference scoring is a separate later phase.",
+    "Failure/kill phase wall,CPU and occupied-GPU durations are charged in finally; core unknown-commit raises and stops rather than retrying.",
+    "GPU UUID/hostname/runtime/input/source identities and shared<=16core pool are explicit; no broad/shared-user kill. Proposed practical quality/time thresholds are exploratory one-family claims, not statistical confidence or revisions to old experiments."
+  ],
+  "remaining_conditions": [
+    "FixP1-P4 and review exact changed producer/launcher/card package; retain earlier design/core review.",
+    "Linux actual runtime/import/--check/native saved-field replay and cross-platform geometry identity admission have not closed; SSH/SCP staging timeout is missing evidence, not a solver result.",
+    "OSQP run-local installation, runtime versions/binary identities and actual RAM/disk/GPU process ownership must be verified on producer before any scientific phase.",
+    "Detached launch reservation and unknown-SSH-outcome inspection must be part of the final reviewed artifact; unreviewed launcher is not admitted by this receipt.",
+    "Operational capacity is not a future reservation. Preserve no automatic retry/resume/threshold or eta changes and conditional human-authorization boundary.",
+    "Study outputs currently implementu/v/d,A/r/f and full prescribed-DOF reaction comparisons; any additional raw/energy/critical-branch claim requires actual output analysis, not assumption from fixed120cycles/f_min alone."
+  ],
+  "not_executed": [
+    "No SSH/producer/GPU",
+    "No trained model/checkpoint loading",
+    "No new scientific or heldout arrays read in this review",
+    "No training or new project FEM solves",
+    "Only approved lightweight regression/artificial process/state probes"
+  ],
+  "conclusion": "Do not execute d05 package. Core method/label isolation and fair online timing are statically coherent, but lifecycle, crash recovery and exact budget enforcement need bounded repairs. Receipt fields intentionally do not admit runner execution."
+}

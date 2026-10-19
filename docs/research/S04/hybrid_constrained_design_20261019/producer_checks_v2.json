@@ -1,0 +1,10 @@
+{
+  "source_commit": "e4f5215ee316382a7b8b26524cc2521f072bfac5",
+  "tests": 45,
+  "development_test_seconds": .69,
+  "independent_test_seconds": 0.73,
+  "verdict": "engineering checks pass",
+  "scope": "artificial unit and kernel regressions only; no scientific project FEM or training",
+  "native_replay": "native_operator_replay_v1.json",
+  "producer_review": "producer_review_v3.json"
+}
