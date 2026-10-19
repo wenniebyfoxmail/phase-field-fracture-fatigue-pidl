@@ -21,7 +21,6 @@ from s09_code_identity import current_commit
 from s09_e010_producer import evaluate_arm
 from s09_e014_common_direction import ARM_CANDIDATE, ARM_CONTROL, ARM_ORDER
 from s09_e014_producer import (
-    _collect_fields,
     _load_json,
     _require_score_evaluation_alignment,
     _require_valid_evaluation,
@@ -29,6 +28,7 @@ from s09_e014_producer import (
     _validate_json_artifact,
     _write_json,
 )
+from s09_e009_four_arm import atomic_losses
 from s09_e015_trust_region import (
     LAMBDA_GRID,
     NONZERO_LAMBDAS,
@@ -240,6 +240,29 @@ def _retag_evaluation(record: dict[str, Any], update: int) -> dict[str, Any]:
     return record
 
 
+def _collect_fields(
+    runtime: Any, *, deadline: float, label: str
+) -> dict[str, np.ndarray]:
+    """Collect one state with the E015 900 s / 10 GiB guard per cycle."""
+    predicted = []
+    runtime.model.eval()
+    with torch.no_grad():
+        for index, cycle_raw in enumerate(runtime.arrays["cycles"]):
+            cycle = int(cycle_raw)
+            _check_resources(deadline, f"fields:{label}:{cycle}:before")
+            _, context = atomic_losses(runtime, index)
+            predicted.append(context["output"]["d_peak"].detach().cpu().numpy())
+            _check_resources(deadline, f"fields:{label}:{cycle}:after")
+    return {
+        "predicted_peak": np.stack(predicted),
+        "d_pre": np.asarray(runtime.arrays["d_pre"]),
+        "target_peak": np.asarray(runtime.arrays["d_peak"]),
+        "cycles": np.asarray(runtime.arrays["cycles"]),
+        "xy": np.asarray(runtime.arrays["xy"]),
+        "nodal_weight": np.asarray(runtime.arrays["nodal_weight"]),
+    }
+
+
 def _cycle_increment_rows(fields: Mapping[str, np.ndarray]) -> list[dict[str, Any]]:
     weights = np.asarray(fields["nodal_weight"], dtype=np.float64).reshape(-1)
     denominator = float(weights.sum())
@@ -266,7 +289,16 @@ def _evaluate_state(
     runtime: Any, *, deadline: float, label: str, update: int
 ) -> dict[str, Any]:
     fields = _collect_fields(runtime, deadline=deadline, label=label)
-    evaluation = _retag_evaluation(evaluate_arm(runtime, update=0), update)
+    evaluation = _retag_evaluation(
+        evaluate_arm(
+            runtime,
+            update=0,
+            resource_guard=lambda stage: _check_resources(
+                deadline, f"evaluation:{label}:{stage}"
+            ),
+        ),
+        update,
+    )
     _require_valid_evaluation(evaluation, update, label)
     global_pairs, local_pairs, score_rows = _scores_from_fields(fields)
     _require_score_evaluation_alignment(score_rows, evaluation, label)
@@ -329,8 +361,12 @@ def _continuous_equal(
                 }
             )
     elif isinstance(reference, float):
-        if not isinstance(observed, (int, float)) or not math.isclose(
-            float(observed), reference, rel_tol=REPLAY_RTOL, abs_tol=REPLAY_ATOL
+        observed_value = float(observed) if isinstance(observed, (int, float)) else math.nan
+        if (
+            not math.isfinite(observed_value)
+            or not math.isfinite(reference)
+            or abs(observed_value - reference)
+            > REPLAY_ATOL + REPLAY_RTOL * abs(reference)
         ):
             differences.append(
                 {
@@ -493,7 +529,7 @@ def _render_state_cycle_csv(
         "L_judge",
     )
     stream = io.StringIO(newline="")
-    writer = csv.DictWriter(stream, fieldnames=fields)
+    writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
     writer.writeheader()
     for label in order:
         state = states[label]
@@ -534,7 +570,7 @@ def _render_pair_csv(states: Mapping[str, Mapping[str, Any]], order: list[str]) 
         "local_score_2W_plus_T",
     )
     stream = io.StringIO(newline="")
-    writer = csv.DictWriter(stream, fieldnames=fields)
+    writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
     writer.writeheader()
     for label in order:
         state = states[label]
@@ -579,6 +615,70 @@ def _write_field_archive(
         values[f"{label}__predicted_peak"] = states[label]["fields"]["predicted_peak"]
     with path.open("xb") as stream:
         np.savez_compressed(stream, **values)
+
+
+def _evaluation_evidence(
+    states: Mapping[str, Mapping[str, Any]], order: list[str]
+) -> dict[str, Any]:
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "run_id": RUN_ID,
+        "state_count": len(order),
+        "state_order": list(order),
+        "states": {
+            label: {
+                "evaluation": states[label]["evaluation"],
+                "score_rows": states[label]["score_rows"],
+            }
+            for label in order
+        },
+    }
+
+
+def _validate_png(path: Path) -> None:
+    import matplotlib.image as mpimg
+
+    image = np.asarray(mpimg.imread(path))
+    _require(image.ndim in (2, 3) and image.size > 0, f"invalid PNG shape: {path.name}")
+    _require(np.isfinite(image).all(), f"nonfinite PNG pixels: {path.name}")
+
+
+def _validate_source_closure(
+    *,
+    repo_root: Path,
+    expected_commit: str,
+    source_files: Mapping[str, tuple[Path, str]],
+    packet_identity: Path,
+) -> None:
+    _require(current_commit(repo_root) == expected_commit, "commit drift at closure")
+    _require(_execution_files_clean(repo_root), "execution dependency drift at closure")
+    for label, (path, expected) in source_files.items():
+        _require(sha256_file(path) == expected, f"source identity drift at closure: {label}")
+    _require(
+        _load_json(packet_identity)["manifest_sha256"]
+        == EXPECTED_PACKET_MANIFEST_SHA256,
+        "packet identity drift at closure",
+    )
+
+
+def _publish_completion(
+    *,
+    completion: Mapping[str, Any],
+    output_dir: Path,
+    archive_dir: Path,
+    deadline: float,
+) -> None:
+    payload = canonical_json(completion)
+    for label, path in (
+        ("archive", archive_dir / "completion_receipt.json"),
+        ("output", output_dir / "completion_receipt.json"),
+    ):
+        _check_resources(deadline, f"completion:{label}:before")
+        with path.open("xb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        _check_resources(deadline, f"completion:{label}:after")
 
 
 def _write_figures(
@@ -788,19 +888,45 @@ def _validate_outputs(
     decision: Mapping[str, Any],
     construction: Mapping[str, Any],
     replay: Mapping[str, Any],
+    evaluations: Mapping[str, Any],
+    environment: Mapping[str, Any],
+    source: Mapping[str, Any],
+    figure_hashes: Mapping[str, str],
+    repo_root: Path,
+    expected_commit: str,
+    source_files: Mapping[str, tuple[Path, str]],
+    packet_identity: Path,
     *,
     deadline: float,
 ) -> dict[str, str]:
+    _validate_json_artifact(output / "environment.json", environment)
+    _validate_json_artifact(output / "source_identity.json", source)
     _validate_json_artifact(output / "state_construction_audit.json", construction)
     _validate_json_artifact(output / "endpoint_replay.json", replay)
     _validate_json_artifact(output / "decision_metrics.json", decision)
+    _validate_json_artifact(output / "state_evaluations.json", evaluations)
+    loaded_evaluations = _load_json(output / "state_evaluations.json")
     _require(
-        (output / "state_cycle_metrics.csv").read_text()
-        == _render_state_cycle_csv(states, order),
+        loaded_evaluations["state_count"] == len(order)
+        and loaded_evaluations["state_order"] == order
+        and set(loaded_evaluations["states"]) == set(order),
+        "evaluation evidence state membership/order drift",
+    )
+    for label in order:
+        record = loaded_evaluations["states"][label]
+        update = 0 if label == "B25_step0" else 1
+        _require_valid_evaluation(record["evaluation"], update, label)
+        _require_score_evaluation_alignment(
+            record["score_rows"], record["evaluation"], label
+        )
+    _require(
+        (output / "state_cycle_metrics.csv").read_bytes()
+        == _render_state_cycle_csv(states, order).encode("utf-8"),
         "state-cycle CSV drift",
     )
     _require(
-        (output / "pair_metrics.csv").read_text() == _render_pair_csv(states, order),
+        (output / "pair_metrics.csv").read_bytes()
+        == _render_pair_csv(states, order).encode("utf-8"),
         "pair CSV drift",
     )
     baseline = states["B25_step0"]["fields"]
@@ -814,16 +940,30 @@ def _validate_outputs(
             *(f"{label}__predicted_peak" for label in order),
         }
         _require(set(values.files) == expected, "field archive membership drift")
+        for name in ("cycles", "xy", "nodal_weight", "d_pre", "target_peak"):
+            observed = values[name]
+            reference = np.asarray(baseline[name])
+            _require(
+                observed.dtype == reference.dtype
+                and observed.shape == reference.shape
+                and np.array_equal(observed, reference),
+                f"field archive shared array drift: {name}",
+            )
+        for name in ("xy", "nodal_weight", "d_pre", "target_peak"):
+            _require(np.isfinite(values[name]).all(), f"nonfinite field archive array: {name}")
         _require(
-            np.array_equal(values["d_pre"], baseline["d_pre"]),
-            "field archive d_pre drift",
+            np.all(values["nodal_weight"] >= 0)
+            and float(values["nodal_weight"].sum()) > 0,
+            "invalid field archive nodal weights",
         )
         for label in order:
+            observed = values[f"{label}__predicted_peak"]
+            reference = np.asarray(states[label]["fields"]["predicted_peak"])
             _require(
-                np.array_equal(
-                    values[f"{label}__predicted_peak"],
-                    states[label]["fields"]["predicted_peak"],
-                ),
+                observed.dtype == reference.dtype
+                and observed.shape == reference.shape
+                and np.isfinite(observed).all()
+                and np.array_equal(observed, reference),
                 f"field archive state drift: {label}",
             )
     names = (
@@ -832,6 +972,7 @@ def _validate_outputs(
         "state_construction_audit.json",
         "endpoint_replay.json",
         "decision_metrics.json",
+        "state_evaluations.json",
         "state_cycle_metrics.csv",
         "pair_metrics.csv",
         "all_state_fields.npz",
@@ -845,8 +986,19 @@ def _validate_outputs(
             (output / name).is_file() and (output / name).stat().st_size > 0,
             f"missing or empty evidence: {name}",
         )
+    for name, expected_hash in figure_hashes.items():
+        _require(sha256_file(output / name) == expected_hash, f"figure drift: {name}")
+        _validate_png(output / name)
+    _validate_source_closure(
+        repo_root=repo_root,
+        expected_commit=expected_commit,
+        source_files=source_files,
+        packet_identity=packet_identity,
+    )
     _check_resources(deadline, "closure:before_hashes")
-    return {name: sha256_file(output / name) for name in names}
+    hashes = {name: sha256_file(output / name) for name in names}
+    _check_resources(deadline, "closure:after_hashes")
+    return hashes
 
 
 def run_producer(
@@ -868,19 +1020,7 @@ def run_producer(
 ) -> dict[str, Any]:
     start = time.time()
     deadline = start + WALL_TIME_CAP_SECONDS
-    _require(os.name == "posix" and platform.system() == "Linux", "Linux-only producer")
-    _require(torch.cuda.is_available(), "CUDA unavailable", RuntimeError)
-    _, environment = _validate_binding(
-        run_config, protocol, repo_root, output_dir, archive_dir, expected_commit
-    )
-    _require(
-        not output_dir.exists() and not archive_dir.exists(), "fresh roots required"
-    )
-    _require(
-        shutil.disk_usage(output_dir.parent).free >= 5 * 1024**3, "less than 5 GiB free"
-    )
-    output_dir.mkdir(parents=True)
-    archive_dir.mkdir(parents=True)
+    states_evaluated = 0
     source = {
         "training_commit": expected_commit,
         "run_config_sha256": EXPECTED_RUN_CONFIG_SHA256,
@@ -892,10 +1032,25 @@ def run_producer(
         "vector_archive_sha256": EXPECTED_VECTOR_SHA256,
         "E014_completion_receipt_sha256": EXPECTED_E014_COMPLETION_SHA256,
     }
-    _write_json(output_dir / "environment.json", environment)
-    _write_json(output_dir / "source_identity.json", source)
-    states_evaluated = 0
+    environment: dict[str, Any] = {}
+    _require(os.name == "posix" and platform.system() == "Linux", "Linux-only producer")
+    _require(torch.cuda.is_available(), "CUDA unavailable", RuntimeError)
+    _, environment = _validate_binding(
+        run_config, protocol, repo_root, output_dir, archive_dir, expected_commit
+    )
     try:
+        _require(
+            not output_dir.exists() and not archive_dir.exists(), "fresh roots required"
+        )
+        _require(
+            shutil.disk_usage(output_dir.parent).free >= 5 * 1024**3,
+            "less than 5 GiB free",
+        )
+        output_dir.mkdir(parents=True)
+        archive_dir.mkdir(parents=True)
+        _write_json(output_dir / "environment.json", environment)
+        _write_json(output_dir / "source_identity.json", source)
+        _check_resources(deadline, "startup_evidence:after")
         _require(
             sha256_file(base_config) == EXPECTED_BASE_CONFIG_SHA256,
             "base config identity drift",
@@ -1052,16 +1207,42 @@ def run_producer(
             "optimizer_steps_completed": 0,
             "claim_boundary": "finite-displacement signal on the exposed 16-cycle trajectory only",
         }
+        evaluations = _evaluation_evidence(states, state_order)
         _write_json(output_dir / "decision_metrics.json", decision)
-        (output_dir / "state_cycle_metrics.csv").write_text(
-            _render_state_cycle_csv(states, state_order), encoding="utf-8"
+        _write_json(output_dir / "state_evaluations.json", evaluations)
+        (output_dir / "state_cycle_metrics.csv").write_bytes(
+            _render_state_cycle_csv(states, state_order).encode("utf-8")
         )
-        pair_order = state_order[1:]
-        (output_dir / "pair_metrics.csv").write_text(
-            _render_pair_csv(states, pair_order), encoding="utf-8"
+        (output_dir / "pair_metrics.csv").write_bytes(
+            _render_pair_csv(states, state_order).encode("utf-8")
         )
         _write_field_archive(output_dir / "all_state_fields.npz", states, state_order)
-        _write_figures(output_dir, states, state_order, deadline=deadline)
+        figure_names = _write_figures(
+            output_dir, states, state_order, deadline=deadline
+        )[:3]
+        figure_hashes = {
+            name: sha256_file(output_dir / name) for name in figure_names
+        }
+        source_files = {
+            "run_config": (run_config, EXPECTED_RUN_CONFIG_SHA256),
+            "protocol": (protocol, EXPECTED_PROTOCOL_SHA256),
+            "base_config": (base_config, EXPECTED_BASE_CONFIG_SHA256),
+            "B25_checkpoint": (initial_checkpoint, EXPECTED_B25_CHECKPOINT_SHA256),
+            "control_endpoint": (
+                control_endpoint,
+                EXPECTED_ENDPOINT_SHA256[ARM_CONTROL],
+            ),
+            "candidate_endpoint": (
+                candidate_endpoint,
+                EXPECTED_ENDPOINT_SHA256[ARM_CANDIDATE],
+            ),
+            "vector_archive": (vector_archive, EXPECTED_VECTOR_SHA256),
+            "E014_completion": (e014_completion, EXPECTED_E014_COMPLETION_SHA256),
+            **{
+                f"E014_{name}": (e014_run_dir / name, expected)
+                for name, expected in EXPECTED_E014_FILE_SHA256.items()
+            },
+        }
         artifact_hashes = _validate_outputs(
             output_dir,
             states,
@@ -1069,6 +1250,14 @@ def run_producer(
             decision,
             construction,
             replay,
+            evaluations,
+            environment,
+            source,
+            figure_hashes,
+            repo_root,
+            expected_commit,
+            source_files,
+            packet_dir / "packet_identity.json",
             deadline=deadline,
         )
         completion = {
@@ -1085,10 +1274,12 @@ def run_producer(
             "artifacts": artifact_hashes,
             "failure_precedence": "failure_receipt.json supersedes completion_receipt.json at the same root",
         }
-        canonical_json(completion)
-        _check_resources(deadline, "completion:before")
-        _write_json(archive_dir / "completion_receipt.json", completion)
-        _write_json(output_dir / "completion_receipt.json", completion)
+        _publish_completion(
+            completion=completion,
+            output_dir=output_dir,
+            archive_dir=archive_dir,
+            deadline=deadline,
+        )
         return completion
     except BaseException as error:
         failure = {

@@ -22,7 +22,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from typing import Any, Mapping, Protocol
+from typing import Any, Callable, Mapping, Protocol
 
 import numpy as np
 import torch
@@ -466,7 +466,12 @@ def _average_ranks(values: list[float]) -> list[float]:
     return ranks
 
 
-def evaluate_arm(runtime: Runtime, *, update: int) -> dict[str, Any]:
+def evaluate_arm(
+    runtime: Runtime,
+    *,
+    update: int,
+    resource_guard: Callable[[str], None] | None = None,
+) -> dict[str, Any]:
     """Evaluate one checkpoint over the exact fixed 16-example support."""
     _require(type(update) is int and update in EVALUATION_UPDATES,
              "evaluation update is not frozen")
@@ -480,6 +485,8 @@ def evaluate_arm(runtime: Runtime, *, update: int) -> dict[str, Any]:
     hard_total = {key: 0 for key in HARD_CONSTRAINT_KEYS}
     with torch.no_grad():
         for index, cycle in enumerate(cycles):
+            if resource_guard is not None:
+                resource_guard(f"cycle_{cycle}:before")
             losses, context = atomic_losses(runtime, index)
             output = context["output"]
             target = context["target"]
@@ -521,6 +528,8 @@ def evaluate_arm(runtime: Runtime, *, update: int) -> dict[str, Any]:
                 "projection_counts": proposal_projection_diagnostics(runtime, d_pre, output),
                 "hard_constraint_counts": report,
             })
+            if resource_guard is not None:
+                resource_guard(f"cycle_{cycle}:after")
 
     growth = [row for row in per_cycle if row["group"] == "growth"]
     stagnant = [row for row in per_cycle if row["group"] == "near_stagnant"]
