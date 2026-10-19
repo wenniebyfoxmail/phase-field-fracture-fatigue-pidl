@@ -122,6 +122,8 @@ def local_support_score(
     ).sum() / background_weight
     score = local_mean - background_mean
     total_weight = nodal_weight.sum()
+    predicted_mass = (projected * nodal_weight).sum()
+    predicted_support_mass = (projected[support] * nodal_weight[support]).sum()
     target_mass = (target_increment.abs() * nodal_weight).sum()
     support_mass = (target_increment[support].abs() * nodal_weight[support]).sum()
     return score, {
@@ -129,6 +131,9 @@ def local_support_score(
         "target_increment_mass_fraction_in_support": float(
             (support_mass / target_mass).detach().cpu()
         ) if target_mass.item() > 0 else 0.0,
+        "predicted_increment_mass_fraction_in_support": float(
+            (predicted_support_mass / predicted_mass).detach().cpu()
+        ) if predicted_mass.item() > 0 else 0.0,
         "local_mean": float(local_mean.detach().cpu()),
         "background_mean": float(background_mean.detach().cpu()),
         "score": float(score.detach().cpu()),

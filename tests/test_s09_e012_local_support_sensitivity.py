@@ -35,6 +35,7 @@ def test_local_support_score_uses_fixed_target_mask() -> None:
         score, torch.tensor(expected_local - expected_background, dtype=torch.float64)
     )
     assert record["support_weight_fraction"] == 3.0 / 5.0
+    assert record["predicted_increment_mass_fraction_in_support"] == 7.0 / 12.0
 
 
 def test_ranking_gradient_algebra_matches_autograd() -> None:
