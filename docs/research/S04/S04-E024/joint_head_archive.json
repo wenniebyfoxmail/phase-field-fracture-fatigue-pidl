@@ -1,0 +1,11 @@
+{
+  "source_commit": "eb09f0d9d6720c99e92f9c521cfa841e6e8b43db",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/joint_head_curvature_v1",
+  "file_count": 57,
+  "total_bytes": 72010224,
+  "scope": "D011 same fixed3D joint-coefficient finite component improvements; background strain costs and no application/evolution qualification",
+  "manifest_sha256": "e311966c656028b92a29f23d27c3eea8efb272ef97a035a3937a0b1f6cfd1632",
+  "results": "results/",
+  "figures": "figures/",
+  "independent_review": "review/"
+}

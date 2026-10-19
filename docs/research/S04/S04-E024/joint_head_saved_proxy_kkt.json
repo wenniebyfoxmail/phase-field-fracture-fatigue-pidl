@@ -1,0 +1,57 @@
+[
+  {
+    "state": "c20s4",
+    "active_at_proxy_tolerance": [
+      "4",
+      "6",
+      "ball"
+    ],
+    "nonnegative_multipliers": [
+      0.10739939263010782,
+      0.04268560478035424,
+      0.0006769319540565826
+    ],
+    "stationarity_relative_original": 1.6012497509240085e-15,
+    "stationarity_relative_inner": 1.2889392475068622e-16,
+    "max_proxy_change": 2.0638406348499894e-13,
+    "ball_excess": 2.218245587215506e-10,
+    "k0_full_UV_RMS_percent": -0.18252135578403772,
+    "scope": "multipliers only at saved proxy solution; numerical certificate, not real nonlinear optimum"
+  },
+  {
+    "state": "c60s4",
+    "active_at_proxy_tolerance": [
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "nonnegative_multipliers": [
+      0.3198421826856309,
+      0.0,
+      0.8221260791698791,
+      0.19099947228447176
+    ],
+    "stationarity_relative_original": 3.844336625593136e-15,
+    "stationarity_relative_inner": 2.1781710701907633e-16,
+    "max_proxy_change": 3.2295433688434017e-13,
+    "ball_excess": -0.9926283783354818,
+    "k0_full_UV_RMS_percent": -0.023672388161533053,
+    "scope": "multipliers only at saved proxy solution; numerical certificate, not real nonlinear optimum"
+  },
+  {
+    "state": "c83s4",
+    "active_at_proxy_tolerance": [
+      "6"
+    ],
+    "nonnegative_multipliers": [
+      0.020584141698698603
+    ],
+    "stationarity_relative_original": 1.173002276181864e-05,
+    "stationarity_relative_inner": 9.48596701441145e-07,
+    "max_proxy_change": 3.16556112919808e-12,
+    "ball_excess": -0.7671642023003273,
+    "k0_full_UV_RMS_percent": -0.017611307552001243,
+    "scope": "multipliers only at saved proxy solution; numerical certificate, not real nonlinear optimum"
+  }
+]

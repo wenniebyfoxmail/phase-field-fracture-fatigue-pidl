@@ -1,0 +1,18 @@
+{
+  "verdict": "BOUNDED_CODE_READY_PASS",
+  "source_commit": "eb09f0d9d6720c99e92f9c521cfa841e6e8b43db",
+  "blocking_findings": [],
+  "resolved_findings": [
+    "D011-CR-1 fixed-header empty trial export; regression and independent rerun passed"
+  ],
+  "initial_review_record": "code_review_initial_changes_required.json",
+  "independent_tests_passed": 17,
+  "source_sha256": {
+    "SENS_tensile/s04_e024_joint_head.py": "896f060789acfe5413b60db8f0cd8ed1d5ab9ba1c0772680cf95f2d6b317bf3c",
+    "SENS_tensile/diagnose_s04_e023_joint_head.py": "212fcc8a679103d5bf118ee12fc08f54f96e7a03e3150b190e328cbfe2909bca",
+    "tests/test_s04_e024_joint_head.py": "991b47819f65e5d9d48a21d0a908c97b41e4e1e930bbda6038c73286d6d91e62",
+    "docs/research/S04/S04-E024/joint_head_protocol.md": "4855c6a006c8cb8622158fc224b403a5c72edddfb97cce0fdbb14f294f34e056"
+  },
+  "actual_candidates_or_solves_created_by_reviewer": 0,
+  "scope": "One same-basis three-variable proxy solve/state and declared actual-field validation only; no model training/extra axes or optimum/evolution acceptance"
+}
