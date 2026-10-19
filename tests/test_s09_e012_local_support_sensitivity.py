@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 
 import numpy as np
+import pytest
 import torch
 
 
@@ -94,6 +95,21 @@ def test_preclip_control_excludes_rank_component() -> None:
     )
 
 
+def test_preclip_projection_uses_stable_norm_and_matches_core_clip() -> None:
+    gradients = OrderedDict(
+        (name, torch.zeros(2, dtype=torch.float64))
+        for name in MODULE.OBJECTIVE_ORDER
+    )
+    gradients["L_D"] = torch.tensor([1.0, 0.0], dtype=torch.float64)
+    gradients["L_R"] = torch.tensor([1.0e200, 1.0e200], dtype=torch.float64)
+    preclip, q_rank, _ = MODULE.preclip_merge(gradients, MODULE.ARM_RANK)
+    postclip, _ = MODULE.merge_ranking_gradients(gradients, MODULE.ARM_RANK)
+    independently_clipped, _ = MODULE.clip_complete_direction(preclip)
+    assert torch.isfinite(q_rank).all()
+    assert torch.linalg.vector_norm(q_rank) > 0
+    assert torch.equal(independently_clipped, postclip)
+
+
 def test_group_energy_sums_to_one() -> None:
     vector = np.asarray([1.0, 2.0, 3.0])
     fractions = MODULE.group_energy(
@@ -101,6 +117,20 @@ def test_group_energy_sums_to_one() -> None:
         {"a": np.asarray([0, 1]), "b": np.asarray([2])},
     )
     assert abs(sum(fractions.values()) - 1.0) < 1e-15
+    normalised = MODULE.normalise_fraction_map({"a": 0.3, "b": 0.3})
+    assert abs(sum(normalised.values()) - 1.0) < 1e-15
+
+
+def test_relative_pair_contrast_rejects_zero_row_normaliser() -> None:
+    zeros = np.zeros(3)
+    with pytest.raises(ValueError, match="undefined local-contrast normaliser"):
+        MODULE.relative_pair_contrast(zeros, zeros, zeros)
+
+
+def test_amplitude_replay_rejects_nonfinite_value() -> None:
+    data = {"cycles": [1, 2], "values": {"global": np.asarray([0.0, np.nan])}}
+    with pytest.raises(ValueError, match="nonfinite replayed amplitude"):
+        MODULE.amplitude_replay_error(data, {1: 0.0, 2: 0.0})
 
 
 def _route_rows(*, raw_helpful: bool, later_helpful: bool) -> list[dict]:

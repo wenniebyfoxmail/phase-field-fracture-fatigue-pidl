@@ -19,7 +19,7 @@ from pathlib import Path
 import socket
 import sys
 import time
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 import matplotlib
 
@@ -37,7 +37,9 @@ if str(SOURCE) not in sys.path:
 from s09_e009_four_arm import (  # noqa: E402
     GLOBAL_CLIP_NORM,
     NORM_EPSILON,
+    _stable_l2_norm,
     atomic_losses,
+    clip_complete_direction,
     flattened_objective_gradients,
     flattened_parameters,
     grouped_losses,
@@ -159,11 +161,16 @@ def ranking_gradient_from_margin(
     temperature: float = RANK_TEMPERATURE,
 ) -> tuple[torch.Tensor, float]:
     """Construct d softplus(-margin/(D*tau)) / d theta algebraically."""
+    _require(math.isfinite(margin), "nonfinite ranking margin")
+    _require(math.isfinite(normaliser) and normaliser > 0, "invalid ranking normaliser")
+    _require(math.isfinite(temperature) and temperature > 0, "invalid ranking temperature")
     argument = -margin / (normaliser * temperature)
     coefficient = -float(torch.sigmoid(torch.tensor(argument, dtype=torch.float64))) / (
         normaliser * temperature
     )
-    return coefficient * margin_gradient, coefficient
+    gradient = coefficient * margin_gradient
+    _require(torch.isfinite(gradient).all().item(), "nonfinite ranking gradient")
+    return gradient, coefficient
 
 
 def projected_rank_component(
@@ -173,15 +180,15 @@ def projected_rank_component(
     eps: float = NORM_EPSILON,
 ) -> torch.Tensor:
     """Reproduce the E011 norm-match/conflict projection for the rank term."""
-    anchor_norm = torch.linalg.vector_norm(anchor)
-    rank_norm = torch.linalg.vector_norm(rank_gradient)
+    anchor_norm = _stable_l2_norm(anchor)
+    rank_norm = _stable_l2_norm(rank_gradient)
     _require(anchor_norm.item() > eps, "damage anchor is stationary")
     if rank_norm.item() <= eps:
         return torch.zeros_like(rank_gradient)
     balanced = anchor_norm * rank_gradient / rank_norm
     cosine = anchor.dot(balanced) / anchor_norm.square()
     projected = balanced - torch.minimum(cosine, cosine.new_zeros(())) * anchor
-    if torch.linalg.vector_norm(projected).item() <= eps:
+    if _stable_l2_norm(projected).item() <= eps:
         return torch.zeros_like(projected)
     return projected
 
@@ -265,9 +272,14 @@ def group_slices(named_parameters: list[tuple[str, torch.nn.Parameter]]) -> dict
 
 
 def group_energy(vector: np.ndarray, slices: Mapping[str, np.ndarray]) -> dict[str, float]:
-    total = float(np.dot(vector, vector))
+    _require(np.isfinite(vector).all(), "nonfinite group-energy vector")
+    scale = float(np.max(np.abs(vector))) if vector.size else 0.0
+    if scale == 0:
+        return {name: 0.0 for name in slices}
+    scaled = vector / scale
+    total = float(np.dot(scaled, scaled))
     return {
-        name: (float(np.dot(vector[index], vector[index])) / total if total > 0 else 0.0)
+        name: float(np.dot(scaled[index], scaled[index])) / total
         for name, index in slices.items()
     }
 
@@ -275,23 +287,79 @@ def group_energy(vector: np.ndarray, slices: Mapping[str, np.ndarray]) -> dict[s
 def group_dot(
     contrast: np.ndarray, change: np.ndarray, slices: Mapping[str, np.ndarray]
 ) -> dict[str, float]:
-    return {
+    _require(np.isfinite(contrast).all() and np.isfinite(change).all(), "nonfinite group-dot vector")
+    values = {
         name: float(np.dot(contrast[index], change[index]))
         for name, index in slices.items()
     }
+    _require(all(math.isfinite(value) for value in values.values()), "nonfinite group dot")
+    return values
+
+
+def normalise_fraction_map(values: Mapping[str, float]) -> dict[str, float]:
+    total = float(sum(values.values()))
+    _require(math.isfinite(total) and total > 0, "invalid allocation fraction total")
+    return {name: float(value) / total for name, value in values.items()}
 
 
 def normalised_response(contrast: torch.Tensor, change: torch.Tensor) -> float:
-    denominator = torch.linalg.vector_norm(contrast) * torch.linalg.vector_norm(change)
-    if denominator.item() == 0:
+    contrast_norm = _stable_l2_norm(contrast)
+    change_norm = _stable_l2_norm(change)
+    if contrast_norm.item() == 0 or change_norm.item() == 0:
         return 0.0
-    return float((contrast.dot(change) / denominator).detach().cpu())
+    value = float(
+        ((contrast / contrast_norm).dot(change / change_norm)).detach().cpu()
+    )
+    _require(math.isfinite(value), "nonfinite normalised response")
+    return value
+
+
+def stable_numpy_norm(vector: np.ndarray) -> float:
+    _require(np.isfinite(vector).all(), "nonfinite norm vector")
+    scale = float(np.max(np.abs(vector))) if vector.size else 0.0
+    if scale == 0:
+        return 0.0
+    value = scale * float(np.linalg.norm(vector / scale))
+    _require(math.isfinite(value), "nonfinite derived norm")
+    return value
+
+
+def require_finite_payload(value: Any, path: str = "payload") -> None:
+    if isinstance(value, Mapping):
+        for name, child in value.items():
+            require_finite_payload(child, f"{path}.{name}")
+    elif isinstance(value, (list, tuple)):
+        for index, child in enumerate(value):
+            require_finite_payload(child, f"{path}[{index}]")
+    elif isinstance(value, (float, np.floating)):
+        _require(math.isfinite(float(value)), f"nonfinite evidence: {path}")
+    elif isinstance(value, np.ndarray):
+        _require(np.isfinite(value).all(), f"nonfinite evidence array: {path}")
+
+
+def relative_pair_contrast(
+    contrast: np.ndarray, left_row: np.ndarray, right_row: np.ndarray
+) -> float:
+    left_norm = stable_numpy_norm(left_row)
+    right_norm = stable_numpy_norm(right_row)
+    row_rms = math.hypot(left_norm, right_norm) / math.sqrt(2.0)
+    _require(
+        math.isfinite(row_rms) and row_rms > 0,
+        "undefined local-contrast normaliser",
+    )
+    value = stable_numpy_norm(contrast) / row_rms
+    _require(math.isfinite(value), "nonfinite relative local contrast")
+    return value
 
 
 def collect_state(
     runtime: Any,
     checkpoint_path: Path,
     expected_arm: str,
+    *,
+    state_name: str,
+    deadline_check: Callable[[str], None],
+    progress: dict[str, Any],
 ) -> dict[str, Any]:
     payload = torch.load(checkpoint_path, map_location=runtime.device, weights_only=True)
     _require(payload["update"] == 500, "checkpoint update mismatch")
@@ -307,6 +375,9 @@ def collect_state(
     support_records: list[dict[str, float]] = []
     parameter_order: list[str] | None = None
     for index, cycle in enumerate(cycles):
+        deadline_check(f"{state_name}_cycle_{cycle}_before_forward")
+        progress["current_state"] = state_name
+        progress["current_cycle"] = cycle
         atomic, context = atomic_losses(runtime, index)
         additions, _ = support_amplitude_losses(
             predicted_peak=context["output"]["d_peak"],
@@ -341,6 +412,9 @@ def collect_state(
         for name in gradients:
             gradients[name].append(vectors[name].detach().cpu().numpy().copy())
         support_records.append({"cycle": cycle, **support})
+        progress["cycles_completed_by_state"][state_name] = index + 1
+        progress["unique_cycle_autograd_evaluations_completed"] += 1
+        deadline_check(f"{state_name}_cycle_{cycle}_after_autograd")
     _require(parameter_state_sha256(runtime.model) == before, "analysis changed parameters")
     model_vector, _ = flattened_parameters(runtime.model)
     return {
@@ -372,11 +446,10 @@ def analyse_pairs(
         local_margin = float(data["values"]["local"][gi] - data["values"]["local"][si])
         global_contrast_np = data["gradients"]["global"][gi] - data["gradients"]["global"][si]
         local_contrast_np = data["gradients"]["local"][gi] - data["gradients"]["local"][si]
-        local_row_rms = math.sqrt(
-            (
-                float(np.linalg.norm(data["gradients"]["local"][gi])) ** 2
-                + float(np.linalg.norm(data["gradients"]["local"][si])) ** 2
-            ) / 2.0
+        relative_local_contrast = relative_pair_contrast(
+            local_contrast_np,
+            data["gradients"]["local"][gi],
+            data["gradients"]["local"][si],
         )
         global_contrast = torch.as_tensor(global_contrast_np, device=device)
         local_contrast = torch.as_tensor(local_contrast_np, device=device)
@@ -395,6 +468,13 @@ def analyse_pairs(
         for arm in (ARM_CONTROL, ARM_RANK):
             preclip, q_rank, _ = preclip_merge(pair_gradients, arm)
             postclip, diagnostic = merge_ranking_gradients(pair_gradients, arm)
+            independently_clipped, _ = clip_complete_direction(
+                preclip, limit=GLOBAL_CLIP_NORM
+            )
+            _require(
+                torch.equal(independently_clipped, postclip),
+                "preclip/core postclip chain mismatch",
+            )
             displacement = adamw_displacement_from_state_dict(
                 postclip, named_parameters, data["optimizer"]
             )
@@ -402,17 +482,38 @@ def analyse_pairs(
                 "projected_rank_local_derivative": float(
                     local_contrast.dot(-q_rank).detach().cpu()
                 ),
+                "projected_rank_global_derivative": float(
+                    global_contrast.dot(-q_rank).detach().cpu()
+                ),
                 "projected_rank_local_cosine": normalised_response(
                     local_contrast, -q_rank
+                ),
+                "projected_rank_global_cosine": normalised_response(
+                    global_contrast, -q_rank
                 ),
                 "preclip_local_derivative": float(
                     local_contrast.dot(-preclip).detach().cpu()
                 ),
+                "preclip_global_derivative": float(
+                    global_contrast.dot(-preclip).detach().cpu()
+                ),
+                "preclip_local_cosine": normalised_response(
+                    local_contrast, -preclip
+                ),
+                "preclip_global_cosine": normalised_response(
+                    global_contrast, -preclip
+                ),
                 "postclip_local_derivative": float(
                     local_contrast.dot(-postclip).detach().cpu()
                 ),
+                "postclip_global_derivative": float(
+                    global_contrast.dot(-postclip).detach().cpu()
+                ),
                 "postclip_local_cosine": normalised_response(
                     local_contrast, -postclip
+                ),
+                "postclip_global_cosine": normalised_response(
+                    global_contrast, -postclip
                 ),
                 "adamw_local_change": float(
                     local_contrast.dot(displacement).detach().cpu()
@@ -423,18 +524,25 @@ def analyse_pairs(
                 "adamw_global_change": float(
                     global_contrast.dot(displacement).detach().cpu()
                 ),
+                "adamw_global_cosine": normalised_response(
+                    global_contrast, displacement
+                ),
                 "clip_applied": bool(diagnostic["clip_applied"]),
                 "clip_scale": (
                     float(diagnostic["norm_after_clip"] / diagnostic["norm_before_clip"])
                     if diagnostic["norm_before_clip"] > 0 else 1.0
                 ),
-                "preclip_norm": float(torch.linalg.vector_norm(preclip).detach().cpu()),
-                "postclip_norm": float(torch.linalg.vector_norm(postclip).detach().cpu()),
+                "preclip_norm": float(_stable_l2_norm(preclip).detach().cpu()),
+                "postclip_norm": float(_stable_l2_norm(postclip).detach().cpu()),
+                "projected_rank_norm": float(_stable_l2_norm(q_rank).detach().cpu()),
                 "projected_rank_group_energy": group_energy(
                     q_rank.detach().cpu().numpy(), slices
                 ),
                 "projected_rank_group_local_dot": group_dot(
                     local_contrast_np, (-q_rank).detach().cpu().numpy(), slices
+                ),
+                "projected_rank_group_global_dot": group_dot(
+                    global_contrast_np, (-q_rank).detach().cpu().numpy(), slices
                 ),
                 "preclip_group_energy": group_energy(
                     preclip.detach().cpu().numpy(), slices
@@ -442,17 +550,26 @@ def analyse_pairs(
                 "preclip_group_local_dot": group_dot(
                     local_contrast_np, (-preclip).detach().cpu().numpy(), slices
                 ),
+                "preclip_group_global_dot": group_dot(
+                    global_contrast_np, (-preclip).detach().cpu().numpy(), slices
+                ),
                 "postclip_group_energy": group_energy(
                     postclip.detach().cpu().numpy(), slices
                 ),
                 "postclip_group_local_dot": group_dot(
                     local_contrast_np, (-postclip).detach().cpu().numpy(), slices
                 ),
+                "postclip_group_global_dot": group_dot(
+                    global_contrast_np, (-postclip).detach().cpu().numpy(), slices
+                ),
                 "adamw_group_energy": group_energy(
                     displacement.detach().cpu().numpy(), slices
                 ),
                 "adamw_group_local_dot": group_dot(
                     local_contrast_np, displacement.detach().cpu().numpy(), slices
+                ),
+                "adamw_group_global_dot": group_dot(
+                    global_contrast_np, displacement.detach().cpu().numpy(), slices
                 ),
             }
         outcome = "WIN" if global_margin > 0 else "LOSS" if global_margin < 0 else "TIE"
@@ -465,27 +582,34 @@ def analyse_pairs(
             "current_global_outcome": outcome,
             "global_margin": global_margin,
             "local_margin": local_margin,
-            "global_contrast_norm": float(np.linalg.norm(global_contrast_np)),
-            "local_contrast_norm": float(np.linalg.norm(local_contrast_np)),
-            "local_contrast_to_row_rms": (
-                float(np.linalg.norm(local_contrast_np)) / local_row_rms
-                if local_row_rms > 0 else 0.0
-            ),
+            "global_contrast_norm": stable_numpy_norm(global_contrast_np),
+            "local_contrast_norm": stable_numpy_norm(local_contrast_np),
+            "local_contrast_to_row_rms": relative_local_contrast,
             "local_contrast_node_decoder_energy_fraction": group_energy(
                 local_contrast_np, slices
             ).get("node_decoder", 0.0),
             "rank_loss_gradient_coefficient": rank_coefficient,
+            "raw_rank_norm": float(_stable_l2_norm(raw_rank_descent).detach().cpu()),
             "raw_rank_local_derivative": float(
                 local_contrast.dot(raw_rank_descent).detach().cpu()
             ),
+            "raw_rank_global_derivative": float(
+                global_contrast.dot(raw_rank_descent).detach().cpu()
+            ),
             "raw_rank_local_cosine": normalised_response(
                 local_contrast, raw_rank_descent
+            ),
+            "raw_rank_global_cosine": normalised_response(
+                global_contrast, raw_rank_descent
             ),
             "raw_rank_group_energy": group_energy(
                 raw_rank_descent.detach().cpu().numpy(), slices
             ),
             "raw_rank_group_local_dot": group_dot(
                 local_contrast_np, raw_rank_descent.detach().cpu().numpy(), slices
+            ),
+            "raw_rank_group_global_dot": group_dot(
+                global_contrast_np, raw_rank_descent.detach().cpu().numpy(), slices
             ),
             "arms": arm_metrics,
         })
@@ -497,7 +621,7 @@ def flatten_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for row in rows:
         nested_base = {
             name: value for name, value in row.items()
-            if name.endswith("_group_energy") or name.endswith("_group_local_dot")
+            if "_group_" in name
         }
         base = {
             name: value for name, value in row.items()
@@ -509,7 +633,7 @@ def flatten_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         for arm, metrics in row["arms"].items():
             nested = {
                 name: value for name, value in metrics.items()
-                if name.endswith("_group_energy") or name.endswith("_group_local_dot")
+                if "_group_" in name
             }
             scalar = {name: value for name, value in metrics.items() if name not in nested}
             for name, values in nested.items():
@@ -524,18 +648,25 @@ def frozen_amplitudes(path: Path, arm: str, update: int = 500) -> dict[int, floa
     with path.open(newline="") as stream:
         for row in csv.DictReader(stream):
             if row["arm"] == arm and int(row["update"]) == update:
-                rows[int(row["cycle"])] = float(
-                    row["predicted_damage_increment_abs_mean"]
-                )
+                cycle = int(row["cycle"])
+                _require(cycle not in rows, f"duplicate frozen amplitude row: {arm}/{cycle}")
+                value = float(row["predicted_damage_increment_abs_mean"])
+                _require(math.isfinite(value), f"nonfinite frozen amplitude: {arm}/{cycle}")
+                rows[cycle] = value
     _require(len(rows) == 16, f"frozen amplitude coverage drift: {arm}")
     return rows
 
 
 def amplitude_replay_error(data: Mapping[str, Any], frozen: Mapping[int, float]) -> float:
-    return max(
-        abs(float(value) - frozen[cycle])
-        for cycle, value in zip(data["cycles"], data["values"]["global"])
-    )
+    _require(set(frozen) == set(data["cycles"]), "frozen amplitude cycle-set drift")
+    differences = []
+    for cycle, value in zip(data["cycles"], data["values"]["global"]):
+        observed = float(value)
+        _require(math.isfinite(observed), f"nonfinite replayed amplitude: {cycle}")
+        difference = abs(observed - frozen[cycle])
+        _require(math.isfinite(difference), f"nonfinite amplitude replay difference: {cycle}")
+        differences.append(difference)
+    return max(differences)
 
 
 def observed_changes(
@@ -552,6 +683,9 @@ def observed_changes(
         end_local = float(endpoint["values"]["local"][gi] - endpoint["values"]["local"][si])
         global_contrast = start["gradients"]["global"][gi] - start["gradients"]["global"][si]
         local_contrast = start["gradients"]["local"][gi] - start["gradients"]["local"][si]
+        linearised_global_change = float(np.dot(global_contrast, displacement))
+        linearised_local_change = float(np.dot(local_contrast, displacement))
+        linearised_global_margin = start_global + linearised_global_change
         rows.append({
             "arm": arm,
             "growth_cycle": growth,
@@ -559,11 +693,11 @@ def observed_changes(
             "initial_outcome": "WIN" if start_global > 0 else "LOSS" if start_global < 0 else "TIE",
             "global_margin_change": end_global - start_global,
             "local_margin_change": end_local - start_local,
-            "linearised_global_change_along_finite_displacement": float(
-                np.dot(global_contrast, displacement)
-            ),
-            "linearised_local_change_along_finite_displacement": float(
-                np.dot(local_contrast, displacement)
+            "linearised_global_change_along_finite_displacement": linearised_global_change,
+            "linearised_local_change_along_finite_displacement": linearised_local_change,
+            "linearised_global_margin": linearised_global_margin,
+            "prospective_global_crossing": bool(
+                start_global > 0 and linearised_global_margin <= 0
             ),
             "endpoint_global_outcome": "WIN" if end_global > 0 else "LOSS" if end_global < 0 else "TIE",
             "endpoint_local_margin": end_local,
@@ -776,12 +910,26 @@ def run(args: argparse.Namespace) -> None:
     started = time.monotonic()
     args._failure_stage = "initialising"
     args._states_completed = []
+    args._progress = {
+        "current_state": None,
+        "current_cycle": None,
+        "cycles_completed_by_state": {state: 0 for state in STATE_ORDER},
+        "unique_cycle_autograd_evaluations_completed": 0,
+    }
     def require_deadline(stage: str) -> None:
         _require(
             time.monotonic() - started <= args.wall_seconds,
             f"wall-time cap reached at {stage}",
         )
 
+    _require(
+        math.isfinite(args.wall_seconds) and 0 < args.wall_seconds <= 900.0,
+        "wall-time limit must be finite, positive, and at most 900 seconds",
+    )
+    _require(args.device == "cuda:0", "producer diagnostic requires cuda:0")
+    _require(torch.cuda.is_available(), "producer diagnostic requires CUDA")
+    _require(torch.cuda.device_count() == 1, "exactly one visible GPU is required")
+    _require(socket.gethostname() == "GPUServer8", "producer host identity mismatch")
     _require(not args.output_dir.exists(), "output directory must be fresh")
     input_paths = {
         "start_checkpoint": args.start_checkpoint,
@@ -817,7 +965,14 @@ def run(args: argparse.Namespace) -> None:
     for name, (path, arm) in checkpoints.items():
         args._failure_stage = f"{name}_collection"
         require_deadline(f"{name}_before_collection")
-        states[name] = collect_state(runtime, path, arm)
+        states[name] = collect_state(
+            runtime,
+            path,
+            arm,
+            state_name=name,
+            deadline_check=require_deadline,
+            progress=args._progress,
+        )
         args._states_completed.append(name)
         require_deadline(f"{name}_after_collection")
     frozen_by_state = {
@@ -856,8 +1011,10 @@ def run(args: argparse.Namespace) -> None:
             )
         )
         require_deadline(f"{state_name}_after_pair_algebra")
+    require_finite_payload(state_rows, "state_rows")
     observed = observed_changes(states[STATE_ORDER[0]], states[STATE_ORDER[1]], ARM_CONTROL)
     observed += observed_changes(states[STATE_ORDER[0]], states[STATE_ORDER[2]], ARM_RANK)
+    require_finite_payload(observed, "observed_endpoint_changes")
     route = choose_route(state_rows)
     start_local_contrasts = []
     for growth, stagnant in PAIR_ORDER:
@@ -866,11 +1023,12 @@ def run(args: argparse.Namespace) -> None:
             states[STATE_ORDER[0]]["gradients"]["local"][gi]
             - states[STATE_ORDER[0]]["gradients"]["local"][si]
         )
-    allocation: dict[str, dict[str, float]] = {
-        "median local Jdiff": {
+    median_local_allocation = normalise_fraction_map({
             group: float(np.median([group_energy(v, slices)[group] for v in start_local_contrasts]))
             for group in slices
-        },
+        })
+    allocation: dict[str, dict[str, float]] = {
+        "median local Jdiff": median_local_allocation,
         "control displacement": group_energy(
             states[STATE_ORDER[1]]["model_vector"] - states[STATE_ORDER[0]]["model_vector"], slices
         ),
@@ -906,9 +1064,19 @@ def run(args: argparse.Namespace) -> None:
         "ranking_correct_pairs_lost": sum(
             row["endpoint_global_outcome"] != "WIN" for row in correct if row["arm"] == ARM_RANK
         ),
+        "control_correct_pairs_prospective_crossings": sum(
+            row["prospective_global_crossing"] for row in correct if row["arm"] == ARM_CONTROL
+        ),
+        "ranking_correct_pairs_prospective_crossings": sum(
+            row["prospective_global_crossing"] for row in correct if row["arm"] == ARM_RANK
+        ),
     }
     _require(
-        pair_accounting == {
+        {name: pair_accounting[name] for name in (
+            "original_wrong_pairs", "original_correct_pairs",
+            "control_wrong_pairs_repaired", "control_correct_pairs_lost",
+            "ranking_wrong_pairs_repaired", "ranking_correct_pairs_lost",
+        )} == {
             "original_wrong_pairs": 8,
             "original_correct_pairs": 17,
             "control_wrong_pairs_repaired": 8,
@@ -917,6 +1085,31 @@ def run(args: argparse.Namespace) -> None:
             "ranking_correct_pairs_lost": 0,
         },
         "frozen realised-pair accounting drift",
+    )
+    sign_accounting = {}
+    for arm in (ARM_CONTROL, ARM_RANK):
+        arm_rows = [row for row in observed if row["arm"] == arm]
+        sign_accounting[arm] = {
+            initial: {
+                endpoint: sum(
+                    row["initial_outcome"] == initial
+                    and row["endpoint_global_outcome"] == endpoint
+                    for row in arm_rows
+                )
+                for endpoint in ("WIN", "TIE", "LOSS")
+            }
+            for initial in ("WIN", "TIE", "LOSS")
+        }
+    require_finite_payload(pair_accounting, "pair_accounting")
+    require_finite_payload(sign_accounting, "sign_accounting")
+    for name, path in input_paths.items():
+        _require(
+            sha256(path) == EXPECTED_INPUT_SHA256[name],
+            f"input identity changed during analysis: {name}",
+        )
+    _require(
+        runtime.packet_identity["manifest_sha256"] == EXPECTED_PACKET_MANIFEST_SHA256,
+        "packet identity changed during analysis",
     )
     readme = f"""# S09-E012 analysis
 
@@ -985,6 +1178,7 @@ protection loss are reported together; no subset was selected after inspection.
             "e011_csv": {"path": str(args.e011_per_cycle_csv), "sha256": sha256(args.e011_per_cycle_csv)},
         },
         "pair_accounting": pair_accounting,
+        "endpoint_sign_accounting": sign_accounting,
         "parameter_group_allocation": allocation,
         "artifacts": {},
     }
@@ -1016,9 +1210,10 @@ def main() -> None:
             "error": str(exc),
             "failure_stage": getattr(args, "_failure_stage", "argument_or_preflight"),
             "states_completed": getattr(args, "_states_completed", []),
-            "completed_unique_cycle_autograd_evaluations": 16 * len(
-                getattr(args, "_states_completed", [])
-            ),
+            "progress": getattr(args, "_progress", {}),
+            "completed_unique_cycle_autograd_evaluations": getattr(
+                args, "_progress", {}
+            ).get("unique_cycle_autograd_evaluations_completed", 0),
             "optimizer_constructed": False,
             "optimizer_steps_performed": 0,
             "fresh_holdout_accessed": False,
