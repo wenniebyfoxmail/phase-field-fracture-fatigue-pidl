@@ -1,0 +1,58 @@
+{
+  "status": "PASS_REMOTE_PREFLIGHT_NO_TRAINING",
+  "run_id": "HQ-ROAD-UQ-MATRIX-001-R001",
+  "hostname": "D-26-09",
+  "platform": "Windows",
+  "gpu": "0",
+  "cuda_available": true,
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "numpy": "2.5.2",
+    "pillow": "11.3.0",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2",
+    "cuda": "12.8"
+  },
+  "code_snapshot": "49271e498b9019ed6d239e9df368ed9474a9bcb5e9a373efb12f2f26654e89b8",
+  "data_lock_sha256": "1a4a80fb370e89258c24eb623cd166d81ba53da22f3db7321f3a7e71211d51ba",
+  "inputs": {
+    "old_checkpoint": {
+      "bytes": 7872385,
+      "sha256": "43423f84e3f56325821000c8b6845063df2e4472424cd80f612e225c04a0205d"
+    },
+    "new_checkpoint": {
+      "bytes": 57735403,
+      "sha256": "92cd93741021ecdf63768f8885325d804eb1a595fff8af9ae4ba43c2686027e2"
+    },
+    "valzip": {
+      "bytes": 20836950,
+      "sha256": "78974e47e7499aa2d40829e5171c87c8001055731aaa4a92aed5d8d67073718c"
+    },
+    "gapszip": {
+      "bytes": 158730287,
+      "sha256": "e40e8eec77d09cb76896a4fa5bdb28f1a4df9d14602b13dbd998c5d361f0a2a6"
+    },
+    "old_cfd_csv": {
+      "bytes": 13290,
+      "sha256": "85a00df3a719fab9ad4748dfbd75048cdcbb980375829d04f3749071a363d6b1"
+    },
+    "new_gaps_csv": {
+      "bytes": 52721,
+      "sha256": "e069f455945dbeb7b4c6cda2893e08a69df23dfb04817221420bd0049e7e9c23"
+    }
+  },
+  "cfd_lock": {
+    "labeled_pairs": 118,
+    "files": 236,
+    "bytes": 4143667,
+    "aggregate_sha256": "ca8f294c2d9a8ca6d696c9c20394b67d4f521176dbbbef00c03ed0dd577b57de"
+  },
+  "strict_checkpoint_loads": [
+    "old_scratch_unet",
+    "repair_resnet18unet"
+  ],
+  "training_or_optimizer_steps": 0,
+  "road420_access": false
+}

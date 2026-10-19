@@ -1,4 +1,8 @@
 __pycache__/
 runs/*/retrieved_*/HQ-ROAD-UQ-FEAS-001-R001/
 runs/*/retrieved_*/HQ-ROAD-UQ-FEAS-002-R001/
+runs/*/retrieved_*/HQ-ROAD-UQ-MATRIX-001-R001/
+runs/*/retrieved_*/00_INTENT.md
+runs/*/retrieved_*/approval_gpu_server.json
+runs/*/retrieved_*/launch_gpu_server.cmd
 *.tar.gz

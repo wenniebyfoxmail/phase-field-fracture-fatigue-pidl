@@ -1,0 +1,62 @@
+[
+  {
+    "name": "matrix_summary.json",
+    "bytes": 3810,
+    "sha256": "d162fa6ca3c1d4b4c726b99d8af075d7b1ebf3376d11408831a367b479c71429"
+  },
+  {
+    "name": "old_cfd_metrics.csv",
+    "bytes": 26702,
+    "sha256": "61b22b603fb09003561609ff4e8c33202387b9d59eadf594e156fa83a839b6bc"
+  },
+  {
+    "name": "old_gaps384_metrics.csv",
+    "bytes": 110837,
+    "sha256": "8e6308f9ec527422d2011dbbd3fe0ffe5ae010c927243d121d15b1f59f588c63"
+  },
+  {
+    "name": "paired_failures_CFD.png",
+    "bytes": 924343,
+    "sha256": "693304300e1cd7c5b91903ae3137c082ec8a62935b9677ec7930539439953f31"
+  },
+  {
+    "name": "paired_failures_CFD_selection.json",
+    "bytes": 224,
+    "sha256": "7724ccfec9ace6777c9a972a4bb0b2c7084b948871d925f8e54e147fd2680e88"
+  },
+  {
+    "name": "paired_failures_GAPS384.png",
+    "bytes": 677565,
+    "sha256": "648b6b457594796bdabfc0c705b794a1edcb31261cad4dac2183ad7d8924c15d"
+  },
+  {
+    "name": "paired_failures_GAPS384_selection.json",
+    "bytes": 240,
+    "sha256": "0619b4b90693fc59adf864f279b8fe8b4ab0f6d8214e2e9ee5df702ce0e7ccff"
+  },
+  {
+    "name": "paired_matrix_risk_curves.png",
+    "bytes": 176229,
+    "sha256": "e0fc8da0c3d1147933954780be00f2eafc631dc6403daccc17bc9fb0fea10926"
+  },
+  {
+    "name": "receipt.json",
+    "bytes": 392,
+    "sha256": "1efa2041f575e1884c929a6a924e51cab3be13bcf52a19f3007dbb028ef0d4ac"
+  },
+  {
+    "name": "repair_cfd_metrics.csv",
+    "bytes": 24703,
+    "sha256": "df82289ebd4f5bbb19deeef6538500ce8175ff5b13daa0bf50778f47931671b9"
+  },
+  {
+    "name": "repair_gaps384_metrics.csv",
+    "bytes": 112183,
+    "sha256": "75577a03c79970aae831de9f9788a3a4c2756af5708bdb3f1fb32bf1f90fed75"
+  },
+  {
+    "name": "risk_curves.json",
+    "bytes": 422523,
+    "sha256": "fb8cbac84ac0f135ca73ede70bdb68f4806d552039820c1d8f5a4439847809cf"
+  }
+]

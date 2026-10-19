@@ -1,0 +1,313 @@
+{
+  "status": "PASS_COMPLETE_RETRIEVED_AND_RECOMPUTED",
+  "remote_formal_files": 12,
+  "remote_hashes_all_match": true,
+  "remote_hashes": {
+    "matrix_summary.json": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "old_cfd_metrics.csv": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "old_gaps384_metrics.csv": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "paired_failures_CFD.png": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "paired_failures_CFD_selection.json": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "paired_failures_GAPS384.png": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "paired_failures_GAPS384_selection.json": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "paired_matrix_risk_curves.png": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "receipt.json": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "repair_cfd_metrics.csv": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "repair_gaps384_metrics.csv": {
+      "bytes_match": true,
+      "sha256_match": true
+    },
+    "risk_curves.json": {
+      "bytes_match": true,
+      "sha256_match": true
+    }
+  },
+  "cells": {
+    "old_CFD": {
+      "n_all": 118,
+      "n_nonempty": 118,
+      "n_empty": 0,
+      "unique_ids": 118,
+      "finite_numeric_values": true,
+      "full_risk": 0.8325051903604233,
+      "mean_dice": 0.16749480963957686,
+      "median_dice": 0.21621719971221723,
+      "dice_positive": 71,
+      "degenerate": 47,
+      "mean_tol2_f1": 0.3851549876126178,
+      "mean_tol4_f1": 0.4317482999818807,
+      "pred_fg_fraction": {
+        "mean": 0.017981660487288137,
+        "median": 0.014436848958333333,
+        "p90": 0.03788997395833334
+      },
+      "accepted_n": 29,
+      "scores": {
+        "U_LC": {
+          "risk_at_25": 1.0,
+          "risk_reduction": -0.16749480963957675,
+          "aurc": 0.9367877594808093
+        },
+        "U_H": {
+          "risk_at_25": 1.0,
+          "risk_reduction": -0.16749480963957675,
+          "aurc": 0.9371756697975441
+        },
+        "U_Z": {
+          "risk_at_25": 0.7406964385959898,
+          "risk_reduction": 0.09180875176443348,
+          "aurc": 0.7614302316888069
+        }
+      },
+      "empty_reference_rows": []
+    },
+    "old_GAPS384": {
+      "n_all": 384,
+      "n_nonempty": 382,
+      "n_empty": 2,
+      "unique_ids": 384,
+      "finite_numeric_values": true,
+      "full_risk": 0.9844621565609085,
+      "mean_dice": 0.015537843439091491,
+      "median_dice": 0.007385131768452243,
+      "dice_positive": 319,
+      "degenerate": 0,
+      "mean_tol2_f1": 0.02246551983554659,
+      "mean_tol4_f1": 0.028494398502610922,
+      "pred_fg_fraction": {
+        "mean": 0.1794644036624976,
+        "median": 0.19142578125,
+        "p90": 0.2677633101851852
+      },
+      "accepted_n": 95,
+      "scores": {
+        "U_LC": {
+          "risk_at_25": 0.9718556856845372,
+          "risk_reduction": 0.012606470876371345,
+          "aurc": 0.977980679306912
+        },
+        "U_H": {
+          "risk_at_25": 0.9707269997023893,
+          "risk_reduction": 0.013735156858519226,
+          "aurc": 0.9769906410685176
+        },
+        "U_Z": {
+          "risk_at_25": 0.9685804609499471,
+          "risk_reduction": 0.01588169561096142,
+          "aurc": 0.9697060323367317
+        }
+      },
+      "empty_reference_rows": [
+        {
+          "id": "train_1344",
+          "dice": 0.0,
+          "error": 1.0,
+          "pred_empty": false,
+          "pred_full": false,
+          "pred_fg_fraction": 0.20242525077160495
+        },
+        {
+          "id": "train_1369",
+          "dice": 0.0,
+          "error": 1.0,
+          "pred_empty": false,
+          "pred_full": false,
+          "pred_fg_fraction": 0.20000868055555557
+        }
+      ]
+    },
+    "repair_CFD": {
+      "n_all": 118,
+      "n_nonempty": 118,
+      "n_empty": 0,
+      "unique_ids": 118,
+      "finite_numeric_values": true,
+      "full_risk": 0.8614345913626645,
+      "mean_dice": 0.1385654086373356,
+      "median_dice": 0.0,
+      "dice_positive": 56,
+      "degenerate": 62,
+      "mean_tol2_f1": 0.32548896718782966,
+      "mean_tol4_f1": 0.36186247211911526,
+      "pred_fg_fraction": {
+        "mean": 0.015515150512005648,
+        "median": 0.0,
+        "p90": 0.036959635416666664
+      },
+      "accepted_n": 29,
+      "scores": {
+        "U_LC": {
+          "risk_at_25": 1.0,
+          "risk_reduction": -0.13856540863733546,
+          "aurc": 0.9590357093163636
+        },
+        "U_H": {
+          "risk_at_25": 1.0,
+          "risk_reduction": -0.13856540863733546,
+          "aurc": 0.959083543429139
+        },
+        "U_Z": {
+          "risk_at_25": 0.8068812347633684,
+          "risk_reduction": 0.054553356599296166,
+          "aurc": 0.8101669628165872
+        }
+      },
+      "empty_reference_rows": []
+    },
+    "repair_GAPS384": {
+      "n_all": 384,
+      "n_nonempty": 382,
+      "n_empty": 2,
+      "unique_ids": 384,
+      "finite_numeric_values": true,
+      "full_risk": 0.9860689029339916,
+      "mean_dice": 0.013931097066008296,
+      "median_dice": 0.008437476413368157,
+      "dice_positive": 331,
+      "degenerate": 0,
+      "mean_tol2_f1": 0.020945354365030883,
+      "mean_tol4_f1": 0.02735001343268458,
+      "pred_fg_fraction": {
+        "mean": 0.2513573265605811,
+        "median": 0.2629390914351852,
+        "p90": 0.34468426890432097
+      },
+      "accepted_n": 95,
+      "scores": {
+        "U_LC": {
+          "risk_at_25": 0.9752635898629981,
+          "risk_reduction": 0.010805313070993527,
+          "aurc": 0.979298559324388
+        },
+        "U_H": {
+          "risk_at_25": 0.9754821746381361,
+          "risk_reduction": 0.010586728295855496,
+          "aurc": 0.979280464834542
+        },
+        "U_Z": {
+          "risk_at_25": 0.9788366657962643,
+          "risk_reduction": 0.00723223713772736,
+          "aurc": 0.9824644022717508
+        }
+      },
+      "empty_reference_rows": [
+        {
+          "id": "train_1344",
+          "dice": 0.0,
+          "error": 1.0,
+          "pred_empty": false,
+          "pred_full": false,
+          "pred_fg_fraction": 0.23712046682098764
+        },
+        {
+          "id": "train_1369",
+          "dice": 0.0,
+          "error": 1.0,
+          "pred_empty": false,
+          "pred_full": false,
+          "pred_fg_fraction": 0.25991657021604936
+        }
+      ]
+    }
+  },
+  "paired_delta": {
+    "CFD": {
+      "n": 118,
+      "new_minus_old_mean_error": 0.028929401002241253,
+      "new_minus_old_median_error": 0.0,
+      "bootstrap_95_interval": [
+        0.011424594104390664,
+        0.048029974208617904
+      ],
+      "repair_better_cases": 39,
+      "repair_worse_cases": 32,
+      "ties": 47,
+      "mean_tol2_f1_delta": -0.059666020424788156,
+      "mean_tol4_f1_delta": -0.06988582786276544
+    },
+    "GAPS384": {
+      "n": 382,
+      "new_minus_old_mean_error": 0.0016067463730831968,
+      "new_minus_old_median_error": 0.0,
+      "bootstrap_95_interval": [
+        0.00046426264641121775,
+        0.0029156464876554894
+      ],
+      "repair_better_cases": 165,
+      "repair_worse_cases": 179,
+      "ties": 38,
+      "mean_tol2_f1_delta": -0.0015201654705157025,
+      "mean_tol4_f1_delta": -0.0011443850699263407
+    }
+  },
+  "producer_summary_max_abs_recompute_difference": 0.0,
+  "producer_bootstrap_exact_match": {
+    "CFD": true,
+    "GAPS384": true
+  },
+  "diagonal_verification": {
+    "old_CFD": {
+      "matched_ids": 118,
+      "max_abs_metric_difference": 2.3845440792064077e-08,
+      "comparable": true
+    },
+    "repair_GAPS384": {
+      "matched_ids": 382,
+      "max_abs_metric_difference": 2.811327765975518e-06,
+      "comparable": true
+    }
+  },
+  "receipt": {
+    "status": "succeeded",
+    "run_id": "HQ-ROAD-UQ-MATRIX-001-R001",
+    "code_snapshot": "49271e498b9019ed6d239e9df368ed9474a9bcb5e9a373efb12f2f26654e89b8",
+    "data_lock_sha256": "1a4a80fb370e89258c24eb623cd166d81ba53da22f3db7321f3a7e71211d51ba",
+    "training_steps": 0,
+    "road420_access": false,
+    "summary_sha256": "d162fa6ca3c1d4b4c726b99d8af075d7b1ebf3376d11408831a367b479c71429"
+  },
+  "task": {
+    "task": "HQ-ROAD-UQ-MATRIX-001-R001-20261019",
+    "state": "Ready",
+    "last_task_result": 0,
+    "last_run_time": "2026-10-19T13:25:00.0000000+01:00",
+    "hostname": "D-26-09",
+    "formal_output": "C:\\Users\\xw436\\jobs\\HQ-ROAD-UQ-MATRIX-001-R001",
+    "remote_original_preserved": true
+  },
+  "scheduled_exitcode": "0",
+  "scheduled_stderr_bytes": 0,
+  "training_steps": 0,
+  "road420_access": false,
+  "audit_scope": "integrity plus independent arithmetic from exported per-image rows; no second model inference"
+}

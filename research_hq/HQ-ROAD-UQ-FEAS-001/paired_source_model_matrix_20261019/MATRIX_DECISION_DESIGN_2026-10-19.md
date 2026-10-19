@@ -42,3 +42,7 @@ Architecture and ImageNet initialization are treated as one repair package. This
 ## Authority boundary
 
 The running `HQ-ROAD-UQ-FEAS-002-R001` is not modified. The paired matrix needs no training, new seed, new source or Road420 access, but its additional GPU inference is outside that frozen runner. Implementation may be prepared locally; execution requires one separate approval tied to the final evaluator snapshot, exact two checkpoints, CFD/GAPS identities, GPU budget and no-retry rule.
+
+## Result pointer — 2026-10-19
+
+The authorized unique run `HQ-ROAD-UQ-MATRIX-001-R001` completed with exit code 0, no retry, zero training steps and no Road420 access. The repair package increased strict mean error on both CFD and GAPS, decreased 2/4-pixel tolerant F1 on both, and did not create a useful absolute acceptance queue. Final disposition: redirect to target/source compatibility and stop blind backbone, seed and UQ-score expansion for this route. See `runs/HQ-ROAD-UQ-MATRIX-001-R001/03_RESULT_CLAIM_AUDIT_AND_FINAL_DECISION_2026-10-19.md`.
