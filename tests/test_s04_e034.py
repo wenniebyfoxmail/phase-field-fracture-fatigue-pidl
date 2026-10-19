@@ -214,5 +214,47 @@ class FiniteComparisonTests(unittest.TestCase):
             self.assertEqual(payload['stress'].shape, (3, 4, 3))
             self.assertTrue(np.array_equal(payload['fields'][:, 2], np.full(8, .2)))
 
+    def test_finalization_faults_preserve_stop_and_always_close(self):
+        from unittest.mock import Mock
+        for fault in ('hash', 'archive_copy', 'guard', 'close'):
+            with self.subTest(fault=fault), tempfile.TemporaryDirectory() as tmp:
+                out = Path(tmp)/'output'; out.mkdir()
+                archive = Path(tmp)/'archive'; (archive/'output').mkdir(parents=True)
+                (out/'payload.txt').write_text('synthetic')
+                budget = SimpleNamespace(started=0., shared=0., phase='shared', phase_started=0., cap=None,
+                    guard=Mock(side_effect=TimeoutError('guard fixture') if fault == 'guard' else None),
+                    close=Mock(side_effect=OSError('close fixture') if fault == 'close' else None))
+                receipt = dict(status='computed_pending_finalization', error='ValueError: original fixture error')
+                with patch.object(runner, 'sha256', side_effect=OSError('hash fixture') if fault == 'hash' else None,
+                                  wraps=runner.sha256 if fault != 'hash' else None), patch.object(runner.shutil, 'copy2',
+                                  side_effect=OSError('copy fixture') if fault == 'archive_copy' else None,
+                                  wraps=runner.shutil.copy2 if fault != 'archive_copy' else None):
+                    error = runner.finalize(out, dict(archive_root=str(archive)), receipt, budget, ValueError('original fixture error'))
+                self.assertIsNotNone(error)
+                self.assertEqual(budget.close.call_count, 1)
+                result = json.loads((out/'receipt.json').read_text())
+                self.assertEqual(result['status'], 'stopped_no_retry')
+                self.assertIn('original fixture error', result['error'])
+                self.assertTrue(result['finalization_errors'])
+                self.assertFalse((out/'completion.json').exists())
+
+    def test_finalization_success_and_terminal_manifest_identity(self):
+        from unittest.mock import Mock
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)/'output'; out.mkdir()
+            archive = Path(tmp)/'archive'; (archive/'output').mkdir(parents=True)
+            (out/'payload.txt').write_text('synthetic')
+            budget = SimpleNamespace(started=0., shared=0., phase='shared', phase_started=0., cap=None, guard=Mock(), close=Mock())
+            receipt = dict(status='computed_pending_finalization')
+            self.assertIsNone(runner.finalize(out, dict(archive_root=str(archive)), receipt, budget, None))
+            result = json.loads((out/'receipt.json').read_text())
+            self.assertEqual(result['status'], 'completed_pending_HQ_evaluation')
+            completion = json.loads((out/'completion.json').read_text())
+            self.assertEqual(completion['manifest_sha256'], runner.sha256(out/'manifest.json'))
+            for row in json.loads((out/'manifest.json').read_text()):
+                self.assertEqual(row['sha256'], runner.sha256(out/row['path']))
+            self.assertEqual((out/'completion.json').read_bytes(), (archive/'output/completion.json').read_bytes())
+            budget.close.assert_called_once()
+
 
 if __name__ == '__main__': unittest.main()

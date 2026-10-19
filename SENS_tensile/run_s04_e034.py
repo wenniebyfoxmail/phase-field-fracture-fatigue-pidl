@@ -36,6 +36,82 @@ def dump(path, value):
     tmp.replace(path)
 
 
+def sha256(path):
+    digest = hashlib.sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda: stream.read(1024*1024), b''): digest.update(block)
+    return digest.hexdigest()
+
+
+def finalize(out, grant, receipt, budget, primary_error):
+    """Terminal IO cannot turn an interrupted/partial package into completion.
+
+    Return a finalization exception separately, retaining the original failure.
+    A nonzero outer exit or watchdog stop always overrides any partial receipt.
+    """
+    final_error = None
+    if primary_error is not None:
+        receipt['status'] = 'stopped_no_retry'
+        receipt.setdefault('error', f'{type(primary_error).__name__}: {primary_error}')
+    archived = Path(grant['archive_root'])/'output'
+    def invalidate_completion():
+        for folder in (out, archived):
+            try:
+                (folder/'completion.json').unlink(missing_ok=True)
+            except OSError as error:
+                print('E034 completion invalid (nonzero exit required): '+repr(error), file=sys.stderr, flush=True)
+    def record_failure(error):
+        nonlocal final_error
+        if final_error is None: final_error = error
+        receipt['status'] = 'stopped_no_retry'
+        receipt.setdefault('finalization_errors', []).append(f'{type(error).__name__}: {error}')
+        try:
+            dump(out/'receipt.json', receipt)
+        except BaseException as write_error:
+            # Disk failure can prevent receipts; the nonzero outer process exit
+            # remains authoritative and no completion marker is emitted.
+            print('E034 FINALIZATION STOP: '+repr(error)+'; receipt write: '+repr(write_error), file=sys.stderr, flush=True)
+        if archived.exists():
+            try:
+                dump(archived/'receipt.json', receipt)
+            except BaseException as write_error:
+                print('E034 archived receipt invalid: '+repr(write_error), file=sys.stderr, flush=True)
+        invalidate_completion()
+    try:
+        budget.guard()
+        receipt.update(elapsed_seconds=time.monotonic()-budget.started, end_unix=time.time(),
+            shared_seconds=budget.shared+(time.monotonic()-budget.phase_started if budget.phase == 'shared' else 0),
+            peak_RSS_bytes=rss_bytes())
+        if budget.cap is not None:
+            receipt.update(peak_cuda_reserved_bytes=torch.cuda.max_memory_reserved(), peak_cuda_allocated_bytes=torch.cuda.max_memory_allocated())
+        if primary_error is None:
+            receipt['status'] = 'completed_pending_HQ_evaluation'
+        dump(out/'receipt.json', receipt)
+        manifest = []
+        for path in sorted(out.rglob('*')):
+            if path.is_file() and path.name not in ('manifest.json', 'phase_deadline.json', 'watchdog_done', 'completion.json'):
+                manifest.append(dict(path=str(path.relative_to(out)), bytes=path.stat().st_size, sha256=sha256(path)))
+        dump(out/'manifest.json', manifest)
+        if archived.exists():
+            for name in ('receipt.json', 'manifest.json'): shutil.copy2(out/name, archived/name)
+        budget.guard()
+        if primary_error is None:
+            # The marker, matching manifest, no watchdog stop AND outer exit=0
+            # together constitute completion. Watchdog stays active through IO.
+            dump(out/'completion.json', dict(status='completed_pending_HQ_evaluation', protocol=m.PROTOCOL,
+                 manifest_sha256=sha256(out/'manifest.json'), final_unix=time.time()))
+            if archived.exists(): shutil.copy2(out/'completion.json', archived/'completion.json')
+            budget.guard()
+    except BaseException as error:
+        record_failure(error)
+    finally:
+        try:
+            budget.close()
+        except BaseException as error:
+            record_failure(error)
+    return final_error
+
+
 def authorization(lock, grant, out):
     """Fail before resource access or real input loading, including on Mac."""
     if platform.system() == 'Darwin':
@@ -222,6 +298,7 @@ def run(lock, grant, out):
                    source_dirty=False, retry=False, status='preparing', arms={}, snapshot_physics_calls=0,
                    verification_physics_calls=0, shared_jacobian_points=0, history_commits=0, FEM_solves=0,
                    accepted_head_updates=0, start_unix=time.time())
+    primary_error = None
     try:
         dump(out/'data_lock.json', lock); dump(out/'grant.json', grant)
         budget.cap, admission = device_admission(); dump(out/'admission.json', admission)
@@ -235,6 +312,15 @@ def run(lock, grant, out):
             old.verify_payload(history, row); budget.guard()
         arrays = old.load_reference(Path(grant['data_root']), lock['reference_lock'])
         p = old.Problem(arrays, 'cuda:0'); scored.validate_current_lower(p)
+        # Include repeated baseline/verification/export mechanics in accounting,
+        # beyond the separately recorded optimizer objective/constraint calls.
+        for name in ('parts', 'force'):
+            operation = getattr(p, name)
+            key = 'native_'+name+'_calls'; receipt[key] = 0
+            def counted(*args, operation=operation, key=key, **kwargs):
+                receipt[key] += 1
+                return operation(*args, **kwargs)
+            setattr(p, name, counted)
         frozen = np.load(control/'fields.npz'); theta_np = np.load(control/'head_endpoint.npz')['theta']
         parent_receipt = json.loads((control/'receipt.json').read_text())
         if parent_receipt['commit'] != lock['expected_control_runtime_commit'] or parent_receipt['accepted_head_updates'] != 1:
@@ -379,28 +465,17 @@ def run(lock, grant, out):
             raise ValueError('frozen hidden/damage head/history/fatigue changed')
         dump(out/'identity.json', dict(frozen_model_bitwise=True, external_damage_bitwise=True, history_fatigue_bitwise=True))
         render(out, p, endpoints, frozen, receipt); budget.guard()
-        receipt['status'] = 'completed_pending_HQ_evaluation'
+        receipt['status'] = 'computed_pending_finalization'
         # CPU archive is still inside the shared wall quota and outer watchdog.
         shutil.copytree(out, Path(grant['archive_root'])/'output', ignore=shutil.ignore_patterns('phase_deadline.json', 'watchdog_done'))
         budget.guard()
     except BaseException as error:
         receipt.update(status='stopped_no_retry', error=f'{type(error).__name__}: {error}')
-        raise
+        primary_error = error
     finally:
-        receipt.update(elapsed_seconds=time.monotonic()-started, end_unix=time.time(), shared_seconds=budget.shared+(time.monotonic()-budget.phase_started if budget.phase == 'shared' else 0))
-        if budget.cap is not None:
-            receipt.update(peak_cuda_reserved_bytes=torch.cuda.max_memory_reserved(), peak_cuda_allocated_bytes=torch.cuda.max_memory_allocated())
-        receipt['peak_RSS_bytes'] = rss_bytes()
-        dump(out/'receipt.json', receipt)
-        manifest = []
-        for path in sorted(out.rglob('*')):
-            if path.is_file() and path.name not in ('manifest.json', 'phase_deadline.json', 'watchdog_done'):
-                manifest.append(dict(path=str(path.relative_to(out)), bytes=path.stat().st_size, sha256=hashlib.file_digest(path.open('rb'), 'sha256').hexdigest()))
-        dump(out/'manifest.json', manifest)
-        archived = Path(grant['archive_root'])/'output'
-        if archived.exists():
-            for name in ('receipt.json', 'manifest.json'): shutil.copy2(out/name, archived/name)
-        budget.guard(); budget.close()
+        final_error = finalize(out, grant, receipt, budget, primary_error)
+    if primary_error is not None: raise primary_error
+    if final_error is not None: raise final_error
 
 
 def render(out, p, endpoints, frozen, receipt):

@@ -25,3 +25,5 @@
 资源：新增<=0.5 GPUh，累计最坏1.608339654581623<2；RAM32GiB、输出2GiB；GPU5 UUID `GPU-5622bd47-1050-3003-246d-3cabe2b4791b`，启动时空闲>=20GiB/SM0/无计算app，持续1GiB余量。没有实测当前资源或求解耗时，不能预报60次/802维可在600s完成。
 
 精确源版本、检查回执、独立审查与本地包hash将在 `preparation_receipt.json` 和 `independent_review.md` 指向，不用未实现的占位承诺授予运行权限。
+
+完整结束必须同时看到 `completion.json` 与manifest SHA匹配、无watchdog停止、outer returncode=0。计算结束只标为待最终化；hash/manifest/归档/最终guard/关闭异常都会标记停止、保留原异常，并去掉完成标记。不能单看中途receipt推断完成。SHA使用with管理的流式实现，不要求Python3.11的file_digest。
