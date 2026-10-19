@@ -230,29 +230,58 @@ against the 25 FEM hazard pair outcomes; shape uses half-L1, `1-cosine`,
 their reported nonnegative errors. For a continuous metric, values tie when
 their difference is no larger than
 `max(1e-12, 64*eps_float64*max(1,abs(x),abs(y)))`; discrete pair mismatches tie
-only exactly. A group Pareto-improves when at least one component improves and
-none worsens, and Pareto-worsens by the reverse rule. Every arm reports both
-its update-0-to-64 error change and the inter-arm difference of those changes.
+only exactly.
+
+The current 16-cycle packet has a nonzero FEM hazard amplitude on every cycle.
+If a valid prediction has zero decoded amplitude on one of those cycles, its
+effective shape remains mathematically undefined. Do not invent a shape or
+invalidate the execution. Instead add the discrete lower-is-better component
+`predicted_shape_undefined_count` and, for decision aggregation only, assign
+that cycle the predeclared maximum error vector `(1,1,1,1,1)` for half-L1,
+`1-cosine`, `1-capture`, spill and mesh-diagonal-normalised centroid offset.
+Persist the raw values as `NA`, the imputation flag and the decision values so
+the penalty cannot be mistaken for an observed shape. A future target-zero
+cycle would be excluded from shape aggregation by target semantics and would
+require a new card; it is not silently handled here.
+
+Let `E_k^a(t)` be arm `a`'s lower-is-better vector for group `k` in
+`{A,S,R,P}` at update `t`, including the discrete shape-undefined count in
+`S`. Define `Delta_k^a = E_k^a(64)-E_k^a(0)`, terminal gap
+`T_k^{a,b}=E_k^a(64)-E_k^b(64)`, and change gap
+`C_k^{a,b}=Delta_k^a-Delta_k^b`. A vector `x` Pareto-improves zero when at
+least one component is below zero beyond its tie rule and none is above zero;
+`x` Pareto-dominates `y` when `x-y` Pareto-improves zero. `x` is no worse than
+`y` when no component of `x-y` is positive beyond tie. Pareto-worsening is the
+reverse rule. Every arm reports `E(0)`, `E(64)`, `Delta`, every terminal gap
+and every change gap; the flags below state exactly which quantities vote.
 
 Profiles are deterministic multi-label flags, except `INVALID_EXECUTION`,
 which is exclusive:
 
-- `VALID_FACTORISATION_SIGNAL`: `F_AMP_SHAPE` Pareto-improves both amplitude and
-  shape from its own start, and its change vector Pareto-dominates
-  `D_DIRECT` over amplitude, shape and reconstruction while limited physics is
-  no worse.
-- `VALID_SHAPE_OBJECTIVE_SIGNAL`: the shape change of `F_AMP_SHAPE`
-  Pareto-dominates that of `F_AMP`, while its amplitude change is no worse.
-- `VALID_AMPLITUDE_ONLY_SIGNAL`: `F_AMP` Pareto-improves amplitude and its
-  amplitude change Pareto-dominates `F_AMP_SHAPE`. Gradient conflicts may be
-  reported as associated geometry, never as the proven cause.
-- `VALID_NO_HEAD_SEPARATION`: neither factorised arm's change vector
-  Pareto-dominates `D_DIRECT` over amplitude, shape and reconstruction. This
-  means no predeclared separation signal was observed within 64 updates; it
-  does not imply state/trunk insufficiency.
+- `VALID_FACTORISATION_SIGNAL`: `Delta_A^FAS` and `Delta_S^FAS` each
+  Pareto-improve zero; concatenated `Delta_(A,S,R)^FAS` Pareto-dominates
+  `Delta_(A,S,R)^D`; terminal `E_(A,S,R)^FAS(64)` is no worse than
+  `E_(A,S,R)^D(64)`; and both `Delta_P^FAS` and `E_P^FAS(64)` are no worse
+  than the corresponding `D_DIRECT` quantities. Here `FAS=F_AMP_SHAPE` and
+  `D=D_DIRECT`.
+- `VALID_SHAPE_OBJECTIVE_SIGNAL`: `Delta_S^FAS` Pareto-dominates
+  `Delta_S^FA`, terminal `E_S^FAS(64)` is no worse than `E_S^FA(64)`, and
+  both the amplitude change and terminal amplitude of `FAS` are no worse than
+  `FA`. Here `FA=F_AMP`.
+- `VALID_AMPLITUDE_ONLY_SIGNAL`: `Delta_A^FA` Pareto-improves zero and
+  Pareto-dominates `Delta_A^FAS`, while terminal `E_A^FA(64)` is no worse than
+  `E_A^FAS(64)`. Gradient conflicts may be reported as associated geometry,
+  never as the proven cause.
+- `VALID_NO_HEAD_SEPARATION`: for each factorised arm `a` in `{FA,FAS}`, it is
+  false that both (i) `Delta_(A,S,R)^a` Pareto-dominates
+  `Delta_(A,S,R)^D` and (ii) terminal `E_(A,S,R)^a(64)` is no worse than
+  `E_(A,S,R)^D(64)`. This means no predeclared separation signal was observed
+  within 64 updates; it does not imply state/trunk insufficiency.
 - `VALID_MIXED_TRADEOFF`: at least one arm both improves and worsens primary
-  components, or the valid arm change vectors are mutually non-dominating.
-  Preserve the Pareto evidence and do not relabel it as failure.
+  components in its concatenated `Delta_(A,S,R,P)`, or at least one pair of
+  valid arms has mutually non-dominating concatenated change vectors. Terminal
+  gaps are reported but do not vote for this descriptive flag. Preserve the
+  Pareto evidence and do not relabel it as failure.
 - `INVALID_EXECUTION`: identity, evidence, finite-value or hard-constraint
   failure. Repair implementation only; do not interpret optimisation.
 
