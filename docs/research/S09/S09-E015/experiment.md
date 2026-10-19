@@ -1,6 +1,6 @@
 # S09-E015 output-space trust-region assay
 
-Status: `DESIGN_REVIEW_PENDING`
+Status: `DESIGN_REREVIEW_PENDING`
 
 Primary storyline: S09 Neural Operator fracture-development representation.
 
@@ -24,15 +24,33 @@ AdamW's learning rate or gradient coefficient.
   `24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05`.
 - Development data: the same exposed 16-cycle packet, manifest SHA256
   `1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6`.
-- Direction source: E014 archive `common_gradient_vectors.pt`, SHA256
+- Direction provenance: E014 archive `common_gradient_vectors.pt`, SHA256
   `b03d60dae42d944fd61038daf7a59ed41c56d0dcc8285f350571fc7460bffbbc`.
+  Its saved analytic next-AdamW displacements are provenance checks, not the
+  finite-path definition.
+- Actual E014 endpoints: CG25 step-1 checkpoint SHA256
+  `d21c64ee8aae26742444c14261f92f27b544dca3310d5f77905662c4d7de077c`
+  and CL25 step-1 checkpoint SHA256
+  `366aa3bbdeb7e96d725fd6033d476cac66bc5958c55a972ffa802ce92bf7347b`.
+  Their model-state identities are respectively
+  `3697e5b72e9b70ffbb4448a7f8837d7609427df8f17aacfaebe8f4169bb7128d`
+  and `fab0ad3e7eec11bb0abffa881e4a2977b867d713d812f038f16fd45cf596dfde`.
 - E014 completion receipt: SHA256
   `d5c9631b836af7799649030ff5567bacd9b1df31e370503466d26665294ad122`.
 - E014 exact code identity: commit
   `5e16b5b71014fe3f2038e7080b0ba7b333f55aa8`.
-- E014 realised displacement norms are `0.011921588745467315` for CG25 and
-  `0.011962203583948665` for CL25. Both displacement hashes and the original
-  parameter order must match the signed zero-step audit and vector archive.
+- Local no-training endpoint-difference audit:
+  `actual_endpoint_displacement_audit.json`, SHA256
+  `07d1422f27f384d1a579aa867bb6345d98ed9a22b07ba8dc85a9ba49255bf37c`.
+- The actual checkpoint-difference displacement norms are
+  `0.011921588745467311` for CG25 and `0.011962203583948658` for CL25. Their
+  canonical float64 tensor SHA256 identities are respectively
+  `d581734a8df730a624fbe6bbaeb63d8ecb0a2562cf523eee5e0a57dc89c5ec88`
+  and `1779652f256b69ed743d1405c30b1e404259494222e50d961b9465ea6150b053`.
+  The original parameter order must match the signed zero-step audit and vector
+  archive. The actual differences must also agree with the archived analytic
+  next-AdamW displacements under E014's already reviewed
+  `rtol=1e-6, atol=1e-12` check; they are not required to have the same hash.
 
 No fresh holdout, new FEM solve, new gradient, pair redefinition, target mask,
 checkpoint choice, architecture change, beta change, or direction
@@ -40,8 +58,10 @@ reconstruction is allowed.
 
 ## Frozen parameter path
 
-Let `theta_0` be the B25 update-500 parameters and let `delta_CG` and
-`delta_CL` be the exact E014 realised saved-state AdamW displacements. Evaluate
+Let `theta_0` be the B25 update-500 parameters, let `theta_CG,1` and
+`theta_CL,1` be the two actual E014 step-1 checkpoint parameters, and define
+`delta_arm = theta_arm,1 - theta_0` in the frozen parameter order. Evaluate the
+actual-checkpoint affine paths
 
 ```text
 theta_arm(lambda) = theta_0 + lambda * delta_arm
@@ -53,14 +73,29 @@ for both arms on the fixed grid
 lambda = 0, 1/1024, 1/256, 1/64, 1/16, 1/4, 1.
 ```
 
-The `lambda=0` state is evaluated once and shared as the no-update baseline.
-Every nonzero state is constructed directly from `theta_0`; no state is chained
-from another lambda. The original buffers and non-parameter model state remain
-byte-identical. No optimiser is constructed or stepped, and autograd is
-disabled. All 13 unique states (one baseline plus six fractions for two arms)
-are evaluated even if an earlier fraction collapses; there is no adaptive
-search or result-dependent stopping except execution invalidity or resource
-caps.
+The `lambda=0` state is loaded from the exact B25 checkpoint, evaluated once and
+shared as the no-update baseline. The two `lambda=1` states are loaded from the
+exact E014 endpoint checkpoints so floating-point subtraction/readdition cannot
+weaken endpoint identity. Every interior state is constructed directly from
+`theta_0 + lambda * delta_arm` in float64; no state is chained from another
+lambda. The original buffers and non-parameter model state remain
+byte-identical; E014's three registered buffers are already byte-identical
+across the bound checkpoints and must be checked again at admission. No
+optimiser is constructed or stepped, and autograd is disabled. All 13 unique
+states (one baseline plus six fractions for two arms) are evaluated even if an
+earlier fraction collapses; there is no adaptive search or result-dependent
+stopping except execution invalidity or resource caps.
+
+Before any scientific classification, endpoint replay is a validity condition.
+The shared `lambda=0` fields, evaluation and discrete pair outcomes/counts must
+match the E014 baseline. Each arm's `lambda=1` fields, evaluation and discrete
+pair outcomes/counts must match its E014 actual step-1 evidence. Continuous
+floating-point records use the inherited evaluator tolerance
+`abs(new-reference) <= 1e-12 + 1e-9*abs(reference)` frozen before execution;
+strict-zero increment status, positive-node counts, collapse status, pair
+outcomes and integer counts must agree exactly. Any replay mismatch is saved as
+diagnostic evidence and classified `EXECUTION_INVALID`; it cannot be treated as
+a trust-region result.
 
 The logarithmic grid is a new post-E014 diagnostic design motivated by the
 observed full-step collapse. It is not represented as an ex-ante E014 test.
