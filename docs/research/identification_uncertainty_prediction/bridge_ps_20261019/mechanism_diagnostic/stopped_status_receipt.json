@@ -1,0 +1,22 @@
+{
+  "status": "DIAGNOSTIC_STOPPED_NO_MECHANISM_RESULT",
+  "source_commit": "2b4498719b7fd3ba088e31f6ed449ad7d04d706f",
+  "first_bounded_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/bounded_receipt.json",
+  "source_only_review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/source-only_semantics_review.md",
+  "scope": "existing R003 saved derivatives only",
+  "new_model_fit_or_forward": false,
+  "ssh": false,
+  "raw_native_read": false,
+  "npz_loader_reached": false,
+  "decomposition_table_generated": false,
+  "mechanism_figures_generated": 0,
+  "first_error": "ValueError: normalised metric semantics",
+  "guard_premise_invalid_as_universal_check": true,
+  "actual_failing_case_and_values_saved": false,
+  "actual_cause_established": false,
+  "source_failure_context_gap_preserved": true,
+  "no_data_arithmetic_continuation": true,
+  "R003_and_control_repair_unchanged": true,
+  "report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/mechanism_diagnostic_20261019/README_STOPPED.md",
+  "next_decision": "Correct the arithmetic contract/source observability, then HQ decides any continuation; no scientific intervention selected"
+}
