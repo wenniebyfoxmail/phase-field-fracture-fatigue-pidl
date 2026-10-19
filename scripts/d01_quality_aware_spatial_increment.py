@@ -222,7 +222,7 @@ def plots(fields, rows, summaries, paired):
                 if i==0:axs[i,j].set_title('Observed' if k=='actual' else LABELS[METHODS.index(k)],fontsize=9)
                 if j==0:
                     p=f['pair'];axs[i,j].set_ylabel(f"B{p['beam']}\n{float(p['origin_load_kN']):g} → {float(p['specified_next_nominal_load_kN']):g} kN",fontsize=9)
-        fig.subplots_adjust(left=.09,right=.86,bottom=.025,top=.94,wspace=.06,hspace=.14)
+        fig.subplots_adjust(left=.09,right=.86,bottom=.025,top=.84 if len(subset)==3 else .94,wspace=.06,hspace=.14)
         cax=fig.add_axes([.9,.28,.018,.42]);fig.colorbar(plt.cm.ScalarMappable(norm=plt.Normalize(-emax if error else vmin,emax if error else vmax),cmap='RdBu_r' if error else 'viridis'),cax=cax,label='Prediction - observed (pp)' if error else 'Cell coverage (%)')
         fig.suptitle(('All signed spatial errors' if error else 'All spatial predictions')+' | same fixed 4×4 cells, shared scales\n'+('Separate warm-ups; all four arms coincide' if len(subset)==3 else 'Eight exposed primary targets; no clipping'),fontsize=10)
         fig.savefig(OUT/(name+'.png'),dpi=170);plt.close(fig)
