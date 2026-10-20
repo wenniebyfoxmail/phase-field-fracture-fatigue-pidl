@@ -1,0 +1,102 @@
+{
+  "experiment_id": "HQ-ROAD-CENTERLINE-001",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R002",
+  "protocol": "D5-centreline-target-r1",
+  "claim_class": "C2 state-measurement against named public published labels",
+  "seed": 20261011,
+  "max_epochs": 40,
+  "wall_clock_budget_hours": 4,
+  "gpu_budget_hours": 4,
+  "train_deadline_hours": 3.5,
+  "max_cpu_threads": 4,
+  "max_rss_gib": 32,
+  "max_cuda_allocated_gib": 16,
+  "max_output_gib": 20,
+  "canonical_output": "C:\\Users\\xw436\\jobs\\HQ-ROAD-CENTERLINE-001-R002",
+  "canonical_cache": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r002_cache_20261020",
+  "launch_identity": "HQ-ROAD-CENTERLINE-001-R002-20261020",
+  "task_dependency_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+  "thread_environment": {
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4",
+    "OPENBLAS_NUM_THREADS": "4",
+    "NUMEXPR_NUM_THREADS": "4",
+    "VECLIB_MAXIMUM_THREADS": "4",
+    "BLIS_NUM_THREADS": "4"
+  },
+  "train_crop": [
+    320,
+    320
+  ],
+  "batch_size": 8,
+  "optimizer": "Adam(lr=1e-3)",
+  "loss": "0.5*BCE + 0.5*soft_dice_loss on frozen soft centreline field",
+  "model": "unchanged D2 ResNet18UNet with official ImageNet ResNet18 weights",
+  "target": {
+    "operation": "skeletonize published mask on native grid; Euclidean distance expressed at 512-px short side",
+    "short_side_px": 512,
+    "soft_field": "exp(-ln(2)*(d/2)^2), zero for d>8",
+    "half_value_radius_px": 2,
+    "cutoff_radius_px": 8,
+    "prediction_threshold": 0.5
+  },
+  "checkpoint_rule": "maximum CRACK500 validation mean binary centreline-field Dice at threshold 0.5 only",
+  "evaluation": {
+    "normalization": "resize probability bilinear and published mask nearest-neighbour to 512-px short side, then skeletonize thresholded prediction and reference",
+    "tolerances_px": [
+      1,
+      2,
+      4
+    ],
+    "component_match_tolerance_px": 4,
+    "sources": [
+      "CFD",
+      "GAPS384"
+    ],
+    "baselines": [
+      "D1 scratch U-Net checkpoint",
+      "D2 ResNet18 raw-mask checkpoint"
+    ],
+    "primary_baseline": "D1 scratch U-Net, prospectively selected because D3 had higher 2-px tolerant F1 on both sources"
+  },
+  "decision_rule": {
+    "validation_ceiling": "selected checkpoint CRACK500 validation mean centreline F1 at 4 px",
+    "absolute_f1_floor": "max(0.50, 0.60 * validation_ceiling) applied to each development source mean F1 at 4 px",
+    "component_omission_rate_max": 0.25,
+    "paired_improvement_metric": "candidate minus D1 mean centreline F1 at 2 px",
+    "paired_improvement_min": 0.1,
+    "paired_bootstrap_replicates": 5000,
+    "paired_bootstrap_lower_bound": "must be > 0 on each source",
+    "advance": "both CFD and GAPS384 meet every absolute and paired condition",
+    "stop": "either source misses any necessary condition; stop public-mask architecture/UQ expansion"
+  },
+  "expected": {
+    "train_pairs": 1860,
+    "train_groups": 245,
+    "val_pairs": 341,
+    "val_groups": 49,
+    "cfd_labeled": 118,
+    "gaps_labeled": 384,
+    "gaps_nonempty": 382,
+    "gaps_empty": 2
+  },
+  "mechanical_rechecks": {
+    "r001_checks_preserved": 3,
+    "r001_approx_seconds": 45.544,
+    "r002_max_checks": 1,
+    "r002_check_seconds": 90,
+    "receipt_required": "remote on-disk child and watchdog JSON; SSH exit code alone is insufficient",
+    "original_package_clock_start_utc": "2026-10-20T21:59:35Z",
+    "original_package_deadline_utc": "2026-10-21T01:59:35Z"
+  },
+  "scientific_retry": false,
+  "road420_access": false,
+  "new_data_access": false,
+  "paid_compute": false,
+  "package_clock_start_utc": "2026-10-20T21:59:35Z",
+  "package_deadline_utc": "2026-10-21T01:59:35Z",
+  "minimum_launch_remaining_seconds": 1900,
+  "post_train_reserve_seconds": 300,
+  "expected_gpu_uuid": "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+  "scientific_protocol_fingerprint_sha256": "a30121cc43bc1572e946baa56f70a993202076a1fdbf2ca388307cd024e1e83a"
+}

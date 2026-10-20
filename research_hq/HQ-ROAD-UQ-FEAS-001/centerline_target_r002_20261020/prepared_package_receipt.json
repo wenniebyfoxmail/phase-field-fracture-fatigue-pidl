@@ -1,0 +1,19 @@
+{
+  "status": "CODE_READY_FOR_SINGLE_R002_ADMISSION",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R002",
+  "prepared_utc": "2026-10-20T23:03:46.577275Z",
+  "code_snapshot": "b9c8f51638bb1201f2384d228e503ef7f12219173353c8d662f866644b3e0953",
+  "data_lock_sha256": "a88c50b5f76df462cf69e136455c8b04c47c95c101e23af254a85b3b8ec3ce28",
+  "review": "REVIEW_PASS",
+  "local_checks": [
+    "py_compile",
+    "centerline core tests",
+    "real CRACK500/CFD/GAPS mask transform validation",
+    "scientific protocol identity fingerprint",
+    "R002 admission/launch control delta test",
+    "git diff --check"
+  ],
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "road420_access": false
+}
