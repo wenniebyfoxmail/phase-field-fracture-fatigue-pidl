@@ -14,11 +14,18 @@ def ps_command(s):
     return 'powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand '+base64.b64encode(s.encode('utf-16le')).decode()
 
 def call(argv,timeout,receipt):
+    remaining=datetime.datetime.fromisoformat(DEADLINE.replace('Z','+00:00')).timestamp()-time.time()
+    if remaining<=0: raise RuntimeError('Original total deadline exhausted; no remote call')
+    timeout=min(timeout,remaining)
     started=time.monotonic();out=err='';rc=None
+    normalise=lambda v: v.decode(errors='replace') if isinstance(v,bytes) else (v or '')
     try:
         p=subprocess.run(argv,text=True,capture_output=True,timeout=timeout,errors='replace')
         out,err,rc=p.stdout,p.stderr,p.returncode
         return p
+    except subprocess.TimeoutExpired as failure:
+        out,err=normalise(failure.stdout),normalise(failure.stderr)
+        raise
     finally:
         (RUN/(receipt+'.log')).write_text(out+'\nSTDERR\n'+err)
         (RUN/(receipt+'.json')).write_text(json.dumps(dict(seconds=time.monotonic()-started,returncode=rc,finished_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),unknown_if_interrupted=rc is None),indent=2))
