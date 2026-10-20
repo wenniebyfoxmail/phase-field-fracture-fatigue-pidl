@@ -1,0 +1,73 @@
+{
+  "protocol": "BRIDGE-PS-v1.0",
+  "data_root": "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley",
+  "history_stage_offsets": [
+    -20,
+    -10,
+    0
+  ],
+  "horizon_stage_steps": [
+    10,
+    40
+  ],
+  "origin_stride": 5,
+  "max_origins_per_group": 80,
+  "minimum_origins_per_group": 6,
+  "pool_input_side": 8,
+  "pool_output_side": 16,
+  "ridge_alphas": [
+    0.1,
+    10.0,
+    1000.0
+  ],
+  "local_band_half_height": 16,
+  "wall_seconds": 1800,
+  "threads": 1,
+  "max_output_gib": 4,
+  "arms": [
+    "C_RAW",
+    "H_RAW",
+    "C_REL",
+    "H_REL",
+    "H_INNOV",
+    "H_DONOR"
+  ],
+  "status": "PREPARATION_REVIEW_ONLY_NO_EXECUTION_AUTHORITY",
+  "metadata_sha256": {
+    "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley/pt_frame_inventory.csv": "5e9d79cd99064952f675383b8069873020a77ac1f035b9ea6311b8eedf783127",
+    "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley/probe_v1_concentration/candidate_trajectories.csv": "17d67823e51833a329dc44c3839ffd85e7e986919273075ed3b4583be6f74bf1",
+    "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley/pt_structure_summary.json": "3031ea68a78759bbb1c2131ba56ace07b932386fbb293ecbeac01cdd3458c7db",
+    "/mnt/data2/drtao/wennie/IU-PUBLISHED-DIC-20261019-R001/inputs/mendeley/full_csv_header_audit.json": "218958ac1cf9cc708ca823959fdedbf82f36ff0850484cfe2c3d545e8acc08f8"
+  },
+  "max_archive_gib": 4,
+  "memory_gib": 8,
+  "run_id": "IU-BRIDGE-PS-20261019-R003",
+  "run_root": "/mnt/data2/drtao/wennie/IU-BRIDGE-PS-20261019-R003",
+  "input_residualizer_alpha": 10.0,
+  "tolerance": 1e-11,
+  "resampling": {
+    "draws": 10000,
+    "seed": 20261019
+  },
+  "expected": {
+    "groups": 19,
+    "origins": 1144,
+    "horizon_cases": 2288,
+    "predictor_fits": 912,
+    "input_fits": 76,
+    "scores": 20592,
+    "selector_scores": 2288,
+    "prediction_archives": 228,
+    "equivalence_archives": 38
+  },
+  "source_run_root": "/mnt/data2/drtao/wennie/IU-RESPONSE-STATE-20261019-R002",
+  "origin_feature_sha256": "07b65075c77082372c6278820df579991b896aa60dc1d999fd7520b6c0bcf005",
+  "baseline_tie_order": [
+    "P",
+    "S",
+    "C_REL",
+    "C_RAW"
+  ],
+  "clock": "release_step",
+  "source_package_sha256": "a0e6d511f996d496505e408bccf3062152b2d304cc2c01f24999a8eaf652f5a4"
+}

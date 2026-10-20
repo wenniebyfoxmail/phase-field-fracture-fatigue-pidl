@@ -1,0 +1,28 @@
+{
+  "kind": "hq_resource_decision_only",
+  "date": "2026-10-20 Europe/London",
+  "source_thread_id": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+  "human_approved": false,
+  "authority_basis": "HQ_DELEGATED",
+  "decision_text": "Approve unique new fixed-alpha C27 versus A25 complete comparison resource caps; prepare exact final launch candidate only. No SSH/live preflight/scientific input/fit/forward/admission/run authorized in this step.",
+  "approved_budget": {
+    "wall_seconds": 1200,
+    "threads": 1,
+    "rss_bytes": 2147483648,
+    "total_generated_bytes": 1610612736,
+    "archive_bytes": 734003200,
+    "gpu": 0
+  },
+  "category_caps": {
+    "raw_arrays": 513802240,
+    "models": 16777216,
+    "metadata": 33554432,
+    "figures": 25165824,
+    "logs": 16777216,
+    "cache": 67108864,
+    "code": 8388608,
+    "temporary": 16777216,
+    "archive": 734003200
+  },
+  "scientific_execution_authorized": false
+}

@@ -1,0 +1,7 @@
+# R004 latest HQ-delegated one-attempt completion authority,2026-10-20
+
+Source is latest direct human night-management delegation of compute decisions -> HQ01a14bb9 expressly authorizes this new one-attempt four-group completion. Do not reuse consumed R003 approval. Exact incoming delegation retained in local case authority_source.txt.
+
+Only missing four groups; immutable R00215-group prefix and original costs retained. No BRIDGE rerun, SCB claim, rich/alpha/weight search, new private payload transfer or host change. Reuse already-deployed GPUServer8 R003 code after979b6fd5 hash check, apply already-reviewed figure syntax fix plus mechanical identity/HQ binding and600s lower producer watchdog subcap. Original numerical engine/data/criteria unchanged. Old roots read-only; new attempt remains under canonical /mnt/data2/drtao/wennie isolation. Missing/unknown original input/package -> park, never refill by transfer.
+
+Total execution package1200s starts at first local materialization and includes preparation/admission/science/retrieval/readout. Producer lifecycle600s within that total; require at least180s retrieval/readout reserve before launch. At most2 mechanical rechecks and60s aggregate mechanical connection wall; all charged to same deadline.1CPU,0GPU, original sampled combinedRSS2GiB/per-processAS8GiB, remote/local1536MiB,archive700MiB and original categories retained. First scientific/numerical/identity/nonfinite/real warning/resource failure stops, no automatic third attempt or new authority. No budget reset after resource waiting.

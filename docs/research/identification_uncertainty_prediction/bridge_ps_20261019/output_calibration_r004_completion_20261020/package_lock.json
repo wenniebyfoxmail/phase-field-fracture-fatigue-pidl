@@ -1,0 +1,43 @@
+{
+  "accepted_design_commit": "fe54ab36df890551f13e0e515ab50c2ad69c97c8",
+  "files": {
+    "LAUNCH_CARD.md": "f8d5748ba001d7cbe6272c3350bf90802ab5f842e7a1f3a30fc7761af19b6fa0",
+    "PROTOCOL.md": "43472e5394d604a91ae9263c5e5b85b5ff540f7fd3e0dc471d54bd2d201d6de7",
+    "RUN_AMENDMENT.md": "ea5660bb4b6c9c7c3ae0fe2a1f67b52908c1fb0ceee2ef2c4c3a284bc098fd74",
+    "admission.py": "4f68396e67664738666e9c6695e1f9c4e17e519a31c5fd771b54f63ed26b4e1e",
+    "assemble_completion.py": "eb1731ce1e0e08835b4248442065d8e448e4cc62a5f8a5c1d6045e122bdb4ae8",
+    "build_lock.py": "4995cce02e094969b7916d57c99548a6353dd85d48c5f6f4500c5173f862a362",
+    "config.json": "4b23f4c073ca16153a0695c4ca60715582fd67595a16ca4388f4e491bed62c2c",
+    "engine.py": "5e751e5f9a7e208787bf635c80775b9c27a504516c4974c06b081580f5056147",
+    "evidence.py": "9b82a5a2f3a7292030ab7eccb8cdbb9e4932b9a1daa6138b1e1c2ba9e1d52761",
+    "execution_authority.schema.json": "28532746e0f6083317ba432c151112c18d27aef696a12a785c239ec681a7aff5",
+    "figures.py": "cbb1d512660870b2d854eaa6afde39fa2f54668e04a3bc694db0df2fefac87c1",
+    "frozen_cohort.json": "19a75f76d68d63294744031b9369864185bb3da313f520699242132a5b7ae553",
+    "input_manifest.json": "f54753600f76dec7a5c153f413bb27a311d9d8551b966cc91fa6b21b663151de",
+    "launch.py": "5fc8f485a428558486830b6d66c82978c5c597daef528f9bda50beb2ce583836",
+    "launch_command.json": "a20888665cf1fad461c015fcfbdf3a3cb4e843f12fb57dbab2318a5708cecfb0",
+    "legacy_config.json": "8c339efce6964aa4e2efcf4c654a11b5ace9b0fee319d362370dfaa6ff98804f",
+    "legacy_state.py": "5bff0d293be761e1b6b08d8f14d9e2e2d58987f666d5e48d38d894cc90ccf39d",
+    "package.py": "657a53ed993dcf5f5b55558b18233ff0a1207594ab7a310477b6c3c05db98c58",
+    "prefix_binding.json": "55a0e0172bd4b0c42e3b9548ca9db2a44f7d441e3d41a61ead1c070f7a621026",
+    "prefix_binding.py": "6e846bd766545f3d6e6c0d8955723e58e654672d837a007417935fe71ae91509",
+    "producer_data.py": "8435c06ac36aa7a3ff430cfc60002792fff73fb7b4f5821369e3c42b9cac7920",
+    "r002_base.py": "262b8ddb79f81896e6dcb6717e4722f479a6bca65a3dc84e33a322097e555d1a",
+    "requirements.txt": "981cc2e288f4d825a8f810e02afc3c40509b661adab03358abe26485523ef75b",
+    "resource_contract.py": "97fb4980b704a790c81874854d7ebad8acc13b3686f3a8a1da8b6d5b12eb00ac",
+    "resource_decision.json": "810e192fd5d1d05f07e59b85687a7e39628653e699a05cdea037b253f3d1646d",
+    "runtime_guard.py": "39bccc115fa99850f6ddfe7d584da63a303e68ce263213ab586af3a74d05b9f3",
+    "supervise.py": "bc316fd1c08cb72e3bc3038f6390de63a778c6fed543f484b59bd37ea6afbeaf",
+    "test_completion.py": "fd78d376b93807c3213e2ef8fa2d7465ee7b684c3e3c1f65a4f8f3d1a91bcc65",
+    "test_package.py": "d4609c6f61c649849a0f014872a11e7261713ae2d07ebbdcaf03a3739dd352e0",
+    "watchdog.py": "dcdaa4c0733d56fda602a262a43582b62eba317db1b47d3e07b51db1ef5fc35c",
+    "worker.py": "10b514452e07b54a54adc7a96833d76bc8037e7c1186997d1515d89c92a119a6"
+  },
+  "protocol": "FIXED_ALPHA_OUTPUT_CALIBRATION_FINAL_CANDIDATE_V2",
+  "reuse": [
+    "r002_base.py byte-identical base target/native metric and bounded loader",
+    "legacy_state.py byte-identical origin feature construction only",
+    "runtime_guard.py reviewed lifecycle guard plus separate worker/controller/watchdog seal names"
+  ],
+  "scientific_access_or_run_authority": false
+}
