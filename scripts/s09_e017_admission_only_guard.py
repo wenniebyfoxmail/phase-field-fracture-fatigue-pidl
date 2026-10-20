@@ -29,8 +29,20 @@ from s09_e017_admission_only import (  # noqa: E402
 
 def _publish(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("xb") as stream:
-        stream.write(payload)
+    temporary = path.parent / f".{path.name}.tmp-{os.getpid()}-{time.time_ns()}"
+    try:
+        with temporary.open("xb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, path)
+        directory_fd = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def run_guarded_plan(
@@ -117,38 +129,71 @@ def run_guarded_plan(
         }
     )
     start = monotonic()
-    process = popen(
-        ["/bin/bash", str(plan_path)],
-        cwd=ROOT,
-        env=environment,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        start_new_session=True,
-    )
+    process = None
+    stdout = ""
+    stderr = ""
+    process_returncode = None
     timed_out = False
     try:
-        stdout, stderr = process.communicate(
-            timeout=candidate["budgets"]["wall_seconds"]
+        process = popen(
+            ["/bin/bash", str(plan_path)],
+            cwd=ROOT,
+            env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            start_new_session=True,
         )
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        os.killpg(process.pid, signal.SIGTERM)
         try:
-            stdout, stderr = process.communicate(timeout=10)
+            stdout, stderr = process.communicate(
+                timeout=candidate["budgets"]["wall_seconds"]
+            )
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
-            stdout, stderr = process.communicate()
+            timed_out = True
+            os.killpg(process.pid, signal.SIGTERM)
+            try:
+                stdout, stderr = process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                stdout, stderr = process.communicate()
+        process_returncode = process.returncode
+        if timed_out:
+            terminal = "ADMISSION_ONLY_GUARD_STOPPED"
+            first_reason = "ADMISSION_ONLY_WALL_CAP_EXCEEDED"
+        elif process_returncode != 0:
+            terminal = "ADMISSION_ONLY_GUARD_STOPPED"
+            first_reason = "ADMISSION_ONLY_PLAN_EXIT_NONZERO"
+        else:
+            terminal = "ADMISSION_ONLY_PLAN_COMPLETED"
+            first_reason = None
+        process_error = None
+    except Exception as error:
+        if process is not None:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except (OSError, ProcessLookupError):
+                pass
+            process_returncode = process.returncode
+        terminal = "ADMISSION_ONLY_GUARD_STOPPED"
+        first_reason = (
+            "ADMISSION_ONLY_PROCESS_START_FAILED"
+            if process is None
+            else "ADMISSION_ONLY_PROCESS_IO_FAILED"
+        )
+        process_error = f"{type(error).__name__}: {error}"
     elapsed = monotonic() - start
-    if timed_out:
+    evidence_write_errors: list[dict[str, str]] = []
+    for name, payload in (("stdout", stdout), ("stderr", stderr)):
+        try:
+            _publish(paths[name], payload.encode("utf-8"))
+        except Exception as error:
+            evidence_write_errors.append(
+                {"artifact": name, "error": f"{type(error).__name__}: {error}"}
+            )
+    process_first_reason = first_reason
+    if evidence_write_errors and first_reason is None:
         terminal = "ADMISSION_ONLY_GUARD_STOPPED"
-        first_reason = "ADMISSION_ONLY_WALL_CAP_EXCEEDED"
-    elif process.returncode != 0:
-        terminal = "ADMISSION_ONLY_GUARD_STOPPED"
-        first_reason = "ADMISSION_ONLY_PLAN_EXIT_NONZERO"
-    else:
-        terminal = "ADMISSION_ONLY_PLAN_COMPLETED"
-        first_reason = None
+        first_reason = "LOCAL_LOG_WRITE_FAILED"
     receipt = {
         "schema_version": "s09-e017-admission-only-guard-receipt-v1",
         "terminal_state": terminal,
@@ -159,16 +204,23 @@ def run_guarded_plan(
         "plan_sha256": plan_sha256,
         "authority_sha256": sha256_bytes(authority_bytes),
         "elapsed_seconds": elapsed,
-        "process_returncode": process.returncode,
+        "process_returncode": process_returncode,
+        "process_first_reason": process_first_reason,
+        "process_error": process_error,
         "stdout_sha256": sha256_bytes(stdout.encode("utf-8")),
         "stderr_sha256": sha256_bytes(stderr.encode("utf-8")),
+        "evidence_write_errors": evidence_write_errors,
+        "stdout_published": not any(
+            item["artifact"] == "stdout" for item in evidence_write_errors
+        ),
+        "stderr_published": not any(
+            item["artifact"] == "stderr" for item in evidence_write_errors
+        ),
         "execution_authorized": False,
         "producer_authorized": False,
         "retry": False,
         "reconnect": False,
     }
-    _publish(paths["stdout"], stdout.encode("utf-8"))
-    _publish(paths["stderr"], stderr.encode("utf-8"))
     _publish(paths["guard"], canonical_json(receipt))
     return receipt
 

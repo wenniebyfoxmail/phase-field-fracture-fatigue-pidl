@@ -593,6 +593,7 @@ def resolve_admission_only(
     package_config_sha256: str,
     final_candidate_sha256: str,
     archive_sha256: str,
+    archive_verification: Mapping[str, Any],
     observed_commit: str,
 ) -> dict[str, Any]:
     validate_authority(
@@ -621,6 +622,7 @@ def resolve_admission_only(
         "candidate_sha256": candidate_sha256,
         "plan_sha256": plan_sha256,
         "authority_sha256": sha256_bytes(canonical_json(authority)),
+        "archive_verification": dict(archive_verification),
         "accepted_state": dict(candidate["accepted_state"]),
         "remote": dict(candidate["remote"]),
         "gpu": dict(candidate["gpu"]),
@@ -650,6 +652,7 @@ def validate_resolved(resolved: Mapping[str, Any]) -> None:
         "candidate_sha256",
         "plan_sha256",
         "authority_sha256",
+        "archive_verification",
         "accepted_state",
         "remote",
         "gpu",
@@ -657,6 +660,8 @@ def validate_resolved(resolved: Mapping[str, Any]) -> None:
         "counters",
     }
     _require(set(resolved) == required, "RESOLVED_CONTROL_INVALID", "keys drift")
+    archive_verification = resolved["archive_verification"]
+    archive_stat = archive_verification.get("stat", {})
     checks = [
         resolved["schema_version"] == RESOLVED_SCHEMA,
         resolved["status"] == "RESOLVED_FOR_ADMISSION_ONLY",
@@ -667,6 +672,18 @@ def validate_resolved(resolved: Mapping[str, Any]) -> None:
         tuple(resolved["allowed_actions"]) == GUARD_ACTIONS,
         resolved["accepted_state"]["archive_sha256"] == ARCHIVE_SHA256,
         resolved["accepted_state"]["control_commit"] == CONTROL_COMMIT,
+        archive_verification.get("path") == resolved["accepted_state"]["archive_path"],
+        archive_verification.get("bytes") == ARCHIVE_BYTES,
+        archive_verification.get("bytes_read") == ARCHIVE_BYTES,
+        archive_verification.get("sha256") == ARCHIVE_SHA256,
+        set(archive_stat) == {"device", "inode", "mode", "mtime_ns", "size_bytes"},
+        archive_stat.get("size_bytes") == ARCHIVE_BYTES,
+        all(
+            isinstance(archive_stat.get(name), int)
+            and not isinstance(archive_stat.get(name), bool)
+            and archive_stat.get(name) >= 0
+            for name in ("device", "inode", "mode", "mtime_ns", "size_bytes")
+        ),
         all(value == 0 for value in resolved["counters"].values()),
     ]
     _require(all(checks), "RESOLVED_CONTROL_INVALID", "value drift")
@@ -749,8 +766,19 @@ def run_metadata_admission(
         path = Path(remote[name])
         _require(path.is_dir() and not path.is_symlink(), "CONTROL_PATH_INVALID", name)
     archive = Path(candidate["accepted_state"]["archive_path"])
-    archive_digest = sha256_path(archive, expected_bytes=ARCHIVE_BYTES)
-    _require(archive_digest == ARCHIVE_SHA256, "ARCHIVE_IDENTITY_MISMATCH", "archive")
+    archive_stat = archive.lstat()
+    current_archive_identity = {
+        "device": archive_stat.st_dev,
+        "inode": archive_stat.st_ino,
+        "mode": archive_stat.st_mode,
+        "mtime_ns": archive_stat.st_mtime_ns,
+        "size_bytes": archive_stat.st_size,
+    }
+    _require(
+        current_archive_identity == resolved["archive_verification"]["stat"],
+        "ARCHIVE_IDENTITY_MISMATCH",
+        "archive changed after single resolver read",
+    )
     scientific_paths = {
         "packet_dir": path_metadata(Path(remote["packet_dir"]), kind="directory"),
         "base_runtime_config": path_metadata(
@@ -772,7 +800,11 @@ def run_metadata_admission(
         "archive": {
             "path": str(archive),
             "bytes": ARCHIVE_BYTES,
-            "sha256": archive_digest,
+            "bytes_read": resolved["archive_verification"]["bytes_read"],
+            "sha256": resolved["archive_verification"]["sha256"],
+            "stat": current_archive_identity,
+            "content_verified_during_resolution": True,
+            "content_reopened_during_admission": False,
         },
         "scientific_path_metadata": scientific_paths,
         "scientific_identities_verified_live": False,

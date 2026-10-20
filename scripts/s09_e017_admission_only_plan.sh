@@ -166,15 +166,9 @@ if not authority_path.is_file() or authority_path.is_symlink():
 PY
 
 SECONDS_LEFT="$(remaining_seconds)"
-"${MUX_SSH[@]}" env \
-  PYTHONPATH="$HELPER_ROOT/source:$HELPER_ROOT/scripts" \
-  CUDA_VISIBLE_DEVICES="" \
-  OMP_NUM_THREADS=1 \
-  OPENBLAS_NUM_THREADS=1 \
-  MKL_NUM_THREADS=1 \
-  NUMEXPR_NUM_THREADS=1 \
-  bash -c 'ulimit -t 60; ulimit -v 1048576; cd "$1"; exec timeout "$2" python3 "$3" "${@:4}"' \
-  admission-only "$CODE_ROOT" "$SECONDS_LEFT" "$REMOTE_RUNNER" \
+"${MUX_SSH[@]}" bash -s -- \
+  "$CODE_ROOT" "$SECONDS_LEFT" "$REMOTE_RUNNER" \
+  "$HELPER_ROOT/source:$HELPER_ROOT/scripts" \
   --admission-candidate "$REMOTE_CANDIDATE" \
   --admission-candidate-sha256 "$CANDIDATE_SHA" \
   --final-execution-candidate "$REMOTE_FINAL_CANDIDATE" \
@@ -183,7 +177,24 @@ SECONDS_LEFT="$(remaining_seconds)"
   --code-archive "$REMOTE_ARCHIVE" \
   --code-root "$CODE_ROOT" \
   --attempt-root "$REMOTE_ATTEMPT" \
-  --execute-authorised-admission-only
+  --execute-authorised-admission-only <<'REMOTE_ADMISSION_ONLY'
+set -euo pipefail
+CODE_ROOT="$1"
+SECONDS_LEFT="$2"
+RUNNER="$3"
+PYTHONPATH_VALUE="$4"
+shift 4
+ulimit -t 60
+ulimit -v 1048576
+cd "$CODE_ROOT"
+export PYTHONPATH="$PYTHONPATH_VALUE"
+export CUDA_VISIBLE_DEVICES=""
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export NUMEXPR_NUM_THREADS=1
+exec timeout "$SECONDS_LEFT" python3 "$RUNNER" "$@"
+REMOTE_ADMISSION_ONLY
 
 # The reviewed runner stops after its bounded receipt.  There is intentionally
 # no resolver handoff, producer command, CUDA path or follow-up inspection.

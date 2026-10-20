@@ -49,7 +49,32 @@ def resolve_from_paths(
         raise ValueError("final candidate schema drift")
     if package.get("schema_version") != "s09-e017-final-run-package-v1":
         raise ValueError("package schema drift")
+    archive_stat_before = code_archive.lstat()
     archive_sha256 = sha256_path(code_archive, expected_bytes=ARCHIVE_BYTES)
+    archive_stat_after = code_archive.lstat()
+    stat_before = {
+        "device": archive_stat_before.st_dev,
+        "inode": archive_stat_before.st_ino,
+        "mode": archive_stat_before.st_mode,
+        "mtime_ns": archive_stat_before.st_mtime_ns,
+        "size_bytes": archive_stat_before.st_size,
+    }
+    stat_after = {
+        "device": archive_stat_after.st_dev,
+        "inode": archive_stat_after.st_ino,
+        "mode": archive_stat_after.st_mode,
+        "mtime_ns": archive_stat_after.st_mtime_ns,
+        "size_bytes": archive_stat_after.st_size,
+    }
+    if stat_before != stat_after or stat_after["size_bytes"] != ARCHIVE_BYTES:
+        raise ValueError("code archive changed during single bounded read")
+    archive_verification = {
+        "path": str(code_archive),
+        "bytes": ARCHIVE_BYTES,
+        "bytes_read": ARCHIVE_BYTES,
+        "sha256": archive_sha256,
+        "stat": stat_after,
+    }
     observed_commit = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=code_root,
@@ -66,6 +91,7 @@ def resolve_from_paths(
         package_config_sha256=sha256_bytes(package_bytes),
         final_candidate_sha256=sha256_bytes(final_bytes),
         archive_sha256=archive_sha256,
+        archive_verification=archive_verification,
         observed_commit=observed_commit,
     )
     receipt = {
@@ -78,6 +104,8 @@ def resolve_from_paths(
         "package_config_sha256": sha256_bytes(package_bytes),
         "final_candidate_sha256": sha256_bytes(final_bytes),
         "archive_sha256": archive_sha256,
+        "archive_bytes_read": ARCHIVE_BYTES,
+        "archive_stat": stat_after,
         "observed_control_commit": observed_commit,
         "resolved_config_sha256": sha256_bytes(canonical_json(resolved)),
         "scientific_asset_content_reads": False,
