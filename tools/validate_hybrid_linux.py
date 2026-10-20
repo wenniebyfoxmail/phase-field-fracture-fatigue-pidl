@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import select
 import json
+import math
 import os
 from pathlib import Path
 import signal
@@ -38,6 +39,26 @@ def verify_contract(a):
             or v['wall_cap_seconds']!=1800 or v['max_extra_diagnostic_substeps']!=5 or v['operator_tolerance']!=1.e-10):
         raise RuntimeError('frozen validation path/caps differ')
     return card
+
+
+def prior_costs(card):
+    costs=dict(wall_seconds=0.,cpu_seconds=0.,attempts=[])
+    for item in card['validation_contract'].get('prior_validation_receipts',[]):
+        loaded=[]
+        for key in ('total','admission'):
+            p=Path(item[key+'_receipt'])
+            if hashlib.sha256(p.read_bytes()).hexdigest()!=item[key+'_sha256']:raise RuntimeError('prior validation evidence differs')
+            loaded.append(json.loads(p.read_text()))
+        total,admission=loaded
+        if (total.get('passed') is not False or admission.get('passed') is not False or admission.get('failure')!='actual parent-death control failed'
+                or admission.get('full_mesh') is not None or admission.get('cost_cycle_summary') is not None or total['gpu_seconds']!=0):
+            raise RuntimeError('prior attempt is not the preserved zero-numerical-step controller classification failure')
+        wall=float(total['wall_seconds']);cpu=float(total['cpu_seconds_children']+total['cpu_seconds_self'])
+        if not math.isfinite(wall+cpu) or wall<0 or cpu<0:raise RuntimeError('invalid prior validation cost')
+        costs['wall_seconds']+=wall;costs['cpu_seconds']+=cpu
+        costs['attempts'].append(dict(passed=False,wall_seconds=wall,cpu_seconds=cpu,numerical_substeps=0,evidence=item))
+    if costs['wall_seconds']>=1755:raise RuntimeError('validation allowance exhausted')
+    return costs
 
 
 def cpu_environment(root):
@@ -185,6 +206,7 @@ def main(a):
     card=verify_contract(a)
     root=a.root.resolve();code=a.code.resolve()
     if root.exists():raise FileExistsError('validation root already exists; no automatic retry')
+    prior=prior_costs(card)
     root.mkdir();cpu_environment(root)
     from hybrid_inputs import read_manifest,sha256
     from hybrid_producer_common import verify_package,write_json
@@ -193,7 +215,7 @@ def main(a):
     start=time.perf_counter();cpu0=resource.getrusage(resource.RUSAGE_CHILDREN)
     result=dict(passed=False,started_epoch=time.time(),source_artifact=read_manifest(a.package)['artifact_id'],card_sha256=sha256(a.card),training_updates=0,diagnostic_substeps_max=5,gpu_seconds=0.)
     def timeout(sig,frame):raise RuntimeError('30minute validation host wall cap')
-    signal.signal(signal.SIGALRM,timeout);signal.alarm(1800)
+    signal.signal(signal.SIGALRM,timeout);signal.alarm(int(1800-prior['wall_seconds']))
     try:
         verify_package(code,read_manifest(a.package))
         if sha256(a.inputs/'inputs.json')!=card['inputs_sha256']:raise RuntimeError('input manifest mismatch')

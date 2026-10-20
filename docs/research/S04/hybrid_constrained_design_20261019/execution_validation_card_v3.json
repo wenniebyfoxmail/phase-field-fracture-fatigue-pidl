@@ -14,7 +14,8 @@
     "date": "2026-10-20",
     "validation_permitted": true,
     "execution_condition": "all actual validation passed, exact enabled production card/package independent review PASS, final live identity/runtime/resource admission; one launch only; no retry/resume",
-    "prior_R1_remains_terminal": true
+    "prior_R1_remains_terminal": true,
+    "validation_revision": "Prospective controller classification repair after attempt01 FAIL; zero scientific steps; do not reopen attempt01 or reclassify its FAIL; one reviewed continuation of non-scientific control validation and original still-unexecuted five diagnostic increments; cumulative allowance1800s/136hosth unchanged."
   },
   "inputs_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c",
   "state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
@@ -202,7 +203,7 @@
     "interpretation": "single accepted-step sensitivity only; not a full-trajectory prediction or measured speedup. Substep2 cost split unknown. Six/six allocation proposed within total12GPUh, not approved execution."
   },
   "validation_contract": {
-    "root": "/mnt/data2/drtao/wennie/pf_hybrid_validate_20261020_01",
+    "root": "/mnt/data2/drtao/wennie/pf_hybrid_validate_20261020_02",
     "wall_cap_seconds": 1800,
     "gpu_seconds": 0,
     "max_extra_diagnostic_substeps": 5,
@@ -227,7 +228,16 @@
     "operator_tolerance": 1e-10,
     "path": "canonical state0; one cycle original five loads times .8; own accepted history/cache; same worker/commit/labelsIO; no model or fit",
     "on_failure": "stop complete package; no retry, tolerance change or deadline extension; expected control negatives pass only exact reason and cleanup",
-    "outer_control_root": "/mnt/data2/drtao/wennie/pf_hybrid_validate_20261020_01_control",
-    "external_controller": "launch_hybrid_validation.py -> independent pidfd guardian; 1800s minus45s termination reserve; CPU/RAM/storage monitor; driver/helper/parent-only parent-death chain"
+    "outer_control_root": "/mnt/data2/drtao/wennie/pf_hybrid_validate_20261020_02_control",
+    "external_controller": "launch_hybrid_validation.py -> independent pidfd guardian; 1800s minus45s termination reserve; CPU/RAM/storage monitor; driver/helper/parent-only parent-death chain",
+    "exit_classification": "only after worker already exited: drain IPC and review supervisor pidfd <=1s bounded by existing reserved deadline; both incomplete and supervisor-exited remain FAIL stops; true step120s unchanged",
+    "prior_validation_receipts": [
+      {
+        "total_receipt": "/mnt/data2/drtao/wennie/pf_hybrid_validate_20261020_01_control/validation_total.json",
+        "total_sha256": "398ccae8cce6da3d97388aea9909fafef60ee7d957a28f5cb63aa36714fc909d",
+        "admission_receipt": "/mnt/data2/drtao/wennie/pf_hybrid_validate_20261020_01/admission.json",
+        "admission_sha256": "65a69a5bb992d7e30041bb77a3190fa07e43595eef08a1bea5a3defced3ebb7f"
+      }
+    ]
   }
 }

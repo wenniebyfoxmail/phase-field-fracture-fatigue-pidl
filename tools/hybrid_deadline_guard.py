@@ -13,6 +13,8 @@ def guard_loop(worker,supervisor,fd,phase_deadline,step_seconds,report,ready_fd=
         raise RuntimeError('Linux pidfd deadline guardian required')
     wf=os.pidfd_open(worker);sf=os.pidfd_open(supervisor);sock=socket.socket(fileno=fd);sock.setblocking(False)
     active=None;last_step=0;reason=None;started=time.monotonic();status='worker_exited'
+    observations=dict(worker_exit_observed_at=None,supervisor_exit_observed_at=None,
+                      exit_review_seconds=1.,exit_review_deadline=None,pending_step_at_exit=None)
     def drain():
         nonlocal active,last_step,reason
         for _ in range(4096):
@@ -39,7 +41,9 @@ def guard_loop(worker,supervisor,fd,phase_deadline,step_seconds,report,ready_fd=
         while True:
             now=time.monotonic()
             ready,_,_=select.select([wf,sf,sock],[],[],.05)
-            if sf in ready:reason='supervisor exited';break
+            if sf in ready:
+                observations['supervisor_exit_observed_at']=time.monotonic()
+                reason='supervisor exited';break
             drain()
             if reason:break
             # Consume queued completion timestamps BEFORE judging active time.
@@ -60,8 +64,21 @@ def guard_loop(worker,supervisor,fd,phase_deadline,step_seconds,report,ready_fd=
                 drain()
                 if reason:break
                 now=time.monotonic()
+                observations['worker_exit_observed_at']=now
+                observations['pending_step_at_exit']=active
                 if now>=phase_deadline:reason='late worker exit'
-                elif active:reason='incomplete step completion at worker exit'
+                elif active:
+                    # Worker has ALREADY exited: this bounded pidfd-only wait
+                    # classifies observation order, never extends computation.
+                    # PDEATHSIG may precede the parent's pidfd readiness.
+                    end=min(now+1.,phase_deadline)
+                    observations['exit_review_deadline']=end
+                    exited,_,_=select.select([sf],[],[],max(0.,end-time.monotonic()))
+                    if sf in exited:
+                        observations['supervisor_exit_observed_at']=time.monotonic()
+                        reason='supervisor exited'
+                    elif time.monotonic()>=phase_deadline:reason='late worker exit'
+                    else:reason='incomplete step completion at worker exit'
                 break
     except BaseException as exc:
         reason='controller exception: '+type(exc).__name__
@@ -77,7 +94,7 @@ def guard_loop(worker,supervisor,fd,phase_deadline,step_seconds,report,ready_fd=
         finally:
             os.close(wf);os.close(sf);sock.close()
     payload=dict(status=status,reason=reason,active=active,last_step=last_step,
-                 started=started,finished=time.monotonic(),worker_pid=worker)
+                 started=started,finished=time.monotonic(),worker_pid=worker,observations=observations)
     p=Path(report);p.parent.mkdir(parents=True,exist_ok=True)
     f,tmp=tempfile.mkstemp(dir=p.parent,prefix='.guard-')
     with os.fdopen(f,'w') as h:json.dump(payload,h);h.flush();os.fsync(h.fileno())

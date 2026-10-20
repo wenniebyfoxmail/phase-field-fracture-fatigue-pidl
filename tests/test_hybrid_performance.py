@@ -240,3 +240,57 @@ def test_validation_driver_refuses_bare_uncontrolled_invocation(monkeypatch):
     monkeypatch.setattr(v.sys,'platform','linux')
     with pytest.raises(RuntimeError,match='requires independent outer controller'):
         v.main(argparse.Namespace(parent_only=False,outer_worker=False))
+
+
+@pytest.mark.parametrize('supervisor_exits,phase_end,expected',[(True,1000.,'supervisor exited'),(False,1000.,'incomplete step completion at worker exit'),(False,30.5,'late worker exit')])
+def test_exited_worker_classification_review_is_bounded_by_phase(tmp_path,monkeypatch,supervisor_exits,phase_end,expected):
+    import hybrid_deadline_guard as g
+    a,b=os.pipe();c,d=os.pipe();fds=iter((a,c));clock=[30.];waits=[]
+    class FakeSocket:
+        n=0
+        def setblocking(self,x):pass
+        def close(self):pass
+        def recv(self,size):
+            self.n+=1
+            if self.n==1:return json.dumps(dict(event='step_start',step=1,started=0.)).encode()
+            raise BlockingIOError()
+    sock=FakeSocket()
+    def select_fn(readers,w,e,timeout):
+        if readers==[c]:
+            waits.append(timeout);clock[0]+=min(timeout,.1) if supervisor_exits else timeout
+            return ([c] if supervisor_exits else [],[],[])
+        return ([a],[],[])
+    monkeypatch.setattr(g.sys,'platform','linux');monkeypatch.setattr(g.os,'pidfd_open',lambda pid:next(fds),raising=False)
+    monkeypatch.setattr(g.socket,'socket',lambda **kw:sock);monkeypatch.setattr(g.time,'monotonic',lambda:clock[0]);monkeypatch.setattr(g.select,'select',select_fn)
+    report=tmp_path/'review.json';g.guard_loop(123,456,99,phase_end,120.,report)
+    r=json.loads(report.read_text());assert r['reason']==expected and r['status']=='deadline_or_control_stop'
+    assert waits and waits[0]<=1. and clock[0]<=min(31.,phase_end)
+    assert r['observations']['pending_step_at_exit']['step']==1
+    os.close(b);os.close(d)
+
+
+def test_supervisor_exit_observed_first_remains_stop(tmp_path,monkeypatch):
+    import hybrid_deadline_guard as g
+    a,b=os.pipe();c,d=os.pipe();fds=iter((a,c))
+    class FakeSocket:
+        def setblocking(self,x):pass
+        def close(self):pass
+    sock=FakeSocket()
+    monkeypatch.setattr(g.sys,'platform','linux');monkeypatch.setattr(g.os,'pidfd_open',lambda pid:next(fds),raising=False)
+    monkeypatch.setattr(g.socket,'socket',lambda **kw:sock);monkeypatch.setattr(g.time,'monotonic',lambda:30.)
+    monkeypatch.setattr(g.select,'select',lambda readers,*args:([a] if readers==[a] else [c],[],[]))
+    report=tmp_path/'parent_first.json';g.guard_loop(123,456,99,1000.,120.,report)
+    r=json.loads(report.read_text());assert r['reason']=='supervisor exited' and r['observations']['supervisor_exit_observed_at']==30.
+    os.close(b);os.close(d)
+
+
+def test_prior_failed_control_cost_is_retained_and_bound(tmp_path):
+    from validate_hybrid_linux import prior_costs
+    from hybrid_inputs import sha256
+    t=tmp_path/'total.json';a=tmp_path/'admission.json'
+    write_json(t,dict(passed=False,wall_seconds=126.,cpu_seconds_children=2.,cpu_seconds_self=1.,gpu_seconds=0.))
+    write_json(a,dict(passed=False,failure='actual parent-death control failed'))
+    c={'validation_contract':{'prior_validation_receipts':[dict(total_receipt=str(t),total_sha256=sha256(t),admission_receipt=str(a),admission_sha256=sha256(a))]}}
+    p=prior_costs(c);assert p['wall_seconds']==126. and p['cpu_seconds']==3. and p['attempts'][0]['passed'] is False
+    write_json(a,dict(passed=True))
+    with pytest.raises(RuntimeError,match='evidence differs'):prior_costs(c)
