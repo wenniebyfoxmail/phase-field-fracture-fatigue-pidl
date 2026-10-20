@@ -1,0 +1,31 @@
+{
+    "status":  "FAIL_ADMISSION_WATCHDOG",
+    "run_id":  "HQ-ROAD-CENTERLINE-001-R002",
+    "task_name":  "HQ-ROAD-CENTERLINE-001-R002-20261020",
+    "r002_check_number":  1,
+    "r002_check_cap":  1,
+    "r001_checks_preserved":  3,
+    "r001_approx_seconds_preserved":  45.544,
+    "check_limit_seconds":  90,
+    "package_clock_start_utc":  "2026-10-20T21:59:35.0000000+00:00",
+    "package_deadline_utc":  "2026-10-21T01:59:35.0000000+00:00",
+    "package_elapsed_seconds_at_wrapper_end":  3924.091,
+    "package_remaining_seconds_at_wrapper_end":  10475.909,
+    "timed_out":  false,
+    "child_exit_code":  null,
+    "child_receipt_exists":  true,
+    "child_receipt_sha256":  "de3ed570479dc919d1150325231f1b2d26dce94220e16a50221f55b98535a657",
+    "child_status":  "FAIL_ADMISSION",
+    "process_tree_kill_exit_code":  null,
+    "process_tree_kill_output":  null,
+    "remaining_admission_processes":  [
+
+                                      ],
+    "scientific_execution_started":  false,
+    "training_steps":  0,
+    "optimizer_steps":  0,
+    "road420_access":  false,
+    "started_iso":  "2026-10-21T00:04:46.6370479+01:00",
+    "ended_iso":  "2026-10-21T00:04:59.0914765+01:00",
+    "elapsed_seconds":  12.359
+}

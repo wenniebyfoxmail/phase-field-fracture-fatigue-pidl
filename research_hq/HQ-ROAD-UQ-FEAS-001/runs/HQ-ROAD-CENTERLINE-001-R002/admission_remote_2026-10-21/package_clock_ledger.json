@@ -1,0 +1,17 @@
+{
+  "status": "PRELAUNCH_CLOCK_CHECKPOINT",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R002",
+  "authority_source": "human_delegated_hq",
+  "package_clock_start_utc": "2026-10-20T21:59:35Z",
+  "package_deadline_utc": "2026-10-21T01:59:35Z",
+  "checkpoint_utc": "2026-10-20T23:03:46.577275Z",
+  "package_elapsed_seconds_at_checkpoint": 3851.577,
+  "package_remaining_seconds_at_checkpoint": 10548.423,
+  "minimum_launch_remaining_seconds": 1900,
+  "reference_complete_schedule_seconds": 1533.6,
+  "r001_checks_preserved": 3,
+  "r001_approx_check_seconds_preserved": 45.544,
+  "r002_checks_authorized": 1,
+  "r002_check_limit_seconds": 90,
+  "scientific_attempts_before_r002": 0
+}

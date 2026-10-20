@@ -1,0 +1,68 @@
+{
+  "manifest_scope": "retrieved R002 admission evidence and exact post-failure state",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R002",
+  "generated_date": "2026-10-21",
+  "entry_count": 12,
+  "entries": [
+    {
+      "path": "admission_remote_2026-10-21/00_AUTHORITY_AND_INTENT.md",
+      "bytes": 1709,
+      "sha256": "e39ad78fec3b064b94ac4915aae1614400197af3ec81cabbedbe5394e58ce0d7"
+    },
+    {
+      "path": "admission_remote_2026-10-21/admission.wrapper.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "admission_remote_2026-10-21/admission.wrapper.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "admission_remote_2026-10-21/admission_receipt_remote.json",
+      "bytes": 16058,
+      "sha256": "de3ed570479dc919d1150325231f1b2d26dce94220e16a50221f55b98535a657"
+    },
+    {
+      "path": "admission_remote_2026-10-21/admission_wrapper_receipt_remote.json",
+      "bytes": 1256,
+      "sha256": "19a3137dc70cefe8456a9e0b63cba6a151aadfeddaa325d891b4156f55f08851"
+    },
+    {
+      "path": "admission_remote_2026-10-21/approval_hq.json",
+      "bytes": 2175,
+      "sha256": "a3b36e7eb6aeea213f3918ff6ab9d595793bd6ab6a05bd9355c83e16b95351bb"
+    },
+    {
+      "path": "admission_remote_2026-10-21/environment.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "admission_remote_2026-10-21/environment.stdout.json",
+      "bytes": 318,
+      "sha256": "9759858513955a528d0d8441d56076c0cc8d6d7f7a6a86d93e2805d3a4f8b0d2"
+    },
+    {
+      "path": "admission_remote_2026-10-21/launch_gpu_server.cmd",
+      "bytes": 1836,
+      "sha256": "667d03789e581fe3f473a0957e1608d89dfc06f84f0449188c2ce1062807c24d"
+    },
+    {
+      "path": "admission_remote_2026-10-21/package_clock_ledger.json",
+      "bytes": 672,
+      "sha256": "6ae90613a4f0781f2b978b0c4b1d3b4764d27e8f907f234f2ad729d4faecc9a6"
+    },
+    {
+      "path": "admission_remote_2026-10-21/register_and_start.ps1",
+      "bytes": 8673,
+      "sha256": "89f3972500ac1c5c587448381d6757be5b4bf844fc3fa4f7b1f85e311f0ac7d9"
+    },
+    {
+      "path": "post_failure_remote_state_2026-10-21.json",
+      "bytes": 652,
+      "sha256": "8dc8331d5dedb93508756f029a723f0e8c5af2c3efe0a46472e5dee7bfc04226"
+    }
+  ]
+}

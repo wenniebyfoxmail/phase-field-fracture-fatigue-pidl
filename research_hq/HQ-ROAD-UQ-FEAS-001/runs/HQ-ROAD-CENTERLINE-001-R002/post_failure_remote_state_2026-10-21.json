@@ -1,0 +1,16 @@
+{
+  "checked_at_utc": "2026-10-20T23:06:57.3542724Z",
+  "hostname": "D-26-09",
+  "query_scope": "post-failure exact state; no GPU query",
+  "scheduled_task_name": "HQ-ROAD-CENTERLINE-001-R002-20261020",
+  "scheduled_task_exists": false,
+  "scheduled_task_state": null,
+  "canonical_output": "C:\\Users\\xw436\\jobs\\HQ-ROAD-CENTERLINE-001-R002",
+  "canonical_output_exists": false,
+  "canonical_cache": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r002_cache_20261020",
+  "canonical_cache_exists": false,
+  "stage_launch_receipt_exists": false,
+  "canonical_launch_receipt_exists": false,
+  "matching_process_count": 0,
+  "matching_processes": []
+}
