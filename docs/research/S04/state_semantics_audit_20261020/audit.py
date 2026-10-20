@@ -107,7 +107,11 @@ def npz_headers(p):
 def normgap(a, b):
     if a.shape != b.shape:
         return dict(equal=False, shapes=[a.shape,b.shape], maxabs=None)
-    return dict(equal=bool(np.array_equal(a,b)), maxabs=float(np.max(np.abs(a-b))))
+    finite=np.isfinite(a)&np.isfinite(b)
+    return dict(equal=bool(np.array_equal(a,b,equal_nan=True)),
+                maxabs=float(np.max(np.abs(a[finite]-b[finite]))) if finite.any() else None,
+                nonfinite_a=int((~np.isfinite(a)).sum()),nonfinite_b=int((~np.isfinite(b)).sum()),
+                comparison='equal_nan numerical identity; opaque H is not certified as a physical channel')
 
 
 def manifest_packages():
@@ -159,6 +163,13 @@ def paired_trajectories():
               dict(npz_cycles=pc.tolist(),npz_steps=ps.tolist(),json_cycles=jc.tolist(),json_steps=jt.tolist()),pidl,'index')
         check(topo+' actual NPZ raw step mapping',np.array_equal(ps,np.array([raw_step(int(c),4) for c in pc])),
               dict(cycles=pc.tolist(),steps=ps.tolist()),pidl,'index')
+        check(topo+' unique ordered index',len(pc)==len(set(pc)) and bool(np.all(np.diff(pc)>0)) and len(ps)==len(pc),
+              dict(cycles=pc.tolist(),steps=ps.tolist()),pidl,'index')
+        nh={r['name']:r['shape'] for r in npz_headers(pidl)}
+        with h5py.File(fem) as h:
+            for n in ['u_node','v_node','d_node']:
+                check(topo+' field state axis '+n,nh[n][0]==len(pc) and h[n].shape[0]==len(fc) and nh[n][1]==h[n].shape[1],
+                      dict(pidl_shape=nh[n],fem_shape=h[n].shape),fem,'shape')
         for r in j['records']:
             c=int(r['cycle'])
             check(f'{topo} c{c} raw index',int(r['step'])==raw_step(c,4),r['step'],j['archive'],'index')
@@ -204,12 +215,15 @@ def mcs_metadata():
                   payload_present=p.is_file())
         if p.is_file():
             with h5py.File(p) as h:
+                for key,value in [('controls/physical_cycle',c['cycle']),('controls/substep',c['substep']),('outer',c['last_complete'])]:
+                    check(name+' endpoint scalar '+key,scalar(h,'point/'+key)==value,
+                          dict(declared=value,stored=scalar(h,'point/'+key)),p,'index')
                 for n in ['u','d','raw','ru','rd','history234']:
                     key='point/'+n
                     if key in h:
                         field(row,n,str(p)+'::'+key,str(h[key].shape),
                               'same-field fresh trial; not committed trajectory state',meaning='history234 channels A, current active driver, fatigue f')
-        check(name+' reported accept identity',bool(c['strict_accepted']) or c['strict_stop']=='outer_budget',
+        check(name+' published metadata consistency',bool(c['strict_accepted'])==(c['strict_stop']=='policy_tolerance'),
               dict(accepted=c['strict_accepted'],stop=c['strict_stop']),MCS/'analysis_v2/cases.json','published_result')
 
 
@@ -259,17 +273,32 @@ def c1_chain():
                 for n in ['u','d','lower','history','raw']:
                     gap=normgap(hread(h,'pre/'+n),hread(prev,prior_group+'/'+n))
                     check(f'c1 {arm} s{q} chain '+n,gap['equal'],gap,p)
+                for n in ['history','lower']:
+                    gap=normgap(hread(h,'proof/'+n),hread(h,'pre/'+n))
+                    check(f'c1 {arm} s{q} proof old '+n,gap['equal'],gap,p)
+                for n in ['u','d','raw']:
+                    gap=normgap(hread(h,'proposed/'+n),hread(h,'proof/'+n))
+                    check(f'c1 {arm} s{q} committed '+n,gap['equal'],gap,p)
+                gap=normgap(hread(h,'proposed/lower'),hread(h,'proposed/d'))
+                check(f'c1 {arm} s{q} committed lower',gap['equal'],gap,p)
+                gh=hread(h,'proposed/history')
+                gap=normgap(gh[1:4],hread(h,'proof/history234'))
+                check(f'c1 {arm} s{q} committed trial history',gap['maxabs'] is not None and gap['maxabs']<=1e-10 and gap['nonfinite_a']==gap['nonfinite_b']==0,gap,p)
+                gap=normgap(hread(h,'post/history'),gh)
+                check(f'c1 {arm} s{q} post audit history input',gap['equal'],gap,p)
+                gap=normgap(hread(h,'post/history234'),gh[1:4])
+                check(f'c1 {arm} s{q} post audit trial idempotence',gap['maxabs'] is not None and gap['maxabs']<=1e-10 and gap['nonfinite_a']==gap['nonfinite_b']==0,gap,p)
                 row=state('E011_c1_'+arm,'E011_'+arm+'_own_chain',1,q,f'c1s{q}',p,
                           'committed_own_chain','proof=fresh precommit; proposed=accepted durable state; post=fresh diagnostic after commit',
                           level='chain_identity_verified',accepted_version=q,
                           original_joint_pass=bool(scalar(h,'event/precommit_joint_pass')),
                           displacement=scalar(h,'event/uy'))
-                for n in ['u','d','lower','history','raw','version']:
-                    field(row,n,str(p)+'::proposed/'+n,'native nodes/GP4' if n!='version' else 'scalar',
-                          'post_commit durable state',meaning='next substep must read proposed, not diagnostic post group')
-                for n in ['ru','rd','history234']:
-                    field(row,n,str(p)+'::proof/'+n,'native DOF/GP4','fresh precommit certificate',
-                          meaning='certificate timing differs from a new evaluation with committed history')
+                for group,timing in [('pre','immutable previous accepted state'),('proof','fresh certificate using old history'),
+                                     ('proposed','post_commit durable accepted state'),('post','fresh diagnostic using committed history; no extra commit')]:
+                    for n,o in h[group].items():
+                        if isinstance(o,h5py.Dataset):
+                            field(row,group+'.'+n,str(p)+'::'+group+'/'+n,str(o.shape),timing,
+                                  meaning='next step reads proposed; history slot1 opaque, slot2 A, slot3 active previous r, slot4 f')
             prior=p; prior_group='proposed'
 
 
@@ -282,11 +311,15 @@ def current_outputs():
     paths=[root/'fields.npz']+sorted((root/'checkpoints').glob('*/fields.npz'))+sorted((root/'readouts').glob('*.npz'))
     for p in paths:
         row=state('E011_tightcouple','E011_fixed_c20s4',20,4,str(p.relative_to(root)),p,
-                  'optimization_readout_not_physical_transition','fixed c20s4; 0 history commits, fixed FEM physical d',
+                  'optimization_snapshot_not_physical_acceptance','fixed c20s4; 0 history commits; mechanics uses external FEM d',
                   level='contract_and_header',history_commits=contract['history_commits'])
         for f in npz_headers(p):
+            meaning=('NN output damage, can vary with hidden updates; NOT damage used in mechanical residual/energy'
+                     if f['name']=='d' else 'NPZ alone is not a complete restart state; no independent A/r/f/lower/identity')
             field(row,f['name'],str(p)+'::'+f['name'],str(f['shape']),row['timing'],
-                  meaning='NPZ is not a complete restart state: no A/r/f/lower or state identity inside')
+                  meaning=meaning)
+        field(row,'d_mechanics',str(contract['states'][0]['input'])+'::external FEM damage','native Q4 nodes',
+              'fixed external FEM damage for all optimization readouts',meaning='not the NPZ d network output; source runner explicitly distinguishes both',level='source_contract')
     for e in range(27,35):
         p=CURRENT/f'docs/research/S04/S04-E{e:03d}/data_lock.json'
         if not p.exists(): continue
