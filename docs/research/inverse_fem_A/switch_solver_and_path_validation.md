@@ -7,6 +7,61 @@ Obsidian; A is active. This is code preparation and a prospective validation
 proposal, not an Experiment execution card. Previous c525/fa2e5042 reviews and
 raw/source inventories carry forward except for the explicitly changed tape.
 
+## Prospective management amendment — 2026-10-20 bounded task authority
+
+This section is the **current administrative entry**, prospectively superseding
+per-step approval/re-review implications in the earlier proposal below. It does
+not alter its goal, model/data, proposed producer,536-host-hour total, scientific
+criteria, first-scientific-failure stop, no-scientific-retry rule or signed
+156f9924 review snapshot. Prior receipts remain unchanged. There is NO active
+execution card, fresh Run authority or approved numerical budget; no card is
+created or enabled here. The explicit human no-FEM/no-inversion instruction is
+still the controlling limit. This local management update itself permits no
+SSH/install/probe/transfer/training/solve/restart or new review.
+
+Governance sources: installed [core bounded-task rule](/Users/wenxiaofang/.codex/skills/research-decision-core/SKILL.md#一次授权机械检查自动完成--bounded-task-authority),
+[bootstrap update](/Users/wenxiaofang/.codex/skills/research-decision-core/references/agent_bootstrap.md)
+and [review-channels update](/Users/wenxiaofang/.codex/skills/research-review-channels/SKILL.md).
+
+For a FUTURE one-time authorization of this complete validation envelope:
+
+- The agent automatically completes in-scope implementation/fixes, relevant
+  checks, necessary focused re-review via the already chosen independent Codex
+  channel, and environment/resource admission. Meeting those conditions allows
+  continuation within the authorization without another human signoff.
+- Observed host/package versions, command, fresh RunID/paths, hashes, capacity,
+  receipts and card instantiation are machine-checked fields. They are not
+  separate approvals. Record actual versions and compatibility for numerical
+  or control risk; auxiliary-library exact pins are not blanket admission or
+  full re-review gates. Numerical/library semantic or safety changes still get
+  the appropriate focused review, performed automatically within scope.
+- Metadata-only card completion receives consistency checks and preserves the
+  existing Code Ready findings. Earlier mentions of an exact runtime card or
+  independently checked fields do not require a new full Code Ready review or
+  human approval solely for metadata. No change to the code-review result is
+  implied by this document-only amendment.
+- The eventual new card will reserve **at most10 minutes aggregate and at most2
+  mechanical resource rechecks** inside the existing4h supervision/termination
+  allowance, hence inside536h, with no extra budget. This prospective allocation
+  does not authorize those checks now. A verified no-worker/no-solver-start
+  resource wait is not a scientific failure or retry; retain the same pending
+  attempt identity and stop waiting when the cap is exhausted. Do not fabricate
+  a fresh Run to hide an unknown/failed launch. Verify process/receipt state
+  before any relaunch. Human-imposed connection/attempt caps take precedence.
+- Mechanical checks must not invoke a scientific state solve, native matrix
+  probe, training or new/protected-data access in disguise. A physical or
+  sensitivity solve that starts and then fails its scientific/resource stop
+  condition retains that failed result; the no-scientific-retry limit remains.
+  No alternative tolerance, load, model, producer or larger budget is inferred.
+
+**Only current human boundary:** approving the whole numerical-validation
+execution envelope rather than the presently authorized offline preparation.
+If it is later approved conditionally on readiness, resolving its mechanical
+fields does not trigger another question. A genuinely new scope/protected-data,
+producer/spend, budget or disallowed scientific retry is an envelope change and
+requires one consolidated decision. This governance migration does not request
+or issue that execution approval and does not change any enabled flag.
+
 ## What is implemented
 
 `source/q4_inverse_switch.py` adds a sparse semismooth Newton solver for the

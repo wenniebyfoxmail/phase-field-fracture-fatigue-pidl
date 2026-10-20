@@ -14,6 +14,36 @@ in [offline_completion.md](offline_completion.md); exact corrected code
 ([review_v4.md](review_v4.md)). Statements below about then-missing interfaces
 are historical, not the current implementation inventory.
 
+## Current owner entry: bounded authority update, 2026-10-20
+
+**There is no active execution card or issued numerical-run authority for this
+owner.** The current next-step entry is
+[switch_solver_and_path_validation.md](switch_solver_and_path_validation.md),
+with the prospective management amendment at its top. The human instruction
+remains local implementation/review/planning only: do not start new FEM,
+native-size algebra, real-path replay or inversion. The proposed536 host-hours
+is not an approved spend. No new card is manufactured merely for this update.
+
+Apply the installed [research-decision-core bounded-task rule](/Users/wenxiaofang/.codex/skills/research-decision-core/SKILL.md#一次授权机械检查自动完成--bounded-task-authority),
+[2026-10-20 bootstrap](/Users/wenxiaofang/.codex/skills/research-decision-core/references/agent_bootstrap.md)
+and [review channels](/Users/wenxiaofang/.codex/skills/research-review-channels/SKILL.md).
+Once one complete execution envelope is actually approved, in-scope code
+implementation/repair, meaningful tests, necessary focused review through the
+already selected independent Codex channel, compatible environment/resource
+checks and command/RunID/path/hash/receipt completion proceed automatically.
+Pure metadata completion does not reopen Code Ready or require a second human
+approval. Changed scientific/numerical/control risk gets the relevant focused
+review; unchanged156f9924 findings carry forward. A missing auxiliary version
+is an agent compatibility/recording task, not a separate approval gate.
+
+Current management authority is local documents only; this amendment performs
+no SSH, installation, probe, transfer, new review, numerical work or automation
+restart. Original code, prior failed results, review receipts and signed Git
+snapshots are preserved. The one human decision currently missing is whether
+to authorize the proposed full-path validation envelope at all; later changes
+outside that envelope (data/producer/spend/budget/scientific retry) require one
+consolidated scope decision, not per-field confirmations.
+
 ## Identity and allowed work
 
 - Branch `codex/q4-material-inverse-20261020` from explicit remote-main commit
