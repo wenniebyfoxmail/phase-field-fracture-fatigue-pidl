@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E017
 planned_run_id: S09-E017-R001-factorised-head-p0
-status: PRE_ADMISSION_STAGING_STOPPED_NETWORK_TRANSFER__AUTHORITY_CLOSED__NO_EXECUTION
+status: PRE_ADMISSION_REPAIR_STOPPED_FROZEN_ARCHIVE_TRANSFER__AUTHORITY_CLOSED__NO_EXECUTION
 producer: gpu-taobo / GPUServer8
 forbidden_fallback: any other host or GPU
 ---
@@ -241,3 +241,20 @@ and completed updates. No reconnect, retry, resume, cleanup or alternate route
 was performed after the terminal error. This authority is closed. Any future
 action requires new explicit authority and must first inspect the preserved
 remote RunID staging paths without assuming they are fresh.
+
+## 2026-10-20 deployment-repair receipt
+
+A later user authority permitted read-only residual inspection, task-owned
+staging repair and then the unchanged one-run attempt. The thin bundle was
+completed and verified, and the clean remote checkout reached the exact
+reviewed control commit. The remote compressor did not reproduce the frozen
+archive bytes, so the exact locally reproduced archive was transferred under a
+30-minute hard limit. That transfer stopped at approximately 93% before the
+archive hash could close.
+
+The partial archive was isolated as
+`control/code.tar.gz.partial_frozen_transfer_stopped_20261020`; the expected
+archive path is absent. No authority, resolver, admission token, runner, output
+or scientific operation was created. The complete receipt is in
+`final_execution_repair_stop_20261020.md` and
+`final_execution_repair_stop_receipt_20261020.json`.
