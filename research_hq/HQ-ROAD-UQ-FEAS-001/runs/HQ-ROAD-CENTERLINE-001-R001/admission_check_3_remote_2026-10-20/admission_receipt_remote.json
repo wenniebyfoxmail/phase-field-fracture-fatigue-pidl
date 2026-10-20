@@ -1,0 +1,17 @@
+{
+    "status":  "FAIL_ADMISSION",
+    "run_id":  "HQ-ROAD-CENTERLINE-001-R001",
+    "started_iso":  "2026-10-20T23:38:41.6009038+01:00",
+    "additional_check_number":  1,
+    "overall_check_number":  3,
+    "prior_checks_consumed":  2,
+    "additional_check_limit_seconds":  75,
+    "scientific_execution_started":  false,
+    "training_steps":  0,
+    "optimizer_steps":  0,
+    "road420_access":  false,
+    "task_name":  "HQ-ROAD-CENTERLINE-001-R001-20261020",
+    "error":  "GPU 0 has compute processes: 41688, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7\n12948, C:\\Windows\\System32\\dwm.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7\n10144, C:\\Windows\\explorer.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7\n37696, C:\\Windows\\System32\\LogonUI.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7\n37784, C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7\n13992, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7\n52308, C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7\n23540, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+    "ended_iso":  "2026-10-20T23:38:43.6169116+01:00",
+    "elapsed_seconds":  2.016
+}

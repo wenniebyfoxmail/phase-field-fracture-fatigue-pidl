@@ -1,0 +1,8 @@
+{
+  "admission.wrapper.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "admission.wrapper.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "admission_receipt_remote.json": "7eade12c6bdb3a04fd5e1c55d11a9776a7eb69efc6a225234a406dc1f97250fb",
+  "admission_wrapper_receipt_remote.json": "137ed3e648627ff51ecc654beee3e21a41eabed387bf36a4e4b6d18fcca5dfee",
+  "approval_hq_remote.json": "96417a02cbc09117e82d45ffa8c01972d8a503f504a999197e183d9170edddd0",
+  "post_failure_readonly_verification.json": "61711f2f2851fac7b81bdedb9ee30ed5449299015a4dc1a6fa3c467d286a207a"
+}

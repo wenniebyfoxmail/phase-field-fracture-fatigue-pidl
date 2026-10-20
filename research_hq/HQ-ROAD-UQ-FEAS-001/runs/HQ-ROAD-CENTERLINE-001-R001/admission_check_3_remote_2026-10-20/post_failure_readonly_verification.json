@@ -1,0 +1,15 @@
+{
+  "checked_iso": "2026-10-20T23:41:00+01:00",
+  "producer_alias": "gpu-server",
+  "hostname": "D-26-09",
+  "scheduled_task": "HQ-ROAD-CENTERLINE-001-R001-20261020",
+  "scheduled_task_exists": false,
+  "canonical_output": "C:\\Users\\xw436\\jobs\\HQ-ROAD-CENTERLINE-001-R001",
+  "canonical_output_exists": false,
+  "python_d5_runner_count": 0,
+  "scientific_execution_started": false,
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "road420_access": false,
+  "note": "Read-only verification after the third admission failure; no launch or retry was attempted."
+}
