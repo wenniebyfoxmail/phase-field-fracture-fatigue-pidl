@@ -59,3 +59,20 @@ distinct prefix completion, cached child handle and a shortened remaining-time
 watchdog. This clears preparation only; fresh execution authority is pending.
 Analysis review fixed stale-output risk and snapshot-state identity checks;
 zero loaded states correctly generate no scientific comparison figures.
+
+## Prepared single-call diagnostic transport
+
+After R003's local budget guard prevented any SSH, the controller was assembled
+outside a new producer attempt. Independent focused review at `276a1306`
+passed after checking timeout/partial-output persistence, archive-decoding
+failure receipts, invocation-specific retrieval, an exclusive local claim and
+hashes for five retained dirty-native source files. Reviewer's local mocked
+checks covered successful retrieval, byte/text timeouts and malformed base64;
+no SSH, numerical replay or scientific code was run. The source hashes do not
+pin compiled MEX identity. All earlier numerical limits carry forward.
+
+Final numerical candidate remains `a5d65d21`; prepared transport is
+`scripts/shear/execute_shear_diagnostic.py` at `276a1306`. Default invocation
+is prepare-only. Execution requires a fresh explicit authority timestamp and
+retains the original180-second boundary and90-second maximum native child;
+there is no retry loop. This review creates no new execution authority.
