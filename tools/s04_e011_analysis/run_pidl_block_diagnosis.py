@@ -54,6 +54,8 @@ class LocalProblem:
  def fields(self,field):return field.fieldCalculation(self.x)
  def parts(self,u,v,d):
   gu,gv,gd=self.grad(u),self.grad(v),self.grad(d);dg=q4_interpolate(d,self.cells,self.N)
+  observer=getattr(self,'trace_observer',None)
+  if observer is not None:observer((gu[:,:,0]+gv[:,:,1]).detach())
   el,_=strain_energy_with_split(gu[:,:,0],gv[:,:,1],.5*(gu[:,:,1]+gv[:,:,0]),dg,self.mat,self.model)
   ee=(self.w*el).sum();ed=(self.w*self.f*.375*(dg+.0001*gd.square().sum(2))).sum()
   eh=(self.w*.5*16875*torch.relu(self.hgp-dg).square()).sum()

@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "scope": "Focused Code Ready review for one authorized new measurement panel only; no science execution inferred",
+  "bindings": {
+    "tools/s04_e011_analysis/profiled_hidden_measurement.py": {
+      "git_blob": "8586c483b38ef666acf9af62d3ea32f715b7842f",
+      "sha256": "78f97af32d48dc9842efb4225126f96c2e333d4563d290604a73cb99968fbf10"
+    },
+    "tools/s04_e011_execution/measure_launch.py": {
+      "git_blob": "c8aa99aeaae5e2c5eb36bbf81238ddaa8b0877f9",
+      "sha256": "f322a51008e54a031a959d2c1952974a1c06e2ffd0fba4acbe096ecb2a9b845e"
+    },
+    "tools/s04_e011_analysis/run_pidl_persisted_phi_hidden_newton.py": {
+      "git_blob": "c176997e0134ae66f1f33a774f702a4e02f4f70d",
+      "sha256": "406c59de48a99558b156a29fceb00d92d432e72aa06ae36a41c4708804592332"
+    },
+    "tools/s04_e011_analysis/run_pidl_block_diagnosis.py": {
+      "git_blob": "aebc0ea1fd06be1a32e8bf9f2679b8ac09fc4e10",
+      "sha256": "b8f4e40ca466daab7a1c5e287816abcf92cd2b24c1d9f8c1ca8856ff20604848"
+    },
+    "tools/s04_e011_analysis/test_profiled_hidden_measurement.py": {
+      "git_blob": "fbbe1a8bfc325343906387d1548e695f769d4b33",
+      "sha256": "78413216c99fe68d7d402da83be4363983eb1a69f7717680840611de973c116e"
+    },
+    "docs/research/S04/S04-E011/profiled_hidden_measurement_20261020/execution_card.json": {
+      "git_blob": "c13d8ea8355d201c8399e4b8b7043aa03dd61197",
+      "sha256": "47086533074f7d47ffdc00b42a3fbd30dc749abc1205d9f4d425dc77b67af1e6"
+    }
+  },
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tools/s04_e011_analysis:tools/s04_e011_execution /Users/wenxiaofang/miniconda3/bin/python3 -B -m pytest -q tools/s04_e011_analysis/test_profiled_hidden_measurement.py",
+    "passed": 6,
+    "failed": 0,
+    "test_kind": "Artificial small tensors and mocked Popen/start-gate only; no real processes, source assets, NN, AD, SVD, FEM or solve",
+    "old_math_or_wrapper_tests_repeated": false
+  },
+  "checks": [
+    "A uses unchanged Runtime.trial and original source/physics/BC/head/realization/rank contracts; seven fresh maps, no candidate promotion or optimization/history path.",
+    "B is the explicit anchored chart field family savedPhi+(Dxi-D0)T0 with source raw UV head; reuses each signed A side existing feature tensor. B is never installed as an actual NN.",
+    "Two optional legacy observer hooks expose only already-computed features and native trace; no extra model/physical evaluation.",
+    "Qv requested once; original derivative mismatch is recorded as observation, while nonfinite/state/rank/head/realization/rollback failures stop. Each completed pair saves raw FD/difference/error/scale/tolerance immediately, before later panel sides.",
+    "A actual fields/basis/readout and B free fields/z/gradient/trace/solver plus actual B Phi persist for later saved-output verification.",
+    "Scientific Guard and legacy evaluation budget are both capped at500 energy/50 assemblies/7 SVD and600 seconds. Resource card holds16GiB RSS/CUDA allocated/reserved,8GiB task,4CPU, selected GPU index5/UUID and4GiB physical spare; fresh no-conflict admission remains required.",
+    "Controller is gated before package hashes; independent outer pidfd guardian covers controller/sealing within fixed absolute envelope, inner pidfd guardian bounds scientific worker600s. SIGALRM covers absolute envelope as an additional stop; only owned processes are stopped.",
+    "Postexit export schema now matches verifier: only three final logs excluded, each<=1MiB before hash, root/path/size/SHA provided, run_id and export_manifest SHA bound; exclusive outer return receipt outside sealed roots.",
+    "Exact authority overlay binds new package/run/family; claim is consumed once, no retry/resume/reconnect path in this launcher."
+  ],
+  "resolved_findings": [
+    "Absolute SIGALRM moved ahead of package verification; independent outer guardian added before controller gate.",
+    "Explicit initial20GiB admission avoids the legacy default28GiB;4GiB spare monitored.",
+    "Postexit receipt schema aligned with existing retrieval verifier and bounded log hashes.",
+    "B actualPhi is saved rather than relying only on solver metadata; completed comparisons no longer wait for all11maps."
+  ],
+  "limitations": [
+    "This is static/tiny-fixture Code Ready only, not proof of actual resource fit, scientific completion, derivative consistency, root cause or improvement.",
+    "Physical head tolerance remains1e-10; B is a field control, not an NN endpoint; no scientific success inferred from any gate alone.",
+    "Local staging/retrieval subprocesses must obey the same fixed absolute envelope and4GiB retrieval cap; this review does not independently execute those external steps.",
+    "Final producer package and authority require exact source/package binding after commit; no stale prior R2 package may run this code.",
+    "Partial output stays partial; old R2 failed outcome and missing old Qv remain unchanged."
+  ],
+  "blockers": []
+}

@@ -67,6 +67,8 @@ def build_full_space(field,problem,work):
     work.check()
     with torch.no_grad():
         features=field.net.encode(problem.x)
+        observer=getattr(work,'feature_observer',None)
+        if observer is not None:observer(features)  # existing features only; no extra forward
         bubble=((problem.x[:,1]+.5)*(.5-problem.x[:,1])).cpu().numpy()
         head=torch.cat((field.net.output_layer.weight[:2],field.net.output_layer.bias[:2,None]),dim=1).cpu().numpy()
     transform,phi,info=conditioned_basis(features.cpu().numpy(),problem.mass.cpu().numpy(),bubble,.11999988)

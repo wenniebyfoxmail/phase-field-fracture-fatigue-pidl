@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "scope": "Static resource-boundary amendment only; original focused review retained",
+  "original_review": {
+    "path": "docs/research/S04/S04-E011/profiled_hidden_measurement_20261020/review.json",
+    "git_blob": "d725d002ba8b895a7da9b3ae9739cb0e39015844",
+    "sha256": "a9d4e36f83264ef3f4b794c59a5eb326078587c5e41bb615721782f6e0d4ad4d"
+  },
+  "bindings": {
+    "tools/s04_e011_execution/measure_launch.py": {
+      "path": "tools/s04_e011_execution/measure_launch.py",
+      "git_blob": "4d33f57455587ecd06352d83da823a1c98a6fa83",
+      "sha256": "2d129c4f1eee485a0aeca129968a23e0cc16a18eac9bcf6c38d13fb6a9a2acee"
+    },
+    "tools/s04_e011_analysis/test_profiled_hidden_measurement.py": {
+      "path": "tools/s04_e011_analysis/test_profiled_hidden_measurement.py",
+      "git_blob": "c3049d2e08c4ec4b8a7e9deff65dc1d5adbe2450",
+      "sha256": "59a001e8005dcff4b03f9cf533564fb31c3b7bf8d836934807173b489ecd1748"
+    }
+  },
+  "checked_delta": [
+    "Outer process affinity is restricted to the same at-most-four CPU set before spawning the controller and both guardians; children inherit the restriction.",
+    "External resource scans retain worker-only monitoring and additionally sum the complete owned outer subtree RSS, so launcher and both guardians count toward16GiB.",
+    "Existing owned claim/bootstrap stdout/bootstrap stderr/outer-return byte sizes are added to run/archive storage under8GiB.",
+    "Artificial outer fixture mocks Linux/affinity rather than changing the test host affinity or spawning real processes."
+  ],
+  "tests": "No new tests executed for this amendment; prior6 independent new artificial measurement tests retained, parent reports6 passing after these resource-only edits.",
+  "scientific_mapping_changed": false,
+  "no_execution": "No SSH, real arrays/models, numerical evaluation, NN/AD/SVD/FEM/solve, producer or process launch.",
+  "limitations": [
+    "Static amendment does not establish actual peak resource use or successful admission.",
+    "Final package/authority binding and fixed absolute staging/retrieval envelope still required; original scientific and retrieval limitations remain."
+  ],
+  "blockers": []
+}

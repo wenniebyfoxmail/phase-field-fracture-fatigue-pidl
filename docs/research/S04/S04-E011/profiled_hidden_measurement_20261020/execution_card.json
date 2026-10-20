@@ -1,0 +1,105 @@
+{
+  "mode": "measurement_only",
+  "execution_enabled": false,
+  "run_id": "pf_s04e011_profile_measure_c20_r1_hq_20261020",
+  "family": "S04-E011-PROFILED-HIDDEN-C20-v1",
+  "run_root": "/mnt/data2/drtao/wennie/pf_s04e011_profile_measure_c20_r1_hq_20261020",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profile_measure_c20_r1_hq_20261020",
+  "family_claim": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/S04-E011-PROFILED-HIDDEN-C20-v1.mechanism_r1_20261020.json",
+  "producer": {
+    "hostname": "GPUServer8",
+    "user": "drtao",
+    "gpu_index": 5,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b"
+  },
+  "input_bindings": [
+    {
+      "role": "input",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/inputs/c20_peak.npz",
+      "bytes": 15502614,
+      "sha256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3"
+    },
+    {
+      "role": "original_model",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_99.pt",
+      "bytes": 4510197,
+      "sha256": "55de7e6c5ed7b3dd80cee19139b7e33a22b92c0b5384a8af9a019ff3e465004f"
+    },
+    {
+      "role": "initial_model",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/output/c20_s4/accepted_network.pt",
+      "bytes": 9011061,
+      "sha256": "8ea35dc4d1147ed49b26e0e3c440034d3fde7c971343519c394526c41d12180e"
+    },
+    {
+      "role": "source_fields",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/output/c20_s4/fields.npz",
+      "bytes": 1361291,
+      "sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57"
+    },
+    {
+      "role": "source_phi",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/output/c20_s4/bases/source/phi.npy",
+      "bytes": 267902656,
+      "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+    },
+    {
+      "role": "source_transform",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/output/c20_s4/bases/source/transform.npy",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+    }
+  ],
+  "work_caps": {
+    "energy_force_field": 500,
+    "hidden_jvp": 768,
+    "hidden_vjp": 768,
+    "C": 256,
+    "CT": 256,
+    "native_tangent": 2048,
+    "head_assembly": 50,
+    "head_factor": 50,
+    "head_triangular_solve": 4096,
+    "raw_feature_forward": 4096,
+    "explicit_head_products": 1000,
+    "svd": 7
+  },
+  "resource_limits_bytes": {
+    "host_RSS": 17179869184,
+    "GPU_allocated": 17179869184,
+    "GPU_reserved": 17179869184,
+    "fresh_root_outputs": 8589934592
+  },
+  "admission_revision": {
+    "required_initial_free_VRAM_bytes": 21474836480,
+    "minimum_free_after_actual_preflight_bytes": 4294967296
+  },
+  "measurement_seconds": 600,
+  "envelope_seconds": 1800,
+  "envelope_started_UTC": "2026-10-20T22:34:57Z",
+  "envelope_deadline_epoch": 1792537497.0,
+  "mechanical_max_checks": 2,
+  "mechanical_max_seconds": 60,
+  "retrieval_max_bytes": 4294967296,
+  "CPU_max": 4,
+  "science": {
+    "state": "frozen c20s4",
+    "A_maps": 7,
+    "B_maps": 4,
+    "Qv_calls": 1,
+    "head_tol": 1e-10,
+    "FD_abs": 1e-10,
+    "FD_rel": 0.0001,
+    "h": [
+      1e-06,
+      5e-07
+    ],
+    "seed": 173,
+    "optimization": 0,
+    "history": 0,
+    "rollout": 0,
+    "B_actual_NN": false,
+    "mismatch_is_observation": true
+  },
+  "authority_ref": "Prospective HQ instruction in source thread01a14bb9-6cd1-7ee2-9647-5190d786f7ba under verified direct human nighttime delegation01a15b4c-2e3a-7772-b74b-46f4ab752766; new11-map measurement, notR2 retry"
+}
