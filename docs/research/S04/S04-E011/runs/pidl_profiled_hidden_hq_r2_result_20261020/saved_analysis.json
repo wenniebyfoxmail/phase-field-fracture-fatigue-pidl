@@ -1,0 +1,89 @@
+{
+  "run_id": "pf_s04e011_profiled_hidden_c20_r2_hq_20261020",
+  "state": "frozen_c20s4_peak_no_history_commit",
+  "scientific_status": "PREFLIGHT_INCONCLUSIVE_NO_ACCEPTED_CANDIDATE",
+  "metrics": [
+    {
+      "label": "FEM",
+      "role": "frozen_FEM_reference",
+      "E": 0.004320576024533599,
+      "Ru": 3.776007848163824e-15,
+      "active_integral": 0.004317519850105422,
+      "active_relL2": 0.0,
+      "active_corr": 1.0
+    },
+    {
+      "label": "source",
+      "role": "unchanged_PIDL_source",
+      "E": 0.005268400005223915,
+      "Ru": 0.013488941154683496,
+      "active_integral": 0.005265939601442452,
+      "active_relL2": 6.120899302222349,
+      "active_corr": 0.10251798586523095,
+      "head_ginf": 3.3665696098916786e-11,
+      "UV_mass_relL2": 0.07548651474572704,
+      "UV_H1_rel": 0.5876388790246525,
+      "E_replay_abs_error": 2.6020852139652106e-18,
+      "Ru_replay_abs_error": 3.469446951953614e-18
+    },
+    {
+      "label": "plus",
+      "role": "unaccepted_finite_difference_trial",
+      "E": 0.005268398945422364,
+      "Ru": 0.013488852726333832,
+      "active_integral": 0.005265938315893307,
+      "active_relL2": 6.120818155758855,
+      "active_corr": 0.10251954916422207,
+      "head_ginf": 2.5598999482678853e-11,
+      "UV_mass_relL2": 0.07548650438306423,
+      "UV_H1_rel": 0.5876388317769562,
+      "E_replay_abs_error": 1.734723475976807e-18,
+      "Ru_replay_abs_error": 6.938893903907228e-18
+    },
+    {
+      "label": "minus",
+      "role": "unaccepted_finite_difference_trial",
+      "E": 0.005268401067127723,
+      "Ru": 0.013489029700820443,
+      "active_integral": 0.0052659408890757915,
+      "active_relL2": 6.1209804843781175,
+      "active_corr": 0.10251642160369798,
+      "head_ginf": 5.287808927702253e-11,
+      "UV_mass_relL2": 0.0754865251963882,
+      "UV_H1_rel": 0.5876389269140627,
+      "E_replay_abs_error": 8.673617379884035e-19,
+      "Ru_replay_abs_error": 8.673617379884035e-18
+    }
+  ],
+  "response": {
+    "h": 1e-06,
+    "odd_increment": {
+      "free_L2": 1.3056737775621284e-05,
+      "free_maxabs": 1.795164448412101e-06,
+      "boundary_maxabs": 0.0
+    },
+    "even_increment": {
+      "free_L2": 9.845153221395072e-09,
+      "free_maxabs": 4.418858438881568e-09,
+      "boundary_maxabs": 0.0
+    },
+    "actual_central_field_response": {
+      "free_L2": 13.056737775621283,
+      "free_maxabs": 1.795164448412101,
+      "boundary_maxabs": 0.0
+    },
+    "even_over_odd_free_L2": 0.0007540285629215377,
+    "predicted_Qv_saved": false,
+    "derivative_mismatch_norm_recoverable": false,
+    "interpretation": "Actual saved finite-profile response only; one h cannot distinguish numerical sensitivity from nonlinear or chart effects."
+  },
+  "field_evaluations": 4,
+  "tangent_actions": 0,
+  "parameter_updates": 0,
+  "analysis_wall_seconds": 1.325984250055626,
+  "analysis_CPU_seconds": 1.324503,
+  "raw_source_sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57",
+  "input_sha256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3",
+  "reconstructed_arrays_hash_verified": true,
+  "scope": "Saved-array replay and visualization only; no NN/Phi/SVD/tangent or equilibrium solve"
+}

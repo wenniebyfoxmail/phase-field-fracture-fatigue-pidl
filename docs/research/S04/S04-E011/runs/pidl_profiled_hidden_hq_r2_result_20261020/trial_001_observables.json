@@ -1,0 +1,26 @@
+{
+  "E": 0.005268398945422366,
+  "Ru": 0.013488852726333826,
+  "rank": 386,
+  "actual_nn": true,
+  "full_current_basis": true,
+  "persisted_actual_phi": true,
+  "frozen_state": true,
+  "fixed_state": true,
+  "rolled_back": false,
+  "head_gradient_inf": 2.5598999482678853e-11,
+  "realization_maxabs": 3.629735401133871e-13,
+  "finite": true,
+  "folder": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/point_0/trial_001",
+  "boundary_maxabs": 0.0,
+  "actual_readout": {
+    "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/readouts/trial_1.npz",
+    "bytes": 2687138,
+    "sha256": "6a6a22ef298c9ee08ecb00a2f6bdff0dac50a64fcdbb33340252117d57fbace0"
+  },
+  "actual_weights": {
+    "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/point_0/trial_001/actual_candidate_network.pt",
+    "bytes": 9010805,
+    "sha256": "2845df85445f364075b15cd82ab9ec5b0071748002276067a0010745227a7434"
+  }
+}

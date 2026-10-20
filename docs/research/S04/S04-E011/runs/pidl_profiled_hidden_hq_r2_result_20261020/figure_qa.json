@@ -1,0 +1,24 @@
+{
+  "figures": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/analysis/baseline_active.png",
+      "sha256": "1abcf5e8970bddbaeb4d6274ef6044a9357421723dcdd240a3cd1d2995801849",
+      "sidecar": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/analysis/baseline_active.md",
+      "visual_review": "inspected; shared scales, model units, no seams or cropped labels; trial response is not derivative error"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/analysis/finite_profile_response.png",
+      "sha256": "1a7c35f7b17006bca269df7f63a5eb7a818b96d769f857bdb81225b6049696d2",
+      "sidecar": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/analysis/finite_profile_response.md",
+      "visual_review": "inspected; shared scales, model units, no seams or cropped labels; trial response is not derivative error"
+    }
+  ],
+  "render_passes": 3,
+  "saved_array_replays_per_pass": 4,
+  "total_saved_array_replays": 12,
+  "unique_saved_states": 4,
+  "tangent_actions": 0,
+  "NN_calls": 0,
+  "solves": 0,
+  "note": "Two rerenders repaired polygon antialiasing seams and a long colourbar label; same verified saved inputs, no changed scientific calculation."
+}

@@ -1,0 +1,10 @@
+{
+  "remote_full_hashes_verified": true,
+  "remote_entries": 426,
+  "remote_bytes": 1170977731,
+  "hash_seconds": 0.8454230614006519,
+  "transferred_payload_bytes": 402708,
+  "reused_identical_local_bytes": 37251187,
+  "local_full_retrieval_complete": false,
+  "missing_local_transfer_policy": "large Phi/checkpoints/field NPZ stay remote; compact evidence only, no full-local retrieval claim"
+}

@@ -1,0 +1,36 @@
+{
+  "analysis": "saved-array lossless UV bit-XOR transport only, no NN/FEM/new derivative",
+  "npz_sha256": "6821d1b36ccc5ba7af613cf40bdaa904aef7f2970ba3c48bc4f7e83d2e674819",
+  "npz_bytes": 1921571,
+  "array_sha256": {
+    "source_u": "90e02aa050c596f9248d1b4ed57833060c4e5fd8c0beb34d28c04ce60c84ebb9",
+    "plus_u": "c41e8c172ce840d937ff17fe2f137ecc5ece2d3272d7af334ed39fe1244bf34d",
+    "minus_u": "8bb0c748969e9e785f55d852d25dd72be896094a0ae4ddd3a176e6729789b5cb",
+    "source_v": "e30d9cd1db482d7cbb0f4c0bc29bad40cb7d027aa60ef7d3b26dec4dcea54147",
+    "plus_v": "a6e6f7e684a0e7942e638328874d287dab18d7fddcb8f1587c5890cdc430015b",
+    "minus_v": "d98e7efb5886360356b2925d8baaeed0306adc3700205fd8727053c8947e9f3e"
+  },
+  "source_bindings": [
+    {
+      "root": "archive",
+      "path": "readouts/profile_source_0.npz",
+      "bytes": 2687416,
+      "sha256": "2fff9428904a329c9fcfdc28ea03658928d7cb78a27b3aa19db7d680f4960416"
+    },
+    {
+      "root": "archive",
+      "path": "readouts/trial_1.npz",
+      "bytes": 2687138,
+      "sha256": "6a6a22ef298c9ee08ecb00a2f6bdff0dac50a64fcdbb33340252117d57fbace0"
+    },
+    {
+      "root": "archive",
+      "path": "readouts/trial_2.npz",
+      "bytes": 2687253,
+      "sha256": "aecb3ca774d0678abd74021fcb92dedc38785698095495c61e78a874d32bc4c5"
+    }
+  ],
+  "wall_seconds": 0.3870484121143818,
+  "CPU_seconds": 0.386350696,
+  "transport_wall_seconds": 21.299938458018005
+}

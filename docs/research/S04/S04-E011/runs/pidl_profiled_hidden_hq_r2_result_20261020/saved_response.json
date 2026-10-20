@@ -1,0 +1,22 @@
+{
+  "h": 1e-06,
+  "odd_increment": {
+    "free_L2": 1.3056737775621284e-05,
+    "free_maxabs": 1.795164448412101e-06,
+    "boundary_maxabs": 0.0
+  },
+  "even_increment": {
+    "free_L2": 9.845153221395072e-09,
+    "free_maxabs": 4.418858438881568e-09,
+    "boundary_maxabs": 0.0
+  },
+  "actual_central_field_response": {
+    "free_L2": 13.056737775621283,
+    "free_maxabs": 1.795164448412101,
+    "boundary_maxabs": 0.0
+  },
+  "even_over_odd_free_L2": 0.0007540285629215377,
+  "predicted_Qv_saved": false,
+  "derivative_mismatch_norm_recoverable": false,
+  "interpretation": "Actual saved finite-profile response only; one h cannot distinguish numerical sensitivity from nonlinear or chart effects."
+}

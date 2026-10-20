@@ -1,0 +1,5 @@
+{
+  "type": "AdapterStop",
+  "message": "profile_actual_full_profile_derivative_mismatch",
+  "retry_allowed": false
+}

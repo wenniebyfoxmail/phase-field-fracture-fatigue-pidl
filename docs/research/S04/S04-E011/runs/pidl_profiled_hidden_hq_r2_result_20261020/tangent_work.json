@@ -1,0 +1,107 @@
+[
+  {
+    "assembly": 1,
+    "shape": [
+      772,
+      772
+    ],
+    "gradient_basis_shape": [
+      345632,
+      386
+    ],
+    "quadrature_points": 345632,
+    "dense_assembly_includes_all_columns": true,
+    "column_equivalent_tangent_actions": 772,
+    "trace_positive": 334022,
+    "trace_negative": 11610,
+    "trace_zero": 0,
+    "unsymmetrized_maxabs": 1.8189894035458565e-12,
+    "seconds": 0.6030804999172688,
+    "ridge": 0.0,
+    "further_rank_truncation": false
+  },
+  {
+    "assembly": 2,
+    "shape": [
+      772,
+      772
+    ],
+    "gradient_basis_shape": [
+      345632,
+      386
+    ],
+    "quadrature_points": 345632,
+    "dense_assembly_includes_all_columns": true,
+    "column_equivalent_tangent_actions": 772,
+    "trace_positive": 333925,
+    "trace_negative": 11707,
+    "trace_zero": 0,
+    "unsymmetrized_maxabs": 3.637978807091713e-12,
+    "seconds": 0.6049708016216755,
+    "ridge": 0.0,
+    "further_rank_truncation": false
+  },
+  {
+    "assembly": 3,
+    "shape": [
+      772,
+      772
+    ],
+    "gradient_basis_shape": [
+      345632,
+      386
+    ],
+    "quadrature_points": 345632,
+    "dense_assembly_includes_all_columns": true,
+    "column_equivalent_tangent_actions": 772,
+    "trace_positive": 334021,
+    "trace_negative": 11611,
+    "trace_zero": 0,
+    "unsymmetrized_maxabs": 1.8189894035458565e-12,
+    "seconds": 0.6060258084908128,
+    "ridge": 0.0,
+    "further_rank_truncation": false
+  },
+  {
+    "assembly": 4,
+    "shape": [
+      772,
+      772
+    ],
+    "gradient_basis_shape": [
+      345632,
+      386
+    ],
+    "quadrature_points": 345632,
+    "dense_assembly_includes_all_columns": true,
+    "column_equivalent_tangent_actions": 772,
+    "trace_positive": 334108,
+    "trace_negative": 11524,
+    "trace_zero": 0,
+    "unsymmetrized_maxabs": 1.8189894035458565e-12,
+    "seconds": 0.6049471069127321,
+    "ridge": 0.0,
+    "further_rank_truncation": false
+  },
+  {
+    "assembly": 5,
+    "shape": [
+      772,
+      772
+    ],
+    "gradient_basis_shape": [
+      345632,
+      386
+    ],
+    "quadrature_points": 345632,
+    "dense_assembly_includes_all_columns": true,
+    "column_equivalent_tangent_actions": 772,
+    "trace_positive": 334020,
+    "trace_negative": 11612,
+    "trace_zero": 0,
+    "unsymmetrized_maxabs": 1.8189894035458565e-12,
+    "seconds": 0.6061328938230872,
+    "ridge": 0.0,
+    "further_rank_truncation": false
+  }
+]

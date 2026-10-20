@@ -1,0 +1,9 @@
+{
+  "monotonic": 5555798.378863128,
+  "cuda_state": "active",
+  "peak_rss_bytes": 3243081728,
+  "peak_task_bytes": 1170972148,
+  "peak_cuda_allocated": 10541088768,
+  "peak_cuda_reserved": 11700011008,
+  "error": null
+}

@@ -1,0 +1,8 @@
+{
+  "E": 0.005268400005223913,
+  "Ru": 0.013488941154683493,
+  "actual_Phi_gradient_inf": 3.3665696098916786e-11,
+  "rank": 386,
+  "zero_trace_points": 0,
+  "anchored_chart_is_not_actual_NN_certificate": true
+}

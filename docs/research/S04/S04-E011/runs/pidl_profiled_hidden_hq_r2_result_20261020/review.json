@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "reviewer": "b0_route_inventory",
+  "scope": "Final bounded R2 result risk/interpretation, saved metadata/table/transport receipts and actual figures; no repeat old tests, NN, operator replay, derivative, SVD, solve, SSH or producer.",
+  "science_verdict": "INCONCLUSIVE_ACTUAL_PROFILE_DERIVATIVE_ADMISSION_FAILED",
+  "checks": [
+    "Three identical source-Phi readouts, local J/C/U/Q/Z adjoints and native-H checks support source stability and internal anchored-chart consistency only.",
+    "Two rank386 +/- first-direction trials have valid head/realization/frozen-BC/rollback receipts; they are unaccepted derivative probes, not new optimized PIDL endpoints.",
+    "First h=1e-6 actual rebuilt head-closed profile FD failed; h/2 and second actual-profile direction were not executed.",
+    "Missing saved Qv/error/scale prevents derivative mismatch norm or percent recovery; odd/even ratio and local adjoint error are not substitutes.",
+    "Rank/cutoff stability excludes observed discrete rank jump only; conditioning is a sensitivity risk, not unique causation by SVD/noise/missing C.",
+    "Tables distinguish conditional FEM, unchanged PIDL source, plus/minus unaccepted trials; saved replay errors agree with compact records.",
+    "No capacity/space/cost ceiling, method-improvement, full-production memory or full-comparison verdict inferred.",
+    "Peak resources/work/time are reported as actual bounded attempt; 4.985s mechanical check and 3 render/12 saved-array replays disclosed.",
+    "Remote hash-verified full archive is distinguished from partial local mirror and separately verified lossless UV transport.",
+    "Direct-human/HQ delegation provenance supplied and recorded separately; prior stopped attempts/claims preserved; this review grants no retry or new execution.",
+    "Next action is observation persistence before gate, not threshold relaxation or a newly launched numerical diagnostic."
+  ],
+  "figures": {
+    "actually_viewed": [
+      "baseline_active.png",
+      "finite_profile_response.png"
+    ],
+    "passed": true,
+    "notes": "Shared symlog active scales and shared linear actual odd/even increment magnitude scales are labeled; no seams/cropped labels. Actual response map is explicitly not derivative-error localization.",
+    "hashes_match_compact_qa": true
+  },
+  "independent_verification_limit": "Reviewed compact metadata, reported saved-array statistics, transport/hash methods/receipts and pixels; did not re-run common-Q4 replay or independently re-hash remote raw arrays/models.",
+  "bindings_sha256": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020.md": "c43a59a1f06d2f62346194315523ad7dd8d12395f1c2642ec6257b77563c313f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/UV_transfer_receipt.json": "1c6a1bc3d3d1a865d0986fe154e67e7bde19edeb7d5d1a7fe670b90a3eaa56b0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/execution_receipt.json": "d695624bc4e6469080dc8af6ca255142ad334554377c1da6c61c096489fc273b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/figure_qa.json": "7242ea0df0aae7c8c1299b715095bc3415f94cac5f2e11fc9c77418fad67da9d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/local_chart_admission.json": "b28f8973838a2293721ea09e30d0e860a1be1537c6ada48a8bf27761b84d69fd",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/local_dot_checks.json": "f1f9d055b9422c83781fbf18fc758c43f93bb93bb328408b55a808ba03eac4b3",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/retrieval_summary.json": "561703472a8be16276ce10b82251b2e5f07f0702d2848fe342fcd7a52b6dec5c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/saved_analysis.json": "92b0abeb35776a738929c78955551e034f9ac1df81029e70af03dae01b1c1511",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/saved_response.json": "3f8f248c797483e12abb0389687d6098d256d81f6d16fd619c8dd613b9223b29",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/source_repetitions.json": "61d06eaeef4ef9b810bc8cf1a4d427b3a819fa1dee7bb6237c5e873180c51ade",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/tangent_work.json": "f5ad1c9263142c9460f74d65888ee6112c3f8c11368ad7a948c1ac2e2eddeb13",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/telemetry.json": "36f8dc7f99fe281f07a726780e391cc042bb6738c5e6ad8c7d03d1a4610516da",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/trial_001_basis.json": "76e3d4ba99206a21cf75404fead6ef8b14e6ac5ff0c278888da301a520b5ac90",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/trial_001_observables.json": "28e75651f1c141eca4857ae460766c3805d07be3f0e76efb6aa8eced813466c9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/trial_001_rollback.json": "bff37714dd15a375b7aa7f0cc8fd456ab5b444e5cceea4b67de0244b03d04ee0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/trial_002_basis.json": "5e8dda30dd2449e70dd6f1daef2c31e9beeb8546200f8e6d97dc76c3850f32a2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/trial_002_observables.json": "1993bee58443730fcbe65f41797aa368d4d32f73c7398916adc1a72c9ba3028a",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/trial_002_rollback.json": "bff37714dd15a375b7aa7f0cc8fd456ab5b444e5cceea4b67de0244b03d04ee0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/work_terminal.json": "a816548a2042ecb8d168c90b79d817efd73845fec7c21c85d0b665f44a8eb73d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/worker_failure.json": "888b512ad4f20153eb49e844d5615978f0bec79339f0037408b7e1516b7590f9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_profiled_hidden_hq_r2_result_20261020/saved_fields.csv": "54f515996d4d037cbb529aa200568c30259759cc22cdf7108646a8f3fbedc797",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/analysis/baseline_active.png": "1abcf5e8970bddbaeb4d6274ef6044a9357421723dcdd240a3cd1d2995801849",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/analysis/baseline_active.md": "51bf6215d90076df557c1bb836f84b729077819446205ea76088fcfc5a77b35c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/analysis/finite_profile_response.png": "1a7c35f7b17006bca269df7f63a5eb7a818b96d769f857bdb81225b6049696d2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r2_hq_20261020/analysis/finite_profile_response.md": "95fd4b4c153a1d34a4fbd8264d134ebb81025298e69436ad1d4be535bef38823"
+  },
+  "remaining_blockers": [],
+  "new_scientific_activity_performed": false
+}

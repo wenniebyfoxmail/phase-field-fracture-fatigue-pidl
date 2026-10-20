@@ -1,0 +1,27 @@
+{
+  "rows": [
+    {
+      "repeat": 0,
+      "E": 0.005268400005223913,
+      "head_gradient_inf": 3.3665696098916786e-11,
+      "source_fields_maxabs": 0.0,
+      "passed": true
+    },
+    {
+      "repeat": 1,
+      "E": 0.005268400005223913,
+      "head_gradient_inf": 3.3665696098916786e-11,
+      "source_fields_maxabs": 0.0,
+      "passed": true
+    },
+    {
+      "repeat": 2,
+      "E": 0.005268400005223913,
+      "head_gradient_inf": 3.3665696098916786e-11,
+      "source_fields_maxabs": 0.0,
+      "passed": true
+    }
+  ],
+  "projected_vector_spread": 0.0,
+  "spread_is_diagnostic_not_new_threshold": true
+}
