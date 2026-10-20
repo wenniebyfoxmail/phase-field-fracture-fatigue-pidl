@@ -173,3 +173,11 @@ R002 failed while the rglob iterator recursively entered a removed lock director
 Independent archived-state and observation reviewers verified 357 durable accepted steps (253 reused +104 new), three complete origins, and an8-pixel base/fine mismatch. The same8 pixels already differ at zero-load settle. The frozen six-mask equality therefore cannot pass; common future and full-state future replay were never executed.
 
 Post-run local control code159a63c081ce205cd87c6777b019413d8ccc4075 received a limited independent review:40 artificial tests passed,8,000 real lock/atomic-file cycles with16,054 scans produced no error. It remains undeployed and does not authorize another scientific run. Full independent reviews are linked from results_20261020.md; raw receipts preserve prior authority and review versions.
+
+## Prospective protocol-v2 exact implementation review
+
+Independent physics/control and observation/plot reviewers pass their scoped reviews of7ae9001b79e02dc6848b2727514bef062d3d7f4d. v2 only changes within-configuration exact pair matching and its interpretation; old v1 observations, failed attempts and8-pixel mismatch remain. Physical v1 spec/context and original H20 robust/replay functions remain unchanged. R002357 accepted states are reusable without re-solving; only1489 attempts remain under the original total1846. Deadline is the stricter1792543380.
+
+The reviewed single-transport template SHA256 is7c17ad390cf8f8ae4f12c3a9acb6bcfcd841b1f12a61d10af23c9131d8caf27c. It uses exclusive intent, local60s timeout and remote fractional remaining ITIMER_REAL before exec/admission; exact-head substitution is the sole allowed final template change. Unknown launch must be reconciled by owned receipts, never repeated. Strict original-producer357-state zero-solver admission is still required before the reviewed dispatcher can launch R003. No fourth scientific attempt is authorized.
+
+Full independent reports: R003/analysis/review_v2_implementation.md and review_v2_observation.md under local_archive/experiments/S04-E027-SYNMEM/runs. Independent43 artificial tests passed; implementation plot11 artificial tests passed. No scientific future exists at this review. This metadata records review; new execution authority comes only from the specific human-delegated HQ v2 instruction documented in protocol_v2.md and authority.json.

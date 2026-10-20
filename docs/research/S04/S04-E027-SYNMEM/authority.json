@@ -1,9 +1,9 @@
 {
-  "enabled": false,
+  "enabled": true,
   "experiment_id": "S04-E027-SYNMEM",
   "protocol": "2.0",
   "spec_id": "9f9c31bffac74d2a3418436e10247af024aef1f0ba5f20c64693d743db63a758",
-  "code_commit": "pending exact v2 review",
+  "code_commit": "7ae9001b79e02dc6848b2727514bef062d3d7f4d",
   "producer": {
     "alias": "gpu-server",
     "hostname": "GPUServer8",
@@ -46,11 +46,12 @@
     "manifest_path": "/mnt/data2/drtao/wennie/pf_synmem_recovery_bc334c0c_20261020/retrieval_manifest.json",
     "manifest_sha256": "86f9f115f34d42599bc5520bd484b1202815ff85c48541362296d9159bcc2de1",
     "hq_authorization": "New specific v2 amendment and one execution, as recorded in protocol_v2.md; human_delegated_hq; prior authorities consumed",
-    "independent_recovery_review": "All357 accepted-state chains independently checked; v2 code exact review required before enable"
+    "independent_recovery_review": "review_v2_implementation.md: exact7ae9001b review passed; physical context retained; all357 prefixes independently previously checked; original-producer strict zero-solver admission required before Popen"
   },
   "mechanical_budget": {
     "maximum_attempts": 2,
     "cumulative_seconds": 60
   },
-  "status": "Prepared v2; disabled pending exact source review; no scientific launch"
+  "status": "Enabled exactly once: v2 R003; strict original-producer357-state zero-solver admission must pass in reviewed dispatcher before scientific launch",
+  "transport_template_sha256": "7c17ad390cf8f8ae4f12c3a9acb6bcfcd841b1f12a61d10af23c9131d8caf27c"
 }

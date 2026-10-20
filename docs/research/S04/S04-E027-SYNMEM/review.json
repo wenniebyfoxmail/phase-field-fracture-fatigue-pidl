@@ -1,7 +1,12 @@
 {
-  "verdict": "PENDING_V2_REVIEW",
-  "scope": "v2 matching only, retained physical contract, R002357-state reuse and unchanged future/replay plus monitor repair",
-  "code_commit": "pending",
+  "verdict": "REVIEW_PASS",
+  "scope": "Prospective v2 within-configuration matching, unchanged physical core/future/replay, exact357-state reuse, cumulative budget and scoped monitor/dispatch controls; not scientific validation",
+  "code_commit": "7ae9001b79e02dc6848b2727514bef062d3d7f4d",
   "spec_id": "9f9c31bffac74d2a3418436e10247af024aef1f0ba5f20c64693d743db63a758",
-  "execution_authorized": false
+  "reviewer": "/root/physics_transition_audit",
+  "observation_reviewer": "/root/observation_state_audit",
+  "execution_authorized": false,
+  "transport_template_sha256": "7c17ad390cf8f8ae4f12c3a9acb6bcfcd841b1f12a61d10af23c9131d8caf27c",
+  "independent_tests": "43 artificial cases passed in0.24s; plotting11 cases reported by implementation owner",
+  "receipt": "review.md"
 }
