@@ -1,0 +1,27 @@
+{
+  "execution_enabled": false,
+  "producer_validated": false,
+  "standalone_launch_authorized": false,
+  "base_execution_commit": "5449d5a99884b48d404d0c7c3bb5a616c8afdada",
+  "base_package_sha256": "df8189160deb20bffeec3ba225003de4b073a43cb3194578e43abb46becf0525",
+  "base_result": "docs/research/S04/S04-E011/runs/pidl_profiled_hidden_preflight_result_20261020/receipt.json",
+  "base_result_sha256": "0080949f6df75ae54e59339a3cb9637b56069c610aee975d4a64bc9b248109e7",
+  "actual_stopped_run_id": "pf_s04e011_profiled_hidden_c20_r1_20261020",
+  "actual_claim_preserved": true,
+  "prospective_fresh_run_id": null,
+  "prospective_family_claim_path": null,
+  "repair": "bytes_under storage sampler only: tolerate vanished own atomic JSON pid-temp while retaining actual-byte count and other errors; os.walk errors no longer silently ignored",
+  "unchanged": [
+    "actual Phi persistence/reuse",
+    "original FEM damage",
+    "original UV boundary",
+    "B0/constrained Q4",
+    "1e-10",
+    "scientific math/core and six original source assets",
+    "all derivative/work/resource/phase/3000s caps",
+    "original12GiB admission/newpreflight3GiBfree"
+  ],
+  "tests": 42,
+  "real_new_probe": false,
+  "next_execution_condition": "Need explicit fresh-attempt authority after this real terminal stop, prospective exact package/root/claim tied to retained stopped evidence; no old claim removal, self-retry or RunID bypass"
+}

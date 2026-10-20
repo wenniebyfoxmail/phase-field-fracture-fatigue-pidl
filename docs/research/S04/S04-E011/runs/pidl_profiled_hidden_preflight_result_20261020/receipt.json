@@ -1,0 +1,96 @@
+{
+  "run_id": "pf_s04e011_profiled_hidden_c20_r1_20261020",
+  "source_commit": "5449d5a99884b48d404d0c7c3bb5a616c8afdada",
+  "source_dirty": false,
+  "package_sha256": "df8189160deb20bffeec3ba225003de4b073a43cb3194578e43abb46becf0525",
+  "authority_sha256": "9861bcc67cf4242b473f4896873d2fcc67d4e4a3df1f3258bec940b2403153ea",
+  "scope": "conditional_full",
+  "status": "STOPPED_NO_RETRY_PREFLIGHT_TELEMETRY_ATOMIC_JSON_RACE",
+  "scientific_verdict": "INCONCLUSIVE_PRECONDITIONER_NOT_TESTED",
+  "producer_started": true,
+  "real_preflight_started": true,
+  "real_preflight_passed": false,
+  "candidate_started": false,
+  "accepted_hidden_updates": 0,
+  "FEM_solves": 0,
+  "history_commits": 0,
+  "run_seconds": 8.05263343732804,
+  "worker_pid": 2909415,
+  "worker_exit": -15,
+  "bootstrap_pid": 2909400,
+  "guardian_pid": 2909416,
+  "GPU": {
+    "index": 5,
+    "uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "free_mib": 24077.0,
+    "utilization": 0.0,
+    "total_mib": 24564.0,
+    "required_initial_free_bytes": 12884901888,
+    "owned": []
+  },
+  "early_peak": {
+    "monotonic": 5533027.685702196,
+    "cuda_state": "active",
+    "peak_rss_bytes": 1432457216,
+    "peak_task_bytes": 573183180,
+    "peak_cuda_allocated": 2085410304,
+    "peak_cuda_reserved": 2099249152,
+    "error": "FileNotFoundError: [Errno 2] No such file or directory: '/mnt/data2/drtao/wennie/pf_s04e011_profiled_hidden_c20_r1_20261020/monitor.json.2909412.tmp'"
+  },
+  "counts": {
+    "energy_force_field": 5,
+    "hidden_jvp": 0,
+    "hidden_vjp": 0,
+    "C": 0,
+    "CT": 0,
+    "native_tangent": 0,
+    "head_assembly": 0,
+    "head_factor": 0,
+    "head_triangular_solve": 0,
+    "raw_feature_forward": 5,
+    "explicit_head_products": 0,
+    "svd": 0
+  },
+  "stop_reason": "worker telemetry failure: FileNotFoundError: [Errno 2] No such file or directory: '/mnt/data2/drtao/wennie/pf_s04e011_profiled_hidden_c20_r1_20261020/monitor.json.2909412.tmp'",
+  "guard_reasons": {
+    "outer": "incomplete authorised phase chain",
+    "inner": "incomplete authorised phase chain"
+  },
+  "own_processes_remaining": [],
+  "original_source_assets_count": 6,
+  "saved_actual_Phi_copied_without_initial_SVD": true,
+  "full_actual_Phi_AD_and_resource_admission_completed": false,
+  "scientific_budget_unused_not_carried_to_retry": true,
+  "remote_archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profiled_hidden_c20_r1_20261020",
+  "remote_run_root": "/mnt/data2/drtao/wennie/pf_s04e011_profiled_hidden_c20_r1_20261020",
+  "worker_command": [
+    "/usr/bin/python3",
+    "-B",
+    "/mnt/data2/drtao/wennie/pf_s04e011_profiled_hidden_c20_r1_20261020/code/tools/s04_e011_execution/worker.py"
+  ],
+  "worker_log": "/mnt/data2/drtao/wennie/pf_s04e011_profiled_hidden_c20_r1_20261020/worker.log",
+  "local_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profiled_hidden_c20_r1_20261020/execution_v2_5449d5a9",
+  "retrieval": {
+    "remote_full_hashes_verified": true,
+    "remote_entries": 373,
+    "remote_bytes": 573190469,
+    "local_full_retrieval_complete": false,
+    "missing_local_entries": [
+      {
+        "root": "run",
+        "path": "inputs/source_phi.npy",
+        "bytes": 267902656,
+        "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+      },
+      {
+        "root": "archive",
+        "path": "initial_basis/phi.npy",
+        "bytes": 267902656,
+        "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+      }
+    ],
+    "transferred_payload_bytes": 213966,
+    "reused_identical_local_bytes": 37247050
+  },
+  "no_relaunch_after_real_stop": true
+}

@@ -1,0 +1,8 @@
+{
+  "cached_source_energy_maxscaled": 1.1102230246251565e-16,
+  "native_fem_u_force_maxabs": 8.430857737200953e-17,
+  "fem_free_u_l2": 3.799534726094363e-15,
+  "analytic_damage_gradient_maxabs": 3.469446951953614e-18,
+  "PIDL_penalty": 16875,
+  "FEM_penalty": 421875
+}

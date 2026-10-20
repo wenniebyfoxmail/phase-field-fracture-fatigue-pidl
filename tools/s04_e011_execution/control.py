@@ -26,11 +26,19 @@ def write_json(path,value):
 
 
 def bytes_under(path):
+    def fail_walk(error):raise error
     total=0
-    for base,dirs,files in os.walk(path,followlinks=False):
+    for base,dirs,files in os.walk(path,followlinks=False,onerror=fail_walk):
         for name in dirs+files:
             if (Path(base)/name).is_symlink():raise RuntimeError('task output symlink forbidden')
-        total+=sum((Path(base)/name).stat().st_size for name in files)
+        for name in files:
+            try:total+=(Path(base)/name).stat().st_size
+            except FileNotFoundError:
+                # write_json replaces its own *.json.<pid>.tmp atomically.
+                # A walk snapshot can still name that vanished metadata file.
+                # Missing payloads, other temp kinds and permission errors fail.
+                pieces=name.rsplit('.',2)
+                if not (len(pieces)==3 and pieces[0].endswith('.json') and pieces[1].isdecimal() and pieces[2]=='tmp'):raise
     return total
 
 

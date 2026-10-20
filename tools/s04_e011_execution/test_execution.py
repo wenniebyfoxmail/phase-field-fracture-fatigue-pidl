@@ -244,4 +244,35 @@ class AdmissionAmendmentTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):verify_preflight_memory(self.card(),fake,rows.append)
         self.assertFalse(rows[-1]['capacity_valid']);self.assertEqual(rows[-1]['free_bytes'],'nan')
 
+
+class AtomicScanRaceTests(unittest.TestCase):
+    def test_vanished_owned_atomic_json_tmp_is_normal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'monitor.json').write_bytes(b'12345')
+            for name in ['monitor.json.123.tmp','telemetry.json.999.tmp']:
+                with self.subTest(name=name),patch.object(c.os,'walk',return_value=[(str(root),[],['monitor.json',name])]):self.assertEqual(c.bytes_under(root),5)
+    def test_missing_regular_or_unrecognized_temp_still_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in ['field.npz','field.npz.123.tmp','monitor.json.notpid.tmp','.guard-example','monitor.json']:
+                with self.subTest(name=name),patch.object(c.os,'walk',return_value=[(tmp,[],[name])]),self.assertRaises(FileNotFoundError):c.bytes_under(tmp)
+    def test_existing_atomic_tmp_is_counted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'monitor.json').write_bytes(b'12345');(root/'monitor.json.123.tmp').write_bytes(b'x'*10000)
+            self.assertEqual(c.bytes_under(root),10005)
+    def test_symlinks_and_permission_errors_still_fail(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);p=root/'monitor.json.123.tmp';p.symlink_to(root/'missing')
+            with self.assertRaisesRegex(RuntimeError,'symlink'):c.bytes_under(root)
+            p.unlink();p.write_bytes(b'x')
+            actual=Path.stat
+            def deny(path,*args,**kwargs):
+                if path==p and kwargs.get('follow_symlinks',True):raise PermissionError('fixture')
+                return actual(path,*args,**kwargs)
+            with patch.object(Path,'stat',deny),self.assertRaises(PermissionError):c.bytes_under(root)
+
+
+    def test_traversal_permission_error_is_not_silently_skipped(self):
+        def denied(*args,**kwargs):kwargs['onerror'](PermissionError('fixture unreadable directory'))
+        with patch.object(c.os,'walk',side_effect=denied),self.assertRaises(PermissionError):c.bytes_under(Path('/artificial-only'))
+
 if __name__=='__main__':unittest.main()

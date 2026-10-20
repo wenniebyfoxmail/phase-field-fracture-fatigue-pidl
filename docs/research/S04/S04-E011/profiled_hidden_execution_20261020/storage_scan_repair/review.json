@@ -1,0 +1,75 @@
+{
+  "verdict": "PASS_FOR_FAILURE_EVIDENCE_AND_UNRUN_LOCAL_STORAGE_REPAIR",
+  "reviewer": "/root/b0_route_inventory",
+  "artificial_tests": 42,
+  "original37_retained": true,
+  "new_storage_cases": 5,
+  "unchanged_scientific_source_bindings": 17,
+  "code_scope": "bytes_under and deterministic storage race fixtures only",
+  "files": [
+    {
+      "path": "tools/s04_e011_execution/control.py",
+      "sha256": "82d5b5b305e7fc6fef17132311040d6b4d0f9fe5a9824202e08e78f142676b20",
+      "git_blob": "98c1851fb650765ad64fec63768c1834f0c23d78"
+    },
+    {
+      "path": "tools/s04_e011_execution/test_execution.py",
+      "sha256": "a0bf22994719eb6bf9b72904d1d123210fb5392710f4d5c94184668bbb75dc3e",
+      "git_blob": "db6c5406682dcd6a05aaf0c022da47dc7513c8e6"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/runs/pidl_profiled_hidden_preflight_result_20261020.md",
+      "sha256": "7c7ed1d0d4225b3bc5a2aa889cb577bb03816c2a108e5d7d69ecf464c4e8e53a",
+      "git_blob": "fd2d58eb485db3e7acde7dbc40cc06427a0697e5"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_execution_20261020/storage_scan_repair/README.md",
+      "sha256": "cffa04e2f0f3b7bf90cb27eb456da18591f425b650c51a6dc554d6a600cfeda1",
+      "git_blob": "9d09196c3cf2d7628ad6659ee0a360cccd11291e"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_execution_20261020/storage_scan_repair/repair_card.json",
+      "sha256": "6929fa459441502dfb64842078cdcdc50c55b4527a7a25760114281787a5bee0",
+      "git_blob": "6d304e237e72a5b0f4f4366ca153afcb6b3b2a03"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/runs/pidl_profiled_hidden_preflight_result_20261020/initial_basis_metadata.json",
+      "sha256": "716a755c93830c4ff6d2fd57da804b28a14a83380e3162d5fec657f9827e53bf",
+      "git_blob": "e340ef3c28675774570ae5236306bc3d8be6a162"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/runs/pidl_profiled_hidden_preflight_result_20261020/native_operator.json",
+      "sha256": "659dcf7be4974aae83ff5ef51a38a86c6fe95a8e228d7a79869e738da36dc73a",
+      "git_blob": "5ba9c7e404cd3c36e3a0ef897330998ef23a20b7"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/runs/pidl_profiled_hidden_preflight_result_20261020/receipt.json",
+      "sha256": "0080949f6df75ae54e59339a3cb9637b56069c610aee975d4a64bc9b248109e7",
+      "git_blob": "0f3c16666bee02c9a59a42e7ffd0cc848bf65754"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/runs/pidl_profiled_hidden_preflight_result_20261020/work_terminal.json",
+      "sha256": "77b8ef4620d2ac4e2f0304a27742bb8bccda37720b103c1437c9a1e19a3585ef",
+      "git_blob": "fe5ec4b5ffc68edfb1524dcab96f00a5156b852a"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/runs/pidl_profiled_hidden_preflight_result_20261020/worker_failure.json",
+      "sha256": "8717d383bd005bff595e6f7e300c84c84d3b37f8f43bbefccfd061c575e8816a",
+      "git_blob": "8755793d1bfa4148875685ea068b5a8c79735d65"
+    }
+  ],
+  "evidence_scope": "independent saved compact metadata, local receipts and retrieval-method static review only; independent reviewer did not rerun remote hashes or read binary arrays/models",
+  "checked": [
+    "one real5449d5a9 worker and8.052633s terminal",
+    "temporary monitor JSON race primary; incomplete phase guards consequence",
+    "no preflight/AD/profile/candidate/new field/capacity conclusion",
+    "native common Ru3.799534726e-15 belongs to frozen FEM reference",
+    "remote full hashes distinct from incomplete local mirror",
+    "skip only vanished atomicJSONpidtmp; existing temp counted; normal errors retained/onerror fail",
+    "old remote code/directory/claim and prior outcomes retained"
+  ],
+  "real_repair_run": false,
+  "execution_enabled": false,
+  "new_retry_authorized": false,
+  "new_RunID_allocated": false
+}

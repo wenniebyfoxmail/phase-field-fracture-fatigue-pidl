@@ -1,0 +1,5 @@
+{
+  "type": "RuntimeError",
+  "message": "worker telemetry failure: FileNotFoundError: [Errno 2] No such file or directory: '/mnt/data2/drtao/wennie/pf_s04e011_profiled_hidden_c20_r1_20261020/monitor.json.2909412.tmp'",
+  "retry_allowed": false
+}

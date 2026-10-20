@@ -1,0 +1,17 @@
+{
+  "counts": {
+    "energy_force_field": 5,
+    "hidden_jvp": 0,
+    "hidden_vjp": 0,
+    "C": 0,
+    "CT": 0,
+    "native_tangent": 0,
+    "head_assembly": 0,
+    "head_factor": 0,
+    "head_triangular_solve": 0,
+    "raw_feature_forward": 5,
+    "explicit_head_products": 0,
+    "svd": 0
+  },
+  "stopped": false
+}
