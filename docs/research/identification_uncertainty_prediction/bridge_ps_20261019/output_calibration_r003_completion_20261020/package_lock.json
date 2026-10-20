@@ -5,7 +5,7 @@
     "PROTOCOL.md": "43472e5394d604a91ae9263c5e5b85b5ff540f7fd3e0dc471d54bd2d201d6de7",
     "RUN_AMENDMENT.md": "62836bd2080975b516e21f69da11e54754aef6510941d3e781c2cd0faddebd65",
     "admission.py": "4f68396e67664738666e9c6695e1f9c4e17e519a31c5fd771b54f63ed26b4e1e",
-    "assemble_completion.py": "0d3a70ff73f94b659ecbc582f6b60b67182eb3a700fc58dcddb48b5450970ed0",
+    "assemble_completion.py": "eb1731ce1e0e08835b4248442065d8e448e4cc62a5f8a5c1d6045e122bdb4ae8",
     "build_lock.py": "4995cce02e094969b7916d57c99548a6353dd85d48c5f6f4500c5173f862a362",
     "config.json": "6476d2b7ef1d8ab0bf473012fde9f63e4af7094a47c1d0b3180a89ce25040ed8",
     "engine.py": "5e751e5f9a7e208787bf635c80775b9c27a504516c4974c06b081580f5056147",
@@ -28,7 +28,7 @@
     "resource_decision.json": "810e192fd5d1d05f07e59b85687a7e39628653e699a05cdea037b253f3d1646d",
     "runtime_guard.py": "39bccc115fa99850f6ddfe7d584da63a303e68ce263213ab586af3a74d05b9f3",
     "supervise.py": "bc316fd1c08cb72e3bc3038f6390de63a778c6fed543f484b59bd37ea6afbeaf",
-    "test_completion.py": "d9e727088d3708127d602dd76cebadbe03e3f0dfbe86773376ed5cfe09d7a865",
+    "test_completion.py": "dad3ba98b5879b8f46f147d48558b327eae6e431c7c57e79eb78c7500869c348",
     "test_package.py": "5566c50c068eca2d7ace7f0b3f62b0ba075402009371872ce33356d5f12aa2b7",
     "watchdog.py": "dcdaa4c0733d56fda602a262a43582b62eba317db1b47d3e07b51db1ef5fc35c",
     "worker.py": "10b514452e07b54a54adc7a96833d76bc8037e7c1186997d1515d89c92a119a6"

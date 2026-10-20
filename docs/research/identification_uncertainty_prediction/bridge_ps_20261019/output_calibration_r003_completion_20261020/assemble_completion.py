@@ -13,6 +13,15 @@ def check_local_storage(cfg,reserve=32*2**20):
  if sum(counts.values())+reserve>cfg['approved_budget']['total_generated_bytes']:raise ValueError('combined local storage budget/reserve')
  return {'roots':counts,'total_bytes':sum(counts.values()),'assembly_reserve_bytes':reserve}
 
+def check_accounted_paths(cfg,oldroot,newroot,out):
+ roots=[Path(p).resolve() for p in cfg['local_storage_roots']]
+ oldroot,newroot,out=(Path(p).resolve() for p in (oldroot,newroot,out))
+ for p in (oldroot,newroot,out):
+  if not any(p==r or r in p.parents for r in roots):raise ValueError('unaccounted component/output path')
+ for component in (oldroot,newroot):
+  if out==component or component in out.parents or out in component.parents:raise ValueError('assembly overlaps immutable component')
+ if newroot.parent.parent not in out.parents:raise ValueError('assembly must belong to new case only')
+
 def verify_retrieval(root):
  root=Path(root);inventory=root.parent/'retrieval_inventory.json';proof=root.parent.parent/'retrieval_verification.json'
  p=package.read(proof);inv=package.read(inventory)
@@ -93,7 +102,7 @@ def verify_component(root,groups,counts,cohort,horizons=(10,40),half_height=16):
 def assemble(code,oldroot,newroot,out,render=True):
  code=Path(code);oldroot=Path(oldroot);newroot=Path(newroot);out=Path(out)
  if out.exists():raise FileExistsError('fresh assembly path required')
- cfg=package.read(code/'config.json');storage=check_local_storage(cfg);retrieval=verify_retrieval(newroot)
+ cfg=package.read(code/'config.json');check_accounted_paths(cfg,oldroot,newroot,out);storage=check_local_storage(cfg);retrieval=verify_retrieval(newroot)
  binding=prefix_binding.verify_root(code,oldroot);cfg=package.read(code/'config.json');digest=package.check(code)
  if package.check(newroot/'code')!=digest:raise ValueError('new component source mismatch')
  receipt=package.read(newroot/'watchdog_receipt.json')

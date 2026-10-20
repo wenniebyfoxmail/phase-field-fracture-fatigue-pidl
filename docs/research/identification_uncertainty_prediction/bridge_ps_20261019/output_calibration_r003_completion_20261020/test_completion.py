@@ -113,18 +113,28 @@ class AssemblyBoundaryTests(unittest.TestCase):
    with tarfile.open(archive,'w') as f:f.add(new,arcname='run')
    evidence.write(newcase/'retrieval_verification.json',{'status':'COMPLETE_SNAPSHOT_ALL_HASHES_VERIFIED','inventory_sha256':package.sha(inv),'snapshot_path':str(archive),'snapshot_bytes':archive.stat().st_size,'snapshot_sha256':package.sha(archive)})
    with patch.object(ac.prefix_binding,'verify_root',return_value=binding),patch.object(ac.package,'check',return_value='artificial'):
-    info=ac.assemble(code,old,new,r/'assembled',render=False)
+    info=ac.assemble(code,old,new,newcase/'assembled',render=False)
    self.assertEqual(len(info['paired']),8);self.assertEqual(info['counts']['outer_scores'],112)
    for i in range(8):
     source=old if d.groups[i] in ('a','b') else new
     for h in (10,40):
-     a=evidence.read_fields(r/'assembled',i,h);b=evidence.read_fields(source/'outputs',i,h)
+     a=evidence.read_fields(newcase/'assembled',i,h);b=evidence.read_fields(source/'outputs',i,h)
      for x,y in zip(a[:3],b[:3]):np.testing.assert_array_equal(x,y)
    # Decode virtual field source used by the real figure renderer; no fits/forwards.
    import figures
-   figures.render(r/'assembled')
-   self.assertEqual(len(list((r/'assembled').glob('0*.png'))),3)
+   figures.render(newcase/'assembled')
+   self.assertEqual(len(list((newcase/'assembled').glob('0*.png'))),3)
    inv.write_text('{}')
    with self.assertRaises(ValueError):ac.verify_retrieval(new)
+
+
+class AccountedPathTests(unittest.TestCase):
+ def test_unaccounted_and_overlapping_paths_rejected(self):
+  from assemble_completion import check_accounted_paths
+  with tempfile.TemporaryDirectory() as t:
+   r=Path(t);cfg={'local_storage_roots':[str(r/'old'),str(r/'new')]};old=r/'old/snapshot/run';new=r/'new/snapshot/run'
+   check_accounted_paths(cfg,old,new,r/'new/analysis')
+   for a,b,c in [(old,new,r/'outside'),(r/'outside',new,r/'new/analysis'),(old,r/'outside',r/'new/analysis'),(old,new,new/'analysis'),(old,new,r/'old/analysis')]:
+    with self.assertRaises(ValueError):check_accounted_paths(cfg,a,b,c)
 
 if __name__=='__main__':unittest.main()
