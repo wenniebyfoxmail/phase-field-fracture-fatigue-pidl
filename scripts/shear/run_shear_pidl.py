@@ -26,10 +26,13 @@ def initial_crack_mask(x):
 
 class ShearFieldComputation(FieldComputation):
     def fieldCalculation(self, inp):
+        guard=getattr(self,'resource_guard',None)
+        if guard is not None: guard()
         u, v, alpha = super().fieldCalculation(inp)
         # Nodal FE energy interpolates these essential values into incident T3s.
         # This changes the trial space before fitting, not any saved candidate.
         alpha = torch.where(initial_crack_mask(inp), torch.ones_like(alpha), alpha)
+        if guard is not None: guard()
         return u, v, alpha
 
 
@@ -66,6 +69,12 @@ def main():
     args.output.mkdir(parents=True)
     torch.set_num_threads(4)
     start = time.monotonic()
+    torch.cuda.set_per_process_memory_fraction(min(1.,24*1024**3/torch.cuda.get_device_properties(0).total_memory))
+    def resource_guard():
+        assert time.monotonic()-start < args.hours*3600, 'PIDL wall budget reached'
+        assert torch.cuda.memory_allocated() <= 24*1024**3 and torch.cuda.memory_reserved() <= 24*1024**3, 'CUDA memory limit'
+        assert torch.cuda.mem_get_info()[0] >= 4*1024**3, 'GPU physical headroom below4GiB'
+    resource_guard()
     data = loadmat(args.mesh)
     nodes = data['nodes'][:, :2]
     quads = data['quads'].astype(np.int64) - 1
@@ -79,6 +88,7 @@ def main():
         dict(mat_E=1., mat_nu=.3, w1=1., l0=.01), network, domain, 'cuda')
     net = net.to('cuda')
     field = ShearFieldComputation(net, domain, torch.tensor([0.], device='cuda'), torch.tensor([0.], device='cuda'))
+    field.resource_guard=resource_guard
     crack = dict(x_init=[-.5], y_init=[0.], L_crack=[.5], angle_crack=[0.])
     history = hist_alpha_init(x, mat, pff, crack).detach()
     assert np.max(np.abs(history.cpu().numpy()-data['alpha_initial'].ravel())) < 2e-5

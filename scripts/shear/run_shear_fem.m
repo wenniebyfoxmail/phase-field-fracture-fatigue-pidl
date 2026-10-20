@@ -116,9 +116,12 @@ for step=1:max_steps
     catch failure
         elapsed_seconds=toc(start); step_seconds=toc(step_start);
         rejection_reason=failure.message;
+        alpha_min=min(p_field); alpha_max=max(p_field);
+        max_healing=max(previous_alpha-p_field);
         save(fullfile(out_root,sprintf('failed_state_%03d.mat',step)),...
             'p_field','p_field_old','displ','U','step','timing','driver','forces',...
-            'res_u','res_pf','elapsed_seconds','step_seconds','rejection_reason','-v7');
+            'res_u','res_pf','alpha_min','alpha_max','max_healing',...
+            'elapsed_seconds','step_seconds','rejection_reason','-v7');
         rethrow(failure);
     end
 end

@@ -31,6 +31,8 @@ if ($c.kind -eq 'fem') {
 $claim=[System.IO.File]::Open($receipt,[System.IO.FileMode]::CreateNew)
 $claim.Dispose()
 $started=[DateTime]::UtcNow
+$scienceEnd=$started.AddSeconds($limitSeconds)
+if ($scienceEnd -gt $totalEnd.AddSeconds(-600)) { $scienceEnd=$totalEnd.AddSeconds(-600) }
 $proc=Start-Process -FilePath $c.executable -ArgumentList $c.arguments -WorkingDirectory $c.root `
     -RedirectStandardOutput (Join-Path $c.root 'stdout.log') `
     -RedirectStandardError (Join-Path $c.root 'stderr.log') -PassThru
@@ -39,10 +41,10 @@ try { $proc.ProcessorAffinity=[IntPtr]15 } catch { $proc.Kill(); $proc.WaitForEx
 $peakRSS=0
 @{pid=$proc.Id;started_utc=$started.ToString('o');host=$env:COMPUTERNAME;kind=$c.kind;
   executable=$c.executable;arguments=$c.arguments;root=$c.root;output=$c.output;code_commit=$c.commit;
-  deadline_seconds=$limitSeconds;output_limit_GiB=10} | ConvertTo-Json | Set-Content -LiteralPath $receipt
+  deadline_seconds=$limitSeconds;science_deadline_utc=$scienceEnd.ToString('o');output_limit_GiB=10} | ConvertTo-Json | Set-Content -LiteralPath $receipt
 $reason='exited'
 while ($true) {
-    $remaining=[int][Math]::Ceiling(($started.AddSeconds($limitSeconds)-[DateTime]::UtcNow).TotalMilliseconds)
+    $remaining=[int][Math]::Ceiling(($scienceEnd-[DateTime]::UtcNow).TotalMilliseconds)
     if ($remaining -le 0) {
         $reason='budget_stopped'
         if (-not $proc.HasExited) { $proc.Kill(); $proc.WaitForExit() }
