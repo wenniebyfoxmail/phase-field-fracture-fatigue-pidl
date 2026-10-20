@@ -184,7 +184,7 @@ class Trajectory:
         self.path = reference
 
 
-def run_experiment(spec, root, source_id, marker):
+def run_experiment(spec, root, source_id, marker, *, recovery=None):
     validate_spec(spec)
     root = Path(root)
     trajectories = []
@@ -192,13 +192,20 @@ def run_experiment(spec, root, source_id, marker):
         pair = [Trajectory(spec, variant, arm, root, source_id, marker)
                 for arm in ('low', 'high')]
         verify_pair_contract(pair[0].pair, pair[1].pair)
+        trajectories.append(pair)
+    if recovery is not None:
+        from synthetic_history_recovery import recover_prefixes
+        recover_prefixes(trajectories, recovery, root)
+    # All recovered prefixes must be reconciled before any new scientific step.
+    for pair in trajectories:
         for trajectory in pair:
             trajectory.advance(1)
-        if not numeric_fields_equal(pair[0].old, pair[1].old):
+        settled = ([StateStore(t.state_path(1)).load()[0] for t in pair]
+                   if recovery is not None else [t.old for t in pair])
+        if not numeric_fields_equal(*settled):
             raise RuntimeError('identical zero-settle yielded different numeric fields')
         for trajectory in pair:
             trajectory.advance(trajectory.origin)
-        trajectories.append(pair)
     origin_masks = np.array([[mask_of(t.mesh, t.old) for t in pair] for pair in trajectories])
     match = current_match(origin_masks)
     diagnostics = []

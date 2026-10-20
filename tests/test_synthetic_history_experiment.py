@@ -158,3 +158,65 @@ def test_no_future_is_executed_without_current_match(tmp_path, monkeypatch):
     result = e.run_experiment(frozen_spec(), tmp_path, 'unit', lambda *a: None)
     assert result['verdict'] == 'inconclusive' and result['future_executed'] is False
     assert len(advanced) == 12
+
+
+@pytest.mark.parametrize('name', ['.json-unit', 'latest.npz.trial-unit', 'latest.npz.lock'])
+def test_storage_scan_tolerates_only_known_removed_atomic_entries(tmp_path, monkeypatch, name):
+    import run_synthetic_history as r
+    transient = tmp_path/name
+    permanent = tmp_path/'state0001.npz'
+    permanent.write_bytes(b'saved state')
+    # A real directory-entry snapshot can outlive an atomic rename or empty
+    # lock removal; let stat see the now-absent path.
+    monkeypatch.setattr(Path, 'rglob', lambda self, _: iter((transient, permanent)))
+    assert r.storage_size(tmp_path) == len(b'saved state')
+
+
+def test_storage_scan_uses_one_observation_across_atomic_rename(tmp_path, monkeypatch):
+    import os
+    import run_synthetic_history as r
+    transient = tmp_path/'.json-unit'
+    transient.write_bytes(b'atomic payload')
+    destination = tmp_path/'progress.json'
+    original_stat = Path.stat
+    def observe_then_rename(self, *args, **kwargs):
+        result = original_stat(self, *args, **kwargs)
+        if self == transient:
+            os.replace(transient, destination)
+        return result
+    monkeypatch.setattr(Path, 'rglob', lambda self, _: iter((transient,)))
+    monkeypatch.setattr(Path, 'stat', observe_then_rename)
+    # Old is_file()+stat() raised on its second lookup in this interleaving.
+    assert r.storage_size(tmp_path) == len(b'atomic payload')
+    assert destination.read_bytes() == b'atomic payload'
+
+
+@pytest.mark.parametrize('name', ['state0001.npz', 'latest.npz', 'unexpected-directory'])
+def test_storage_scan_does_not_mask_missing_durable_entries(tmp_path, monkeypatch, name):
+    import run_synthetic_history as r
+    monkeypatch.setattr(Path, 'rglob', lambda self, _: iter((tmp_path/name,)))
+    with pytest.raises(FileNotFoundError):
+        r.storage_size(tmp_path)
+
+
+def test_storage_scan_does_not_mask_permission_failure(tmp_path, monkeypatch):
+    import run_synthetic_history as r
+    p = tmp_path/'.json-unit'
+    monkeypatch.setattr(Path, 'rglob', lambda self, _: iter((p,)))
+    def denied(*args, **kwargs): raise PermissionError('not transient absence')
+    monkeypatch.setattr(Path, 'stat', denied)
+    with pytest.raises(PermissionError):
+        r.storage_size(tmp_path)
+
+
+@pytest.mark.parametrize('failure',['cumulative_wall','cumulative_storage'])
+def test_recovery_cannot_reset_original_resource_budget(tmp_path,monkeypatch,failure):
+    import run_synthetic_history as r
+    spec=frozen_spec()
+    monkeypatch.setattr(r,'monotonic',lambda:1.)
+    monkeypatch.setattr(r,'time',lambda:100.)
+    monkeypatch.setattr(r,'storage_size',lambda _:100000)
+    continuation=dict(deadline_epoch=100 if failure=='cumulative_wall' else 200,
+                      prior_output_bytes=spec['budget']['storage_bytes'] if failure=='cumulative_storage' else 0)
+    with pytest.raises(RuntimeError,match='budget reached'):
+        r.resource_check(spec,tmp_path,0.,continuation=continuation)

@@ -17,6 +17,8 @@ def artificial_trajectory(tmp_path, monkeypatch):
 
     class StubBackend:
         def __init__(self, kin, crack, **material):
+            from native_q4_damage_qp import gauss_interpolation_matrix
+            self.gp = gauss_interpolation_matrix(kin)
             self.mesh_id = "artificial-mesh"
             self.physics_id = "artificial-physics"
             backends.append(self)
@@ -34,7 +36,10 @@ def artificial_trajectory(tmp_path, monkeypatch):
             passed=True, previous_id=old.fingerprint(), state_id=state.fingerprint(),
             settings_id=digest_config(asdict(settings)),
             coupling_policy_id=digest_config(asdict(coupling)),
-            mechanics=dict(reaction_dofs=dofs.tolist()), fatigue_residual=0.)
+            mechanics=dict(reaction_dofs=dofs.tolist(), force_inf=0., force_l2=0.,
+                           force_scaled=0., boundary_inf=0.),
+            damage=dict(primal_inf=0., kkt_scaled_inf=0., kkt_l2=0., projected_inf=0.),
+            fatigue_residual=0.)
         return StepProposal(old.fingerprint(), state, certificate, (),
                             field_evidence={
                                 "f_solve_gp": state.fatigue,
@@ -106,3 +111,51 @@ def test_failed_artificial_proposal_preserves_durable_old_state_and_work(
     failure = json.loads((trajectory.path / "failure.json").read_text())
     assert failure["step"] == 1 and failure["accepted_state_id"] == original
     assert failure["work"] == list(work)
+
+
+def test_recovery_accepts_durable_terminal_without_snapshot_or_event(artificial_trajectory, tmp_path):
+    from synthetic_history_recovery import validate_prefix
+    trajectory, _, _, markers = artificial_trajectory
+    trajectory.advance(3)
+    source = trajectory.path
+    final_id = trajectory.old.fingerprint()
+    trajectory.state_path(3).unlink()
+    ledger = source/'steps.jsonl'
+    ledger.write_text('\n'.join(ledger.read_text().splitlines()[:-1])+'\n')
+    restored_root = tmp_path/'recovery'
+    restored_root.mkdir()
+    fresh = experiment.Trajectory(trajectory.spec, trajectory.variant, 'low', restored_root,
+                                  'artificial-contract-test', lambda *args: pytest.fail('no solve'))
+    markers.clear()
+    states, rows = validate_prefix(fresh, source, 3)
+    assert len(states) == 4 and len(rows) == 2
+    assert states[-1][0].fingerprint() == final_id
+    assert states[-1][2] == source/'latest.npz'
+    assert not markers
+    assert not (source/'states/state0003.npz').exists()  # source remains untouched
+
+
+def test_recovery_rejects_missing_interior_snapshot(artificial_trajectory, tmp_path):
+    from synthetic_history_recovery import validate_prefix
+    trajectory, _, _, _ = artificial_trajectory
+    trajectory.advance(3)
+    trajectory.state_path(2).unlink()
+    root = tmp_path/'recovery'; root.mkdir()
+    fresh = experiment.Trajectory(trajectory.spec, trajectory.variant, 'low', root,
+                                  'artificial-contract-test', lambda *args: pytest.fail('no solve'))
+    with pytest.raises(RuntimeError, match='gaps'):
+        validate_prefix(fresh, trajectory.path, 3)
+
+
+def test_recovery_rejects_changed_schedule(artificial_trajectory, tmp_path):
+    from synthetic_history_recovery import validate_prefix
+    trajectory, _, _, _ = artificial_trajectory
+    trajectory.advance(1)
+    path=trajectory.path/'schedule.json'
+    rows=json.loads(path.read_text());rows[1]['prescribed_load']+=.001
+    path.write_text(json.dumps(rows))
+    root=tmp_path/'recovery';root.mkdir()
+    fresh=experiment.Trajectory(trajectory.spec,trajectory.variant,'low',root,
+                               'artificial-contract-test',lambda *args: pytest.fail('no solve'))
+    with pytest.raises(RuntimeError, match='schedule'):
+        validate_prefix(fresh,trajectory.path,1)

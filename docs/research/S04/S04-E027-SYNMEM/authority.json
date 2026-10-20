@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "experiment_id": "S04-E027-SYNMEM",
   "spec_id": "bff278a41264db2070745a31b90ff742a19b88b1bbc66ad325073ff08f832f23",
   "code_commit": "95709f9ca50edd6da2377d983ab1f2e994a0b31b",
@@ -24,5 +24,12 @@
     "expected_hostname": "GPUServer8",
     "alias_correction": "The frozen producer.alias is a mistaken historical label, not an SSH instruction. Local SSH alias gpu-server points to Cambridge D-26-09 and must NOT be used. User explicitly selected the already specified physical GPUServer8 CPU producer. Hostname, owner root, all science and budgets remain unchanged."
   },
-  "status": "Enabled by explicit bounded user approval; automatic environment and exact-version admission still required"
+  "status": "Consumed by the sole R001 scientific execution; supervisor failed after 12.1427628528s and killed worker. No retry/resume authorized.",
+  "consumed_run": {
+    "run_id": "S04-E027-SYNMEM-R001",
+    "code_commit": "e8ac73f6ead57fbb0c795d862abc682c9435901f",
+    "attempted_steps": 253,
+    "recorded_accepted_steps": 252,
+    "future_executed": false
+  }
 }

@@ -10,8 +10,10 @@ import os
 from pathlib import Path
 import platform
 import signal
+import stat
 import subprocess
 import sys
+import traceback
 from time import monotonic, sleep, time
 
 
@@ -74,14 +76,32 @@ def verify_authority(spec, authority, review, code):
 
 
 def storage_size(root):
-    return sum(p.stat().st_size for p in Path(root).rglob('*') if p.is_file())
+    size = 0
+    for path in Path(root).rglob('*'):
+        try:
+            entry = path.stat()
+        except FileNotFoundError:
+            # Atomic JSON/state writes rename temporary files; StateStore also
+            # removes its empty lock directory after every commit. A scan is
+            # not a snapshot. Only those known transient names may disappear.
+            if (path.name.startswith('.json-')
+                    or path.name.startswith('latest.npz.trial-')
+                    or path.name == 'latest.npz.lock'):
+                continue
+            raise
+        if stat.S_ISREG(entry.st_mode):
+            size += entry.st_size
+    return size
 
 
-def resource_check(spec, root, start):
+def resource_check(spec, root, start, *, continuation=None):
     if monotonic()-start >= spec['budget']['wall_seconds']-spec['budget']['cleanup_seconds']:
         raise RuntimeError('total wall budget reached')
     # Leave room for the terminal receipt itself; reserve is not measured cost.
-    if storage_size(root) > spec['budget']['storage_bytes']-65536:
+    prior_bytes = continuation['prior_output_bytes'] if continuation else 0
+    if continuation and time() >= continuation['deadline_epoch']-spec['budget']['cleanup_seconds']:
+        raise RuntimeError('cumulative task wall budget reached')
+    if storage_size(root) + prior_bytes > spec['budget']['storage_bytes']-65536:
         raise RuntimeError('storage budget reached')
 
 
@@ -130,7 +150,10 @@ def worker(spec, root):
           matplotlib=version('matplotlib'), affinity=sorted(os.sched_getaffinity(0)),
           environment={key: os.environ.get(key) for key in
                        ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'CUDA_VISIBLE_DEVICES')}))
-    attempts = 0
+    receipt = json_read(root/'receipt.json')
+    continuation = receipt.get('continuation')
+    prior_attempts = continuation['prior_attempts'] if continuation else 0
+    attempts = prior_attempts
 
     def marker(trajectory, step):
         nonlocal attempts
@@ -142,15 +165,26 @@ def worker(spec, root):
                                         step_started=monotonic() if step is not None else None,
                                         attempted_steps=attempts))
     try:
-        receipt = json_read(root/'receipt.json')
-        result = run_experiment(spec, root, receipt['code_commit'], marker)
+        if continuation:
+            from synthetic_history_recovery import verify_recovery, SOURCE_CODE
+            verify_recovery(spec, continuation, root)
+            from importlib.metadata import version
+            old_runtime = json_read(Path(continuation['source_root'])/'runtime.json')
+            if any(version(name) != old_runtime[name] for name in ('numpy','scipy','osqp','matplotlib')):
+                raise RuntimeError('recovery numerical runtime differs from original')
+            source_id = SOURCE_CODE
+        else:
+            source_id = receipt['code_commit']
+        result = run_experiment(spec, root, source_id, marker, recovery=continuation)
         from plot_synthetic_history import render
         render(root)
         write(root/'worker_terminal.json', dict(state='completed', result=result,
-                                                attempted_steps=attempts, epoch=time()))
+                                                attempted_steps=attempts, prior_attempts=prior_attempts,
+                                                new_attempted_steps=attempts-prior_attempts, epoch=time()))
     except BaseException as exc:
         write(root/'worker_terminal.json', dict(state='failed', error=repr(exc),
-                                                attempted_steps=attempts, epoch=time()))
+                                                attempted_steps=attempts, prior_attempts=prior_attempts,
+                                                new_attempted_steps=attempts-prior_attempts, epoch=time()))
         raise
 
 
@@ -171,6 +205,11 @@ def supervise(spec, authority, review, output, code):
         raise RuntimeError('producer CPU capacity unavailable; zero start, no automatic retry')
     if shutil.disk_usage(owner).free < spec['budget']['storage_bytes'] + 1024**3:
         raise RuntimeError('insufficient producer disk reserve')
+    continuation = authority.get('continuation')
+    if continuation:
+        from synthetic_history_recovery import verify_recovery
+        verify_recovery(spec, continuation, root)
+        resource_check(spec, root, start, continuation=continuation)
     root.mkdir()  # one durable run reservation; never reuse or remove on failure
     write(root/'spec.json', spec)
     write(root/'authority.json', authority)
@@ -178,7 +217,8 @@ def supervise(spec, authority, review, output, code):
     write(root/'receipt.json', dict(state='reserved', code_commit=head,
           reviewed_code_commit=review['code_commit'], hostname=platform.node(),
           start_epoch=time(), command=sys.argv, pid=os.getpid(), dirty=False,
-          runtime=sys.version, budget=spec['budget'], authority=authority['user_approval']))
+          runtime=sys.version, budget=spec['budget'], authority=authority['user_approval'],
+          continuation=continuation))
     env = os.environ.copy()
     for name in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS'):
         env[name] = str(spec['budget']['cpu_threads'])
@@ -192,6 +232,8 @@ def supervise(spec, authority, review, output, code):
     env['SYNMEM_START_FD'] = str(read_fd)
     proc = None
     reason = None
+    exception_traceback = None
+    exception_filename = None
     old_handlers = {}
     def interrupted(signum, frame):
         raise RuntimeError('supervisor interrupted by signal '+str(signum))
@@ -210,14 +252,14 @@ def supervise(spec, authority, review, output, code):
             # Worker has no subprocesses. RLIMIT_AS gives a hard virtual
             # allocation ceiling; no unmeasured peak RSS is reported as zero.
             while proc.poll() is None:
-                resource_check(spec, root, start)
+                resource_check(spec, root, start, continuation=continuation)
                 progress = root/'progress.json'
                 if progress.exists():
                     p = json_read(progress)
                     if p['step_started'] is not None and monotonic()-p['step_started'] >= spec['budget']['step_hard_seconds']:
                         raise RuntimeError('physical step hard deadline reached')
                 sleep(.5)
-            resource_check(spec, root, start)  # includes final output at process exit
+            resource_check(spec, root, start, continuation=continuation)  # includes final output at process exit
             if proc.returncode != 0:
                 raise RuntimeError('worker failed; exit '+str(proc.returncode))
             terminal = json_read(root/'worker_terminal.json')
@@ -225,6 +267,8 @@ def supervise(spec, authority, review, output, code):
                 raise RuntimeError('worker success receipt missing')
     except BaseException as exc:
         reason = repr(exc)
+        exception_traceback = traceback.format_exc()
+        exception_filename = getattr(exc, 'filename', None)
     finally:
         for fd in (read_fd, write_fd):
             if fd is not None:
@@ -239,12 +283,15 @@ def supervise(spec, authority, review, output, code):
         # when the last write/cleanup crossed the resource envelope.
         if reason is None:
             try:
-                resource_check(spec, root, start)
+                resource_check(spec, root, start, continuation=continuation)
             except Exception as exc:
                 reason = repr(exc)
         write(root/'supervisor_terminal.json', dict(state='failed' if reason else 'completed',
               error=reason, wall_seconds=monotonic()-start, storage_bytes=storage_size(root),
-              returncode=proc.returncode if proc else None, completed_epoch=time()))
+              returncode=proc.returncode if proc else None, completed_epoch=time(),
+              exception_traceback=exception_traceback, exception_filename=exception_filename,
+              cumulative_wall_seconds=time()-1792532920 if continuation else None,
+              prior_output_bytes=continuation['prior_output_bytes'] if continuation else 0))
     if reason:
         raise RuntimeError(reason)
 
