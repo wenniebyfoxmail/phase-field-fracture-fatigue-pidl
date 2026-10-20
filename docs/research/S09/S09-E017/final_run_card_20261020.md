@@ -313,3 +313,14 @@ open the next gate. See
 `chunked_redeployment_provenance_incident_20261020.md` and its machine-readable
 receipt. A fresh explicit human decision acknowledging the incident is required
 before any further remote action.
+
+## 2026-10-20 admission-only separation finding
+
+The user accepted the verified archive as current deployment state and asked
+for a resolver/admission-only proposal, without authorizing remote action. A
+static owner audit found that the existing resolver requires a full-run
+authority and the existing launcher continues immediately from admission into
+real bindings and the producer. It is therefore not eligible for an
+admission-only execution. The disabled two-approval separation plan is
+`resolver_admission_only_approval_plan_20261020.md`. No authority, SSH, remote
+probe, scientific read or execution followed from preparing it.
