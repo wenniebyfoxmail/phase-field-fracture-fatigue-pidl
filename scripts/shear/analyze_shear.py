@@ -23,7 +23,7 @@ def main():
     p.add_argument('--fem',type=Path,required=True)
     p.add_argument('--pidl',type=Path)
     p.add_argument('--out',type=Path,required=True)
-    a=p.parse_args(); a.out.mkdir(parents=True,exist_ok=True)
+    a=p.parse_args(); a.out.mkdir(parents=True,exist_ok=False)
     for d in ['figures','tables']: (a.out/d).mkdir(exist_ok=True)
     mesh=loadmat(a.fem/'mesh.mat')
     nodes=mesh['nodes'][:,:2]; quad=mesh['quads'].astype(int)-1
@@ -38,6 +38,9 @@ def main():
     candidate_fields={}
     for step in sorted(f_by):
         s=loadmat(a.fem/f'state_{step:03d}.mat')
+        assert int(s['step'].item())==step
+        assert abs(float(s['U'].item())-f_by[step]['U'])<1e-7
+        assert ''.join(s['timing'].ravel().astype(str))=='post_solve_pre_history_update'
         native_fields[step]=s['p_field'].ravel()[quad].mean(axis=1)
     if common:
         pm=np.load(a.pidl/'mesh.npz')
@@ -47,6 +50,8 @@ def main():
         for step in common:
             assert abs(f_by[step]['U']-p_by[step]['U']) < 1e-7, 'State mismatch'
             s=np.load(a.pidl/f'state_{step:03d}.npz')
+            assert int(s['step'])==step
+            assert abs(float(s['U'])-p_by[step]['U'])<1e-7
             assert str(s['timing'])=='post_solve_pre_history_update'
             v=s['alpha'][pm['triangles']].mean(axis=1).reshape(-1,2)
             candidate_fields[step]=(v*child_area).sum(axis=1)/child_area.sum(axis=1)
@@ -96,6 +101,26 @@ def main():
                 fig.colorbar(artist,ax=ax,label='Damage difference' if j==2 else 'Damage alpha',shrink=.8,extend='both')
         for ext in ['png','pdf']: fig.savefig(a.out/f'figures/shear_damage.{ext}',dpi=180)
         plt.close(fig)
+        for stem,description in {
+            'shear_response':'Direct boundary reaction versus U; paired damage MAE when PIDL exists, otherwise native elastic/fracture energies.',
+            'shear_damage':'Damage maps at up to four evenly spaced indices of the sorted common states, or native-only states when PIDL is unavailable.'
+        }.items():
+            (a.out/f'figures/{stem}.md').write_text(f'''# {stem}
+
+Purpose: exploratory monotonic shear solver comparison.
+Source: S04-E035; FEM {a.fem}; PIDL {a.pidl}; exact scalar rows and scored fields
+are processed by scripts/shear/analyze_shear.py. See ../README_analysis.md.
+Content: {description}
+Coverage: FEM {len(fr)}/30; PIDL {len(pr)}/30; joint {len(common)}/30.
+Selection: all common states enter the descriptive error; at most four states
+at evenly spaced sorted indices are shown. No outcome-based snapshot selection.
+Axes: centered physical x/y on [-.5,.5], or prescribed horizontal U.
+Colors: common damage range [0,1]; one shared symmetric PIDL-FEM range; no
+smoothing/clipping. Out-of-scale damage indicated by colorbar extensions.
+Interpretation: {'Matched-state numerical differences only; use the generated table/summary for magnitudes.' if common else 'Native FEM response only; no PIDL agreement has been measured.'}
+Limitations: one trajectory/seed, Q4/T3 quadrature and recovery differences;
+partial coverage cannot establish full-trajectory agreement or physical validity.
+''')
     result=dict(native_states=len(fr),pidl_states=len(pr),joint_states=len(common),prescribed_states=len(mesh['schedule']),
         FEM_completed=(a.fem/'COMPLETED.txt').exists(),PIDL_completed=(a.pidl/'COMPLETED.txt').exists() if a.pidl else False,
         mean_damage_MAE=float(np.mean([r['damage_MAE'] for r in metrics])) if metrics else None,
