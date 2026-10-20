@@ -75,3 +75,37 @@ Prepared for review of one complete producer comparison under
 Before execution: choose/approve exact producer host, archive root, RunID and
 manifest, then perform normal resource admission once. The local contract's
 absolute Mac archive root is not a remotely usable path. No author reply needed.
+
+## Deployment-only completion, later2026-10-20
+
+[Single exact pending card](deployment_approval_card.md) now selects gpu-taobo /
+GPUServer8, /usr/bin/python3, RunID MD03-D3-OPENING-20261020-R001 and root
+/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R001. The original requirement
+to choose them is fulfilled as **preparation**, not runtime admission/permission.
+Scientific source3991b5cd, code/protocol/test SHAs above unchanged; inherit25tests.
+
+Two reviewed files are packaged in clean minimal Git snapshot
+fb29771a2d972180c2d57b1fa6345dd4dbb684fe, explicitly distinct from original
+source commit. Runtime receipt can record that honest snapshot HEAD. The9input
+tar has all individual hashes verified, no TIFF/NPZ decoding. Input/code bundle
+hashes, canonical remote contract, decision template and exact commands are in
+the card. Root is fixed now; runtime/dependencies/resources/remote data presence
+remain first-admission unknowns. No claim that MD03 is already on Taobo.
+
+Deployment delta checks only: both launcher scripts and4card Bash blocks parse
+under bash-n; JSON host/path/caps/source binding and null approval verified;
+tar members exactly9with all byte hashes, snapshot clean/expected HEAD and
+identical scientific files, canonical contract byte-for-byte copy round-trip.
+The tracked JSON template's trailing newline would differ from the unchanged
+runner's JSON copy; the transfer file is therefore the separately byte-bound
+canonical artifact, SHA c11719e0301e13675caaeea8d03a80ff77351a73b43c3083d0998433f9eb2173.
+This fixes deployment serialization, not algorithm logic. No full scientific
+test/review repeated, no approved_decision.json or remote run created.
+
+OneCPU/oneBLAS/OpenCVthread,0GPU,600s scientific wall,128MiBoutputs retained;
+process-local2GiB virtual address ceiling is stricter than the prior memory
+estimate and requires runtime admission before science. Source/authority and
+fresh output checks remain intact, atomic claim prevents second launch. No
+system limit changes, dependency installation, fallback or automatic retry.
+Local deployment checks succeeded; remote compatibility is explicitly untested.
+Disposition: park awaiting this exact object’s execution decision.

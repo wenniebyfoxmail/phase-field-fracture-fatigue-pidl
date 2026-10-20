@@ -533,3 +533,16 @@ noimagearraydecode/realCV/annotation/fit/training/produceradmissionorsend.
 ActiveD3next:reviewexactTaoboCPUhost/root/RunID/manifestforone600swall,
 128MiBgroupedexecution;noMacproduction/fallback/retry. Authorreplynotdependency;
 oldobserver/halfdepth/scoresunchanged,D01ownerindependent.
+
+### D3 exact deployment object prepared, awaiting approval — 2026-10-20
+
+[Singlependingcard](../research/S03/S03-E049-MD03/deployment_approval_card.md)
+nowfixesgpu-taobo/GPUServer8,/usr/bin/python3,MD03-D3-OPENING-20261020-R001,
+root/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R001. Scientific3991b5cd/
+code/protocol/testhashesunchanged;25checksinherited. Onlydeployment-delta
+syntax/9inputbytehashes/snapshot/canonicalcontract/emptyauthoritychecksrun.
+Allfirst-admissionruntime/resource/remote-presencefactsunknown,nossh/GPUquery/
+upload/realCV/fit/training. Source89/132/175only. OneCPU/600s/128MiB,
+process-local2GiBvirtualceiling;exactstart/stop/retrievalcommandsandfirst-stop
+conditionsprepared. Nofallback/retryorMacproduction. Parkawaitingthisexact
+executiondecision,notauthorreplyorpost-approvalhostselection.

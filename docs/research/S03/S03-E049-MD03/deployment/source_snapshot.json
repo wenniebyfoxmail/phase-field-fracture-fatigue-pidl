@@ -1,0 +1,15 @@
+{
+  "source_commit": "3991b5cdef8869fc652178af2787a1b082a70441",
+  "deployment_snapshot_commit": "fb29771a2d972180c2d57b1fa6345dd4dbb684fe",
+  "scientific_code_sha256": "27ad7b5c23f77f626bebd7e6659c26258bea6be327989bd9dbc21584db4cf8ed",
+  "protocol_sha256": "cbbb14a6e9e3916a4439a1a3d61ff4d7e3a3d75ba0fe83fedcfb7374b623a105",
+  "snapshot_note": "Two byte-identical reviewed files in a minimal local Git snapshot so the unchanged runner can record an honest runtime HEAD. Not a new scientific revision or an execution.",
+  "runtime": "/usr/bin/python3",
+  "runtime_status": "selected_from_project_protocol_not_live_verified",
+  "host": "GPUServer8",
+  "ssh_alias": "gpu-taobo",
+  "target": "drtao@172.16.100.2",
+  "run_id": "MD03-D3-OPENING-20261020-R001",
+  "root": "/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R001",
+  "remote_status": "not_connected_or_inspected"
+}

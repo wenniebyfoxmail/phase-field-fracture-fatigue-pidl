@@ -102,7 +102,12 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   allrealvisibilityunknown,noinventedlabels/authorendpoints.
   25artificial-onlytestsandlocalexact-diffreviewcomplete,9inputidentity
   contractprepared;noNPZ/TIFFdecode/realCV/fit/forecast/produceradmission.
-  NextreviewexactTaoboCPUhost/root/RunID/manifestforone600sgroupedrun.
+  [Exactpendingdeploymentcard](research/S03/S03-E049-MD03/deployment_approval_card.md)
+  nowfixesgpu-taobo/GPUServer8,/usr/bin/python3,MD03-D3-OPENING-20261020-R001,
+  taskroot/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R001;
+  oneCPU/600s/128MiB/process-local2GiBceiling. Runtimeresourceandremote
+  datafactsunknown;onlylocaldeploymentchecks,nossh/upload/launch. Parkfor
+  thisexactexecutiondecision,notfurtherhostselectionorauthorreply.
   D3decisionallowsconditionalphoto-ID/imagegeometry
   explorationwithoutwaiting;parkonlylocalopeningreference,notprogramme.
   Inventedendpointsnottruth;affinetimerelabellingdoesnotchangeoldforecast,
