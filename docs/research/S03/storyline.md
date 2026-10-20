@@ -881,3 +881,16 @@
   acceptance. No new commands/import/tests, derived content/hash or diagram
   opened this turn, no reviewer dispatched/frozen edits/real/held/C/D.
   D3 awaits explicit approval of this remaining-review package.
+
+- **2026-10-20 — S01 semantic ambiguity closed; actual residual layout blocked.**
+  Independent e019_d02_review atclean57bd6110/plansha9c1ddab3 ran command1
+  once chunk e176ed exit0/PENDING_S01_VISUAL_QA, preprint0.014233625s/final
+  soft60s passed. Ten identities/mapping/exact text passed, inherited original
+  structure by identical SHA, two new sidecars semantically accepted. Command2
+  once f34a4a exit0; Safari showed both originals, two memory screenshots in
+  1224x783 window. Ledger broadly readable but blueJ_Q not resolved. Residual
+  row1 y-caption visibly overlaps row2 V titles: MODIFY_AND_REREVIEW, firststop.
+  No further scroll/zoom, complete colourbar view or command3 finalhash/HEAD.
+  See S03-E019/font_svg_s01_remaining_evidence_review.md. No file edits/redraw/
+  recompute/SVDQR, B003numeric/real/held/C/D; no science-failure inference.
+  D3 propose separately prepared new-layout derivative, retain V001/S01.
