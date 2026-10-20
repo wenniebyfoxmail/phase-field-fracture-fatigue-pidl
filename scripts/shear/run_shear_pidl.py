@@ -19,7 +19,8 @@ def split_quads(nodes, quads):
     import numpy as np
     triangles = np.stack([quads[:, [0, 1, 2]], quads[:, [0, 2, 3]]], axis=1).reshape(-1, 3)
     xy = nodes[triangles]
-    signed = np.cross(xy[:, 1] - xy[:, 0], xy[:, 2] - xy[:, 0]) / 2
+    e1, e2 = xy[:, 1] - xy[:, 0], xy[:, 2] - xy[:, 0]
+    signed = (e1[:, 0]*e2[:, 1]-e1[:, 1]*e2[:, 0]) / 2
     negative = signed < 0
     triangles[negative] = triangles[negative][:, [0, 2, 1]]
     assert np.all(np.abs(signed) > 0)
