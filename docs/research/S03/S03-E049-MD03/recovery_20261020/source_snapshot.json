@@ -1,0 +1,21 @@
+{
+  "source_commit": "3991b5cdef8869fc652178af2787a1b082a70441",
+  "deployment_snapshot_commit": "fb29771a2d972180c2d57b1fa6345dd4dbb684fe",
+  "scientific_code_sha256": "27ad7b5c23f77f626bebd7e6659c26258bea6be327989bd9dbc21584db4cf8ed",
+  "protocol_sha256": "cbbb14a6e9e3916a4439a1a3d61ff4d7e3a3d75ba0fe83fedcfb7374b623a105",
+  "snapshot_note": "Reuse the unchanged two-file minimal Git snapshot; not a new scientific revision.",
+  "runtime": "/usr/bin/python3",
+  "host": "GPUServer8",
+  "ssh_alias": "gpu-taobo",
+  "target": "drtao@172.16.100.2",
+  "run_id": "MD03-D3-OPENING-20261020-R002",
+  "root": "/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R002",
+  "previous_run_id": "MD03-D3-OPENING-20261020-R001",
+  "previous_run_state": "STOPPED_NO_RETRY; zero scientific launches",
+  "reused_code_source": "/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R001/code_snapshot.tar.gz",
+  "reused_code_sha256": "f6fabf39e12355e87d4711b734217b0bbac3d491ea4c86ee653f68d4443e81e3",
+  "reused_code_inventory_utc": "2026-10-20T15:26:47.182273+00:00",
+  "remote_status": "R002 uninspected; R001 code SHA must be rechecked before copy",
+  "authority_note": "This immutable preparation snapshot grants no authority; only a separately human-approved decision may authorise R002.",
+  "preservation": "No R001 writes, rename, cleanup or process termination"
+}

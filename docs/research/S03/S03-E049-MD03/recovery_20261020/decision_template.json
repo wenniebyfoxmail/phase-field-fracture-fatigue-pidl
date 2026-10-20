@@ -1,0 +1,9 @@
+{
+  "candidate": "D3_controlled_opening_20261020",
+  "contract_sha256": "f737cfd0673861b6ddf815e43be0cdcea1498bb0f767106006ff7c1d7548f057",
+  "host": "GPUServer8",
+  "output": "/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R002/inputs/D3_controlled_opening_20261020/runs/MD03-D3-OPENING-20261020-R002",
+  "wall_seconds": 600,
+  "run_id": "MD03-D3-OPENING-20261020-R002",
+  "approval_source": null
+}

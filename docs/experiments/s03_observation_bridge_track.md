@@ -594,3 +594,19 @@ README_inventory.Proposeonefresh-identityrecoverycard,retainR001,reuseverified
 codearchiveandtransferfull113514186-byteinputplusnewboundcontrolsafterapproval.
 NoautomaticreuseofR001authority.NopeerPIDtermination/cleanup/retransfer/
 extraction/newRunID/sciencethisturn;originalstopandolddefinitions/scoreskept.
+
+### R002 recovery execution object prepared, not authorised — 2026-10-20
+
+Userrequestedplan-only:[completeR002card](../research/S03/S03-E049-MD03/recovery_approval_card.md).
+Samehost/runtime/scientific3991b5cd/exact9inputs;newR002rootselectedprospectively,
+R001unchangedincludingresidualrsyncpair.CopyverifiedR001codearchiveonly;
+onefull113514186-byteinputtransferplusfournewboundcontrolsafterapproval.
+Newcontractf737cfd0…differssemanticallyonlyinarchivepath;nullauthoritytemplate,
+noapproveddecision/remoteR002/attemptclaimcreatedorasserted.Local7metadata/
+hash/syntaxcheckgroupspass;25artificialsciencetestsinherited,notrepeatedor
+representedasanindependentreview.OneCPU/thread/0GPU/600sworker/2GiBvirtual/
+128MiBunchanged;input900swall/120sno-I/O,otherauxiliarycapslisted.
+Onefutureapprovalcoversadmission/deploy/singledispatch/boundedstatus/retrieval;
+firsterrorstopswithoutreconnect/retransfer/newRunID.NoSSH/network/realCV/
+training/extraction/thisturn.Parentrecovery_20261020_R002/preparation_checks.json.
+Parkawaitingcardreview,notauthorreply.Oldidentification/halfdepth/scoreskept.

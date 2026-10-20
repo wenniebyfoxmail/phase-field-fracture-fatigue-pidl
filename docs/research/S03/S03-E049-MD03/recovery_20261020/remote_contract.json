@@ -1,0 +1,148 @@
+{
+  "candidate": "D3_controlled_opening_20261020",
+  "archive": "/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R002/inputs",
+  "files": {
+    "history_support.json": "b75782b9306f6900fde99183d6b1d04477f4e41d2d543ff175893e7e22aa255d",
+    "D3_20261019/R001/input_specification.json": "9ebce07b8d802d56ea4b0e02c7c06b29af54754225043193dbbdf4ec98a03236",
+    "R000_selection/selection_lock.json": "2e1c812bdc95efed63634c91b498da96b72cc9f5d76389f94f419b420844d4d5",
+    "R002_history/89/arrays.npz": "12024ad512c0ed8e27bbad87a4beb62c409e366a4c1abc3de2fabe0ee969bdfc",
+    "R002_history/132/arrays.npz": "ca5556285bc32486475a14782afc486d20e415689af41c67ac81744e402e39ae",
+    "R003_target/arrays.npz": "a3c8f9f547070c4d1ae30dbaf3325ead24d2c21f7a26a866a9f7cab11fb3759a",
+    "source/IMG_0089.tif": "e6544537b93f436637e08e1ece0c21157a07d9cf45538e79c154af5fb3ed796c",
+    "source/IMG_0132.tif": "1139e92fd629c6cd1f3a50901c501c6be975001e140109c7ce835e3c9dece9be",
+    "source/IMG_0175.tif": "02d57ea2610a7da20532d675898c1738681384ecd41669836c703684ceeb47a6"
+  },
+  "raw_source_sha256": {
+    "IMG_0089.tif": "e6544537b93f436637e08e1ece0c21157a07d9cf45538e79c154af5fb3ed796c",
+    "IMG_0132.tif": "1139e92fd629c6cd1f3a50901c501c6be975001e140109c7ce835e3c9dece9be",
+    "IMG_0175.tif": "02d57ea2610a7da20532d675898c1738681384ecd41669836c703684ceeb47a6"
+  },
+  "pairs": [
+    [
+      89,
+      132
+    ],
+    [
+      132,
+      175
+    ]
+  ],
+  "roi": [
+    2260,
+    1600,
+    3240,
+    2160
+  ],
+  "matrices": [
+    [
+      [
+        1.0038614790634723,
+        -7.612886338171721e-05,
+        -2.0966219606293057
+      ],
+      [
+        7.612886338171721e-05,
+        1.0038614790634723,
+        -1.4958723745164155
+      ]
+    ],
+    [
+      [
+        1.0046240733110354,
+        0.0007144671268139288,
+        -2.773055809846679
+      ],
+      [
+        -0.0007144671268139288,
+        1.0046240733110354,
+        -0.5476488426956626
+      ]
+    ]
+  ],
+  "normal": [
+    1,
+    0
+  ],
+  "tangent": [
+    0,
+    1
+  ],
+  "xs": [
+    2598,
+    2750,
+    2782,
+    2902
+  ],
+  "ys": [
+    1740,
+    1756,
+    1772,
+    1788,
+    1804,
+    1820,
+    1836,
+    1852,
+    1868,
+    1884,
+    1900,
+    1916,
+    1932,
+    1948,
+    1964,
+    1980,
+    1996,
+    2012,
+    2028,
+    2044,
+    2060
+  ],
+  "arms": {
+    "central": 0,
+    "left_internal": -120,
+    "right_internal": 120
+  },
+  "offsets": [
+    -72,
+    -48,
+    -24,
+    24,
+    48,
+    72
+  ],
+  "patch_size": 31,
+  "search_radius": 4,
+  "perturbations": [
+    [
+      0,
+      0
+    ],
+    [
+      -1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      0,
+      -1
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "quality": {
+    "texture_std": 2,
+    "ncc": 0.9,
+    "peak_separation": 0.02,
+    "roundtrip": 0.5
+  },
+  "wall_seconds": 600,
+  "output_bytes": 134217728,
+  "code_sha256": "27ad7b5c23f77f626bebd7e6659c26258bea6be327989bd9dbc21584db4cf8ed",
+  "protocol_sha256": "cbbb14a6e9e3916a4439a1a3d61ff4d7e3a3d75ba0fe83fedcfb7374b623a105",
+  "prepared_utc": "2026-10-20T10:26:12.621405+00:00",
+  "state": "prepared_remote_binding_not_authorized"
+}

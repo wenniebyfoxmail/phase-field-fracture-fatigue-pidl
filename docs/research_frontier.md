@@ -120,6 +120,12 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   Control/extraction/launch/outputabsent;twoexact-rootrsyncprocessesremain,
   nokill.Proposefresh-identityrecoverycard/reuseverifiedcode/fullinputtransfer,
   approvalbeforeanywrite/compute.R001preserved,noretransfer/launch/cleanup.
+  Now[completeR002recoverycard](research/S03/S03-E049-MD03/recovery_approval_card.md)
+  preparedatuserrequest,newroot/nullauthority,notexecution.Same9inputs/science/
+  CPU600sbudget;reuseverifiedR001code,onefullinputtransfer,newboundcontrols.
+  Localmetadata/hash/syntaxcheckspass;noSSH/imagealgorithmthisturn.
+  Onefutureapprovalcoversnormaladmission/deploy/status/retrieval;firstfailure
+  stopswithoutretry.Parkforcardreview;R001evidenceandolddefinitionskept.
   D3decisionallowsconditionalphoto-ID/imagegeometry
   explorationwithoutwaiting;parkonlylocalopeningreference,notprogramme.
   Inventedendpointsnottruth;affinetimerelabellingdoesnotchangeoldforecast,
