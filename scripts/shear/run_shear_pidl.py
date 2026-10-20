@@ -58,6 +58,7 @@ def main():
     network = dict(model_type='MLP', hidden_layers=6, neurons=100, seed=1, activation='TrainableReLU', init_coeff=1.0)
     pff, mat, net = construct_model(dict(PFF_model='AT1', se_split='volumetric', tol_ir=.005, residual_stiffness=0.),
         dict(mat_E=1., mat_nu=.3, w1=1., l0=.01), network, domain, 'cuda')
+    net = net.to('cuda')
     field = FieldComputation(net, domain, torch.tensor([0.], device='cuda'), torch.tensor([0.], device='cuda'))
     crack = dict(x_init=[-.5], y_init=[0.], L_crack=[.5], angle_crack=[0.])
     history = hist_alpha_init(x, mat, pff, crack).detach()
