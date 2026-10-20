@@ -1,0 +1,24 @@
+{
+  "schema": "F01-L01-source-v1",
+  "source_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E019-D03-F01/S03-E019-D03-F01-V001",
+  "output_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E019-D03-F01/S03-E019-D03-F01-V002-L01",
+  "source_sha256": {
+    "residuals.svg": "8228c9b7b8e2f247f0ce9fb764c5ea9863be2b96a4eb3cbf8add39803b07893f",
+    "residuals.md": "33632165d5cf01b8b8e8b8ffc46a3ba9953e8d3af61608118e1bc0f5a9c7fed1",
+    "square_ledger.svg": "210aeb0aaa3ea03a51c6cd6a0575ed223f62828044e212ec69a5c8cd6a7772a5",
+    "square_ledger.md": "cf14301c56c61853ad19a0ca5e5b58bf3ea906d81409501e4a19e31d0deeae6a",
+    "runtime_guard_events.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "derived_receipt.json": "22a84024dd011230e0a89790c6d8681ffeebb2684b257978a6a8cee63892cc5a",
+    "derived_completion.json": "f4c649e1c18b9d08ce7d279e26d46b59e876ed019350ba9eaff0929f8c3dc0c2",
+    "residuals.sidecar_s01.md": "4948a1587d4aee5eb50b039651c2b6c6066adc1a6d1d7f5065d78116361ce770",
+    "square_ledger.sidecar_s01.md": "9da45befa68a1af5547b12ac2caf877da8a1cbcd7af1de8739744df3ee7370ef",
+    "sidecar_mapping_s01.receipt.json": "cf57e703986ffe39bbcdc3280b36acfd0b6c119c351adc9a30deb5eaa240b761"
+  },
+  "code_sha256": {
+    "docs/research/S03/S03-E019/preparation/f01_v002_layout/layout_release.py": "fda7a06e4ced32db18b592ff9b0a9c6249c9e6091f1f77d690a0c34e1944141c",
+    "docs/research/S03/S03-E019/preparation/f01_v002_layout/test_layout_release.py": "3d3dbefbc6fb7ffe6f3cb289ecb4a56bf748a998a0d703b56b22d04942f964f4",
+    "docs/research/S03/S03-E019/preparation/f01_v002_layout/layout_draft.py": "3e566dc3e1100c4dcd523fd5d70cafe86242d0d24b030cacc64c37f825ccc4e9",
+    "scripts/aa2024_saved_svg.py": "625e312c760a9f1685fe9afd4aaeea0cadcf772556eab87999a27e5bec4bdf99",
+    "scripts/aa2024_runtime_guard.py": "e7bf15a9a46fa60dcc1ef41cbd3f86c2d41fb44bcda6de1ba9300df8cd76874c"
+  }
+}
