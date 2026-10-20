@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "scope": "Focused new four-arm chart-control implementation and reused-launcher delta only; not actual execution/scientific validity",
+  "bindings": {
+    "tools/s04_e011_analysis/profiled_residual_branch_measurement.py": {
+      "git_blob": "3f1820b03f98019f371532465c301da7ee6d4a68",
+      "sha256": "bb83295b113d17d1d0ab5de6c3be97c54b028eb6c7ff79dea91f23ed6e8a7985"
+    },
+    "tools/s04_e011_execution/branch_measure_launch.py": {
+      "git_blob": "d65877f1a42729c5f89a4d8f26e6bec78069634c",
+      "sha256": "bcba832db379666d2e5ee020a5082f20025f90a2a9412c5660367e01734a09a6"
+    },
+    "tools/s04_e011_analysis/test_residual_branch_measurement.py": {
+      "git_blob": "2bc88a2bb49ff6b2a3647dde84ea3554582cec8b",
+      "sha256": "58d635b42109e2a1727d3adba0ff8b5f9268cf0ef4d2c65f733c673d844c8e79"
+    }
+  },
+  "checks": [
+    "Four arms use fixed actualPhi0/T0 anchored family, native versus source-sign-frozen full-field elasticity and constant g0 versus zero stationarity targets. They are chart controls, not new installed NN endpoints.",
+    "Frozen energy matches original Amor full-field/deviatoric formula including lift; original source E/R equivalence is saved and checked. Material constants match existing LocalProblem.",
+    "Rooted J explicitly differentiates qraw+B(xi)zstar with fixed zstar, preserving Bprime*zstar; C uses detached force at that root and H is assembled there. Constant-target objective is E-g0*z and residual is g-g0.",
+    "Reanchored native source trace is now saved before Q and exactzero first-stops, avoiding false classical differentiability claim. All source and side fields check original prescribed boundary; immutable network/B0/damage/history/f state verified.",
+    "Finite cache consists of source/plus/minus feature values; derivative source feature actions remain counted, so this is not a three-total-forward claim.",
+    "Combined energy/field plus K allowance enforced before numerical invocation after charging, with500 work cap;4Q/16JVP/16VJP/SVD0 and50H/600seconds remain launcher/card requirements.",
+    "H/factor, action vectors, Phi, source/side fields/forces/targets/defects and branch labels saved for bounded offline review.",
+    "Stored-matrix inverse residual/Gram estimates are explicitly conditional; no native-force arithmetic or full-path strong-convexity certificate. full_forward_bound_trusted=false and scientific causal verdict remains unresolved even on FD pass.",
+    "Launcher copies the already reviewed dual-pidfd/gated-controller/worker architecture, absolute2400second envelope and600second science, same resource/GPU UUID/4CPU/full-owned-tree accounting and bounded postexit export. Exact new authority/package binding and fresh admission remain required."
+  ],
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=tools/s04_e011_analysis /Users/wenxiaofang/miniconda3/bin/python3 -B tools/s04_e011_analysis/test_residual_branch_measurement.py",
+    "passed": 8,
+    "failed": 0,
+    "kind": "New artificial tiny matrix/control fixtures only, no real models/data/NN/AD/FEM or physical solve; old tests not repeated"
+  },
+  "resolved_finding": "Native reanchored-source exactzero trace check moved before Q, with persisted trace; no additional field action introduced beyond relocated existing trace action.",
+  "limitations": [
+    "No stronger actual forward certificate supplied or claimed. Matrix-bound rounding model assumes ordinary finite binary64 operations without overflow/underflow; force arithmetic and nonlinear path are unbounded.",
+    "The1e-13 internal target is a diagnostic setting; finite incomplete closure is retained only within original1e-10 checks and unresolved interpretation, not declared exact stationarity.",
+    "No real arrays/models, SSH, NN/JVP/VJP/physics/SVD/producer run performed by reviewer.",
+    "Final clean source/package/card/authority binding and whole-envelope retrieval constraints are separate execution requirements; no stale old package may activate new files."
+  ],
+  "blockers": []
+}

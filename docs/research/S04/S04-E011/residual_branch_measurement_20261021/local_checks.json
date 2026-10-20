@@ -1,0 +1,15 @@
+{
+  "scope": "new artificial algebra/control only; not real model/physics",
+  "tiny_matrix_tests": 8,
+  "tiny_matrix_wall_reported_seconds": 0.015,
+  "authority_validator_cases": 4,
+  "exact_card_accepted": true,
+  "mutated_caps_rejected": [
+    "svd1",
+    "Qv5",
+    "JVP17"
+  ],
+  "AST_check": true,
+  "initial_failure": "unittest package invocation ModuleNotFoundError before execution; direct file invocation resolved; retained in local case",
+  "old_tests_repeated": false
+}

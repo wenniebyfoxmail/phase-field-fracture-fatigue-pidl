@@ -285,3 +285,8 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 ### 2026-10-21 PIDL c20共有导数本地归因
 
 源码IFT确认Q在非零g0源对应g=g0路径，而侧端测量求g≈0；C项存在。未证明此差异主导，H/factor/大Phi本地缺失，真实条件界未验；仍保留有限h/分支变化。只用保存小头数组，0producer/SSH/优化。见[runs/pidl_shared_derivative_attribution_20261021.md](runs/pidl_shared_derivative_attribution_20261021.md)。后续四臂真实比较为未授权提案。
+
+
+### 2026-10-21 Prospective residual-target × elastic-branch mechanism panel
+
+HQ authorized one fresh fixed-c20s4 chart-control four-arm measurement within2400whole/600science seconds. SamePhi/T0, seed173/h1e-6/FEMdamage/sourcePIDLhistory/B0/UV. No NN optimization/history/rollout/SVD; internal1e-13 and originalhead1e-10/FDabs1e-10+rel1e-4 separate. Readiness and actual execution remain distinct; full forward bound may remain numerical-unresolved. See[residual_branch_measurement_20261021](residual_branch_measurement_20261021/README.md).

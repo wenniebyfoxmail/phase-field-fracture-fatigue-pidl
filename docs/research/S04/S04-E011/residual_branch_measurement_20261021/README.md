@@ -1,0 +1,13 @@
+# c20 residual-equation × elastic-branch four-arm mechanism measurement
+
+Prospective authority: HQ instruction under verified direct human nighttime delegation, one fresh run; whole2400s starts2026-10-20 23:08:58UTC, deadline23:48:58UTC. Science≤600s, no NN optimization/history/rollout/newSVD/newh/direction. Old results unchanged.
+
+Same existing six hash-bound remote inputs; same fixed Phi/T0, original B0/UV and seed173 scaled ξ direction/h1e-6. Source/±h finite feature values are cached once each; source AD computations add separately counted forward calls. Each arm remains a field/chart control, never installed as an actual NN endpoint.
+
+Residual targets are same-coordinate g0 or0; zero root partial J includes B′zstar. Constant objectiveE−g0ᵀz and physical gradient are distinct; both target defect and physical head gradient≤1e-10. Fixed internal solve target1e-13, max10Newton/32backtracks, no scan. Native/frozen share source full-field E/R; frozen energy fixes original GP source signs with full lift, exactly the source quadratic extension, not a native physical field.
+
+Original FD criterionabs1e-10+rel1e-4 unchanged. Four source Qv, hiddenJVP≤16/VJP≤16, field+native/frozenK actions combined≤500, dense≤50/SVD0. State/rank/boundary/identity/nonfinite/resource failures first-stop, no retry. FD mismatch and an inadequate forward bound are observations. Source/root/side J,C,KJ,U,H/factors, actualPhi/B-map, defects/forces/branches and stored-matrix inverse residual enclosures are saved. These do not by themselves bound native force arithmetic/nonlinear root errors; if full forward control cannot be established, causal verdict remains numerical-unresolved even whenFD passes. No added real operator work to force a positive result.
+
+Resources: GPU5 exactUUID5622bd47-1050-3003-246d-3cabe2b4791b,4CPU,16GiB own-treeRSS/CUDAallocated/reserved,4GiB physical spare,8GiB task incltemp,4GiB retrieval. InheritedAS remains unchanged (old measuredunlimited), record actual new runtime. Two mechanical batches≤60cumulative, freshclaim/no duplicate/liveGPU admission, no waiting/retry/foreignprocess action. Reuse original double-pidfd watchdog and telemetry; no worker numerical import until gate.
+
+8new artificial algebra/count fixtures0.015s pass; first localunittest import path failure retained in case then directscript invocation resolved, no scientific call. Original math/review fixtures not repeated. One existing independent reviewer focuses new targets/chain/frozenenergy/control. Package exact commit/hashes bound after review; no metadata reapproval needed within this authority.

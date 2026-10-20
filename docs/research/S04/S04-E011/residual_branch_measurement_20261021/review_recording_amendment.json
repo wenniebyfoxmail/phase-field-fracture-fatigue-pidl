@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "scope": "Final recording/fail-closed delta static review only",
+  "original_review": {
+    "path": "docs/research/S04/S04-E011/residual_branch_measurement_20261021/review.json",
+    "sha256": "402383702d292c327c6b8c307074340cd8bf9efa4a5921d002c7ed8f24cb156d",
+    "git_blob": "25a891bcb57b963b30dfb6bfc214c13b3794b322"
+  },
+  "worker": {
+    "path": "tools/s04_e011_analysis/profiled_residual_branch_measurement.py",
+    "sha256": "ca169d77eb494646176da727f153530da0dc1f95dec1d908b566de03762dbfd6",
+    "git_blob": "faf6dbe49b0d76e7546f4ca01f07b1d937306c8e"
+  },
+  "checks": [
+    "Run wrapper preserves original numerical flow in _run; context retains existing Guard and bridge references without an extra NN/physical evaluation.",
+    "finally checks immutable network/B0/physics, persists counts/completed=false/state and primary failure before rethrowing a newly discovered state error.",
+    "Terminal logging failure attaches to earlier primary or state exception rather than overwriting it.",
+    "Existing side q/z/defect/direct projected defect/R/H/factor arrays persist before the new direct physical-gradient/target-defect1e-10 check. Trace is evaluated only after this check.",
+    "evaluate explicitly rejects nonfinite q/value/objective/gradient before further line-search evaluation. Mathematical formulas and fixed targets/tolerances otherwise unchanged.",
+    "Same existing functional JVP now retains and saves its primal return, checks maxabs against the cached rooted source field<=1e-12, then detaches J. No additional feature/model/AD/physical primitive; source-identity engineering check only."
+  ],
+  "tests": "None rerun for this amendment; prior8 artificial fixtures retained.",
+  "no_new_actions": "No real arrays/models, NN/AD/JVP/VJP, physical operator/solve/SVD, SSH, producer or commit.",
+  "blockers": []
+}
