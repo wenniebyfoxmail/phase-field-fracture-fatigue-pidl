@@ -1,0 +1,114 @@
+{
+  "verdict": "PREPARATION_AND_EXACT_INVENTORY_REQUEST_REVIEW_PASS_ONLY",
+  "reviewer": "Codex /root/hybrid_readiness_review",
+  "reviewed_utc": "2026-10-20T17:03:23.666626+00:00",
+  "reviewed_commit": "2df7ded03a51e7375e2f1530155a655df79be0b8",
+  "prior_reviewed_commit": "b400cb0c47e13479442526eee5fa8a7e3654347b",
+  "base_owner_commit": "829508617534c6c5febc813899498a31053684df",
+  "artifact_id": "f5b14d5550d7cc902b8bcf656d353f60c1f6100020e676fe3ec1676c16977516",
+  "card_sha256": "259068706fb609473e01d515c796c94b3fb0c8591f2ebbb244c3b89cb354de00",
+  "request_sha256": "1ebed9fd05a22c8af72ac8cc44d3d133d466c507bc48793ca2d3ac9414730062",
+  "payload_sha256": "2ecff9e30fc458d97f7e0111a44ec2319201d9b5ebb9b7121107df2aabe28490",
+  "code_tar_sha256": "301acca70c015c0fc2841f6fa1fde6f38ccbf066ab997cd5820cd6694c2a84f9",
+  "approval_sha256": "39e66753ef537da18c3a7d01f58b410a4c8ad3fedbd56ad4f3ee2658b46e0ed3",
+  "findings": [],
+  "resolved_finding": {
+    "id": "REACTION_SCALING_WORDING",
+    "status": "RESOLVED",
+    "change": "At fixed damage and boundary branch, reaction scales as E times U; at fixed E U squared, reaction scales as 1/U."
+  },
+  "this_v2_delta_checks": {
+    "git_diff_one_document_line_only": true,
+    "working_tree_clean": true,
+    "verified_source_files": 68,
+    "source_hash_mismatches": [],
+    "canonical_artifact_verified": true,
+    "tar_members_verified": 71,
+    "tar_mismatches": [],
+    "card_request_payload_unchanged_from_v1": true,
+    "approval_exact_v2_paths_and_complete_payload_verified": true,
+    "inventory_request_matches_canonical_request_for": true,
+    "test_reruns": 0,
+    "project_array_reads": 0,
+    "ssh_calls": 0,
+    "fem_solves": 0,
+    "training_updates": 0
+  },
+  "inherited_actual_checks": {
+    "python": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "base_owner_artificial_tests": {
+      "commit": "829508617534c6c5febc813899498a31053684df",
+      "passed": 69,
+      "seconds": 3.87,
+      "files": [
+        "tests/test_hybrid_incremental.py",
+        "tests/test_hybrid_producer.py",
+        "tests/test_hybrid_performance.py",
+        "tests/test_hybrid_coupled_acceleration.py",
+        "tests/test_hybrid_plotting_admission.py"
+      ]
+    },
+    "exported_v1_new_tests": {
+      "commit": "b400cb0c47e13479442526eee5fa8a7e3654347b",
+      "working_directory": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/v1/code",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=source:tools:.:tests /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python -m pytest -q -p no:cacheprovider tests/test_hybrid_comparison_preparation.py",
+      "passed": 5,
+      "seconds": 0.02,
+      "rerun_for_v2": false,
+      "reason": "All executable and test bytes unchanged; v2 modifies one reviewed prose sentence only."
+    },
+    "v1_inputs_hash_only": {
+      "assets": 7,
+      "bytes": 89056452,
+      "mismatches": [],
+      "decoded_arrays": false
+    },
+    "v1_static_contract_checks": {
+      "validate_card": true,
+      "verify_package": true,
+      "initial_totals": true,
+      "known_prior_wall_seconds": 617.3239415297285,
+      "remaining_host_hours_before_inventory": 135.82852112735284
+    }
+  },
+  "scope": {
+    "prepared_packet": true,
+    "exact_single_metadata_inventory_request_technically_reviewed": true,
+    "human_inventory_approval": "STILL_REQUIRED_FOR_THIS_EXACT_ACCOUNT_DESTINATION_PAYLOAD_AND_COMMAND",
+    "inventory_executed": false,
+    "runtime_admission_pass": false,
+    "scientific_execution_authorized": false,
+    "pending_card_execution_enabled": false,
+    "matplotlib_exact_pin": null,
+    "property_extension_runner_reviewed_or_authorized": false
+  },
+  "inventory_review": {
+    "default_show_only": true,
+    "single_request_before_contact_checks": [
+      "payload SHA",
+      "complete canonical request including destination/limits",
+      "exclusive local receipt creation"
+    ],
+    "ssh_destination": "drtao@172.16.100.2",
+    "expected_hostname": "GPUServer8",
+    "remote_timeout_seconds": 20,
+    "remote_kill_after_seconds": 3,
+    "local_timeout_seconds": 45,
+    "cpu_limit_seconds": 10,
+    "address_space_bytes": 268435456,
+    "gpu_seconds": 0,
+    "retries": 0,
+    "scope": "Standard-library distribution metadata and origins only; no scientific package import, data/model loading, remote script file, installation, render, FEM, fit or automatic continuation."
+  },
+  "remaining_requirements": [
+    "Human approval for the exact inventory action before SSH.",
+    "Actual dependency metadata and identity receipt; metadata is not package import/render admission.",
+    "Resolve isolated new-run dependency provenance, exact Matplotlib pin and charge inventory cost to existing study envelope.",
+    "Rebuild exact scientific execution card/package, independent delta review and human execution approval; retain original guarded Agg/runtime/resource admission."
+  ],
+  "limits": [
+    "Review permits preparation and presentation of this exact inventory action for human approval only.",
+    "No scientific or producer runtime success, complete-trajectory reachability, physical validation or neural acceleration is established.",
+    "Loading/property extension remains design only; 8400 additional steps and 248 hosth/24 GPUh are sizing arithmetic, not an executable total budget or approved runner."
+  ]
+}

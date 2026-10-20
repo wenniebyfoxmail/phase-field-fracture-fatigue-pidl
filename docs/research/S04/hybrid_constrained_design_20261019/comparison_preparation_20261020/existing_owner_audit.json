@@ -1,0 +1,21 @@
+{
+  "scope": "Independent read-only audit of existing hybrid implementation/preparation",
+  "reviewer": "Codex child hybrid_readiness_review, independent of preparer",
+  "reviewed_commit": "829508617534c6c5febc813899498a31053684df",
+  "verdict": "PREPARATION_REUSE_CONFIRMED_SCIENCE_LAUNCH_BLOCKED",
+  "canonical_source_files_verified": 61,
+  "tests": 69,
+  "elapsed_seconds": 3.87,
+  "python": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+  "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=source:tools:.:tests <python> -m pytest -q -p no:cacheprovider tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_hybrid_performance.py tests/test_hybrid_coupled_acceleration.py tests/test_hybrid_plotting_admission.py",
+  "blockers": [
+    "v4 wrapper is disabled and must instantiate a new exact execution card",
+    "Matplotlib actual producer version unrecorded; metadata inventory, exact pin and delta review precede science",
+    "multi-property requires new contract, state0/backend identities, family-aware model admission/normalization and grouped trajectories"
+  ],
+  "scientific_arrays_opened": false,
+  "new_fem_solves": 0,
+  "training_updates": 0,
+  "ssh_calls": 0,
+  "limitations": "Static/contracts plus artificial tests; not runtime, convergence, physical validation or acceleration"
+}
