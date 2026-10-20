@@ -74,3 +74,10 @@ def approved_chain(claim,parent_pid,parent_birth,module=None):
     if os.getppid()!=parent_pid or parent_pid==claim['pid']:raise PermissionError('independent lifeline parent required')
     parent=ps.Process(parent_pid)
     if parent.create_time()!=parent_birth or parent.ppid()!=claim['pid'] or ps.Process(claim['pid']).create_time()!=claim['wrapper_birth']:raise PermissionError('approved wrapper/lifeline birth chain')
+
+
+def approved_worker_chain(claim,launch,control,parent_pid,parent_birth,module=None):
+    ps=module if module is not None else __import__(__name__)
+    if os.getppid()!=parent_pid or parent_pid!=control['controller_pid'] or parent_birth!=control['controller_birth'] or parent_birth!=launch['controller_birth']:raise PermissionError('worker direct controller identity')
+    controller=ps.Process(parent_pid);watcher=ps.Process(launch['lifeline_pid'])
+    if controller.create_time()!=parent_birth or controller.ppid()!=launch['lifeline_pid'] or watcher.create_time()!=launch['lifeline_birth'] or watcher.ppid()!=claim['pid'] or ps.Process(claim['pid']).create_time()!=claim['wrapper_birth']:raise PermissionError('worker controller/lifeline/wrapper birth chain')
