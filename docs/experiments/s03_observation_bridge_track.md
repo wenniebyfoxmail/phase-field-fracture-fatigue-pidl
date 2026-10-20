@@ -474,3 +474,19 @@ certifiedfilename/unit/loadjoin. Catalogueoverlap157/173and97/100prevents
 forcedrowzip. NextD3proposalsource/index/time/loadqualificationandendpoint
 gaplist,noexecutedjoin/rescore/contact. Parentarchive reference_attachment_check_20261020;
 oldobserver/halfdepth/scoresunchanged,nonewTIFF,D01independentowneruntouched.
+
+### D3 three-frame time/load and seven-gauge semantics audit — 2026-10-20
+
+[Mapping/limits](../research/S03/S03-E049-MD03/three_frame_reference_map_20261020.md):
+existingauthorMAT/TXTonly;time=roundedrawtime,load=rawcol2×4.4482kN,
+LVDT2=rawcol4×25.4mmexactallrows. ConditionalIMGsuffix=photoID:
+89/132/175→keys430/645/860→9.64450/12.93056/14.15951kN;uniquemachine
+rows427/640/852andDIC86/129/172,nconsistent. Filenameidentityconvention
+stillmissing,notcertifiedphysicalpairingororigin-knownfutureload.
+7tripletsgaugeidentityverified;Ext1–3globalmidspanformula,Ext4–7unused/
+unlocated,endpointsabsent. Fulln/time198/203and232/243,16exceptionsretained;
+selected3notexceptions. Noordinalrowzip/endpointguessing/sameimageselfrepair.
+NextD3decisionneedsphoto-indexdefinition+Extendpoint/referenceimageevidence,
+notmorealgebra;onlyconsolidatedrequestdraftifpursued,nosendingauthorityassumed.
+Parentarchive reference_mapping_20261020;0download/pixeldecode/CV/fit/training/
+score,oldobserver/halfdepth/scoresandD01untouched.
