@@ -275,3 +275,8 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-20 [HQ one prospective actual-profile/chart measurement](profiled_hidden_measurement_20261020/README.md) authorized under verified latest human delegation: whole1800s absolute22:34:57–23:04:57UTC includes implementation/review/deployment/admission/measurement/retrieval/report; scientific600s. Samec20s4/FEMd/history/B0/UV/Phi/seed173/scales/h1e-6,h2/head1e-10/FDcriterion/rank. A7freshNN+SVD/B4anchoredfield controls, Qvonce, no optimization/history/rollout/newholdout. New500E/50H/7SVD;4CPU/1GPU5exactUUID/RSS+CUDAalloc+reserved16GiB/physical4GiBspare/task8GiB/retrieve4GiB. Max2zero-start checks60s; busy/unknown/mismatch firststop, noforeignsignals/fallback/retry. Failure gate now measurement observable only under this new protocol; oldR2 staysfailed.6newartificialfixtures and focused exact-source review; fresh-resource admission and actual producer unverified until executionreceipt.
+
+
+### 2026-10-20 PIDL c20 A/B profile机制测量完成
+
+新前瞻授权Run `pf_s04e011_profile_measure_c20_r1_hq_20261020`，源049f1cae，112.405秒完成A7/B4及一次Qv，无优化/历史提交。A/B FD向量差只占共同失配0.1572%/0.4331%，原门仍失败7.23/5.18倍；不支持移动SVD族是本方向主因，共有有限h/分支/数值影响未分清。原FEM/PIDL基准及旧R2失败保留。远端621项全核、本地200项部分取回核验；进程全退。见[runs/pidl_profile_measurement_result_20261020.md](runs/pidl_profile_measurement_result_20261020.md)。

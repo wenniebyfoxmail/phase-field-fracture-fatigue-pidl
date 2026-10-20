@@ -1,0 +1,20 @@
+{
+  "inspected": [
+    "FD_mismatch_fields.png",
+    "trace_branch_changes.png"
+  ],
+  "result": "labels, common scales, full spatial support and branch location rings inspected; rings do not represent physical affected area",
+  "sidecars_validated": true,
+  "files": {
+    "FD_mismatch_fields.png": {
+      "sha256": "c6098c5def2337ef261be50ae5024b75a0ef927b74df520571a7142b254f86a1",
+      "bytes": 559840,
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profile_measure_c20_r1_hq_20261020/analysis/FD_mismatch_fields.png"
+    },
+    "trace_branch_changes.png": {
+      "sha256": "f9a02237e25f9500573f160ead03908ae8192ce6ee92789c038e3174200a67f0",
+      "bytes": 74430,
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profile_measure_c20_r1_hq_20261020/analysis/trace_branch_changes.png"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "run_id": "pf_s04e011_profile_measure_c20_r1_hq_20261020",
+  "source_commit": "049f1caec5b3d98a8228b6e57042cb4b775a1965",
+  "remote_verified_entries": 621,
+  "remote_verified_bytes": 3818496984,
+  "selected_local_entries": 200,
+  "selected_local_bytes": 39385104,
+  "network_gzip_bytes": 29014169,
+  "local_selected_hashes_verified": true,
+  "full_local_mirror": false,
+  "manifest_sha256": "7dca8ca1ca29ab82f529571cd1259f70a16ee7d5da3f362c374fafe33f95b6a0",
+  "outer_return_sha256": "3470b2342ed2cd98013e0452f1bd923701ab7c3df833876bcb65a9be2e9dfa67",
+  "remote_hash_seconds": 2.7506294362,
+  "retrieval_wall_seconds": 54.573554,
+  "large_arrays_remain_remote": true,
+  "retrieval_manifest": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profile_measure_c20_r1_hq_20261020/retrieval_verification.json"
+}

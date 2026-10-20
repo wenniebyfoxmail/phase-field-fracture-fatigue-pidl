@@ -1,0 +1,199 @@
+{
+  "status": "passed_saved_small_array_arithmetic",
+  "scope": "Hash-verified saved q/Qv/FD/trace arithmetic only; no NN/AD/physical operator/SVD/solve/SSH/test/run",
+  "verified_array_count": 35,
+  "rows": [
+    {
+      "arm": "A",
+      "pair": "h",
+      "error": 0.00944405216541475,
+      "FD_norm": 13.05673821057613,
+      "scale": 13.057395248177265,
+      "tolerance": 0.0013057396248177266,
+      "ratio": 7.232722348250006,
+      "norm_crossplatform_abs_delta": 3.469446951953614e-18
+    },
+    {
+      "arm": "B",
+      "pair": "h",
+      "error": 0.009444760415348077,
+      "FD_norm": 13.056737601670525,
+      "scale": 13.057395248177265,
+      "tolerance": 0.0013057396248177266,
+      "ratio": 7.233264761086276,
+      "norm_crossplatform_abs_delta": 3.469446951953614e-18
+    },
+    {
+      "arm": "A",
+      "pair": "half",
+      "error": 0.006760366693514432,
+      "FD_norm": 13.057179753344078,
+      "scale": 13.057395248177265,
+      "tolerance": 0.0013057396248177266,
+      "ratio": 5.177423251177001,
+      "norm_crossplatform_abs_delta": 5.204170427930421e-18
+    },
+    {
+      "arm": "B",
+      "pair": "half",
+      "error": 0.006760963599658828,
+      "FD_norm": 13.057179215447828,
+      "scale": 13.057395248177265,
+      "tolerance": 0.0013057396248177266,
+      "ratio": 5.177880391431498,
+      "norm_crossplatform_abs_delta": 8.673617379884035e-19
+    },
+    {
+      "arm": "A",
+      "pair": "repeat",
+      "error": 0.00944405216541475,
+      "FD_norm": 13.05673821057613,
+      "scale": 13.057395248177265,
+      "tolerance": 0.0013057396248177266,
+      "ratio": 7.232722348250006,
+      "norm_crossplatform_abs_delta": 3.469446951953614e-18
+    }
+  ],
+  "vector_comparisons": {
+    "h": {
+      "A_minus_B_FD_L2": 1.4849427470270449e-05,
+      "A_minus_B_FD_maxabs": 3.177553706268377e-07,
+      "A_minus_B_relative_to_A_mismatch": 0.0015723576289265778,
+      "mismatch_vector_cosine": 0.9999987667503013,
+      "FD_vector_cosine": 0.9999999999993543
+    },
+    "half": {
+      "A_minus_B_FD_L2": 2.9278645500458752e-05,
+      "A_minus_B_FD_maxabs": 6.769368052217395e-07,
+      "A_minus_B_relative_to_A_mismatch": 0.004330925647649744,
+      "mismatch_vector_cosine": 0.9999906262671686,
+      "FD_vector_cosine": 0.9999999999974866
+    }
+  },
+  "trace_signs": {
+    "('A', 'zero')": {
+      "positive": 334022,
+      "negative": 11610,
+      "zero": 0,
+      "different_from_source": 0
+    },
+    "('A', 'plus_h')": {
+      "positive": 334021,
+      "negative": 11611,
+      "zero": 0,
+      "different_from_source": 3
+    },
+    "('B', 'plus_h')": {
+      "positive": 334021,
+      "negative": 11611,
+      "zero": 0,
+      "different_from_source": 3
+    },
+    "('A', 'minus_h')": {
+      "positive": 334020,
+      "negative": 11612,
+      "zero": 0,
+      "different_from_source": 2
+    },
+    "('B', 'minus_h')": {
+      "positive": 334020,
+      "negative": 11612,
+      "zero": 0,
+      "different_from_source": 2
+    },
+    "('A', 'plus_half')": {
+      "positive": 334020,
+      "negative": 11612,
+      "zero": 0,
+      "different_from_source": 2
+    },
+    "('B', 'plus_half')": {
+      "positive": 334020,
+      "negative": 11612,
+      "zero": 0,
+      "different_from_source": 2
+    },
+    "('A', 'minus_half')": {
+      "positive": 334020,
+      "negative": 11612,
+      "zero": 0,
+      "different_from_source": 2
+    },
+    "('B', 'minus_half')": {
+      "positive": 334020,
+      "negative": 11612,
+      "zero": 0,
+      "different_from_source": 2
+    },
+    "('A', 'plus_repeat')": {
+      "positive": 334021,
+      "negative": 11611,
+      "zero": 0,
+      "different_from_source": 3
+    },
+    "('A', 'minus_repeat')": {
+      "positive": 334020,
+      "negative": 11612,
+      "zero": 0,
+      "different_from_source": 2
+    },
+    "A_h_plus_vs_minus": 5,
+    "A_half_plus_vs_minus": 4,
+    "B_h_plus_vs_minus": 5,
+    "B_half_plus_vs_minus": 4,
+    "A_vs_B_plus_h": 0,
+    "A_vs_B_minus_h": 0,
+    "A_vs_B_plus_half": 0,
+    "A_vs_B_minus_half": 0
+  },
+  "source_trace": {
+    "positive": 334022,
+    "negative": 11610,
+    "zero": 0
+  },
+  "A_fresh_zero_equals_source": true,
+  "A_signed_repeat_exact": {
+    "plus": true,
+    "minus": true
+  },
+  "repeat_FD_exact": true,
+  "A_h_to_half_FD_L2": 0.004710894831928033,
+  "B_h_to_half_FD_L2": 0.004710269978657514,
+  "audit_note": "Initial exact equality assertion on cross-platform Euclidean norm failed at<=5.21e-18; stored/recomputed FD and difference vectors are bit-exact. Kept this floating-readout distinction; no producer or physical replay.",
+  "cosine_audit": {
+    "initial_BLAS_status_warnings": "NumPy matmul emitted divide/overflow/invalid floating-status warnings despite all input/output values finite. No scientific operation or producer involved.",
+    "original_finite_readouts": {
+      "h": {
+        "mismatch_vector_cosine": 0.9999987667503016,
+        "FD_vector_cosine": 0.9999999999993542
+      },
+      "half": {
+        "mismatch_vector_cosine": 0.9999906262671693,
+        "FD_vector_cosine": 0.9999999999974871
+      }
+    },
+    "explicit_elementwise_contraction": "np.sum(x*y) normalized by explicit square-sum norms; no BLAS matmul",
+    "warnings_on_explicit_path": 0,
+    "maxabs_change": 6.661338147750939e-16
+  },
+  "saved_contract_summary": {
+    "A_maps": 7,
+    "B_maps": 4,
+    "A_all_original_flags_true": true,
+    "A_all_rank386": true,
+    "A_max_head_gradient_inf": 8.272852997266711e-11,
+    "A_max_realization_maxabs": 5.555096313503149e-13,
+    "B_max_head_gradient_inf": 2.7391283685673784e-15,
+    "A_max_BC_error": 0.0,
+    "B_max_BC_error": 0.0,
+    "B_all_source_unchanged": true
+  },
+  "interpretation_limits": [
+    "The h and h/2 A/B FD differences are small relative to the common mismatch; this one direction does not support a dominant moving-retained-family mismatch at those sampled steps. It does not prove the families globally equivalent.",
+    "Both A and B fail the same original derivative tolerance; B shares almost the same mismatch vector, not merely its scalar norm.",
+    "Five/four final GP trace-sign differences between signed endpoints establish observed branch changes; counts alone do not quantify their contribution or prove they explain the full mismatch.",
+    "Bit-exact within-panel repeated signed fields/FD and exact fresh-zero reproduction rule out visible repetition variability and zero shift on this path only; they do not rule out deterministic numerical error, finite-h truncation or approximate-stationarity amplification.",
+    "Two h values with decreasing error do not establish an asymptotic order or isolate finite precision versus head closure versus branch effects.",
+    "No new optimization endpoint, PIDL/FEM improvement, capacity result or unique causal attribution. Large Phi not independently downloaded/reprojected in this review; local retrieval remains a subset."
+  ]
+}

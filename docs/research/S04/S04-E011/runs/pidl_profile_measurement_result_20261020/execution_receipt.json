@@ -1,0 +1,176 @@
+{
+  "status": "MEASUREMENT_COMPLETE_RETRIEVED_PARTIAL",
+  "run_id": "pf_s04e011_profile_measure_c20_r1_hq_20261020",
+  "source_commit": "049f1caec5b3d98a8228b6e57042cb4b775a1965",
+  "source_branch": "codex/hard5-q4-t3-2x2-20261005",
+  "package_sha256": "05399785deec707792f81d8e8222b85e0dbf56157fb2a0ce5e4d8b5a85cb1a93",
+  "whole_task_started_UTC": "2026-10-20T22:34:57Z",
+  "absolute_deadline_epoch": 1792537497.0,
+  "mechanical_checks": 2,
+  "producer_started": true,
+  "package": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_profile_measure_package_20261020",
+  "case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_profile_measure_c20_r1_hq_20261020",
+  "mechanical1": {
+    "started": 5558705.860156981,
+    "UTC": 1792536623.3530993,
+    "host": "GPUServer8",
+    "user": "drtao",
+    "mount": true,
+    "root_exists": false,
+    "archive_exists": false,
+    "claim_exists": false,
+    "old_return_exists": false,
+    "free_disk": 622046662656,
+    "matching_live": [],
+    "GPU": "5, GPU-5622bd47-1050-3003-246d-3cabe2b4791b, 24564, 24077, 0",
+    "apps": [],
+    "MemAvailable_kb": 384656220,
+    "old_R2_manifest_sha256": "6b5b2bf65640c02eac6b3a67834e2a3baf53d517748eff128341a4e761870d3b",
+    "inputs": [
+      {
+        "role": "input",
+        "bytes": 15502614,
+        "sha256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3"
+      },
+      {
+        "role": "original_model",
+        "bytes": 4510197,
+        "sha256": "55de7e6c5ed7b3dd80cee19139b7e33a22b92c0b5384a8af9a019ff3e465004f"
+      },
+      {
+        "role": "initial_model",
+        "bytes": 9011061,
+        "sha256": "8ea35dc4d1147ed49b26e0e3c440034d3fde7c971343519c394526c41d12180e"
+      },
+      {
+        "role": "source_fields",
+        "bytes": 1361291,
+        "sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57"
+      },
+      {
+        "role": "source_phi",
+        "bytes": 267902656,
+        "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+      },
+      {
+        "role": "source_transform",
+        "bytes": 1238416,
+        "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+      }
+    ],
+    "finished": 5558706.390017991
+  },
+  "authority_sha256": "71e21d275e81281823cf07263e182f3ea93b67c55ba0fdc38185ab94fb9081a3",
+  "delta_files": [
+    "code/tools/s04_e011_analysis/analyze_profiled_hidden_stop.py",
+    "code/tools/s04_e011_analysis/profiled_hidden_adapter.py",
+    "code/tools/s04_e011_analysis/profiled_hidden_e011_runtime.py",
+    "code/tools/s04_e011_analysis/profiled_hidden_measurement.py",
+    "code/tools/s04_e011_analysis/profiled_hidden_receipts.py",
+    "code/tools/s04_e011_analysis/run_pidl_block_diagnosis.py",
+    "code/tools/s04_e011_analysis/run_pidl_persisted_phi_hidden_newton.py",
+    "code/tools/s04_e011_analysis/test_profiled_hidden_measurement.py",
+    "code/tools/s04_e011_analysis/test_profiled_hidden_receipts.py",
+    "code/tools/s04_e011_execution/control.py",
+    "code/tools/s04_e011_execution/measure_launch.py",
+    "execution_card.json",
+    "package_manifest.json"
+  ],
+  "delta_bytes": 69537,
+  "stage_returncode": 0,
+  "launch": {
+    "bootstrap_pid": 3831142,
+    "root": "/mnt/data2/drtao/wennie/pf_s04e011_profile_measure_c20_r1_hq_20261020",
+    "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profile_measure_c20_r1_hq_20261020",
+    "command": [
+      "/usr/bin/python3",
+      "-B",
+      "/mnt/data2/drtao/wennie/pf_s04e011_profile_measure_c20_r1_hq_20261020/code/tools/s04_e011_execution/measure_launch.py",
+      "--package",
+      "/mnt/data2/drtao/wennie/pf_s04e011_profile_measure_c20_r1_hq_20261020",
+      "--authority",
+      "/mnt/data2/drtao/wennie/pf_s04e011_profile_measure_c20_r1_hq_20261020/authority.approved.json",
+      "--authority-sha256",
+      "71e21d275e81281823cf07263e182f3ea93b67c55ba0fdc38185ab94fb9081a3",
+      "--envelope-deadline",
+      "1792537497.0"
+    ],
+    "log": "/mnt/data2/drtao/wennie/pf_s04e011_profile_measure_c20_r1_hq_20261020/worker.log",
+    "stdout": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/pf_s04e011_profile_measure_c20_r1_hq_20261020.bootstrap.stdout",
+    "stderr": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/pf_s04e011_profile_measure_c20_r1_hq_20261020.bootstrap.stderr",
+    "mechanical_seconds": 16.387819453142583
+  },
+  "worker_pid": 3831167,
+  "guardian_pid": 3831168,
+  "outer_return": {
+    "run_id": "pf_s04e011_profile_measure_c20_r1_hq_20261020",
+    "status": "MEASUREMENT_COMPLETE",
+    "outer_error": null,
+    "controller_pid": 3831143,
+    "reason": null,
+    "gate_opened": true,
+    "usage": {
+      "peak_tree_rss": 3391201280,
+      "latest": {
+        "peak_tree_rss": 0,
+        "task_bytes": 3818495697,
+        "telemetry": {
+          "monotonic": 5558835.159466101,
+          "cuda_state": "active",
+          "peak_rss_bytes": 3324559360,
+          "peak_task_bytes": 3818495563,
+          "peak_cuda_allocated": 10535014912,
+          "peak_cuda_reserved": 11957960704,
+          "error": null
+        },
+        "outer_tree_rss": 66641920,
+        "owned_external_bytes": 230
+      },
+      "gpu": {
+        "index": 5,
+        "uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+        "free_mib": 12164.0,
+        "utilization": 54.0,
+        "total_mib": 24564.0,
+        "required_initial_free_bytes": 21474836480,
+        "owned": [
+          {
+            "pid": 3831167,
+            "used_mib": 11908.0
+          }
+        ]
+      }
+    },
+    "worker_exit": 0,
+    "guardian_exit": 0,
+    "export_manifest_sha256": "7dca8ca1ca29ab82f529571cd1259f70a16ee7d5da3f362c374fafe33f95b6a0",
+    "postexit_files": [
+      {
+        "root": "run",
+        "path": "outer_guard.json",
+        "bytes": 348,
+        "sha256": "0f6c6883a922e2127279f2ea083d6fbe0a2c940dc301ee5ef7ee0ddb8f25b68e"
+      },
+      {
+        "root": "run",
+        "path": "outer_guard.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "root": "run",
+        "path": "outer_controller.log",
+        "bytes": 714,
+        "sha256": "bc5ea400d738f48742b8d6e6af1580f359e36f72376d38cbe1d6886eae7aa5f8"
+      }
+    ]
+  },
+  "retrieval": {
+    "remote_verified_entries": 621,
+    "remote_bytes": 3818496984,
+    "selected_bytes": 39385104,
+    "network_bytes": 29014169,
+    "hashes_verified": true,
+    "full_local_mirror": false
+  }
+}

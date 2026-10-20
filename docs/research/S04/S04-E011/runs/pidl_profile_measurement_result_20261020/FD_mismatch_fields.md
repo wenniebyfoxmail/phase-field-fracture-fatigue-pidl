@@ -1,0 +1,7 @@
+# Actual-profile and chart derivative mismatch fields
+
+How to read: A is actual NN fresh-current-basis/head-closed profile. B is only the fixed-T0 anchored chart field family, not an actual NN endpoint. Rows show original h=1e-6 and h/2=5e-7. Original free-DOF Qv-FD is mapped back into u/v node slots with prescribed increments zero; each cell shows RMS nodal vector magnitude. One common symlog scale, linear below1e-5, full mesh; no clipping or smoothing. The scalar test remains unweighted free-field L2, not this cell visualization.
+
+Data provenance: pf_s04e011_profile_measure_c20_r1_hq_20261020; source049f1cae, original frozen c20s4/FEMdamage/UV/B0, seed173. All plotted arrays are hash-verified saved measurement_audit NPYs. Geometry /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_probe/retrieved/root/inputs/c20_peak.npz SHA c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3. No fields, forces, gradients, energies, NN, AD or solves were recomputed. Remote full621entry manifest verification and partial-local retrieval are in retrieval_verification.json.
+
+Limitation: two finite steps and one direction do not identify an infinitesimal derivative or unique cause. A/B agreement must use vector-gap values in A_B.csv, not similar error norms alone. This is derivative-response mismatch, not FEM/PIDL solution error or optimization improvement; no new solution was accepted.

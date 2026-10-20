@@ -1,0 +1,7 @@
+# Existing native trace labels under actual A perturbations
+
+How to read: each cell is the number of its four Gauss points whose saved sign differs from the source for either + or - perturbation. Left h=1e-6, right h/2=5e-7; identical0-4 scale and full spatial extent. Hollow orange rings locate tiny changed cells; their marker size does not represent physical support area. Trace labels were observed at already-computed native energy evaluations; no new strain evaluation was performed for this plot. Zero sign, when present, remains distinct.
+
+Data provenance: pf_s04e011_profile_measure_c20_r1_hq_20261020; source049f1cae, original frozen c20s4/FEMdamage/UV/B0, seed173. All plotted arrays are hash-verified saved measurement_audit NPYs. Geometry /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_probe/retrieved/root/inputs/c20_peak.npz SHA c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3. No fields, forces, gradients, energies, NN, AD or solves were recomputed. Remote full621entry manifest verification and partial-local retrieval are in retrieval_verification.json.
+
+Limitation: spatial overlap between branch changes and derivative mismatch is a diagnostic association, not proof of a unique causal term. Source has no exact-zero trace GP, but finite steps can still cross a branch. Counts describe GP support; energy relevance and derivative-error norms use different measures. No scan of extra steps or directions and no changed physical split is included.
