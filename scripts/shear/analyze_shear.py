@@ -161,6 +161,8 @@ smoothing/clipping. Out-of-scale damage indicated by colorbar extensions.
 Interpretation: {'Matched-state numerical differences only; use the generated table/summary for magnitudes.' if common else 'Native FEM response only; no PIDL agreement has been measured.'}
 Limitations: one trajectory/seed, Q4/T3 quadrature and recovery differences;
 partial coverage cannot establish full-trajectory agreement or physical validity.
+Displacement discrepancy includes solver, discretization and reduction differences;
+identical nodal values can yield different Q4 nodal and T3 area means on distorted cells.
 ''')
     result=dict(native_states=len(fr),pidl_states=len(pr),joint_states=len(common),prescribed_states=len(mesh['schedule']),
         FEM_completed=(a.fem/'COMPLETED.txt').exists(),PIDL_completed=(a.pidl/'COMPLETED.txt').exists() if a.pidl else False,
@@ -180,6 +182,12 @@ means on each common parent cell. Errors use physical cell-area weights; the
 trajectory mean treats each jointly available state equally. All common states
 are retained; bounds/healing/residual violations are reported, not filtered to
 improve the score. Missing coverage cannot establish full-trajectory agreement.
+Displacement reduction uses Q4 nodal means versus area-weighted child T3 means.
+On distorted cells these can differ even for identical affine nodal fields;
+this is a combined field/discretization/reduction discrepancy, not pure NN error.
+A pre-output array check on the existing mesh with ux=.3(y+.5),uy=-.1x
+yielded a reduction-only vector MAE of4.79211645e-5 (not a learned-model result).
+
 Initial precrack is included; one cannot infer forward crack accuracy solely
 from a domain-average MAE. Nodal arrays remain available for process-zone work.
 
