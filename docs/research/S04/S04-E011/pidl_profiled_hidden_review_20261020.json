@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-20",
+  "reviewer": "independent /root/b0_route_inventory",
+  "scope": "exact-diff pure callback mathematics, toy fixtures, preparation note and disabled contract only",
+  "outcome": "PREPARATION_COMPONENT_ACCEPTED_NOT_PRODUCER_READY",
+  "reviewed_git_blobs": {
+    "tools/s04_e011_analysis/profiled_hidden_kernel.py": "d7b1c8120dcefcfdfcf77e28d0e48143acb3d190",
+    "tools/s04_e011_analysis/test_profiled_hidden_kernel.py": "f0629a425a681581ce2eb0cce0c9fa7c8cff0902",
+    "docs/research/S04/S04-E011/pidl_profiled_hidden_preparation_20261020.md": "90c4e525eeaa8e2dd79025fb68a4055935d28e5b",
+    "docs/research/S04/S04-E011/pidl_profiled_hidden_contract_20261020.json": "5451e13bdfb5ab7573da5f627b203d8ce6499cd1"
+  },
+  "checks": {
+    "independent_toy_tests": 15,
+    "independent_test_seconds": 0.04,
+    "owner_toy_tests": 15,
+    "owner_test_seconds": 0.07,
+    "py_compile": true,
+    "json_parse": true
+  },
+  "resolved": [
+    "finite derived scalars and nonfinite iteration tolerances fail closed",
+    "candidate energy numerical nonincrease distinguished from strict scientific energy gain",
+    "multidimensional moving-C profile and adjoint fixture added"
+  ],
+  "accepted_mathematics": [
+    "fixed-chart Q includes moving-feature C and its adjoint",
+    "Z physical metric not exact profiled Hessian",
+    "free DOF residual only",
+    "Q physical and parameter trust bounds",
+    "bounded local tangent primal-dual formula, numerical approximation scope explicit"
+  ],
+  "remaining": [
+    "real Phi/moving/SVD chart and branch derivative adapter",
+    "finite actual NN realization",
+    "callback and solve numerical errors",
+    "hard budget controller and attributable launcher",
+    "future separate execution authority"
+  ],
+  "scientific_results_generated": false,
+  "real_arrays_or_models_loaded": false,
+  "ssh": false,
+  "execution_enabled": false,
+  "producer_ready": false,
+  "test_command": "/Users/wenxiaofang/miniconda3/bin/python -m pytest -q tools/s04_e011_analysis/test_profiled_hidden_kernel.py"
+}
