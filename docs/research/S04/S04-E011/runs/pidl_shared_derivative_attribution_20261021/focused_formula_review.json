@@ -1,0 +1,12 @@
+{
+  "reviewer": "existing b0_route_inventory",
+  "scope": "once focused algebra-only, no new array/NN/physics/SSH/tests",
+  "verdict": "IFT derivation and central-offset distinction agreed",
+  "notes": [
+    "Q tangent to g=g0 through actual source if H invertible",
+    "g0!=0 is not exact g=0 profile source",
+    "constant field offset cancels in centered FD",
+    "saved source and fresh A0 projection gradients are distinct",
+    "actual H/Phi missing so actual condition bound not verified"
+  ]
+}

@@ -280,3 +280,8 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 ### 2026-10-20 PIDL c20 A/B profile机制测量完成
 
 新前瞻授权Run `pf_s04e011_profile_measure_c20_r1_hq_20261020`，源049f1cae，112.405秒完成A7/B4及一次Qv，无优化/历史提交。A/B FD向量差只占共同失配0.1572%/0.4331%，原门仍失败7.23/5.18倍；不支持移动SVD族是本方向主因，共有有限h/分支/数值影响未分清。原FEM/PIDL基准及旧R2失败保留。远端621项全核、本地200项部分取回核验；进程全退。见[runs/pidl_profile_measurement_result_20261020.md](runs/pidl_profile_measurement_result_20261020.md)。
+
+
+### 2026-10-21 PIDL c20共有导数本地归因
+
+源码IFT确认Q在非零g0源对应g=g0路径，而侧端测量求g≈0；C项存在。未证明此差异主导，H/factor/大Phi本地缺失，真实条件界未验；仍保留有限h/分支变化。只用保存小头数组，0producer/SSH/优化。见[runs/pidl_shared_derivative_attribution_20261021.md](runs/pidl_shared_derivative_attribution_20261021.md)。后续四臂真实比较为未授权提案。

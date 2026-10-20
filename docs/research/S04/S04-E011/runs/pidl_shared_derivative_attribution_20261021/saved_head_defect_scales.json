@@ -1,0 +1,38 @@
+{
+  "scope": "saved-only small head arrays and local filenames; zero producer evaluation",
+  "rows": [
+    {
+      "pair": "h",
+      "h": 1e-06,
+      "side_gradient_L2_plus": 1.1547016491666708e-14,
+      "side_gradient_L2_minus": 1.1707152201405122e-14,
+      "side_gradient_difference_over_2h_L2": 8.139465682590825e-09,
+      "minimum_common_BHinv_gain_if_all_B_mismatch_were_side_solver_defects": 812306.8633420536,
+      "head_z_signed_mean_L2": 2.917193084214992e-09,
+      "head_z_central_derivative_L2": 184.56845097198442,
+      "interpretation": "First-order triangle lower requirement on max ||B_side H_side^-1|| if this alone explained all field FD mismatch; NOT a measured gain or bound. Signed z mean mixes source correction and finite-h curvature; no unique attribution."
+    },
+    {
+      "pair": "half",
+      "h": 5e-07,
+      "side_gradient_L2_plus": 1.2937785229423698e-14,
+      "side_gradient_L2_minus": 1.1311423358889666e-14,
+      "side_gradient_difference_over_2h_L2": 1.824761801098535e-08,
+      "minimum_common_BHinv_gain_if_all_B_mismatch_were_side_solver_defects": 278811.72183562303,
+      "head_z_signed_mean_L2": 7.288568091671843e-10,
+      "head_z_central_derivative_L2": 184.56843968220576,
+      "interpretation": "First-order triangle lower requirement on max ||B_side H_side^-1|| if this alone explained all field FD mismatch; NOT a measured gain or bound. Signed z mean mixes source correction and finite-h curvature; no unique attribution."
+    }
+  ],
+  "local_H_factor_inventory": {
+    "local_physical_point_npz": false,
+    "H_or_factor_filenames": []
+  },
+  "source_chart_g_inf": 3.3665696098916786e-11,
+  "fresh_A_zero_g_inf": 8.272852997266711e-11,
+  "CPU_seconds": 0.027717000000000002,
+  "wall_seconds": 0.03131254203617573,
+  "peak_RSS_bytes_macos": 32423936,
+  "threads": 1,
+  "NN_AD_JVP_VJP_physics_tangent_SVD_solve_SSH": 0
+}

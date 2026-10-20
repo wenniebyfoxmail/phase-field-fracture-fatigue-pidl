@@ -1,0 +1,20 @@
+{
+  "scope": "saved-only local source derivation and 4 small B head array groups; no producer recurrence",
+  "started_UTC": "2026-10-20T23:02:56+00:00",
+  "precommit_close_UTC": "2026-10-20T23:05:54.812651+00:00",
+  "whole_wall_seconds_through_precommit": 178.812651,
+  "wall_cap_seconds": 300,
+  "deadline_UTC": "2026-10-20T23:07:56+00:00",
+  "array_script_wall_seconds": 0.03131254203617573,
+  "array_script_CPU_seconds": 0.027717,
+  "whole_task_CPU_seconds": "UNKNOWN_not_zero",
+  "cumulative_disk_read_bytes": "UNKNOWN",
+  "threads_for_new_array_work": 1,
+  "peak_array_script_RSS_bytes": 32423936,
+  "generated_compact_bytes_before_closeout": 12508,
+  "added_bytes_cap": 104857600,
+  "prior_whole_task_seconds": 1555.63,
+  "prior_science_seconds": 112.40508187562227,
+  "new_NN_AD_JVP_VJP_force_tangent_SVD_solve_SSH_GPU_runs": 0,
+  "next_real_comparison_authorized": false
+}
