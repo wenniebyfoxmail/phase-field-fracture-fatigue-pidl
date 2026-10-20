@@ -1,0 +1,123 @@
+{
+  "verdict": "MODIFY_AND_REREVIEW",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-20T08:46:02.721114+00:00",
+  "scope": "independent read-only exact Linux-validation ENTRY/CARD static review; actual validation not executed",
+  "commit": "f7874240a8c1eb70cf0ca3b6cbbf4604b54aedfb",
+  "artifact_id": "cf5dcb6fec677f4a319693df4f70900b07c5d0bd3175d7498699ed05e0fbc724",
+  "card_sha256": "b5db767b2afa66bf9039972a344f5b8779a5c73e843a05d5a7ac11dfb1a133a2",
+  "manifest_sha256": "da408f5c660aed596989195924479e3d37dda3742fe169822242834e9fc3aa53",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "052be2e0dfc97f4b6a81590989efc56740e4c4bab27b8c1ebdcdca4feb9fe03f",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "fa04844aa4afdeeaa75478508e49469cf72081e1126216216389c0f45db1043c",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "81f3f46d3c3c55c806258636cff3915cbb8ae5859dca4bf20a0634152b832549",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "c8beb6d8a2543de8d9d929da3eef93fdbf239600e7f45f95121ae3865668f97f",
+    "tools/run_hybrid_producer.py": "9129fbeb8f090bd0408118091cba70eeb248bad6b92cef315f2933573409cca5",
+    "tools/inspect_hybrid_run.py": "2ab909a462f147123a3eeb61a92b687c6223d3bc7e53f8ef6c1182cb6cbb5496",
+    "tests/test_hybrid_incremental.py": "c787673a144dbb49835a79c698bb097039b9badabfb9070d89e0fcda96462490",
+    "tests/test_hybrid_producer.py": "af2c91c806defeba992eca7f29f155bf809663abf6e57d7d05007dd36e218325",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "e0bdc3e911aea98ebda023d582f4822850f4b4cfce1c0f737d31e1110bd82101",
+    "tools/launch_hybrid_detached.py": "fb515b236551d441b4cfb11667c200dff61999b4c4119b965a9caac861e47730",
+    "source/hybrid_kinematics.py": "06197c9a1f02cb725f42903834301ba6265c80e8d0218672b8fa8463e45edfef",
+    "tools/canonicalize_hybrid_inputs.py": "e23a12b4d6cce6dd4560f06f5fc395c7bfafb9440b0119670b3b6d7db9bda643",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+    "source/hybrid_mechanics.py": "b7476d06c244e914c692b0edac19083159f3836d5b9e1b9bf37a6e37fff15507",
+    "source/hybrid_work_trace.py": "b33c6bc48126b22748d6c3f4fa0f7d87d1f790535ed4b11fde218c391a09c805",
+    "source/hybrid_guard_client.py": "7daedb716f1e1328fa61070b04407f57a82ed6169906bcb6c0af441931d14e50",
+    "source/hybrid_diagnostics.py": "a66496828f9c16ecdf97162a960773314915afbf9586ebc1c17335aa342034ee",
+    "tools/hybrid_deadline_guard.py": "f10160e58d14c48ddd4475cf9dcd9b6056bb5351458c9c5518523fc8cf0f5575",
+    "tests/test_hybrid_performance.py": "2fb8c479650ea6f679bd57ba78ee0ef4d628bbcba8a81b7a9d5d9261869dbe64",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_card_v1.json": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v1.md": "4229cb8cf5fe66479852435e0d1b9d54a30a858cd086ad7954c91a6d476c0e54",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v2.md": "8fa98ab0796913fe6db3ecfac7a1c67a4ad507bb46fda442fb428eb1d4688ddc",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v3.md": "649d141b02663f96d1a25acc6d02a21b24ddef1e97f415dca84fe3ad03a1cb6e",
+    "tools/validate_hybrid_linux.py": "500d89ab5c355c740e835cc1f11af44da94c98296700ff8b11e895c2f4de19a1",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_validation_card_v3.json": "b5db767b2afa66bf9039972a344f5b8779a5c73e843a05d5a7ac11dfb1a133a2"
+  },
+  "findings": [
+    {
+      "id": "V1_CLEANUP",
+      "priority": "P1",
+      "file": "tools/validate_hybrid_linux.py",
+      "lines": [
+        49,
+        78
+      ],
+      "title": "Independently clean owned descendants when the parent-death test fails",
+      "problem": "parent_death kills its parent then relies on the mechanisms under test to stop worker/guardian. Unexpected survivors are only reported; finally handles only parent, with TERM/wait but no KILL fallback. Startup-timeout/driver interruption can also leave already spawned descendants. A failed cleanup test must not leave its benign owned tasks running.",
+      "artificial_reproduction": "FakePopen parent999; recorded worker1001 andguardian1002 remain running. Function returns passedfalse/worker_runningtrue/guardian_runningtrue; recorded cleanup action is only kill999. No real process or Linux operation performed.",
+      "required": "Bind own descendants before deliberate parent death via pidfds or equivalent verified identity; independent finally TERM/KILL/reap/status check for parent/worker/guardian on success/failure/startup/driver interruption. Preserve observed testFAIL even if fallback cleanup succeeds; never broaden kills to unrelated processes."
+    },
+    {
+      "id": "V2_TOTAL_DEADLINE",
+      "priority": "P1",
+      "file": "tools/validate_hybrid_linux.py",
+      "lines": [
+        109,
+        160
+      ],
+      "title": "Protect the whole validation driver with an independent deadline controller",
+      "problem": "1800s total is a Python SIGALRM raising an exception in the same driver. full_mesh performs NumPy/SciPy assembly/norm and fileIO directly in that process, so Python signal handling can be delayed until native/blocked operations return. Imports and output-root creation also precede timer start. The guarded cost worker does not provide an independent deadline for this whole driver.",
+      "required": "Freeze an independent outer owned-process deadline wrapper for the complete driver lifecycle, reserve cleanup/reporting within1800s, propagate stops/parent death, and charge actual full wall/cost. In-process alarm may remain as a secondary cooperative check. Test outer timeout/exception with harmless substitutions; reviewer does not perform actual Linux admission."
+    },
+    {
+      "id": "V3_BINDING",
+      "priority": "P2",
+      "file": "tools/validate_hybrid_linux.py",
+      "lines": [
+        115,
+        147
+      ],
+      "title": "Bind the supplied validation card/root and fixed five-step allowance before work",
+      "problem": "verify_package verifies code-local frozen files but supplied a.card is only recorded, not compared with the manifest validation-card hash. validation_permitted/execution_enabled and root==validation_contract.root are not enforced. A different CLI card can change base_load_cycle and lead the cost worker to more than5 updates before the final summary.states==5 check. An arbitrary fresh root can also collide with the prospective production namespace.",
+      "required": "Before root mutation or numerical imports, verify actual supplied card against frozen manifest card SHA, validation-permitted/execution-disabled authority, exact isolated root, canonical input/state identities, fixed original5load cycle*.8 and5step cap. Fail before any scientific work on altered card/root; no post-run-only cap enforcement."
+    },
+    {
+      "id": "V4_CPU_ENV",
+      "priority": "P2",
+      "file": "tools/validate_hybrid_linux.py",
+      "lines": [
+        111,
+        147
+      ],
+      "title": "Set the shared CPU/thread/zero-GPU policy before first numerical import",
+      "problem": "main imports hybrid_inputs->NumPy/SciPy before host_admission sets calling-thread affinity. Already created BLAS threads can retain the old affinity. Cost/helper env inherits shell settings and does not set the formal runner OMP/OPENBLAS/MKL/NUMEXPR16, CUDA_VISIBLE_DEVICES empty or runlocal temp/cache policy. Thus the requested shared<=16core and matched actual-worker cost environment are not established by this entry.",
+      "required": "Pure-stdlib startup must set thread env,0CUDA, shared16core affinity and attributed temp/cache before any numerical imports/process pools, then propagate identical CPU-worker settings to helpers/cost worker. Record actual settings and apply to relevant threads if inherited runtime already exists. No GPU admission/run needed for this fix."
+    }
+  ],
+  "checks": {
+    "exact_git_file_hashes_verified": 41,
+    "canonical_artifact_verified": true,
+    "previous_39_file_hashes_identical": true,
+    "old_tests_reused": "Previous exact5bb17214 preparation review61artificial tests passed; unchanged39files verified, not rerun in this entry-only review.",
+    "new_artificial_check": "Only stdlib/import substitution of parent_death failure using fake Popen/psutil/time and temporary JSON; confirms reported survivors receive no fallback cleanup. No actual child, real Linux call or scientific array."
+  },
+  "positive_checks": [
+    "Success/missing-done/real120s/parent-death are separated as expected control cases; cost-cycle phase is one original5load cycle*.8, previous initializer, rolelabels, separate output/archive and no fit invocation.",
+    "Full-grid comparison formulas are explicitly relative sparse Frobenius matrix difference and absolute infinity force difference at original1e-10; original saved five-state replay retained. No solve occurs in this parity function.",
+    "Cost-cycle uses exact reviewed worker/commit/labelIO and retained per-step120s. Numeric failures propagate and no retry or partial fit path added.",
+    "Card execution_enabledfalse and authorityvalidation_permittedtrue distinguish validation from future production, but V3 must enforce them in entry. Budget text keeps validation5extra steps separate and charges all costs to136hosth; actual formal budget deduction is a later exact execution-card obligation."
+  ],
+  "runtime_status": "NOT_EXECUTED_NOT_VALIDATED",
+  "limits": [
+    "NoSSH/profile/preflight/real arrays/model/holdout, real-state solve, training, producer launch or retry by reviewer.",
+    "Unchanged v3 preparation/library findings carry forward; this MODIFY concerns the new entry lifecycle/budget/isolation, not scientific physics or new model failure.",
+    "No readiness, parity, actual cost or cleanup success on Linux is established. Do not launch f787 validation until corrected exact entry/wrapper/card review."
+  ]
+}

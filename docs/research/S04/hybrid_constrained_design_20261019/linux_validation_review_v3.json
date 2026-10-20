@@ -1,0 +1,112 @@
+{
+  "verdict": "REVIEW_PASS",
+  "scope_verdict": "EXACT_BOUNDED_LINUX_VALIDATION_ENTRY_AND_CARD_STATIC_REVIEW_PASS",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-20T08:51:31.932734+00:00",
+  "commit": "f0f405aadddfc670024f668fb688a03e2c5d13de",
+  "artifact_id": "081597e78db0da8fabda9534533c8549b1d8634e57c73c606943bb3ed911030e",
+  "card_sha256": "8b32f18b9c8155dba4ea9d7957d2bffc5ded9c5eff27df53023407cad94a37ee",
+  "manifest_sha256": "930a24a7aeddae79be1599dae7951555990a63b4b12da0d93df0d50d81f0ed2c",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "052be2e0dfc97f4b6a81590989efc56740e4c4bab27b8c1ebdcdca4feb9fe03f",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "fa04844aa4afdeeaa75478508e49469cf72081e1126216216389c0f45db1043c",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "81f3f46d3c3c55c806258636cff3915cbb8ae5859dca4bf20a0634152b832549",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "c8beb6d8a2543de8d9d929da3eef93fdbf239600e7f45f95121ae3865668f97f",
+    "tools/run_hybrid_producer.py": "ccaace5f4646d32fd1ac1f1543a06939c273cf8ccbfa2fc2e797a3b75d521d01",
+    "tools/inspect_hybrid_run.py": "2ab909a462f147123a3eeb61a92b687c6223d3bc7e53f8ef6c1182cb6cbb5496",
+    "tests/test_hybrid_incremental.py": "c787673a144dbb49835a79c698bb097039b9badabfb9070d89e0fcda96462490",
+    "tests/test_hybrid_producer.py": "88d3f37cba7a7046c72c5f6c1dd557bc0af8899f45f2f9035c0ccd120df851b6",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "e0bdc3e911aea98ebda023d582f4822850f4b4cfce1c0f737d31e1110bd82101",
+    "tools/launch_hybrid_detached.py": "fb515b236551d441b4cfb11667c200dff61999b4c4119b965a9caac861e47730",
+    "source/hybrid_kinematics.py": "06197c9a1f02cb725f42903834301ba6265c80e8d0218672b8fa8463e45edfef",
+    "tools/canonicalize_hybrid_inputs.py": "e23a12b4d6cce6dd4560f06f5fc395c7bfafb9440b0119670b3b6d7db9bda643",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+    "source/hybrid_mechanics.py": "b7476d06c244e914c692b0edac19083159f3836d5b9e1b9bf37a6e37fff15507",
+    "source/hybrid_work_trace.py": "b33c6bc48126b22748d6c3f4fa0f7d87d1f790535ed4b11fde218c391a09c805",
+    "source/hybrid_guard_client.py": "7daedb716f1e1328fa61070b04407f57a82ed6169906bcb6c0af441931d14e50",
+    "source/hybrid_diagnostics.py": "a66496828f9c16ecdf97162a960773314915afbf9586ebc1c17335aa342034ee",
+    "tools/hybrid_deadline_guard.py": "f10160e58d14c48ddd4475cf9dcd9b6056bb5351458c9c5518523fc8cf0f5575",
+    "tests/test_hybrid_performance.py": "0a356f0886ac14dd0309739954bd1072ce4200d2ac0a28b36db2d46bd9c20cdd",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_card_v1.json": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v1.md": "4229cb8cf5fe66479852435e0d1b9d54a30a858cd086ad7954c91a6d476c0e54",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v2.md": "8fa98ab0796913fe6db3ecfac7a1c67a4ad507bb46fda442fb428eb1d4688ddc",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v3.md": "649d141b02663f96d1a25acc6d02a21b24ddef1e97f415dca84fe3ad03a1cb6e",
+    "tools/validate_hybrid_linux.py": "98dd3788b7a8764128f48a63d10082512656b15933bbfd08cb58eca6dd6a9859",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_validation_card_v3.json": "8b32f18b9c8155dba4ea9d7957d2bffc5ded9c5eff27df53023407cad94a37ee",
+    "tools/launch_hybrid_validation.py": "7772c715cdb2ea7f8824974d637f5037d8afe5f45461eb039cab26577be9ab4e"
+  },
+  "prior_reviews": {
+    "linux_validation_review_v1.json": "6a091d1f9f5377bfaa0c65bf63bb81f23b91a1d162c4312e55601b6bdf4290e9",
+    "linux_validation_review_v2.json": "710fad6f9c9ba41a7038bbc9a0790c02adc16fe8ee971135cd0dc133318a0de8"
+  },
+  "decisive_blockers": [],
+  "findings": [],
+  "checks": {
+    "verified_exact_files": 42,
+    "canonical_artifact_verified": true,
+    "card_hash_verified": "8b32f18b9c8155dba4ea9d7957d2bffc5ded9c5eff27df53023407cad94a37ee",
+    "immutable_git_export": true,
+    "test_command": "PYTHONPATH=source:tools:.:tests <existing dev venv>/bin/python -m pytest -q tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py tests/test_hybrid_performance.py",
+    "artificial_tests_passed": 65,
+    "test_wall_seconds": 3.23,
+    "exit_code": 0,
+    "extra_artificial_interface": "Mocked run_owned_worker only: launcher gives monitorrootouter and archiveactualdriverroot, selects outer-worker, subtracts10s simulated setup from1800 to1790. No actual child/controller or scientific work."
+  },
+  "resolved": [
+    {
+      "id": "V1_CLEANUP",
+      "status": "RESOLVED_STATIC_CARRIED_FORWARD",
+      "evidence": "Own benign descendants are pidfd-bound while attributed to test parent; TEST observation is captured before fallback cleanup and not promoted by successful cleanup. Finally independently signals/waits owned identities, closes descriptors and handles startup/parent cleanup. Actual kernel/PDEATH behavior is the proposed validation target, not already proved."
+    },
+    {
+      "id": "V2_TOTAL_AND_STORAGE",
+      "status": "RESOLVED_STATIC",
+      "evidence": "Outer launcher uses independently controlled owned driver with1800 minus elapsed setup and inherited45s cleanup reserve. Monitor stays in control root; attributed storage archive target is real driver root. Nested driver/helper/parent-only parent-death/gate chain is present. Old cooperative SIGALRM is secondary, not sole deadline."
+    },
+    {
+      "id": "V2_BYPASS",
+      "status": "RESOLVED_STATIC",
+      "evidence": "Normal validation main now rejects absent outer_worker before card/root/numerical work. __main__ installs parent safeguard/gate for outer-worker; benign helper/parent-only remain explicitly separate. Negative bare-driver regression passes."
+    },
+    {
+      "id": "V3_BINDING",
+      "status": "RESOLVED_STATIC_CARRIED_FORWARD",
+      "evidence": "Pure-stdlib verify_contract enforces manifest/card/source hashes, validation permission with executionfalse, isolated root and original5load/120s/1800s/5extra/1e-10 contract before numerical imports/root/work."
+    },
+    {
+      "id": "V4_CPU_ENV",
+      "status": "RESOLVED_STATIC_CARRIED_FORWARD",
+      "evidence": "CPU affinity/OMP/BLAS16,emptyCUDA and attributedtmp/cache are set before numerical imports in outer and driver; children inherit policy. Actual Linux affinity/thread behavior remains runtime evidence pending."
+    }
+  ],
+  "new_budget_api": {
+    "status": "STATIC_AND_ARTIFICIAL_ARITHMETIC_REVIEW_ONLY",
+    "evidence": "initial_totals verifies actual outer receipt SHA/PASS, finite/bounded wall/CPU/numerical,0GPU and5diagnostic limit, matches frozen declared wall/CPU, shifts start_monotonic by charged prewall and initializes numerical/shared/CPU counters. Formal outcome offline cost includes validation wall; final total distinguishes producer wall and complete charged study wall. Tampered SHA and failed receipt regressions reject.",
+    "execution_scope": "Not called by current validation. The future enabled production card must bind exact actual receipts and verify the declared numerical/shared split from cost-cycle evidence; current API arithmetic checks do not establish actual costs or approve3600-step production."
+  },
+  "allowed_scope": "Static code/card review passes for the already authorized one bounded validation: benign real-control tests, five-seen-field parity/replay and one separate own-history5substep cost cycle; no fit/test/holdout or training-data reuse. This receipt does not assert actual Linux success and does not admit the future full production run.",
+  "runtime_status": "PENDING_ACTUAL_VALIDATION_NO_REVIEWER_EXECUTION",
+  "limits": [
+    "NoSSH, actualLinux/pidfd controller, profile/preflight, realscientificarray/model/holdout, real-state solve, training or producer/retry executed by reviewer.",
+    "Linux control/cleanup/RAM/storage/thread behavior, full-grid cached/legacy parity, actual cycle costs and120s feasibility remain unverified until the authorized exact validation runs.",
+    "Expected negative controls must match reason and clean termination; first unexpected control/numeric/time failure stops whole package with no retry/resume/threshold change. Retain failed evidence and all actual cost.",
+    "All validation costs including outer control/cleanup must be charged to136hosth/2176coreh,5diagnostic steps recorded separately from3600formal steps; these states/features/cache are not formal training data.",
+    "After actual validationPASS, future exact enabled production source/card/review must bind identities, actual cost receipt/split and remaining budget plus live runtime/resource admission. No validation staticPASS is a runtimePASS or scientific improvement/acceleration result."
+  ]
+}

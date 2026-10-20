@@ -1,0 +1,57 @@
+{
+  "status": "FAILED_CONTROL_CLASSIFICATION_NO_SCIENTIFIC_WORK",
+  "source_commit": "f0f405aadddfc670024f668fb688a03e2c5d13de",
+  "artifact_id": "081597e78db0da8fabda9534533c8549b1d8634e57c73c606943bb3ed911030e",
+  "card_sha256": "8b32f18b9c8155dba4ea9d7957d2bffc5ded9c5eff27df53023407cad94a37ee",
+  "actual_wall_seconds": 126.05925788823515,
+  "actual_cpu_seconds": 19.522582,
+  "gpu_seconds": 0,
+  "numerical_substeps": 0,
+  "training_updates": 0,
+  "full_mesh_entered": false,
+  "controls": [
+    {
+      "mode": "success",
+      "passed": true,
+      "wall_seconds": 1.074906556867063
+    },
+    {
+      "mode": "incomplete",
+      "passed": true,
+      "wall_seconds": 1.0961468704044819
+    },
+    {
+      "mode": "hang",
+      "passed": true,
+      "wall_seconds": 121.0029203929007
+    }
+  ],
+  "parent_death": {
+    "passed": false,
+    "parent_pid": 2197197,
+    "worker_pid": 2197228,
+    "guardian_pid": 2197229,
+    "observed_running": {
+      "2197228": false,
+      "2197229": false
+    },
+    "guard": {
+      "status": "deadline_or_control_stop",
+      "reason": "incomplete step completion at worker exit",
+      "active": {
+        "step": 1,
+        "started": 5508555.022892996,
+        "deadline": 5508675.022892996
+      },
+      "last_step": 1,
+      "started": 5508555.017958703,
+      "finished": 5508555.047320245,
+      "worker_pid": 2197228
+    },
+    "fallback_cleanup_pids": []
+  },
+  "failure": "actual parent-death control failed",
+  "raw_admission_sha256": "65a69a5bb992d7e30041bb77a3190fa07e43595eef08a1bea5a3defced3ebb7f",
+  "raw_total_sha256": "398ccae8cce6da3d97388aea9909fafef60ee7d957a28f5cb63aa36714fc909d",
+  "subsequent_repair": "b6aac518; bounded1s already-exited-worker observation review; static reviewv4 PASS; preserves this FAIL and charges cumulative costs"
+}

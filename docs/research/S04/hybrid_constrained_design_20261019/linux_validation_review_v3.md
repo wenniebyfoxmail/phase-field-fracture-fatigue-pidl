@@ -1,0 +1,13 @@
+# Linux validation review v3
+
+REVIEW_PASS — exact bounded validation entry/card static scope only. Actual Linux validation remains pending.
+
+Commit `f0f405aadddfc670024f668fb688a03e2c5d13de`; artifact `081597e78db0da8fabda9534533c8549b1d8634e57c73c606943bb3ed911030e`; actual validation-card SHA `8b32f18b9c8155dba4ea9d7957d2bffc5ded9c5eff27df53023407cad94a37ee`.42 exact git-object hashes and canonical artifact match. Exact-export65artificial checks passed in3.23s, exit0. Additional mocked launcher interface confirms actual driver-output tree scanning, outer-worker selection and10s simulated setup deducted to1790s. No actual child/controller/scientific action was used in that control.
+
+The v2 residuals are closed: outer monitor stays under control while archive scanning covers a.root; normal bare driver is rejected before work and outer-worker requires inherited death/gate contract; guarded phase allowance deducts elapsed setup before the unchanged45s reserve. Earlier exact-card/root/load binding, CPUenv-before-import and pidfd-bound fallback cleanup with retained precleanup test verdict remain. Parent-death mechanism is still a runtime test target, not independently proved by this source review.
+
+New initial_totals has receipt SHA/PASS/finite/0GPU/5step/total arithmetic checks, initializes global/shared/numerical/CPU precharges and includes validation in offline cost. Artificial tamper/failed-receipt/budget regressions pass. This API is not invoked by validation; future enabled production review must bind actual outer/inner receipts and verify the numerical/shared cost split, remaining budget and exact identities. No current numerical cost or full3600step readiness is inferred.
+
+No decisive finding remains for the authorized bounded validation entry/card. Permitted validation remains four benign control cases, five existing saved-state full-grid parity/replay at1e-10 and one separate original5load*.8 own-history cost cycle with perstep120s/total1800s,0GPU/no fit. Unexpected failures stop the whole package; no retry/resume/criterion change. Diagnostic5steps and all actual costs are separate and charged; artifacts/cache cannot enter formal training.
+
+Reviewer performed no SSH, actualLinux/profile/preflight, real arrays/model/holdout, real-state solve, training or retry. Runtime/controller/parity/cost success remains pending. Future full producer needs actual evidence plus exact enabled card/source/cost/live admission review; this receipt is neither that production admission nor scientific field/speed improvement evidence. Prior v1/v2 MODIFY receipts are preserved.

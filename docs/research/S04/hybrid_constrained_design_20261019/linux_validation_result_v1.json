@@ -1,0 +1,529 @@
+{
+  "status": "TRUE_COST_VALIDATION_FAILED_AT_STEP2_120S_NO_FULL_LAUNCH",
+  "source_commit": "b6aac5189b58b97635d9567995fd7d24ebcaf98f",
+  "artifact_id": "8a6ce3f94a43a3678d64e0134b98426df9dd124b9a90fb356e9f58604e670a6b",
+  "card_sha256": "28df57581a581a8f2c9433a1bcdedbdbf77df072326e92248b2af7049717b973",
+  "controller_cases": [
+    {
+      "mode": "success",
+      "passed": true,
+      "wall_seconds": 1.0765846939757466
+    },
+    {
+      "mode": "incomplete",
+      "passed": true,
+      "wall_seconds": 1.0981402732431889
+    },
+    {
+      "mode": "hang",
+      "passed": true,
+      "wall_seconds": 120.9262187294662
+    }
+  ],
+  "parent_death": {
+    "passed": true,
+    "parent_pid": 2207784,
+    "worker_pid": 2207815,
+    "guardian_pid": 2207816,
+    "observed_running": {
+      "2207815": false,
+      "2207816": false
+    },
+    "guard": {
+      "status": "deadline_or_control_stop",
+      "reason": "supervisor exited",
+      "active": {
+        "step": 1,
+        "started": 5509182.568045914,
+        "deadline": 5509302.568045914
+      },
+      "last_step": 1,
+      "started": 5509182.547639108,
+      "finished": 5509182.595738746,
+      "worker_pid": 2207815,
+      "observations": {
+        "worker_exit_observed_at": 5509182.592835594,
+        "supervisor_exit_observed_at": 5509182.595707376,
+        "exit_review_seconds": 1.0,
+        "exit_review_deadline": 5509183.592835594,
+        "pending_step_at_exit": {
+          "step": 1,
+          "started": 5509182.568045914,
+          "deadline": 5509302.568045914
+        }
+      }
+    },
+    "fallback_cleanup_pids": []
+  },
+  "full_mesh": {
+    "passed": true,
+    "rows": [
+      {
+        "step": 1,
+        "matrix_relative_frobenius": 1.156851547412751e-16,
+        "force_absolute_inf": 4.163336342344337e-17,
+        "passed": true,
+        "wall_seconds": 0.9858538387343287
+      },
+      {
+        "step": 2,
+        "matrix_relative_frobenius": 1.1568896050709024e-16,
+        "force_absolute_inf": 8.326672684688674e-17,
+        "passed": true,
+        "wall_seconds": 1.0762448804453015
+      },
+      {
+        "step": 3,
+        "matrix_relative_frobenius": 1.1571356597412362e-16,
+        "force_absolute_inf": 1.1796119636642288e-16,
+        "passed": true,
+        "wall_seconds": 1.0343547808006406
+      },
+      {
+        "step": 4,
+        "matrix_relative_frobenius": 1.1576502218485186e-16,
+        "force_absolute_inf": 1.6653345369377348e-16,
+        "passed": true,
+        "wall_seconds": 1.0006239200010896
+      },
+      {
+        "step": 5,
+        "matrix_relative_frobenius": 1.1576755678455357e-16,
+        "force_absolute_inf": 1.1044052673094165e-29,
+        "passed": true,
+        "wall_seconds": 0.9485023021697998
+      }
+    ],
+    "tolerance": 1e-10,
+    "replay": {
+      "schema": "hybrid-native-operator-replay-v1",
+      "rows": [
+        {
+          "step": 1,
+          "errors": {
+            "raw": 5.2651134320458315e-14,
+            "force": 2.992397996059992e-17,
+            "damage": 1.0842021724855044e-18,
+            "A": 5.2651134320458315e-14,
+            "r": 5.2651134320458315e-14,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.2723260074853897
+        },
+        {
+          "step": 2,
+          "errors": {
+            "raw": 4.370520872293282e-13,
+            "force": 8.413408858487514e-17,
+            "damage": 1.5178830414797062e-18,
+            "A": 1.7363866421093999e-13,
+            "r": 3.210304516812419e-13,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.3042803965508938
+        },
+        {
+          "step": 3,
+          "errors": {
+            "raw": 1.1280056749773948e-12,
+            "force": 1.1535911115245767e-16,
+            "damage": 3.903127820947816e-18,
+            "A": 6.346941201773593e-13,
+            "r": 7.772290617562634e-13,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.317978035658598
+        },
+        {
+          "step": 4,
+          "errors": {
+            "raw": 1.5839627244378096e-12,
+            "force": 1.700029006457271e-16,
+            "damage": 4.336808689942018e-18,
+            "A": 1.5839627244378096e-12,
+            "r": 1.5839627244378096e-12,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.3044406538829207
+        },
+        {
+          "step": 5,
+          "errors": {
+            "raw": 1.0021089340760001e-36,
+            "force": 2.953298013921163e-29,
+            "damage": 1.0842021724855044e-18,
+            "A": 0.0,
+            "r": 6.453764155355805e-39,
+            "f": 0.0
+          },
+          "passed": true,
+          "wall_seconds": 1.2902306029573083
+        }
+      ],
+      "passed": true,
+      "tolerance": 1e-10,
+      "inputs_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c",
+      "state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+      "total_wall_seconds": 8.669106497429311,
+      "new_fem_solves": 0,
+      "training_updates": 0,
+      "scope": "known five c1 saved fields; coefficient/DOF/GP/accepted-base map parity only; no convergence/label promotion",
+      "source_identity": "native saved MEX outputs and captured source/binary manifest; not live Fortran byte identity"
+    },
+    "workspace_array_bytes": 412015592,
+    "wall_seconds": 16.110732819885015,
+    "new_fem_solves": 0,
+    "training_updates": 0
+  },
+  "first_accepted": {
+    "step": 1,
+    "wall_seconds": 38.73324868828058,
+    "outer": 2,
+    "state_id": "d3fcdb2716521c83b11113c72c89c13b27dd8385b7049898cd5a45305e2158cc",
+    "damage": {
+      "operator_id": "1bf00b00449d6f3e2ff0cd3c3ba411d10b341fdbd35e6fcaa11c719c9bf5648c",
+      "primal_inf": 0.0,
+      "kkt_scaled_inf": 1.479868876932758e-08,
+      "kkt_l2": 1.4799524972932475e-07,
+      "projected_inf": 1.4798688718897779e-08
+    },
+    "fatigue_residual": 0.0,
+    "mechanics": {
+      "force_inf": 8.933825901280557e-17,
+      "force_l2": 2.346223725610354e-15,
+      "force_scaled": 8.933825901280557e-17,
+      "boundary_inf": 0.0
+    },
+    "reference_R1_step1_seconds": 56.95242438558489,
+    "observed_step1_reduction": 0.3199016704531322
+  },
+  "cost_cycle_failure": {
+    "peak_rss_bytes": 3691884544,
+    "peak_gpu_mib": null,
+    "rss_observed": true,
+    "gpu_observed": false,
+    "rss_sample_count": 155,
+    "gpu_sample_count": 0,
+    "gpu_status": "not_applicable",
+    "last_rss_sample_monotonic": 5509359.415522649,
+    "storage": {
+      "primary_bytes": 1229,
+      "archive_bytes": 45728177
+    },
+    "last_sample_monotonic": 5509359.415535859,
+    "last_primary_storage_sample_monotonic": 5509354.143953925,
+    "last_archive_storage_sample_monotonic": 5509354.144306696,
+    "stop_reason": "worker exit -15",
+    "termination_seconds": 6.319954991340637e-06,
+    "deadline_guard": {
+      "status": "deadline_or_control_stop",
+      "reason": "physical-substep120s deadline",
+      "active": {
+        "step": 2,
+        "started": 5509240.119581253,
+        "deadline": 5509360.119581253
+      },
+      "last_step": 2,
+      "started": 5509198.80760398,
+      "finished": 5509360.283718441,
+      "worker_pid": 2208264,
+      "observations": {
+        "worker_exit_observed_at": null,
+        "supervisor_exit_observed_at": null,
+        "exit_review_seconds": 1.0,
+        "exit_review_deadline": null,
+        "pending_step_at_exit": null
+      }
+    },
+    "wall_seconds": 161.65124394372106
+  },
+  "trace": {
+    "completed": [
+      {
+        "step": 1,
+        "kind": "mechanical.assembly",
+        "count": 6,
+        "seconds": 2.5385473454371095
+      },
+      {
+        "step": 1,
+        "kind": "mechanical.factorization",
+        "count": 3,
+        "seconds": 17.7829744014889
+      },
+      {
+        "step": 1,
+        "kind": "mechanical.linear_solve",
+        "count": 6,
+        "seconds": 0.7934004906564951
+      },
+      {
+        "step": 1,
+        "kind": "mechanical.fresh_assembly",
+        "count": 3,
+        "seconds": 2.50670696888119
+      },
+      {
+        "step": 1,
+        "kind": "common_mechanics_predictor",
+        "count": 1,
+        "seconds": 8.90750752389431
+      },
+      {
+        "step": 1,
+        "kind": "prediction_features",
+        "count": 1,
+        "seconds": 0.06574266217648983
+      },
+      {
+        "step": 1,
+        "kind": "trial_history",
+        "count": 2,
+        "seconds": 0.11312350165098906
+      },
+      {
+        "step": 1,
+        "kind": "damage_assembly",
+        "count": 2,
+        "seconds": 1.0387717466801405
+      },
+      {
+        "step": 1,
+        "kind": "damage_qp",
+        "count": 2,
+        "seconds": 6.0430702697485685
+      },
+      {
+        "step": 1,
+        "kind": "mechanics_re_equilibration",
+        "count": 2,
+        "seconds": 18.01201093196869
+      },
+      {
+        "step": 1,
+        "kind": "final_trial_history",
+        "count": 2,
+        "seconds": 0.08018643595278263
+      },
+      {
+        "step": 1,
+        "kind": "fresh_final_damage_assembly",
+        "count": 2,
+        "seconds": 1.0163431726396084
+      },
+      {
+        "step": 1,
+        "kind": "fresh_final_kkt",
+        "count": 2,
+        "seconds": 0.007235976867377758
+      },
+      {
+        "step": 1,
+        "kind": "fresh_final_force",
+        "count": 2,
+        "seconds": 1.6215398292988539
+      },
+      {
+        "step": 1,
+        "kind": "durable_commit",
+        "count": 1,
+        "seconds": 0.11377729568630457
+      },
+      {
+        "step": 1,
+        "kind": "snapshot_save",
+        "count": 1,
+        "seconds": 0.006535837426781654
+      },
+      {
+        "step": 1,
+        "kind": "label_features",
+        "count": 1,
+        "seconds": 0.05543583258986473
+      },
+      {
+        "step": 1,
+        "kind": "label_feature_save",
+        "count": 1,
+        "seconds": 0.370272533968091
+      },
+      {
+        "step": 1,
+        "kind": "accepted_event_save",
+        "count": 1,
+        "seconds": 0.0014551524072885513
+      },
+      {
+        "step": 2,
+        "kind": "mechanical.assembly",
+        "count": 18,
+        "seconds": 7.838711122050881
+      },
+      {
+        "step": 2,
+        "kind": "mechanical.linear_solve",
+        "count": 17,
+        "seconds": 2.2453203573822975
+      },
+      {
+        "step": 2,
+        "kind": "mechanical.fresh_assembly",
+        "count": 9,
+        "seconds": 7.496615432202816
+      },
+      {
+        "step": 2,
+        "kind": "common_mechanics_predictor",
+        "count": 1,
+        "seconds": 1.401407616212964
+      },
+      {
+        "step": 2,
+        "kind": "prediction_features",
+        "count": 1,
+        "seconds": 0.04299746826291084
+      },
+      {
+        "step": 2,
+        "kind": "trial_history",
+        "count": 9,
+        "seconds": 0.3610709058120847
+      },
+      {
+        "step": 2,
+        "kind": "damage_assembly",
+        "count": 9,
+        "seconds": 4.3042568964883685
+      },
+      {
+        "step": 2,
+        "kind": "damage_qp",
+        "count": 9,
+        "seconds": 26.22027396596968
+      },
+      {
+        "step": 2,
+        "kind": "mechanical.factorization",
+        "count": 8,
+        "seconds": 46.94436232186854
+      },
+      {
+        "step": 2,
+        "kind": "mechanics_re_equilibration",
+        "count": 8,
+        "seconds": 72.19092306122184
+      },
+      {
+        "step": 2,
+        "kind": "final_trial_history",
+        "count": 8,
+        "seconds": 0.33038031216710806
+      },
+      {
+        "step": 2,
+        "kind": "fresh_final_damage_assembly",
+        "count": 8,
+        "seconds": 4.036358059383929
+      },
+      {
+        "step": 2,
+        "kind": "fresh_final_kkt",
+        "count": 8,
+        "seconds": 0.031658357940614223
+      },
+      {
+        "step": 2,
+        "kind": "fresh_final_force",
+        "count": 8,
+        "seconds": 6.813804452307522
+      }
+    ],
+    "unfinished": [
+      {
+        "phase": "cost_cycle",
+        "step": 2,
+        "epoch": 1792487273.4786599,
+        "monotonic": 5509355.985744669,
+        "event": "start",
+        "block_id": 120,
+        "kind": "mechanics_re_equilibration"
+      },
+      {
+        "phase": "cost_cycle",
+        "step": 2,
+        "epoch": 1792487274.1456535,
+        "monotonic": 5509356.652738309,
+        "event": "start",
+        "block_id": 122,
+        "kind": "mechanical.factorization"
+      }
+    ]
+  },
+  "cumulative_cost": {
+    "wall_seconds": 429.45687678735703,
+    "cpu_seconds": 320.355808,
+    "gpu_seconds": 0.0,
+    "allocated_core_hours_upper": 1.9086972301660312,
+    "validation02_peak_sampled_rss_bytes": 4384919552,
+    "host_hours_remaining": 135.88070642311462
+  },
+  "numerical_substeps": {
+    "accepted_diagnostic": 1,
+    "unaccepted_trial": 1,
+    "qualified_complete_training_trajectories": 0,
+    "formal_producer": 0,
+    "training_updates": 0
+  },
+  "durable_inspection": [
+    {
+      "phase": "cost_cycle",
+      "crash_lock_present": false,
+      "last_journal_step": 1,
+      "journal_errors": [],
+      "version": 1,
+      "load_index": 1,
+      "state_id": "d3fcdb2716521c83b11113c72c89c13b27dd8385b7049898cd5a45305e2158cc",
+      "snapshot_present": true,
+      "reconciliation_needed": false,
+      "unfinished_work_blocks": [
+        {
+          "phase": "cost_cycle",
+          "step": 2,
+          "epoch": 1792487273.4786599,
+          "monotonic": 5509355.985744669,
+          "event": "start",
+          "block_id": 120,
+          "kind": "mechanics_re_equilibration"
+        },
+        {
+          "phase": "cost_cycle",
+          "step": 2,
+          "epoch": 1792487274.1456535,
+          "monotonic": 5509356.652738309,
+          "event": "start",
+          "block_id": 122,
+          "kind": "mechanical.factorization"
+        }
+      ],
+      "work_trace_errors": [],
+      "work_evidence_incomplete": true,
+      "provenance": "captured actual inspect_hybrid_run.py stdout after stop; no new state solve"
+    }
+  ],
+  "raw_files_sha256": {
+    "raw_evidence_02/pf_hybrid_validate_20261020_02/admission.json": "5634cfd81f227c69efbb3666095dfbf990345d26f136978fab49cc722bcc2c0d",
+    "raw_evidence_02/pf_hybrid_validate_20261020_02_control/validation_total.json": "f851aec7124ae90b5c817e872d2852845e1b68869c421661d418888f1f857331",
+    "raw_evidence_02/pf_hybrid_validate_20261020_02/full_mesh.json": "bb7409bf95e4c6414a93e4ddb5b2347d0c0c3cfc66d3c688dba442a7643e0203",
+    "raw_evidence_02/pf_hybrid_validate_20261020_02/cost_archive/cost_cycle/events.jsonl": "f060b6b7e34a2085adad94fbcc86eebae6498fc517cc3fac8d1a8a7a3b0d11fa",
+    "raw_evidence_02/pf_hybrid_validate_20261020_02/cost_archive/cost_cycle/work_trace.jsonl": "4439dfe41b0a60a699fd4e8c1e9de6c937f90d11e7c89ca3b53bf15b9e66d466",
+    "raw_evidence_02/pf_hybrid_validate_20261020_02/owned_processes_terminal.json": "924e86145c6e330bf63e523703f2120732424784f16df2c0d7a95b5131b6bde4"
+  },
+  "interpretation": "Real controller/full saved-mesh checks passed. Prefix cost failed:8 completed re-equilibrations/9QP, ninth re-equilibration factorization incomplete. Do not add nested timings to parents. Final failed-step joint residual values not persisted; cannot identify which residual blocked acceptance or infer NN/loss failure. No step2 commit. No new retry/deadline/tolerance/fit/test/full-producer launch.",
+  "all_13_listed_pids_absent": true,
+  "parent_test_cleanup": "additional parent2207784 reaped by recorded Popen.kill()/wait path; not one of the13 terminal-list PIDs",
+  "fem_neural_field_comparison_available": false
+}

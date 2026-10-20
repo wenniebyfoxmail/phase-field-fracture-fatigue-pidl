@@ -1,0 +1,150 @@
+{
+  "verdict": "REVIEW_PASS",
+  "scope_verdict": "PROSPECTIVE_VALIDATION02_CONTROLLER_REPAIR_AND_CUMULATIVE_BUDGET_STATIC_REVIEW_PASS",
+  "reviewer": "Codex /root/physical_parity_review",
+  "reviewed_utc": "2026-10-20T09:02:03.584078+00:00",
+  "commit": "b6aac5189b58b97635d9567995fd7d24ebcaf98f",
+  "artifact_id": "8a6ce3f94a43a3678d64e0134b98426df9dd124b9a90fb356e9f58604e670a6b",
+  "card_sha256": "28df57581a581a8f2c9433a1bcdedbdbf77df072326e92248b2af7049717b973",
+  "manifest_sha256": "8c5e011a9083fe49e3d726967e9a16900f67329d6a04fa6c8f499cf279391aae",
+  "file_hashes": {
+    "source/hybrid_history.py": "e291988e63834268371abd3ff168cf6fbe71e502ab0bb2d602256f6deba87920",
+    "source/hybrid_damage.py": "31ce91d0da8192e961615d7407a54e75cae98bf49994ffee31b16fe0def69ba1",
+    "source/hybrid_incremental.py": "052be2e0dfc97f4b6a81590989efc56740e4c4bab27b8c1ebdcdca4feb9fe03f",
+    "source/hybrid_transaction.py": "5481e527f0d574e38833029f53e793c05dbe871694f4f76787985045fc8f1ff2",
+    "source/hybrid_network.py": "0793c63d6847566d91410562966983fbb782cc0f7ac6f7752c48155e4711e471",
+    "source/hybrid_inputs.py": "fa04844aa4afdeeaa75478508e49469cf72081e1126216216389c0f45db1043c",
+    "source/hybrid_producer_common.py": "7cee9d16ec2a10c72f65781abde868d18cfb377e3be1d0a91a0364bb26242b4b",
+    "source/native_q4_damage_qp.py": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9",
+    "source/damage_conditioned_equilibrium.py": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301",
+    "source/compute_energy.py": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60",
+    "source/q4_quadrature.py": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+    "source/tri3_quadrature.py": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "tools/audit_hybrid_labels.py": "4f62e6bd7cbcddcd0388912118031a68a17277758de8b94b7aa83dc83e0ad29b",
+    "tools/prepare_hybrid_native_inputs.py": "81f3f46d3c3c55c806258636cff3915cbb8ae5859dca4bf20a0634152b832549",
+    "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
+    "tools/hybrid_producer_worker.py": "c8beb6d8a2543de8d9d929da3eef93fdbf239600e7f45f95121ae3865668f97f",
+    "tools/run_hybrid_producer.py": "ccaace5f4646d32fd1ac1f1543a06939c273cf8ccbfa2fc2e797a3b75d521d01",
+    "tools/inspect_hybrid_run.py": "2ab909a462f147123a3eeb61a92b687c6223d3bc7e53f8ef6c1182cb6cbb5496",
+    "tests/test_hybrid_incremental.py": "c787673a144dbb49835a79c698bb097039b9badabfb9070d89e0fcda96462490",
+    "tests/test_hybrid_producer.py": "88d3f37cba7a7046c72c5f6c1dd557bc0af8899f45f2f9035c0ccd120df851b6",
+    "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
+    "tests/test_damage_conditioned_equilibrium.py": "fb589482467dee8266b51aa3ad8a6037730c5c6d4a2deb513cfecbf5a74b4865",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v1.json": "e0bdc3e911aea98ebda023d582f4822850f4b4cfce1c0f737d31e1110bd82101",
+    "tools/launch_hybrid_detached.py": "fb515b236551d441b4cfb11667c200dff61999b4c4119b965a9caac861e47730",
+    "source/hybrid_kinematics.py": "06197c9a1f02cb725f42903834301ba6265c80e8d0218672b8fa8463e45edfef",
+    "tools/canonicalize_hybrid_inputs.py": "e23a12b4d6cce6dd4560f06f5fc395c7bfafb9440b0119670b3b6d7db9bda643",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json": "da119752c2ee81443dcee43b31cbe1fe2942ae70b39acf115dc1712005d8a125",
+    "source/hybrid_mechanics.py": "b7476d06c244e914c692b0edac19083159f3836d5b9e1b9bf37a6e37fff15507",
+    "source/hybrid_work_trace.py": "b33c6bc48126b22748d6c3f4fa0f7d87d1f790535ed4b11fde218c391a09c805",
+    "source/hybrid_guard_client.py": "7daedb716f1e1328fa61070b04407f57a82ed6169906bcb6c0af441931d14e50",
+    "source/hybrid_diagnostics.py": "a66496828f9c16ecdf97162a960773314915afbf9586ebc1c17335aa342034ee",
+    "tools/hybrid_deadline_guard.py": "d592de1f0a1995e1b28ca21de845b7fd022b356a5eff3144eef306c990b09615",
+    "tests/test_hybrid_performance.py": "59be6262c470dcb2d8bfb2b573c7f039998dd98f17bdded6c04176cbe2b17907",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_card_v1.json": "23d79fe5c06c9f36a1a63fc8882ff4e6b557988c1a70b38cedf9b84ad329b574",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v1.md": "4229cb8cf5fe66479852435e0d1b9d54a30a858cd086ad7954c91a6d476c0e54",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v2.md": "8fa98ab0796913fe6db3ecfac7a1c67a4ad507bb46fda442fb428eb1d4688ddc",
+    "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v3.md": "649d141b02663f96d1a25acc6d02a21b24ddef1e97f415dca84fe3ad03a1cb6e",
+    "tools/validate_hybrid_linux.py": "73c50be265c7af53bd782228173facd89911ff1b011a4ec77819e15b230d2532",
+    "docs/research/S04/hybrid_constrained_design_20261019/execution_validation_card_v3.json": "28df57581a581a8f2c9433a1bcdedbdbf77df072326e92248b2af7049717b973",
+    "tools/launch_hybrid_validation.py": "da0c2ec799feae32d26fa942999c53aacca2dddb0d88bffd3e69c3b0d749b534",
+    "docs/research/S04/hybrid_constrained_design_20261019/linux_validation_amendment_v1.md": "8038f8e12c61ed8fd85d611dd4acd15e1641f1d32d10fcbd870be37aa020f279"
+  },
+  "prior_review_sha256": "262c6a599833ceff5b67a4cf271ca461f35ee09d863dfb9feebced2d4ee98b84",
+  "decisive_blockers": [],
+  "findings": [],
+  "checks": {
+    "exact_git_export": true,
+    "verified_files": 43,
+    "canonical_artifact_verified": true,
+    "card_hash_verified": "28df57581a581a8f2c9433a1bcdedbdbf77df072326e92248b2af7049717b973",
+    "test_command": "PYTHONPATH=source:tools:.:tests <existing dev venv>/bin/python -m pytest -q tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py tests/test_hybrid_performance.py",
+    "artificial_tests_passed": 70,
+    "test_wall_seconds": 3.18,
+    "exit_code": 0,
+    "extra_check": "Run exact prior_costs against local byte-identical saved attempt01 JSON via path-only substitution retaining frozen SHA. No actual Linux controller or scientific operation."
+  },
+  "controller_repair": {
+    "result": "PASS_STATIC",
+    "evidence": "Review runs only after worker pidfd exit, final IPC drain and pendingactive detection. Supervisor pidfd wait is<=1s and<=existing reserved phase deadline; no live worker gains compute time. Parent-first and worker-first/supervisor-within-window end supervisor-exited stop; live-supervisor/missingdone remains incomplete stop; phase deadline during review remains late-worker stop. Both classifications retain deadline_or_control_stop, so production cannot treat either as accepted completion. Existing true120s/timely/late regressions remain.",
+    "observations": "Worker/supervisor observation timestamps, pendingstep and review deadline saved. They report observed order, not proof of kernel causal mechanism; null observation fields must retain that meaning."
+  },
+  "attempt01_evidence": {
+    "local_files": {
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_execution_20261020/linux_admission_attempt01.json": "65a69a5bb992d7e30041bb77a3190fa07e43595eef08a1bea5a3defced3ebb7f",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_execution_20261020/linux_validation_total_attempt01.json": "398ccae8cce6da3d97388aea9909fafef60ee7d957a28f5cb63aa36714fc909d"
+    },
+    "raw_admission_passed": false,
+    "raw_outer_passed": false,
+    "old_artifact": "081597e78db0da8fabda9534533c8549b1d8634e57c73c606943bb3ed911030e",
+    "old_card_sha256": "8b32f18b9c8155dba4ea9d7957d2bffc5ded9c5eff27df53023407cad94a37ee",
+    "old_failure": "actual parent-death control failed",
+    "controller_cases": [
+      {
+        "mode": "success",
+        "passed": true
+      },
+      {
+        "mode": "incomplete",
+        "passed": true
+      },
+      {
+        "mode": "hang",
+        "passed": true
+      }
+    ],
+    "parent_death": {
+      "passed": false,
+      "parent_pid": 2197197,
+      "worker_pid": 2197228,
+      "guardian_pid": 2197229,
+      "observed_running": {
+        "2197228": false,
+        "2197229": false
+      },
+      "guard": {
+        "status": "deadline_or_control_stop",
+        "reason": "incomplete step completion at worker exit",
+        "active": {
+          "step": 1,
+          "started": 5508555.022892996,
+          "deadline": 5508675.022892996
+        },
+        "last_step": 1,
+        "started": 5508555.017958703,
+        "finished": 5508555.047320245,
+        "worker_pid": 2197228
+      },
+      "fallback_cleanup_pids": []
+    },
+    "full_mesh_reached": false,
+    "new_numerical_steps": 0,
+    "training_updates": 0,
+    "gpu_seconds": 0.0,
+    "assessment": "Old actualFAIL is correct under old frozen exact-reason criterion and remains unchanged. Recorded killed-parent benign worker/guardian both exited and fallbackempty, but guardian reasonincomplete mismatched requiredsupervisor-exited. Code ordering stops before full_mesh/cost_cycle; no physical/numerical/model failure or performance outcome follows."
+  },
+  "cumulative_budget": {
+    "prior_wall_seconds": 126.05925788823515,
+    "prior_cpu_seconds": 19.522582,
+    "remaining_1800_before_setup_seconds": 1673.9407421117648,
+    "new_guard_allowance_before_setup_seconds": 1628.9407421117648,
+    "prior_allocated_core_hours_recomputed": 0.5602633683921562,
+    "contract": "prior_costs SHA-binds both FAILED raw receipts, checks exact pre-numerical failure/absent fullmesh-costsummary,finite nonnegativecosts/0GPU, and refuses exhausted allowance. Outer deadline subtracts priorwall and currentsetup then retains45s reserve. Outer final wall/CPU/allocation ledger includes old charges; future initial_totals will charge cumulative receipt against136hosth/2176coreh and shared/numerical accounting.",
+    "reporting_note": "Cumulative cpu_seconds_children incorporates prior attempt totalCPU; interpret children+self as charged cumulative CPU, not literal current-child attribution. prior_validation_cost and current_attempt_wall_seconds preserve the split."
+  },
+  "prospective_contract": {
+    "result": "PASS_WITHIN_RELAYED_EXISTING_AUTHORIZATION_SCOPE",
+    "evidence": "Amendment explicitly preserves attempt01FAIL/identities/cost and original parent negative expectedreason, freezes new02root/controlroot and one reviewed prospective non-scientific controller repair. Earlier validation01 performed0numerical steps, so the original single*.8 five-step diagnostic allowance remains unexecuted; it is not a retry of failed scientific increments. Both wrappers refuse existing outputroots; no old run resumes.",
+    "allowed_sequence": "One new exact validation02: benign controls first; only if they PASS continue originalfive saved-state parity/replay and ONE still-unexecuted canonicalstate0*.8 cost cycle. No fit/test/holdout, no formal-label/cache reuse; first unexpected control/numerical/time failure stops without automatic retry.",
+    "authority_limit": "Review is technical scrutiny of the parent-relayed human controller/full-grid/cost completion authorization, not an independent grant of expanded experiments/budget. Future enabled3600-step producer needs actual evidence and its own exact execution review."
+  },
+  "runtime_status": "ATTEMPT01_FAIL_PRESERVED_ATTEMPT02_NOT_EXECUTED_BY_REVIEWER",
+  "limits": [
+    "Read only source/docs and the two permitted local observer JSON receipts; no scientific arrays/models/holdouts, SSH, realLinux/pidfd controller, new solve/profile/preflight/training or retry by reviewer.",
+    "New1s classifier has artificial regression evidence only. Actual02controller success, full-grid parity, actual five-step cost and120s feasibility remain pending.",
+    "Numerical/physical/quality tolerances and120s unchanged;1s only post-exit observation within existing deadline. No method failure/benefit, NNtraining, field improvement or acceleration conclusion.",
+    "Keep all v1-v3 MODIFY/PASS and actual01FAIL evidence. Do not relabel01PASS or use this static review as actual runtimePASS or full producer admission."
+  ]
+}
