@@ -1,0 +1,15 @@
+{
+  "route": "REUSE_NO_EXECUTION",
+  "approved_design_commit": "569cc865a9090e050042c7daf037cd2f0e535bba",
+  "existing_executed_source": "0faf16f8c7e9872956d3db89a3ced42505e4a9a4",
+  "existing_package": "7baafbd0f6da859022eae098509601fa280c6d87eb1845eb11ca6c33884bf295",
+  "scientific_report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/scientific_continuation_20261020/README.md",
+  "saved_scalar_sources": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/analyses/BRIDGE-PS-scientific-continuation-20261020/saved_scalar_synthesis.json",
+  "status": "EXPLORATORY_COMPONENT_RETAINED_ORIGINAL_WARNING_BREACH",
+  "new_solves": 0,
+  "new_native_scores": 0,
+  "torch_or_ssh": false,
+  "four_group_execution_authorized": false,
+  "next_decision": "existing SCB physical state-interface comparison if synchronized load, independent reference and specimen IDs become available; no more generic rich/weight sweep",
+  "old_artifacts_unchanged": true
+}
