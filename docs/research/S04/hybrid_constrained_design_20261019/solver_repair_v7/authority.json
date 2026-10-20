@@ -1,0 +1,46 @@
+{
+  "authority_type": "human_delegated_hq",
+  "human_source_thread": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+  "human_message": "01a15b4c-2e3a-7772-b74b-46f4ab752766",
+  "human_text": "请你托管 到明天早上 9 点，还是希望你能从第一性原理出发，调控各个科研对话窗口，尽早出现故事连续的、可发表的科研成果 FYI 窗口仍不介入 你可以用所有权限，包括授权计算",
+  "verified_via": "read_thread direct userMessage, not heartbeat or agent paraphrase",
+  "verified_at": "2026-10-20T22:28:05.345707+00:00",
+  "hq_dispatch": "New coherent coupling repair; one original train_A complete600 accepted substeps, no other cases or training",
+  "purpose": "Qualify continuous constrained FEM trajectory; test outer-coupling repair, not neural benefit",
+  "producer": "drtao@172.16.100.2 original GPUServer8",
+  "data": "Existing R3 inputs only; no new private transfer/holdout",
+  "scientific_attempts": 1,
+  "stop_on_first_scientific_failure": true,
+  "automatic_retry": false,
+  "budget": {
+    "total_wall_seconds": 14400,
+    "conservative_package_start_utc": "2026-10-20T22:19:36Z",
+    "conservative_absolute_end_utc": "2026-10-21T02:19:36Z",
+    "cpu_cores": 4,
+    "gpu": 0,
+    "rss_bytes": 34359738368,
+    "address_space_bytes": 34359738368,
+    "combined_new_outputs_archive_bytes": 17179869184,
+    "mechanical_attempts": 2,
+    "mechanical_total_seconds": 120,
+    "physical_step_seconds": 300,
+    "fresh_candidate_limit": 100
+  },
+  "preserved": [
+    "R1-R3 failures and cost",
+    "original physical thresholds",
+    "old d_n lower",
+    "true f_solve/f_commit and final actual QP certification",
+    "current K/pivot",
+    "single CAS history commit"
+  ],
+  "excluded": [
+    "other5cases",
+    "3600 full pipeline",
+    "NN training",
+    "R3 rerun as baseline",
+    "new host/private data transfer",
+    "new holdout",
+    "automatic restart"
+  ]
+}

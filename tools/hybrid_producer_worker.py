@@ -18,6 +18,10 @@ if __name__ == '__main__':
     # Bind BEFORE heavy numerical imports; race is closed by checking PPID
     # after installing the Linux parent-death signal.
     if platform.system()!='Linux':raise RuntimeError('producer workers are Linux-only')
+    if 'HYBRID_WORKER_AS_BYTES' in os.environ:
+        cap=int(os.environ['HYBRID_WORKER_AS_BYTES'])
+        if cap!=30*2**30:raise RuntimeError('CPU worker AS partition differs')
+        resource.setrlimit(resource.RLIMIT_AS,(cap,cap))
     import ctypes
     import signal
     expected=int(os.environ['HYBRID_SUPERVISOR_PID'])
@@ -32,7 +36,7 @@ import numpy as np
 
 from hybrid_inputs import load_backend, read_manifest, sha256
 from hybrid_incremental import SolverSettings, solve_step, StepFailure
-from hybrid_producer_common import write_json, append_event, classical_guess, compare_states,object_sha
+from hybrid_producer_common import write_json, append_event, classical_guess, compare_states,object_sha,lossless_snapshot
 from hybrid_transaction import StateStore
 from hybrid_work_trace import PersistentWorkTrace
 from hybrid_guard_client import notify
@@ -66,6 +70,18 @@ def marker(out, **values):
     write_json(Path(out) / "active_step.json", dict(start_epoch=time(),start_monotonic=perf_counter(), **values))
 
 
+def trajectory_storage_check(card,out,archive,headroom=False):
+    if card.get('schema')!='hybrid-cpu-trajectory-v7':return
+    # One scan at step boundaries, not every element/operator call. The live
+    # supervisor also scans and final completion has an independent last check.
+    from run_hybrid_producer import bytes_under
+    primary=bytes_under(out);used=bytes_under(archive)
+    reserve=128*2**20 if headroom else 0
+    if (primary>card['budget']['primary_gib']*2**30-16*2**20
+            or used>card['budget']['archive_gib']*2**30-reserve):
+        raise RuntimeError('trajectory storage cap/headroom exhausted')
+
+
 def trajectory(card, spec, inputs, out, archive):
     backend, old, dofs, bc = load_backend(inputs, read_manifest(Path(inputs)/"inputs.json"))
     settings = SolverSettings(**card["solver"])
@@ -73,6 +89,26 @@ def trajectory(card, spec, inputs, out, archive):
     phase = archive / spec["id"]
     phase.mkdir()
     (phase/"states").mkdir()
+    if coupling.mode=='guarded_vi_newton':
+        def save_work_point(tag,point):
+            import tempfile
+            folder=phase/'unaccepted_work_points';folder.mkdir(exist_ok=True)
+            fd,name=tempfile.mkstemp(prefix='.point-',suffix='.npz',dir=folder)
+            try:
+                metadata=dict(classification='UNACCEPTED_SOLVER_WORK_POINT_NOT_LABEL',
+                    tag=tag,outer=point['outer'],m_work=point['m_work'],m_accept=point['m_accept'],
+                    parent_id=point['previous_id'],load_id=point['load_id'],
+                    f_solve_operation='NA' if point['f_solve'] is None else 'actual_QP')
+                with os.fdopen(fd,'wb') as f:
+                    fields=dict(u=point['u'],d=point['d'],A=point['q'].accumulated,
+                        r=point['q'].driver,f=point['q'].fatigue,psi=point['psi'],
+                        metadata=np.array(json.dumps(metadata,allow_nan=False)))
+                    if point['f_solve'] is not None:fields['f_solve']=point['f_solve']
+                    np.savez_compressed(f,**fields);f.flush();os.fsync(f.fileno())
+                os.replace(name,folder/(tag+'.npz'))
+            finally:
+                if os.path.exists(name):os.unlink(name)
+        backend.unaccepted_point_observer=save_work_point
     store = StateStore(phase/"latest.npz")
     store.initialize(old, context=step_context(card,spec,old,0,dofs,bc))
     shutil.copy2(store.path, phase/"states/state0000.npz")
@@ -103,6 +139,7 @@ def trajectory(card, spec, inputs, out, archive):
     records = []
     for index in range(count):
         tick = perf_counter()
+        trajectory_storage_check(card,out,archive,headroom=True)
         cycle, substep = divmod(index, len(card["base_load_cycle"]))
         target = card["base_load_cycle"][substep] * spec["amplitude_multiplier"]
         marker(out, phase=spec["id"], step=index+1, role="numerical_substep")
@@ -124,7 +161,8 @@ def trajectory(card, spec, inputs, out, archive):
         trace.call("durable_commit",lambda:store.commit(proposal))
         io_tick = perf_counter()
         state_path = phase/f"states/state{index+1:04d}.npz"
-        trace.call("snapshot_save",lambda:shutil.copy2(store.path, state_path))
+        trace.call("snapshot_save",lambda:(lossless_snapshot(store.path,state_path)
+            if card.get('snapshot_storage')=='lossless_npz_deflate1' else shutil.copy2(store.path,state_path)))
         record = dict(step=index+1, cycle=cycle+1, substep=substep+1, load=target,
                       certificate=proposal.certificate, state_file=str(state_path.relative_to(archive)),
                       state_sha256=sha256(state_path), commit_io_seconds=store.last_io_seconds,
@@ -155,6 +193,7 @@ def trajectory(card, spec, inputs, out, archive):
                           load_index_in=index,load_index_out=index+1)
         record["total_step_wall_seconds"] = perf_counter()-tick
         trace.call("accepted_event_save",lambda:append_event(phase/"events.jsonl", record))
+        trace.call('accepted_storage_check',lambda:trajectory_storage_check(card,out,archive))
         notify("step_done",index+1)
         records.append({k:record[k] for k in ("step","state_file","state_sha256","certificate","f_min")})
         previous, old = old, proposal.state

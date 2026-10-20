@@ -1,0 +1,41 @@
+{
+  "exit_code": 0,
+  "wall_seconds": 4.046416791039519,
+  "cpu_seconds": 3.9468,
+  "command": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "--tb=short",
+    "tests/test_hybrid_incremental.py",
+    "tests/test_hybrid_state_contract.py",
+    "tests/test_hybrid_coupled_acceleration.py",
+    "tests/test_hybrid_solver_repair_v6.py",
+    "tests/test_hybrid_performance.py",
+    "tests/test_hybrid_producer.py",
+    "tests/test_hybrid_plotting_admission.py",
+    "tests/test_hybrid_comparison_preparation.py",
+    "tests/test_hybrid_guarded_coupling.py",
+    "tests/test_hybrid_cpu_v7.py"
+  ],
+  "scope": "Artificial arrays and offline controls only",
+  "log_sha256": "296adb247539165be0b7628f8f7d567b583cb78e0e29b5a3e3ee8187b361a4eb",
+  "files": {
+    "source/hybrid_guarded_coupling.py": "a911a5f3375c002b1ffe2af75e44e99c454028d8282bf72fe4b82e07ec887a13",
+    "source/hybrid_reduced_tangent.py": "c127a14572fcee3e1a85e70539d4b9f24aaf164da5e29adca77bbf2b0d2b4170",
+    "source/hybrid_incremental.py": "535aa541575dd524d12c7aebbf0b4a7a911dcb709fb9e1945c7ad44fe5ce1f74",
+    "source/hybrid_mechanics.py": "710a527d0c8e2bb60432cee323f8005a023d9a539aba497fc40d473df9476be4",
+    "source/hybrid_coupled_acceleration.py": "c83f41466664251936faada1eb1b828181ada4f240838889aba3d742bb1355ad",
+    "source/hybrid_producer_common.py": "60d0b18af56c67f75aced0a38275147cf12fbafa431dfd6d3dfd943f0362eea0",
+    "tools/run_hybrid_cpu_budgeted.py": "cf27a416f31c6c444dd3eed6bcdb57783f0763b33dd9094ffa00ae88cc5a3960",
+    "tools/preflight_hybrid_cpu_v7.py": "bb58a8f89e2e962a4ed456a670a360bd5985ac6283b68817010b4700bf9db2f1",
+    "tools/receive_hybrid_cpu_v7.py": "8f1a7530a66c2671f9c8c3d8b8d428fdcddb151842513b9ad794a103deea2810",
+    "tools/run_hybrid_producer.py": "fb4ac94ddbe9ba9da280a3065b45bbdcefa71b6a7549fc547737d38658230111",
+    "tools/hybrid_producer_worker.py": "6d7adc4c142cb5b1da4e80152329d6519faa9b243fa17497c1cd80fce815c873",
+    "tools/hybrid_deadline_guard.py": "abe608e5a9b3d3690930182949cbeea3e7796cdb42fd41d25d6afe003081b7fb",
+    "tests/test_hybrid_guarded_coupling.py": "f37ac622570c040c51572f585699d1e58bd252f4f7176bd8e9f6d580dfac3440",
+    "tests/test_hybrid_cpu_v7.py": "9d2d52dbeb77d64940fe11272077b14300807216ac3c5c16e859772aed24f302"
+  },
+  "result": "163 passed in 3.75s"
+}

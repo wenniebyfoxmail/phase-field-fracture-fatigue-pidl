@@ -124,6 +124,7 @@ class NativeQ4Backend:
         if self.material!=self.mechanics_workspace.material:raise ValueError('workspace material changed; new identity/backend required')
         return self.mechanics_workspace.solve(d,dofs,values,settings,initial_u=initial_u,
                                                observe=self.mechanics_observer,
+                                               diagnostic=getattr(self,'mechanics_diagnostics',None),
                                                strategy=getattr(self,'mechanics_strategy','direct'))
 
     def trial(self, old, u, d):
@@ -190,6 +191,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
         if not isinstance(coupling,CouplingSettings):raise ValueError('explicit coupling policy required')
         if isinstance(backend,NativeQ4Backend):
             backend.mechanics_observer=work_observer
+            backend.mechanics_diagnostics=None
             backend.mechanics_strategy=coupling.mechanics_solver
         def mechanics(d,initial):
             if isinstance(backend,NativeQ4Backend):
@@ -243,6 +245,13 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                 work.append(dict(work_id=len(work), kind="initial_guess_fallback",
                                  reason=str(exc), wall_seconds=0., status="baseline_initial"))
         initial_damage=d.copy()
+        if coupling.mode=='guarded_vi_newton':
+            if not isinstance(backend,NativeQ4Backend):
+                raise ValueError('reduced native coupling requires NativeQ4Backend')
+            from hybrid_guarded_coupling import solve_guarded
+            return solve_guarded(backend,old,dofs,values,next_load_id,settings,coupling,
+                d,u_pred,initialization_source,neural_used,attempted_model_id,
+                prediction_context,work,call,remaining,start,iteration_observer)
         policy_id=digest_config(asdict(coupling))
         weights=(np.asarray(backend.gp.T@backend.kin.det_jacobians.reshape(-1))
                  if isinstance(backend,NativeQ4Backend) else np.ones(len(lower)))

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import zipfile
 
 import numpy as np
 
@@ -35,6 +36,39 @@ def append_event(path, value):
 
 def object_sha(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, allow_nan=False).encode()).hexdigest()
+
+
+def lossless_snapshot(source,target):
+    """Recompress exact NPY member bytes, including all evidence/metadata.
+
+    This changes ZIP storage only. Verify every uncompressed member digest;
+    never decode, cast, drop or regenerate scientific arrays or certificates.
+    """
+    target=Path(target)
+    fd,name=tempfile.mkstemp(prefix='.snapshot-',suffix='.npz',dir=target.parent)
+    os.close(fd)
+    def members(path):
+        result={}
+        with zipfile.ZipFile(path) as z:
+            for item in z.infolist():
+                if item.filename in result or not item.filename.endswith('.npy'):
+                    raise RuntimeError('unexpected or duplicate NPZ member')
+                h=hashlib.sha256()
+                with z.open(item) as f:
+                    for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
+                result[item.filename]=h.hexdigest()
+        return result
+    try:
+        expected=members(source)
+        with zipfile.ZipFile(source) as zin,zipfile.ZipFile(name,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=1) as zout:
+            for item in zin.infolist():
+                with zin.open(item) as src,zout.open(item.filename,'w',force_zip64=True) as dst:
+                    for block in iter(lambda:src.read(1024*1024),b''):dst.write(block)
+        if members(name)!=expected:raise RuntimeError('lossless snapshot member bytes differ')
+        with open(name,'rb') as f:os.fsync(f.fileno())
+        os.replace(name,target)
+    finally:
+        if os.path.exists(name):os.unlink(name)
 
 
 def verify_package(code_root, manifest):

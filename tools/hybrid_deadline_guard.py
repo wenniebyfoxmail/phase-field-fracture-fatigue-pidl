@@ -5,7 +5,13 @@ identities. Deadlines arrive over an inherited datagram FD, never a filesystem
 read. Kill/reap signalling precedes any potentially blocking report write.
 """
 import argparse,json,math,os,select,signal,socket,sys,tempfile,time
+import resource
 from pathlib import Path
+
+if __name__=='__main__' and 'HYBRID_GUARD_AS_BYTES' in os.environ:
+    _guard_cap=int(os.environ['HYBRID_GUARD_AS_BYTES'])
+    if _guard_cap!=128*2**20:raise RuntimeError('CPU guardian AS partition differs')
+    resource.setrlimit(resource.RLIMIT_AS,(_guard_cap,_guard_cap))
 
 
 def guard_loop(worker,supervisor,fd,phase_deadline,step_seconds,report,ready_fd=None):

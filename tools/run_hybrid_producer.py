@@ -268,9 +268,13 @@ def supervise(proc,spec,card,runroot,archive,totals,usage=None,guardian=None):
                         raise RuntimeError('physical-substep hard wall cap')
             tree=[];current_rss_observed=False
             try:
-                root=psutil.Process(proc.pid)
+                root=psutil.Process(totals.get('resource_owner_pid',proc.pid))
                 tree=[root,*root.children(recursive=True)]
                 rss=sum(p.memory_info().rss for p in tree)
+                if 'resource_owner_pid' in totals:
+                    vms=sum(p.memory_info().vms for p in tree)
+                    usage.update(aggregate_vms_bytes=vms,resource_scope_pid=root.pid)
+                    if vms>card['budget']['address_space_gib']*2**30:raise RuntimeError('complete owned tree address-space cap')
                 current_rss_observed=True
                 usage.update(rss_observed=True,rss_sample_count=usage['rss_sample_count']+1,last_rss_sample_monotonic=perf_counter())
             except psutil.NoSuchProcess:rss=0
@@ -295,6 +299,12 @@ def supervise(proc,spec,card,runroot,archive,totals,usage=None,guardian=None):
         if perf_counter()-start>spec['wall_seconds']:raise RuntimeError('late successful phase exit')
         if perf_counter()-totals['start_monotonic']>card['budget']['cpu_wall_hours']*3600:raise RuntimeError('late total exit')
         if proc.returncode:raise RuntimeError(f"worker exit {proc.returncode}")
+        if 'resource_owner_pid' in totals:
+            # CPU-v7 final success may not bypass the last storage scan.
+            storage=dict(primary_bytes=bytes_under(runroot),archive_bytes=bytes_under(archive))
+            usage['storage']=dict(storage)
+            if storage['primary_bytes']>card['budget']['primary_gib']*2**30 or storage['archive_bytes']>card['budget']['archive_gib']*2**30:
+                raise RuntimeError('final attributed storage cap')
         usage.update(**measured_peaks())
         return dict(wall_seconds=perf_counter()-start,**measured_peaks(),storage=storage)
     except BaseException as exc:

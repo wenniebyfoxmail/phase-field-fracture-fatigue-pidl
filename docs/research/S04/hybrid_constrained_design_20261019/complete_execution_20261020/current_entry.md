@@ -1,3 +1,6 @@
+<!-- HYBRID_D16_HQ_AUTHORIZED_V7 -->
+> D16当前范围（2026-10-20）：已核原HQ较晚直接人方托管/计算授权，再由HQ前瞻限定新包：原train_A一次连续600步、4墙钟h/4CPU/0GPU/32GiB/新输出归档合计16GiB，首科学失败停且不重试。实现全程m_work保护＋有界AA＋原残差约化VI Newton/Schur，保留真实最终QP/D13。仅轨迹可达性，无其他case或训练；[authority](../solver_repair_v7/authority.json)／[准确连贯方案](../solver_repair_v7/plan.md)。此前“先不重跑”分析任务已完成，R3许可不复用；当前尚未部署或启动。
+
 <!-- HYBRID_R3_D15_COUPLING_DIAGNOSIS -->
 > D15（2026-10-20）：R3原日志诊断已完成；机械单次成本下降，但第17轮m最低1.783后回升，3次有效Anderson在第5轮耗尽，普通map无全程保护。下一候选为统一工作残差保护＋受约束Newton/Schur，并保留真实最终QP及原接受态合同；仅方案，无新实现/重跑。[完整诊断](../solver_repair_v6/r3_coupling_diagnosis.md)／[独立诊断与方案复核](../solver_repair_v6/r3_coupling_diagnosis_review.json)。
 

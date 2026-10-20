@@ -69,7 +69,7 @@ class MechanicsWorkspace:
         return dict(current_matrix_pivot_qualified=True,minimum_pivot_ratio=ratio,
                     current_exact_factor_reused=bool(reused),matrix_key=key.hex())
 
-    def solve(self,d,dofs,values,settings,initial_u=None,observe=None,strategy='direct'):
+    def solve(self,d,dofs,values,settings,initial_u=None,observe=None,strategy='direct',diagnostic=None):
         if strategy not in ('direct','recycled_gmres'):raise ValueError('unknown mechanics strategy')
         def call(kind,fn):
             return observe('mechanical.'+kind,fn) if observe else fn()
@@ -126,6 +126,12 @@ class MechanicsWorkspace:
                     if not np.isfinite(true_residual):raise RuntimeError('nonfinite current mechanics residual')
                     info['krylov_last_true_residual']=true_residual
                     info['krylov_last_target']=target
+                    if diagnostic is not None:
+                        diagnostic(dict(kind='recycled_gmres',mechanics_iteration=iteration,
+                            call=info['krylov_attempts'],cumulative_inner_iterations=info['krylov_iterations'],
+                            true_residual=true_residual,target=target,return_code=int(code),
+                            current_matrix_key=key.hex(),preconditioner_matrix_key=self.factor_key.hex(),
+                            will_refactor=not(code==0 and true_residual<=target)))
                     if code==0 and true_residual<=target:
                         u[free]=candidate;recycled=True;info['krylov_successes']+=1
                     else:
