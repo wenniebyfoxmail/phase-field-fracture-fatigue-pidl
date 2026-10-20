@@ -1,0 +1,19 @@
+{
+  "basis": "metadata dimensions and dtype arithmetic only; no project arrays decoded",
+  "nodes": 86756,
+  "Q4_elements": 86408,
+  "GP_per_element": 4,
+  "opaque_assumption": "one inherited GP channel as declared source history",
+  "accepted_step_extra_evidence_bytes": 5530112,
+  "extra_3600_steps_gib": 18.54114532470703,
+  "states_uncompressed_lower_bytes": 67299782208,
+  "features_uncompressed_upper_payload_bytes": 25590326400,
+  "payload_gib": 86.51065510511398,
+  "metadata_trace_figures_temporary_reserve_gib": 20,
+  "estimated_payload_plus_reserve_gib": 106.51065510511398,
+  "per_copy_cap_gib": 128,
+  "two_copy_total_cap_gib": 256,
+  "compression_credit": 0,
+  "peak_disk_and_IO_measured": false,
+  "policy": "live hard storage monitor; no auto increase; prior R2 occupied space must also be reconciled; evidence binding/hash and IO time remain charged"
+}

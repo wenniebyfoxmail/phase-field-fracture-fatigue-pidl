@@ -30,6 +30,8 @@ Report: `/Users/wenxiaofang/obsidian/05 Knowledge/deep research report/Deep Rese
 
 ## Historical decision ladder (completed 2026-10-18)
 
+D13 (2026-10-20) local integration continues the same hybrid owner: immutable accepted-state envelope binds full physical key and parent; actual final-QP f_solve is distinct from fresh f_commit; labels and scoring validate timing/lineage and reaction support. Solver math/tolerances unchanged. [Complete executable preparation, budget and data gaps](../research/S04/hybrid_constrained_design_20261019/accepted_state_plan_v5.md). Consumed R2 remains on old source/card; last local snapshot one accepted step is not current status. New card disabled/nullRunID; current remaining budget/fit/steps unknown until R2 reconciliation. No real state arrays, SSH, new FEM or training in this task. Scientific questions remain complete fatigue-trajectory feasibility and incremental NN warm-start value at matched quality, not physical/road validation.
+
 | Step | Decision / minimal asset | State / advance or redirect |
 |---|---|---|
 | D1 | Reuse saved C initial bundle/fields, original9 failure vectors, reviewed W0/W25 runner/card, native-Q4 scorer and existing default-off bound patch | complete; continue existing route, no new FEM/trajectory/design/sweep |

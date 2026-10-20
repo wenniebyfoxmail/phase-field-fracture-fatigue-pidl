@@ -128,3 +128,62 @@ def test_matching_but_wrong_reaction_support_is_not_enough():
     c,s,dofs,bc=context_inputs()
     with pytest.raises(RuntimeError,match='prescribed boundary'):
         verify_expected(p.state,am,step_context(c,s,p.state,1,dofs,bc))
+
+
+@pytest.mark.parametrize('launcher_name',['launch_hybrid_detached','launch_hybrid_budgeted'])
+@pytest.mark.parametrize('enabled',[False,True])
+def test_disabled_or_unreconciled_card_never_reserves_or_spawns(tmp_path,monkeypatch,launcher_name,enabled):
+    import importlib
+    import sys
+    launcher=importlib.import_module(launcher_name)
+    c=card();c.update(execution_enabled=enabled,run_root=str(tmp_path),archive_root=str(tmp_path/'archive'))
+    path=tmp_path/'card.json';path.write_text(json.dumps(c))
+    monkeypatch.setattr(launcher.platform,'system',lambda:'Linux')
+    monkeypatch.setattr(launcher.subprocess,'Popen',lambda *a,**k:pytest.fail('must not spawn'))
+    monkeypatch.setattr(sys,'argv',['launch','--card',str(path),'--package',str(tmp_path/'absent'),
+                                  '--review',str(tmp_path/'absent'),'--inputs',str(tmp_path)])
+    with pytest.raises(RuntimeError,match='preparation|reconciled'):launcher.main()
+    assert not (tmp_path/'launch_reservation.json').exists()
+
+
+@pytest.mark.parametrize('defect',['none','x_future_damage','d_old','d_target','u_pred','psi_pred'])
+def test_training_feature_timing_and_target_arrays_are_checked(defect):
+    import hashlib
+    from hybrid_incremental import NativeQ4Backend
+    from hybrid_network import features_for, FEATURES
+    from hybrid_producer_worker import verify_label_feature_arrays
+    from test_hybrid_incremental import one_element
+    backend=NativeQ4Backend(one_element(),np.zeros(4,bool))
+    old=replace(state(),mesh_id=backend.mesh_id,physics_id=backend.physics_id)
+    new=replace(old,damage=np.full(4,.4))
+    dofs=np.array([0]);values=np.array([0.]);up=np.zeros(8);pp=np.zeros((1,4))
+    z=dict(x=features_for(backend,old,up,pp,dofs,values).astype(np.float32),
+           d_old=old.damage.astype(np.float32),d_target=new.damage.astype(np.float32),u_pred=up,psi_pred=pp)
+    sha=hashlib.sha256(up.tobytes()+pp.tobytes()).hexdigest()
+    if defect=='x_future_damage':z['x'][:,FEATURES.index('d_old')]=.4
+    elif defect!='none':z[defect].flat[0]+=.1
+    if defect=='none':verify_label_feature_arrays(backend,old,new,z,dofs,values,sha)
+    else:
+        with pytest.raises(RuntimeError,match='timing'):verify_label_feature_arrays(backend,old,new,z,dofs,values,sha)
+
+
+@pytest.mark.parametrize('defect',['none','bad_sha','unknown_run','insufficient_steps','fit_consumed','unbound_cost','reused_run'])
+def test_future_execution_requires_real_hashed_settled_cost_receipt(tmp_path,defect):
+    from run_hybrid_producer import require_enabled_execution
+    from hybrid_inputs import sha256
+    c=card();c['execution_enabled']=True;c['run_id']='artificial_fresh'
+    used='pf_hybrid_complete_20261020_r2'
+    receipt=dict(schema='hybrid-budget-reconciliation-v1',complete=True,active_or_unknown_runs=[],
+                 settled_runs=[used],remaining_numerical_steps=3600,remaining_training_fits=1)
+    if defect=='unknown_run':receipt['active_or_unknown_runs']=[used]
+    elif defect=='insufficient_steps':receipt['remaining_numerical_steps']=3599
+    elif defect=='fit_consumed':receipt['remaining_training_fits']=0
+    elif defect=='reused_run':c['run_id']=used
+    p=tmp_path/'reconciled.json';p.write_text(json.dumps(receipt));h=sha256(p)
+    c['budget_reconciliation']=dict(complete=True,receipt='reconciled.json',receipt_sha256=h,active_or_unknown_runs=[])
+    c['prior_costs']=[dict(source='reconciled.json',sha256=h,lineage=[used],cost_only_not_admission=True)]
+    if defect=='bad_sha':c['budget_reconciliation']['receipt_sha256']='wrong'
+    elif defect=='unbound_cost':c['prior_costs']=[]
+    if defect=='none':require_enabled_execution(c,tmp_path)
+    else:
+        with pytest.raises(RuntimeError):require_enabled_execution(c,tmp_path)

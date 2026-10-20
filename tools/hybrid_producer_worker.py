@@ -50,6 +50,17 @@ def verify_label_coupling(row,expected):
         raise RuntimeError('label coupling policy differs from complete comparison')
 
 
+def verify_label_feature_arrays(backend,old,new,z,dofs,values,expected_predictor_hash):
+    from hybrid_network import features_for
+    recomputed=features_for(backend,old,z['u_pred'],z['psi_pred'],dofs,values)
+    pred_hash=__import__('hashlib').sha256(z['u_pred'].tobytes()+z['psi_pred'].tobytes()).hexdigest()
+    if (not np.array_equal(z['x'],recomputed.astype(np.float32))
+            or not np.array_equal(z['d_old'],old.damage.astype(np.float32))
+            or not np.array_equal(z['d_target'],new.damage.astype(np.float32))
+            or pred_hash!=expected_predictor_hash):
+        raise RuntimeError('label feature/target timing or predictor evidence mismatch')
+
+
 def marker(out, **values):
     notify("step_start",values["step"])
     write_json(Path(out) / "active_step.json", dict(start_epoch=time(),start_monotonic=perf_counter(), **values))
@@ -231,6 +242,8 @@ def fit(card, inputs, out, archive):
         for line in (archive/phase_id/"events.jsonl").read_text().splitlines():
             row=json.loads(line)
             if "features_file" in row:
+                if row.get('feature_names')!=list(FEATURES):
+                    raise RuntimeError('label feature order differs')
                 if (row["certificate"]["passed"] is not True
                         or sha256(archive/row["features_file"])!=row["features_sha256"]
                         or sha256(archive/row["state_file"])!=row["state_sha256"]
@@ -252,16 +265,9 @@ def fit(card, inputs, out, archive):
                     raise RuntimeError('accepted predecessor/label certificate chain mismatch')
                 # Recompute the cheap feature transform from sealed old state
                 # and saved common predictor. No future label enters features.
-                from hybrid_network import features_for
                 with np.load(archive/row['features_file'],allow_pickle=False) as z:
-                    recomputed=features_for(backend,a,z['u_pred'],z['psi_pred'],dofs,
-                                            bc*meta['state_contract']['context']['physical']['prescribed_load'])
-                    pred_hash=__import__('hashlib').sha256(z['u_pred'].tobytes()+z['psi_pred'].tobytes()).hexdigest()
-                    if (not np.array_equal(z['x'],recomputed.astype(np.float32))
-                            or not np.array_equal(z['d_old'],a.damage.astype(np.float32))
-                            or not np.array_equal(z['d_target'],b.damage.astype(np.float32))
-                            or pred_hash!=row['input_predictor_sha256']):
-                        raise RuntimeError('label feature/target timing or predictor evidence mismatch')
+                    verify_label_feature_arrays(backend,a,b,z,dofs,
+                        bc*meta['state_contract']['context']['physical']['prescribed_load'],row['input_predictor_sha256'])
                 seen_steps.append(row['step'])
                 (validation_rows if phase_id=="validation" else train_rows).append(row)
         if seen_steps!=list(range(1,601)):

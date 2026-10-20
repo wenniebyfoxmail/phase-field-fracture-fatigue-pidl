@@ -46,11 +46,13 @@ def test_first_dependency_failure_is_charged_and_stops_before_any_scientific_pha
     write_json(inputs/'inputs.json',{})
     c.update(execution_enabled=True,run_root=str(root),archive_root=str(archive),inputs_sha256=sha256(inputs/'inputs.json'),
              plotting_admission=dict(id='plotting_admission',kind='admission',gpu=False,wall_seconds=120))
+    c['budget_reconciliation']=dict(complete=True,receipt_sha256='artificial',active_or_unknown_runs=[])
     c['runtime_expected']['matplotlib']=None
     cp=tmp_path/'card.json';write_json(cp,c);pp=tmp_path/'package.json';write_json(pp,dict(artifact_id='unit'))
     rp=tmp_path/'review.json';write_json(rp,dict(verdict='REVIEW_PASS',artifact_id='unit',card_sha256=sha256(cp)))
     monkeypatch.setattr(sys,'argv',['runner','--card',str(cp),'--package',str(pp),'--inputs',str(inputs),'--review',str(rp),'--execute'])
     monkeypatch.setattr(r,'verify_package',lambda *a:None);monkeypatch.setattr(r,'host_admission',lambda *a:{})
+    monkeypatch.setattr(r,'require_enabled_execution',lambda c:None)  # downstream failure/cost test only
     monkeypatch.setattr(r.importlib,'import_module',lambda name:SimpleNamespace(__version__=c['runtime_expected'][name]))
     monkeypatch.setattr(r.resource,'getrusage',lambda *a:SimpleNamespace(ru_utime=0.,ru_stime=0.))
     calls=[]

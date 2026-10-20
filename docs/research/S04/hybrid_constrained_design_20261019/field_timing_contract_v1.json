@@ -1,0 +1,81 @@
+{
+  "contract_id": "811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12",
+  "schema": "hybrid-accepted-field-timing-v1",
+  "family": "AT1-Amor-Carrara-eta0-nodal-K-v1",
+  "physical_key_fields": [
+    "initial_state_id",
+    "inputs_sha256",
+    "mesh_id",
+    "physics_id",
+    "settings_id",
+    "coupling_policy_id",
+    "schedule_id",
+    "boundary_id",
+    "reaction_dofs",
+    "step",
+    "cycle",
+    "substep",
+    "prescribed_load",
+    "branch",
+    "time_basis"
+  ],
+  "transaction": "parent state fingerprint; numeric state fingerprint; context and evidence hashes bound to certificate; atomic NPZ",
+  "support": {
+    "nodal": "original Q4 nodes; u interleaved x,y",
+    "gp": "original element order; Q4 GP (++),(-+),(+-),(--)"
+  },
+  "fields": {
+    "displacement": [
+      "nodal",
+      "accepted fresh mechanical equilibrium at final damage"
+    ],
+    "damage": [
+      "nodal",
+      "accepted box-QP solution; own old accepted damage is lower bound"
+    ],
+    "accumulated": [
+      "gp",
+      "commit trial from fixed old accepted A,r and final u,d; once only"
+    ],
+    "driver": [
+      "gp",
+      "commit (1-d_GP)^2 psi_raw(final u); current value, not history maximum"
+    ],
+    "fatigue": [
+      "gp",
+      "f_commit=f(A_commit); accepted fresh check, not last QP input"
+    ],
+    "f_solve_gp": [
+      "gp",
+      "actual coefficient in last solved damage QP, before final re-equilibrium"
+    ],
+    "psi_raw_commit_gp": [
+      "gp",
+      "undegraded tensile energy from final accepted displacement"
+    ],
+    "opaque": [
+      "source support",
+      "inherited unchanged; no physical update claimed"
+    ],
+    "reaction": [
+      "ordered constrained dofs",
+      "fresh equilibrium at accepted u,d"
+    ],
+    "features_old": [
+      "nodal/GP to nodal",
+      "old accepted state only"
+    ],
+    "u_pred,psi_pred": [
+      "nodal,gp",
+      "common mechanical predictor at old damage, target load; before damage solve"
+    ],
+    "NN_output": [
+      "nodal",
+      "feasible damage initializer only; never accepted damage or teacher"
+    ],
+    "d_target": [
+      "nodal",
+      "accepted output damage; target only, never an input feature"
+    ]
+  }
+}

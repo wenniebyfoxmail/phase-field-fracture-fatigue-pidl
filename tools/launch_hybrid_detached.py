@@ -10,7 +10,7 @@ from time import time
 
 from hybrid_inputs import read_manifest,sha256
 from hybrid_producer_common import verify_package,write_json
-from run_hybrid_producer import validate_card
+from run_hybrid_producer import validate_card, require_enabled_execution
 
 
 def main():
@@ -20,8 +20,7 @@ def main():
     args=p.parse_args()
     if platform.system()!='Linux':raise RuntimeError('launch is Linux producer-only')
     card=read_manifest(args.card);validate_card(card)
-    if card.get('execution_enabled') is not True:
-        raise RuntimeError('preparation card cannot reserve or spawn a producer')
+    require_enabled_execution(card)
     code=Path(__file__).resolve().parents[1];package=read_manifest(args.package)
     verify_package(code,package)
     review=read_manifest(args.review)

@@ -14,7 +14,7 @@ from time import time, perf_counter
 
 from hybrid_inputs import read_manifest,sha256
 from hybrid_producer_common import verify_package,write_json
-from run_hybrid_producer import validate_card, initial_totals
+from run_hybrid_producer import validate_card, initial_totals, require_enabled_execution
 
 
 def dispatch_timeout_seconds(card, prior_wall, overhead):
@@ -37,6 +37,7 @@ def main():
     args=p.parse_args()
     if platform.system()!='Linux':raise RuntimeError('launch is Linux producer-only')
     card=read_manifest(args.card);validate_card(card)
+    require_enabled_execution(card)
     code=Path(__file__).resolve().parents[1];package=read_manifest(args.package)
     verify_package(code,package)
     review=read_manifest(args.review)

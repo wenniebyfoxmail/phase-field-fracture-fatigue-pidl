@@ -97,6 +97,7 @@ def test_detached_launcher_reservation_prevents_duplicate_spawn(tmp_path,monkeyp
     from types import SimpleNamespace
     c=card();c['run_root']=str(tmp_path);c['archive_root']=str(tmp_path/'archive')
     c['execution_enabled']=True  # artificial launcher fixture only
+    c['budget_reconciliation']=dict(complete=True,receipt_sha256='artificial',active_or_unknown_runs=[])
     cp=tmp_path/'card.json';write_json(cp,c)
     m=dict(files={},artifact_id=object_sha({}));mp=tmp_path/'package.json';write_json(mp,m)
     rp=tmp_path/'review.json';write_json(rp,dict(verdict='REVIEW_PASS',card_sha256=sha256(cp),artifact_id=m['artifact_id']))
@@ -105,6 +106,9 @@ def test_detached_launcher_reservation_prevents_duplicate_spawn(tmp_path,monkeyp
         assert kwargs['start_new_session'] is True
         calls.append(args);return SimpleNamespace(pid=12345)
     monkeypatch.setattr(launch.platform,'system',lambda:'Linux')
+    # This test isolates the existing reservation/Popen contract; actual
+    # reconciliation receipt checks are exercised in test_hybrid_state_contract.
+    monkeypatch.setattr(launch,'require_enabled_execution',lambda c:None)
     monkeypatch.setattr(launch.subprocess,'Popen',fake_spawn)
     monkeypatch.setattr(sys,'argv',['launch','--card',str(cp),'--package',str(mp),'--review',str(rp),'--inputs',str(tmp_path)])
     launch.main()

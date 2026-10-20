@@ -1,0 +1,14 @@
+field,support,timing_and_role,contract_id
+displacement,nodal,accepted fresh mechanical equilibrium at final damage,811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+damage,nodal,accepted box-QP solution; own old accepted damage is lower bound,811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+accumulated,gp,"commit trial from fixed old accepted A,r and final u,d; once only",811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+driver,gp,"commit (1-d_GP)^2 psi_raw(final u); current value, not history maximum",811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+fatigue,gp,"f_commit=f(A_commit); accepted fresh check, not last QP input",811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+f_solve_gp,gp,"actual coefficient in last solved damage QP, before final re-equilibrium",811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+psi_raw_commit_gp,gp,undegraded tensile energy from final accepted displacement,811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+opaque,source support,inherited unchanged; no physical update claimed,811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+reaction,ordered constrained dofs,"fresh equilibrium at accepted u,d",811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+features_old,nodal/GP to nodal,old accepted state only,811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+"u_pred,psi_pred","nodal,gp","common mechanical predictor at old damage, target load; before damage solve",811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+NN_output,nodal,feasible damage initializer only; never accepted damage or teacher,811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12
+d_target,nodal,"accepted output damage; target only, never an input feature",811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12

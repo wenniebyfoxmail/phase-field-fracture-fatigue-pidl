@@ -1,0 +1,10 @@
+gap,current_evidence,needed,decision_effect,boundary
+R2 terminal and cost,unknown now; last local snapshot one accepted step,process/terminal/cost ledger and used fits/steps,must reconcile before any enabled card,no remote work this task
+new-contract train_A,0 qualified complete trajectories,600 own-history accepted transfers at .8,blocks fit,old c1 replay cannot substitute
+new-contract train_B,0 qualified complete trajectories,600 own-history accepted transfers at 1.2,blocks fit,no endpoint splicing
+new-contract validation,0 qualified complete trajectories,600 own-history accepted transfers at 1.0,blocks model selection,separate whole trajectory
+new-contract test arms,0 qualified complete trajectories,3 x 600 own-history accepted transfers at .9,blocks quality and acceleration verdict,reference not available online to candidate
+f_solve in old R2 exports,not saved explicitly under new contract,actual last-QP coefficient; cannot recover from commit f,old data cannot be auto promoted,conditional descriptive old-contract analysis only
+fatigue feedback,seen c1 has f=1; full coverage unknown,all six planned paths reach accepted f<1,blocks full fatigue claim,do not loosen threshold or add cycles silently
+full quality and total cost,single-prefix timings only,matched complete field and timing comparisons incl evidence IO,blocks added NN value,no repeatability or road claim
+material/loading/mesh/road transfer,not in current package or budget,separate datasets and independent experimental/road outcomes,out of scope,one physics_id only

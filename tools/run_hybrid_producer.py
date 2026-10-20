@@ -26,6 +26,40 @@ from hybrid_inputs import sha256, read_manifest
 from hybrid_producer_common import verify_package, write_json, append_event
 
 
+def require_enabled_execution(card, code_root=None):
+    if card.get('execution_enabled') is not True:
+        raise RuntimeError('preparation card cannot reserve or spawn a producer')
+    reconciliation=card.get('budget_reconciliation',{})
+    if (reconciliation.get('complete') is not True
+            or not reconciliation.get('receipt_sha256')
+            or reconciliation.get('active_or_unknown_runs') != []):
+        raise RuntimeError('consumed runs and remaining study allowance must be reconciled before execution')
+    rel=Path(reconciliation.get('receipt',''))
+    if not str(rel) or str(rel)=='.' or rel.is_absolute() or '..' in rel.parts:
+        raise RuntimeError('reconciliation receipt must be a bound local source')
+    path=Path(code_root or Path(__file__).resolve().parents[1])/rel
+    if sha256(path)!=reconciliation['receipt_sha256']:
+        raise RuntimeError('reconciliation receipt hash differs')
+    receipt=read_manifest(path)
+    consumed='pf_hybrid_complete_20261020_r2'
+    if (receipt.get('schema')!='hybrid-budget-reconciliation-v1'
+            or receipt.get('complete') is not True or receipt.get('active_or_unknown_runs')!=[]
+            or consumed not in receipt.get('settled_runs',[])
+            or card.get('run_id') in receipt.get('settled_runs',[])):
+        raise RuntimeError('consumed run is not settled or run identity is reused')
+    for key,needed in [('remaining_numerical_steps',card['budget']['numerical_substeps']),
+                       ('remaining_training_fits',card['budget']['training_fits'])]:
+        if type(receipt.get(key)) is not int or receipt[key]<needed:
+            raise RuntimeError('reconciled step/fit allowance cannot cover complete plan')
+    # initial_totals verifies this same source's SHA and nonnegative metrics,
+    # then charges it before launch/worker admission. A nonempty claim is not
+    # a replacement for a real receipt or a new allotment of old budget.
+    if not any(e.get('source')==str(rel) and e.get('sha256')==reconciliation['receipt_sha256']
+               and consumed in e.get('lineage',[]) and e.get('cost_only_not_admission') is True
+               for e in card.get('prior_costs',[])):
+        raise RuntimeError('reconciled consumed-run costs absent from actual prior ledger')
+
+
 def validate_card(card):
     from hybrid_state_contract import CONTRACT_ID
     if card.get('state_contract_id') != CONTRACT_ID:
@@ -345,7 +379,7 @@ def main():
     if sha256(args.inputs/'inputs.json')!=card['inputs_sha256']:raise RuntimeError('input manifest differs')
     if args.check:
         print(json.dumps(dict(card_valid=True,artifact_id=package['artifact_id'],execution=False),indent=2));return
-    if card.get('execution_enabled') is not True:raise RuntimeError('preparation package has no execution authority; R1 remains stopped')
+    require_enabled_execution(card)
     if not args.execute or args.review is None:raise RuntimeError('explicit execution and exact review required')
     review=read_manifest(args.review)
     if (review.get('verdict')!='REVIEW_PASS' or review.get('card_sha256')!=sha256(args.card)

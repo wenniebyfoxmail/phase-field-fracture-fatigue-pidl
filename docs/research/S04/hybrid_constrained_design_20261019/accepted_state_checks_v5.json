@@ -1,0 +1,43 @@
+{
+  "schema": "hybrid-accepted-state-checks-v5",
+  "scope": "artificial arrays, static identity and fault injection only; no project scientific arrays decoded or solve/fit",
+  "tests_passed": 130,
+  "elapsed_seconds": 3.57,
+  "test_files": [
+    "test_hybrid_state_contract.py",
+    "test_hybrid_incremental.py",
+    "test_hybrid_producer.py",
+    "test_hybrid_coupled_acceleration.py",
+    "test_hybrid_performance.py",
+    "test_hybrid_plotting_admission.py",
+    "test_native_q4_damage_qp.py",
+    "test_damage_conditioned_equilibrium.py",
+    "test_hybrid_comparison_preparation.py"
+  ],
+  "runtime": "existing owner venv Python3.12.2; no installs; producer not tested",
+  "python": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+  "command": "PYTHONPATH=source:tools:.:tests MPLCONFIGDIR=<local unit cache> <owner venv>/bin/python -m pytest -q --tb=short tests/test_hybrid_state_contract.py tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_hybrid_coupled_acceleration.py tests/test_hybrid_performance.py tests/test_hybrid_plotting_admission.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py tests/test_hybrid_comparison_preparation.py",
+  "raw_log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_contract_20261020/final_unit_checks.log",
+  "raw_log_sha256": "99d4857888b7161b0852c562eadebde57e2a5d0f71c4d4307401c875add019ca",
+  "state_contract_id": "811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12",
+  "git_diff_check_passed": true,
+  "new_contract_failure_cases": [
+    "evidence corruption",
+    "dropped contract",
+    "wrong parent/trajectory/schedule",
+    "legacy label promotion",
+    "f_solve vs f_commit residual",
+    "same index wrong cycle/substep/load/branch",
+    "initial state/input/settings/coupling mismatch",
+    "reaction order and actual boundary support",
+    "future feature or d_old/d_target/predictor mismatch",
+    "disabled/unreconciled launch",
+    "receipt SHA/unknown run/used fit/insufficient steps/unbound cost/reused RunID"
+  ],
+  "scientific_solve_steps": 0,
+  "training_updates": 0,
+  "project_arrays_decoded": 0,
+  "ssh_calls": 0,
+  "authority": "implementation and independent review only",
+  "test_environment_recovery": "Initial conda run lacked OSQP; reused original owner development venv. No dependency installed; environment failure is not a method result."
+}
