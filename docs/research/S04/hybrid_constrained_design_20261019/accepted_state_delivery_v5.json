@@ -1,0 +1,48 @@
+{
+  "schema": "hybrid-accepted-state-delivery-v5",
+  "status": "CODE_READY_LOCAL_PREPARATION_ONLY",
+  "source_commit": "91d500c22bd4e086e4542971da6ecfb138706708",
+  "owner_base_commit": "77119a1d31bc56560fe8607c331b560ec6afc13b",
+  "owner_worktree": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/fem-surrogate-comparison-prep-20261020",
+  "review": {
+    "path": "accepted_state_review_v5.json",
+    "sha256": "7daa7f79fc39d9efa28e83dc59450f1dd44cb7a3b09eb7ba9cf26ded3a0e3c95",
+    "independent_tests_passed": 36,
+    "blocking_findings": []
+  },
+  "owner_tests_passed": 130,
+  "source_manifest_files": 85,
+  "prepared_packet": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_contract_20261020/reviewed_packet_v5",
+  "build_receipt_sha256": "2361f4bd654cc6b53df858040f90edb53cdfec495863482d9fbbb622b4ca5edc",
+  "build": {
+    "source_commit": "91d500c22bd4e086e4542971da6ecfb138706708",
+    "artifact_id": "2a7819cbd7bb0865a78d224bc447123fc7f140376033cc0a55d39068d6a002dc",
+    "source_file_count": 86,
+    "source_bytes": 1184132,
+    "code_tar_bytes": 236734,
+    "code_tar_sha256": "b3891ccae76e686f33bd9748dc074e16b955f605d935b18a0cfed42075dc9be4",
+    "card_sha256": "d5af9ff99ff25b62ae9a23af4e6257ecbb35dcd1937fdb3cfa8db73c35358c52",
+    "production_execution_enabled": false,
+    "runtime_inventory_executed": false,
+    "new_fem_solves": 0,
+    "training_updates": 0,
+    "ssh_calls": 0,
+    "inputs_reused_without_array_load": true,
+    "remaining_host_hours_now": null,
+    "reason": "Consumed R2 total costs/fit/step use not reconciled; never reset original study budget"
+  },
+  "observed_readonly_supervisor_check": {
+    "card_valid": true,
+    "artifact_id": "2a7819cbd7bb0865a78d224bc447123fc7f140376033cc0a55d39068d6a002dc",
+    "execution": false
+  },
+  "execution_enabled": false,
+  "current_remaining_budget": null,
+  "R2_terminal_and_cost_reconciled": false,
+  "old_outputs_requalified": false,
+  "new_project_scientific_array_decodes": 0,
+  "new_fem_steps": 0,
+  "training_updates": 0,
+  "SSH_calls": 0,
+  "scientific_conclusion": "No new numerical or physical result. Prospective comparison distinguishes complete fatigue-trajectory feasibility and additional neural initial-guess value at matched quality."
+}

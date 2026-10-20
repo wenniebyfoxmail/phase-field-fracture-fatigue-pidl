@@ -1,0 +1,63 @@
+{
+  "schema": "hybrid-accepted-state-independent-code-review-v5",
+  "date": "2026-10-20",
+  "reviewer": "independent Codex audit_review",
+  "verdict": "CODE_READY_LOCAL_PREPARATION",
+  "source_commit": "91d500c22bd4e086e4542971da6ecfb138706708",
+  "owner_base_commit": "77119a1d31bc56560fe8607c331b560ec6afc13b",
+  "state_contract_id": "811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12",
+  "source_manifest": {
+    "files": 85,
+    "artifact_id": "38715de982999692ebadcb097dfb5bc3321602c1549c3fc48675f3ab2c55d9e8",
+    "all_file_hashes_independently_verified": true
+  },
+  "prepared_packet": {
+    "files": 86,
+    "artifact_id": "2a7819cbd7bb0865a78d224bc447123fc7f140376033cc0a55d39068d6a002dc",
+    "card_sha256": "d5af9ff99ff25b62ae9a23af4e6257ecbb35dcd1937fdb3cfa8db73c35358c52",
+    "all_file_hashes_independently_verified": true,
+    "execution_enabled": false,
+    "run_id": null
+  },
+  "blocking_findings": [],
+  "resolved_findings": [
+    "Bind initial state/input manifest, complete settings/coupling policy and ordered reaction support to physical identity; enforce during storage, transition, training and scoring.",
+    "Validate state envelope before opening temporary file to avoid descriptor leakage on rejected commits.",
+    "Keep true last-QP f_solve separate from fresh f_commit; enforce residual and evidence identities without changing tolerances.",
+    "Reject disabled or unreconciled execution before reservation/spawn; verify real bound reconciliation receipt and charge consumed-run costs.",
+    "Remove consumed R2 RunID and stale owner-base attribution from new local preparation packet."
+  ],
+  "validation": {
+    "independent_targeted_tests": 36,
+    "independent_elapsed_seconds": 0.96,
+    "independent_test_file": "tests/test_hybrid_state_contract.py",
+    "owner_suite_receipt": {
+      "tests": 130,
+      "elapsed_seconds": 3.57,
+      "raw_log_sha256": "99d4857888b7161b0852c562eadebde57e2a5d0f71c4d4307401c875add019ca",
+      "log_sha_and_result_independently_verified": true
+    },
+    "method": "Static code/document review, artificial-array and fault-injection tests, source/package/card byte hashes; no real project arrays decoded."
+  },
+  "scientific_boundary": {
+    "scientific_pass": false,
+    "execution_authorized": false,
+    "producer_deployment_authorized": false,
+    "R2_current_status": "unknown beyond retained 2026-10-20 19:06:47 London snapshot",
+    "R2_cost_fit_and_step_usage": "unreconciled; no allowance restored",
+    "legacy_outputs": "Read under original contract only; missing historical f_solve cannot be reconstructed or retroactively qualified.",
+    "remaining_gaps": [
+      "R2 terminal/process and complete cost/fit/step reconciliation",
+      "Prospective full accepted label/test trajectories under new contract",
+      "f<1 fatigue-feedback coverage",
+      "Actual same-quality online cost including new evidence IO"
+    ]
+  },
+  "review_actions": {
+    "real_project_arrays_decoded": 0,
+    "SSH_calls": 0,
+    "model_training_updates": 0,
+    "real_project_FEM_solves": 0,
+    "producer_launches": 0
+  }
+}
