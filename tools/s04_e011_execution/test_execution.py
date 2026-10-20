@@ -275,4 +275,15 @@ class AtomicScanRaceTests(unittest.TestCase):
         def denied(*args,**kwargs):kwargs['onerror'](PermissionError('fixture unreadable directory'))
         with patch.object(c.os,'walk',side_effect=denied),self.assertRaises(PermissionError):c.bytes_under(Path('/artificial-only'))
 
+
+class MechanicalClockTests(unittest.TestCase):
+    def test_mechanical_time_is_not_reset_at_science_launch(self):
+        card={'mechanical_budget':dict(maximum_seconds=300,maximum_checks=2)}
+        self.assertEqual(c.bind_attempt_clock(card,{'mechanical_started_monotonic':100.,'zero_launch_checks':2},125.),100.)
+        self.assertEqual(c.bind_attempt_clock({}, {},125.),125.)
+    def test_invalid_or_exhausted_mechanical_envelope_stops_before_claim(self):
+        card={'mechanical_budget':dict(maximum_seconds=300,maximum_checks=2)}
+        for started,count in [(float('nan'),1),(-201.,1),(101.,1),(0.,3),(0.,0),(False,1),(0.,True)]:
+            with self.subTest(started=started,count=count),self.assertRaises(RuntimeError):c.bind_attempt_clock(card,{'mechanical_started_monotonic':started,'zero_launch_checks':count},100.)
+
 if __name__=='__main__':unittest.main()

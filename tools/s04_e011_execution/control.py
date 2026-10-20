@@ -74,6 +74,17 @@ def validate_authority(authority,authority_sha,authority_path,card,package_sha):
     return allowed_phases(authority.get('scope'))
 
 
+def bind_attempt_clock(card,authority,now):
+    """Charge authorised zero-launch checks to the same preflight/total clock."""
+    budget=card.get('mechanical_budget')
+    if budget is None:return now
+    started=authority.get('mechanical_started_monotonic');checks=authority.get('zero_launch_checks')
+    if (isinstance(started,bool) or not isinstance(started,(int,float)) or not math.isfinite(started)
+        or not 0<=now-started<=budget['maximum_seconds'] or type(checks) is not int
+        or not 1<=checks<=budget['maximum_checks']):raise RuntimeError('mechanical check clock/count outside approved envelope')
+    return started
+
+
 def consume_claim(path,authority_sha,run_id):
     # Whole family, not just a selectable run ID. Consumed BEFORE resource
     # admission, and kept on every failure/timeout; never auto-unlink/retry.

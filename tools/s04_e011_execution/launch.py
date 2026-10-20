@@ -5,7 +5,7 @@ one exact human authority overlay and consumes the family claim before admission
 """
 import argparse,csv,io,json,math,os,platform,pwd,signal,socket,subprocess,sys,time
 from pathlib import Path
-from control import (FAMILY,RESERVE,SECONDS,PHASES,allowed_phases,bytes_under,consume_claim,digest,
+from control import (FAMILY,RESERVE,SECONDS,PHASES,allowed_phases,bind_attempt_clock,bytes_under,consume_claim,digest,
     seal_outputs,stop_owned,validate_authority,validate_telemetry,verify_package,wait_guard_ready,write_json)
 
 
@@ -186,7 +186,7 @@ def execute(root,authority_path,authority_sha):
     authority=json.loads(Path(authority_path).read_text());names=validate_authority(authority,authority_sha,authority_path,card,digest(root/'package_manifest.json'))
     if platform.system()!='Linux':raise RuntimeError('Mac is Dev only; no producer execution')
     if root!=Path(card['run_root']):raise RuntimeError('exact candidate root required')
-    started=time.monotonic();claim=Path(card['family_claim']);claim.parent.mkdir(exist_ok=True)
+    started=bind_attempt_clock(card,authority,time.monotonic());claim=Path(card['family_claim']);claim.parent.mkdir(exist_ok=True)
     consume_claim(claim,authority_sha,card['run_id'])
     controller=guardian=None;left=right=None;fds=[];status='STOPPED_NO_RETRY';error=None
     phase_limits=[SECONDS[PHASES.index(n)]-10 for n in names]  # outer:10s sealing +10s kill/reap inside original cap
