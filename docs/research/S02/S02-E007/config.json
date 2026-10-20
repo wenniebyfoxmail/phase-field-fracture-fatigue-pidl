@@ -1,0 +1,91 @@
+{
+  "experiment": "S02-E007",
+  "protocol_revision": "1.0",
+  "author_commit": "35d4a79b2f3d42f80cd0f63496675c6dbb483add",
+  "epoch": 6,
+  "fold_test_specimens": [
+    "A009",
+    "A011",
+    "A012",
+    "A013",
+    "A014",
+    "A019"
+  ],
+  "active_specimens": [
+    "A003",
+    "A009",
+    "A011",
+    "A012",
+    "A013",
+    "A014",
+    "A019"
+  ],
+  "expected_test_windows": [
+    96,
+    132,
+    84,
+    64,
+    126,
+    132
+  ],
+  "expected_train_windows": [
+    614,
+    578,
+    626,
+    646,
+    584,
+    578
+  ],
+  "seeds": [
+    1729,
+    2718,
+    31415
+  ],
+  "run_ids": [
+    "S02-E007-R001",
+    "S02-E007-R002",
+    "S02-E007-R003"
+  ],
+  "mc_draws": 40,
+  "five_draw_estimator_seed": 8675309,
+  "batch_size": 32,
+  "dropout": 0.3,
+  "threads": 4,
+  "max_wall_seconds": 14400,
+  "max_rss_bytes": 34359738368,
+  "max_task_bytes": 42949672960,
+  "normalization_mean_std_atol": 2e-06,
+  "normalization_max_train_atol": 0.001,
+  "paper_test_mae": [
+    0.14,
+    0.41,
+    0.15,
+    0.31,
+    0.29,
+    0.21
+  ],
+  "paper_total_mae": 0.26,
+  "paper_train_mae": [
+    0.13,
+    0.15,
+    0.15,
+    0.16,
+    0.14,
+    0.17
+  ],
+  "stop_on_exception": true,
+  "training": false,
+  "observation_uncertainty_testing": false,
+  "default_best_replay": false,
+  "producer": "gpu-taobo",
+  "host": "GPUServer8",
+  "runtime": {
+    "python": "3.10.12",
+    "torch": "1.13.1+cu116",
+    "torchvision": "0.14.1+cu116",
+    "numpy": "1.23.4",
+    "Pillow": "9.4.0",
+    "scipy": "1.10.1",
+    "matplotlib": "3.7.1"
+  }
+}

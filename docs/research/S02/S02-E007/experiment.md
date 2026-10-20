@@ -1,0 +1,55 @@
+# S02-E007 — Published raw-image-to-RUL baseline replay
+
+Protocol revision: 1.0, frozen before inference, 2026-10-20. State: draft pending independent code review. Primary Storyline: S02 (observation-conditioned prognosis); evidence domain: controlled composite-fatigue experiment. Owner: ISTRUST replay in chat 01a154fa-dd18-7432-ba1a-e918092ed6a3. Existing decision note: SCB 观测不确定性与未来预测实验方案; acquisition/search report retained in Obsidian.
+
+## Goal and authorization
+
+Original question: does modelling observation uncertainty improve future fracture prediction? Current step: reproduce a published observation-to-RUL baseline before changing its observation model. User explicitly accepted RUL and, after reviewing acquisition and the plan, directed: “go ahead and reproduce the published results using the sixth-epoch checkpoints. Fix the loader ordering, document any differences, and leave observation uncertainty testing until the baseline is reproduced.” This authorizes implementation, producer preparation and the bounded replay; no further execution confirmation is needed within this scope. No training, new observation-noise arms, alternative epoch search or default-best replay.
+
+D1 reuse complete: full ISTRUST archive/source/checkpoints audited under the parent research_hq/identification_uncertainty_prediction_20261006/istrust_reproduction_preparation_20261020. Reuse original architecture, data generation, preprocessing and confidence-band functions. Local repo search found no ISTRUST runner; existing road/FEM runners are unrelated. **D2 active:** implement and review a deterministic source-compatible replay, execute six physical folds, recover full predictions and compare with Table 2. D3: interpret discrepancies and choose whether this measured baseline is suitable for a later uncertainty protocol. Such a protocol remains outside execution scope.
+
+## Inputs and frozen source
+
+`data_lock.json` identifies the Mendeley v4 dataset (2,416 images, nine physical specimens, two cameras) by its published SHA-256 and the author repository by commit 35d4a79b2f3d42f80cd0f63496675c6dbb483add. A 63-file source/epoch-6 snapshot is transported as one hash-identified package. It contains unchanged author code, LICENSE, configs/logs and the six matched stage_2/encoder_state_dict_epoch_bn_6.pt plus predictor_state_dict_epoch_6.pt pairs. No stage-1/second-stage head mixing.
+
+The only change to author code is `for i in os.listdir(directory_dataset):` -> `for i in sorted(os.listdir(directory_dataset)):` in a task-owned copy. The original acquisition remains unchanged. It restores complete consecutive specimen/view groups; an independent explicit manifest must exactly agree with every retained author RUL sequence and every target.
+
+Keep the author's effective population/target semantics: labels <4000, exclude A025, drop final view pair A020, trim first 8/9 captures, take `[1::2]`, use windows j/j+3/j+6 and label j+7. Both cameras stay together in each physical fold. Test folds: A009,A011,A012,A013,A014,A019. A003 stays in training under the saved/default no-validation configuration, although the paper says its tuning specimen was discarded. This is a documented publication discrepancy, not silently corrected. The typical target is 52 seconds after the latest input. RUL seconds must not be converted to exact cycles; selection by eventual RUL is retrospective rather than deployable origin selection.
+
+Expected held-out windows: 96,132,84,64,126,132 (634 total); training-evaluation windows: 614,578,626,646,584,578. Six physical trajectories, not 634 independent units. Inputs to the predictor are image pixels only. Labels/time/physical IDs are for data construction and scoring, never additional model features. No additional data or protected holdouts.
+
+## Runtime and engineering differences
+
+The host has Python 3.10.12 rather than the author's Python 3.9.12/Windows. Use an isolated task-local venv, pin the original numerical/image libraries: torch 1.13.1+cu116, torchvision 0.14.1+cu116, numpy 1.23.4, Pillow 9.4.0, scipy 1.10.1, matplotlib 3.7.1. This prospective runtime difference is explicit before scores. Do not use the host's torch 2.7 runtime for model inference.
+
+Regenerate preprocessing with unmodified author routines. Pixel resize, equalize, min/max and normalization operations are preserved, rather than replaced with similar-looking image operations. Check train-only normalization before any inference: maximum label within 0.001 seconds (float32 representation versus decimal filename); mean/std within 2e-6 (float32 accumulation/portability allowance, about 17 float32 epsilons). Larger differences stop the batch and are documented, not tuned away. Use saved checkpoint normalization constants after this agreement check. Do not select normalization from test scores.
+
+Original script writes figures over the saved run folder and drops the last plotted row; wrapper writes isolated per-window/draw records and includes all rows. A singleton final batch retains the batch axis rather than using unrestricted squeeze. The author architecture remains unchanged, no AMP, no optimizer. BatchNorm is in eval; only Dropout is active at p=0.3. All model parameters and BN buffers must compare exactly before/after evaluation.
+
+## Evaluation and primary comparison
+
+Only sixth-epoch checkpoints. Three predeclared MC seeds are separate Runs: R001=1729, R002=2718, R003=31415. Within a Run, evaluate all six folds with the frozen per-fold/split RNG streams in config/code. Forty dropout draws per window; training-eval before testing, batch size 32, no shuffle. A separately seeded five-draw held-out estimator check occurs only in R001 because the historical training logs used five draws. It is diagnostic, never used to select seeds/weights or replace the primary result. Original model dropout is part of this baseline; it is not observation-uncertainty testing.
+
+Primary observable: R001 window-weighted normalized held-out MAE across all six folds. Compare with the paper's displayed 0.26 bin [0.255,0.265). This bin is justified solely by published rounding precision, not a claim of statistical equivalence or practical performance. Per-fold Table 2 values (0.14,0.41,0.15,0.31,0.29,0.21) are required descriptive comparisons; explain any cancellation hidden in the aggregate. R002/R003 report MC variation and cannot rescue a missed primary comparison. No post-result tolerance changes.
+
+The already-released final CSV rows round to all Table 2 training/test cells and give weighted test MAE 0.2606646; this identifies the sixth-epoch replay target. It is not a new model result. The Table 2 training row matches the online `training` column accumulated during optimizer updates with p=0.1; inference-only `training eval` with p=0.3 is a different quantity. Recover that historical training row from the logs, and label new frozen-model training-eval separately; do not retrain to force agreement.
+
+Original `bootstrap(..., np.std, BCa)` bands are reproduced only for held-out trajectories and labelled historical SD-bootstrap bands. They are not 95% predictive intervals for true RUL. Training-set bands are omitted since they cannot change point forecasts or scores. Degenerate bootstrap bands are recorded as nonfinite diagnostics while finite mean forecasts remain scoreable; no new calibration/coverage claim.
+
+## Producer, budget and first-stop behavior
+
+Approved producer: Taobo only, drtao@172.16.100.2 / GPUServer8. Fresh root /mnt/data2/drtao/wennie/S02-E007-R001; its runs/ subfolder distinguishes R001–R003. Caches, pip cache, tmp, source and outputs remain under that root. Recheck actual GPU UUID/process ownership, free memory, host memory and mounts immediately before launch; one unused GPU, CUDA_VISIBLE_DEVICES mandatory. Never evict anyone's process. No host fallback.
+
+Maximum batch computation/preprocessing/download elapsed time 14,400 seconds, one GPU (at most four GPU-hours), four CPU threads, 32 GiB sampled process-tree RSS, 40 GiB task files. Public data download is rate-limited to 10 MiB/s; no multi-GB shared-directory rsync or global installs. Sequential extraction is task-local. Environment setup is isolated preparation, with no image reads or CUDA/model execution. Fresh environment preparation logs and its completion/error are retained.
+
+Controller monitors its newly created worker group and descendants, stops on the first exception/nonzero exit, over-budget exit, memory/storage/time limit, source/data identity failure, normalization mismatch or foreign GPU-process conflict. Save first-stop evidence before termination; TERM then KILL only its own fresh process group. Linux parent-death signal prevents worker survival if its controller dies. No automatic retry, new seed after failure, new Run ID, epoch change, or host fallback. Later predeclared Runs are unattempted if an earlier component fails. An SSH loss is unknown visibility, not proof that a detached job stopped; preserve state and do not blindly relaunch.
+
+## Minimum evidence and interpretation
+
+Required: source/runtime/data identities, ordered fold/window manifests, preprocessing deltas, every held-out forecast and raw draw array, corresponding training-eval results, complete/failed receipts, unchanged model-state check, timing/RSS/storage/GPU identity, fold/aggregate comparison table and six physical-specimen trajectory plots. Retrieve and verify counts/metrics independently from raw draws, then obtain a bounded evidence review. Each scored figure set has README_analysis.md; Obsidian receives the result/limitations and a small decision figure, keeping raw data in the archive.
+
+Outcomes: valid complete replay with primary-bin agreement supports aggregate display-precision reproduction, with fold differences stated; valid complete replay outside that bin is a publication discrepancy and still supplies a measured baseline; incomplete/invalid evidence is inconclusive/inadmissible for reproduction. None establishes training-from-scratch reproducibility, observation-uncertainty benefit, calibrated physical measurement uncertainty, future crack geometry, or road performance. No observation-uncertainty experiment until the baseline result and discrepancies have been resolved and the user authorizes the next protocol.
+
+## Task isolation
+
+Branch codex/s02-e007-istrust-replay-20261020, base origin/main 389f618b7a042e0a4e4d11a3ab24a7164f6902cc. Scope scripts/istrust_replay and docs/research/S02/S02-E007 only. No shared mechanics/training code, old experiment outputs or other active owners modified. A clean local commit and immutable transport snapshot provide producer identity; any GitHub publication remains separate from this task-local deployment. Code review is bound to exact commit/config/data-lock/protocol. Code review does not establish a scientific result.
