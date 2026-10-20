@@ -4,7 +4,10 @@ Date: 2026-10-20, Europe/London. Owner: Q4 material inversion preparation.
 Goal: reusable E/Gc/alpha_T sensitivities for current native Q4 AT1/Amor/Carrara
 FEM; B state assimilation and C spatial identification remain in Obsidian.
 
-This file preserves the initial derivative-preparation milestone. The current
+This file preserves the initial derivative-preparation milestone. For the
+current reviewed switch solver and complete-path budget see
+[switch_solver_and_path_validation.md](switch_solver_and_path_validation.md)
+and [review_v5.md](review_v5.md). The earlier
 sparse/history/source-interface update and its remaining numerical limits are
 in [offline_completion.md](offline_completion.md); exact corrected code
 `fa2e50427c2e48b54d547dd6e4597f5b63628c70` passed focused independent rereview

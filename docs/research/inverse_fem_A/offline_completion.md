@@ -1,6 +1,12 @@
 # A inverse FEM: remaining interfaces prepared offline
 
-Date: 2026-10-20. Same owner/branch/goal as implementation.md. Continue D2:
+Date: 2026-10-20. Same owner/branch/goal as implementation.md.
+Historical interface milestone: the later reviewed switch solver and current
+complete-path proposal are in [switch_solver_and_path_validation.md](switch_solver_and_path_validation.md)
+and [review_v5.md](review_v5.md). Earlier statements about the missing switch
+solver below describe the pre-switch-solver milestone.
+
+Continue D2:
 prepare consistent material derivatives and attributable observations. The
 original human scope permits local implementation/read-only data inspection
 and independent delta review only; no new FEM, inversion, trajectory replay,

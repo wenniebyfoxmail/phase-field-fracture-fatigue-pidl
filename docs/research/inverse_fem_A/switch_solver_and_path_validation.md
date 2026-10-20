@@ -293,8 +293,9 @@ Stop before reserve exhaustion; no partial transfer claimed as complete archive.
 No paid-compute cash amount is known; this envelope is compute/storage, not a
 cloud quote. Producer availability and tariff would be checked only if chosen.
 
-**Status:** code prepared and light-tested; independent exact-version review
-pending. Proposal not executable: no fresh Run ID/command/runtime pin/resource
+**Status:** exact code156f9924d2aa5ee4352dbd32cc6ebf839746fb1d passed independent
+review (review_v5.md),38 small-array checks independently passed in0.31s.
+No code/tests/tools changed after review. Proposal not executable: no fresh Run ID/command/runtime pin/resource
 card or human execution approval. No FEM, inverse fit or native replay started.
 
 ## Supporting methodological sources (targeted, not a literature review)
