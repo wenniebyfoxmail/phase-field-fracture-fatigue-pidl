@@ -153,6 +153,12 @@ def paired_trajectories():
             fc=hread(h,'cycles').reshape(-1).astype(int)
             fshapes={n:str(h[n].shape) for n in ['u_node','v_node','d_node']}
         check(topo+' paired cycle set',np.array_equal(pc,fc),dict(pidl=pc.tolist(),fem=fc.tolist()),fem,'index')
+        jc=np.array([int(r['cycle']) for r in j['records']])
+        jt=np.array([int(r['step']) for r in j['records']])
+        check(topo+' JSON versus NPZ cycle/step index',np.array_equal(pc,jc) and np.array_equal(ps,jt),
+              dict(npz_cycles=pc.tolist(),npz_steps=ps.tolist(),json_cycles=jc.tolist(),json_steps=jt.tolist()),pidl,'index')
+        check(topo+' actual NPZ raw step mapping',np.array_equal(ps,np.array([raw_step(int(c),4) for c in pc])),
+              dict(cycles=pc.tolist(),steps=ps.tolist()),pidl,'index')
         for r in j['records']:
             c=int(r['cycle'])
             check(f'{topo} c{c} raw index',int(r['step'])==raw_step(c,4),r['step'],j['archive'],'index')
@@ -229,7 +235,8 @@ def c20_identity():
         for label,group,c,q,role,timing in [('prior','pre',20,3,'immutable_accepted_prior','post_commit c20s3'),
                                            ('trial','current',20,4,'conditional_same_state_endpoint','fresh trial; zero physical commits')]:
             row=state('E027_E034_sources','E011_conditional_re_solve',c,q,label,paths['case'],role,timing,level='identity_verified',
-                      outer=18 if q==4 else '', history_commits=0)
+                      outer=18 if q==4 else '', history_commits=0 if q==4 else 'already_committed_prior',
+                      current_conditional_solve_history_commits=0)
             for n in ['u','d','raw','history' if q==3 else 'history234']:
                 field(row,n,str(paths['case'])+'::'+group+'/'+n,'native nodes/GP4',timing)
         row=state('E027_initializer','E011_ad749c8_q4',20,3,'trained_1NN_98',lock['initializer']['local_path'],
@@ -272,7 +279,7 @@ def current_outputs():
         c,q=s['cycle'],s['substep']
         check('tightcouple declared raw step',s['step']==raw_step(c,q),s['step'],TIGHT/'retrieved/root/contract.json','index')
     root=TIGHT/'retrieved/archive/output/c20_s4'
-    paths=[root/'fields.npz']+sorted((root/'checkpoints').glob('*/fields.npz'))
+    paths=[root/'fields.npz']+sorted((root/'checkpoints').glob('*/fields.npz'))+sorted((root/'readouts').glob('*.npz'))
     for p in paths:
         row=state('E011_tightcouple','E011_fixed_c20s4',20,4,str(p.relative_to(root)),p,
                   'optimization_readout_not_physical_transition','fixed c20s4; 0 history commits, fixed FEM physical d',
