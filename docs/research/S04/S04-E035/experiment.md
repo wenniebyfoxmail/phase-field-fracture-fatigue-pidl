@@ -106,5 +106,16 @@ chat is sent by this task without human authorization.
 | D2 active | Review/validate the paired implementation, then execute one native shear trajectory and corresponding independent NN trajectory under resource admission. |
 | D3 pending | Retrieve both; compare jointly valid U states, diagnose discretization/optimization/model differences; decide cyclic shear or another loading mode only from the result and new scope authority. |
 
-Results: none yet. Execution preparation and source inspection do not establish
-shear convergence, crack kinking, FEM/PIDL agreement or physical validity.
+## 2026-10-20 first-attempt outcome
+
+R001 stopped at U=.03 after about31.22 supervisor seconds: final residual
+assertion passed, combined damage-bounds/healing assertion failed. Accepted
+loaded states 0/30; specific offending invariant was not exported. Initial
+state/logs/code archive retrieved; no shear/FEM-PIDL agreement result exists.
+See [run receipt](runs/S04-E035-R001.md). D2 remains active at reference repair;
+R002 PIDL is prepared, not launched. No repeated attempt is implied.
+
+The export-only diagnostic correction and bounded one-state proposal are ready
+in [diagnostic_proposal.md](diagnostic_proposal.md), with fresh authority still
+pending. Preserve R001, its consumed attempt and original thresholds. The
+scientific verdict for the requested comparison remains inconclusive.
