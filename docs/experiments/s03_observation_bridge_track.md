@@ -490,3 +490,18 @@ NextD3decisionneedsphoto-indexdefinition+Extendpoint/referenceimageevidence,
 notmorealgebra;onlyconsolidatedrequestdraftifpursued,nosendingauthorityassumed.
 Parentarchive reference_mapping_20261020;0download/pixeldecode/CV/fit/training/
 score,oldobserver/halfdepth/scoresandD01untouched.
+
+### D3 enquiry prepared / assumption-based continuation assessed — 2026-10-20
+
+[Unsent full draft](../research/S03/S03-E049-MD03/author_enquiry_draft_20261020.md):
+combinedphoto-ID/timeand7-gaugeendpoint/referenceimagedefinitions;ToTaylor
+hkt@berkeley.edurecheckedcurrentBerkeleyofficialpage;Cambridgesenderproposed,
+notauthenticatedforsending,noCC/attachments/commitments,nomaiboxdraftorsend.
+[Decision](../research/S03/S03-E049-MD03/assumption_continuation_20261020.md):
+continueimagegeometry/conditionalrelative-stageexplorationwithoutwaiting;
+plausiblephoto-IDassumptionnotcertifiedidentity;inventedendpointsnotindependent
+openingreference.7gaugechannelscanbeauxiliaryobservations,notrelabelledcrack
+width. Affinetimerelabellingleavesoldequal-stepextrapolationunchanged;no
+rerunforthat. Realisedfutureloadnotorigin-knowninput. Parkonlylocalphysical
+referencecomparison,notwholeprogramme/D01. NoCV/fit/training/newscoreexecuted;
+oldobserver/halfdepth/evidencepreserved.

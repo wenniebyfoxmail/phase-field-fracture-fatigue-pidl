@@ -94,8 +94,11 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   89/132/175→430/645/860→9.6445/12.9306/14.1595kN,3uniquerowsconsistent;
   filenameconventionstillunconfirmed.16othern/timeexceptionsretained.
   Ext1–3globalmidspansemanticsknown,Ext4–7/endpointsunlocated;Fig.7not
-  localwidthtruth. ActiveD3remainingevidenceisphoto-indexsource+endpoint/
-  referenceimagedefinition,notmorealgebra/same-imageCV;noscoringchange.
+  localwidthtruth. Combinedauthorenquirynowpreparedlocally,ToTaylorofficial
+  emailverified,notsent. D3decisionallowsconditionalphoto-ID/imagegeometry
+  explorationwithoutwaiting;parkonlylocalopeningreference,notprogramme.
+  Inventedendpointsnottruth;affinetimerelabellingdoesnotchangeoldforecast,
+  realisedfutureloadnotknowninput. NoCV/fit/rescoreexecuted.
   Old5.81%/observer/halfdepthkept,D01independentrouteunblocked.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
