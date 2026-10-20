@@ -1,0 +1,139 @@
+"""Generate the readable result from the exact saved diagnostic tables."""
+import argparse
+import shutil
+from pathlib import Path
+import pandas as pd
+from analyse import read_json, write_json
+
+
+def table(d, columns):
+    d = d[columns]
+    def fmt(x):
+        return f'{x:.5f}' if isinstance(x, float) else str(x)
+    return '| '+' | '.join(columns)+' |\n|'+'|'.join(['---']*len(columns))+'|\n'+'\n'.join(
+        '| '+' | '.join(fmt(x) for x in row)+' |' for row in d.itertuples(index=False, name=None))
+
+
+def main(out):
+    s = read_json(out/'summary.json')
+    bs = read_json(out/'boundary_raw_vs_pt_summary.json')
+    stage = pd.read_csv(out/'stage_summary.csv')
+    region = pd.read_csv(out/'region_summary.csv')
+    h = pd.read_csv(out/'stage_horizon_summary.csv')
+    d = pd.read_csv(out/'case_diagnostics.csv')
+    contrib = pd.read_csv(out/'stage_net_contribution.csv')
+    raw = pd.read_csv(out/'raw_coordinate_semantic_probe.csv')
+    matched = pd.read_csv(out/'matched_descriptive_contrasts.csv')
+    m = matched[(matched.adjustment == 'group_stage_horizon') & (matched.comparator == 'B_STAR')]
+    report = f'''# Mendeley冻结预测：收益阶段、空间位置与测量可信度
+
+2026-10-20；S02-E006 D2；描述性事后分析，复用IU-BRIDGE-PS-20261019-R003。原FATACRACK S02-E005负结果、R003四个退化组和首停控制缺陷全部保留。**零拟合、零模型forward、零调参；未发信。**
+
+## 结论先行
+
+历史创新表示的发布场收益主要来自**后段、尤其H40**，并非只集中在图像边缘或固定局部带；它尚未证明真实裂尖更准。靠近分段边界的保留窗口收益更大，源数据边界整体位移变化也更大，说明处理/采集因素值得怀疑；但该变化已存在于原始CSV，不能称为PT插值特有伪影，也不能由相关性认定其解释了收益。CSV内部编号偏移的表面收益差，在同组、同粗阶段、同跨度内比较后接近消失。
+
+## 范围、指标与复用决定
+
+- 19个开发暴露发布组、1144起点、H10/H40共2288案例；单位是**发布步**，不自动认证为真实机器cycle或物理疲劳阶段。没有新增或更换预测起点。
+- H_INNOV为既有自身历史创新表示；B_STAR沿原内验证选择，在C_RAW/C_REL/P/S中选择，未看本轮分层表现重选。C_RAW为固定当前响应对照。共同前缀本来就含跨度代理的历史，因此比较的是**额外响应历史**，不是严格“全部历史有/无”。
+- 主分数沿原定义：按原开发尺度归一化，完整场与首帧固定行带±16各占一半；先起点、再组与跨度等权。区域子表报告该区域MAE，不能与平衡主分数混用。
+- 早/中/晚是每组**保留起点顺序的三等分**，不是裂纹稳定/加速/失稳或物理寿命百分比。大批重叠窗口不是独立样本；未作显著性检验、总体置信区间或因果回归。
+- 原机制诊断曾在绘图时停止；本轮是用户单独授权的来源/区域审计，不重启其controller或改写旧收据。原R003本身的ResourceWarning首停合同缺陷仍在，数值可复算不等于正式实验合规。
+
+## 1. 收益主要在哪里、什么时候出现
+
+![总体与分层](history_locality_summary.png)
+
+**看到：**后段收益最明显；局部带和带外、边缘和内部均有平均改善；热图保留全部19组和退化阶段。
+**因此：**不能把平均收益概括为各阶段都有效，也不能把它等同于裂尖定位能力。
+**未说明：**独立物理疲劳记忆、真实道路泛化或真实裂长误差。
+
+{table(stage, ['stage_third','B_STAR','C_RAW','H_INNOV','relative_reduction_B_STAR_pct','relative_reduction_C_RAW_pct'])}
+
+第三段对原总体净收益的精确贡献为**{contrib.iloc[2].share_of_net_gain_pct:.2f}%**，中段{contrib.iloc[1].share_of_net_gain_pct:.2f}%，前段{contrib.iloc[0].share_of_net_gain_pct:.2f}%。这是带正负抵消的净贡献，不是79%的独立试件成功或解释方差。各段起点数不同，贡献按原组/跨度/起点权重计算，未将三个段平均分直接相加。
+
+后段H40相对B_STAR降误差**{h[(h.stage_third==2)&(h.horizon==40)].iloc[0].relative_reduction_B_STAR_pct:.2f}%**，后段H10约{h[(h.stage_third==2)&(h.horizon==10)].iloc[0].relative_reduction_B_STAR_pct:.2f}%；前段相对固定C_RAW反而差{abs(stage.iloc[0].relative_reduction_C_RAW_pct):.2f}%。完整分层见stage_horizon_summary.csv。后段变化幅值也更大，这不是“后段物理机制已解释”。
+
+{table(region, ['region','B_STAR','H_INNOV','relative_reduction_B_STAR_pct'])}
+
+固定行带不是独立裂尖ROI，8像素外缘也不是已知低可信区。区域在像素数上重叠的表不得相加；band/outside_band和edge/interior各自构成完整划分，逐案例面积加权复核差<{s['partition_max_abs']:.2g}。原发布网格平均图见mean_spatial_gain.png：未作跨组物理配准，不能从平均热区推断统一裂尖坐标。
+
+对原保存的均值/中心化场误差再分层，后段通道0均值误差下降、通道1中心化场误差也下降，说明收益并非仅修正一个整体常数；但两类误差不具MAE可加性，不能给出“多少收益由平移解释”的因果比例。全部值见stage_mean_shape_diagnostics.csv。
+
+## 2. 分段、编号偏移和参考变化
+
+**边界上的预测能力目前不可检验。**原manifest要求过去20步到未来40步均在同一PT文件，本轮跨chunk窗口=0，跨CSV编号offset转换窗口=0。这里没有把被排除的边界重新纳入评分。源边界检查是数据诊断，不是额外预测比较。
+
+整段窗口距chunk两端的最小余量≤5步、6–15步、>15步时，相对B_STAR分别降8.23%、8.67%、4.24%；对应870/1154/264个案例×跨度，全部19组都有支持。两个跨度都按共同[origin−20,origin+40]区间定义距离，避免H10/H40分类口径不同。同组/粗阶段/跨度有共同支持的110个单元中，远边界相对近边界的绝对收益低0.03867；这是分段位置关联，仍受段内进度、采样选择和未测状态混杂。
+
+有CSV编号偏移的窗口表面下降14.26%，无偏移8.27%，但两层只分别覆盖8组和17组，不能直接解释为偏移收益。在6个两种状态都有支持的组内，偏移−无偏移收益差为+0.13930；再匹配粗阶段和跨度后为−0.00228，固定C_RAW比较为−0.00010。由此**没有支持“编号偏移本身带来额外历史收益”**。这也不证明reference绝无变化。
+
+![边界与原始场](boundary_source_audit.png)
+
+**看到：**167处分段边界相对固定段内对照，整体均值步变更大；CSV和PT中均可见。
+**因此：**存在需要解释的源流程关联，不能归为PT插值独有的问题。
+**未说明：**一次真实加载变化、相机移动、DIC处理变化或reference重置中的哪一个造成了它。
+
+检查所有167个相邻PT文件边界(n−1→n)，固定控制为n−10→n−9，共334源对，均有限。未按分数筛边界，也未评分跨边界预测。
+
+| 变化指标 | 边界/段内对照比的中位数 | 边界更大的数量 |
+|---|---:|---:|
+| PT全场均值步变 | {bs['mean_shift_mm']['median_boundary_over_control']:.3f} | {bs['mean_shift_mm']['boundary_greater']}/167 |
+| CSV共同节点均值步变 | {bs['raw_shared_node_mean_shift_mm']['median_boundary_over_control']:.3f} | {bs['raw_shared_node_mean_shift_mm']['boundary_greater']}/167 |
+| PT去均值形状步变 | {bs['shape_shift_mm']['median_boundary_over_control']:.3f} | {bs['shape_shift_mm']['boundary_greater']}/167 |
+| CSV共同节点去均值形状步变 | {bs['raw_shared_node_shape_shift_mm']['median_boundary_over_control']:.3f} | {bs['raw_shared_node_shape_shift_mm']['boundary_greater']}/167 |
+
+对照只有一个固定的一步，并非全时间的随机对照或重复拍摄；小分母可放大单对比值，表中也保存了每对原始幅值。各组边界密度不同，上表是167边界的描述，不是19组等权预测分数。
+
+## 3. 与测量可信度的连接：补齐了什么，仍缺什么
+
+| 核查 | 本轮实际发现 | 可支持的判断 / 不能支持的判断 |
+|---|---|---|
+| 57个固定抽样起点及其过去10步原始CSV | 节点ID重合Jaccard最低{raw.id_jaccard.min():.6f}；同ID坐标会变化 | 样本中没有大量节点ID突失；不证明独立实体试件、ID是材料点或裂尖误差小 |
+| 坐标语义假设x−u | 57对及167边界中，同ID(x,y,z)−u差的中位数约0.0001mm，接近四位小数导出分辨率 | 与导出位置含变形、减位移后更接近固定位置的解释相容；不是完整网格标定或reference认证 |
+| 端点阈值设置范围 | 大范围层表面收益较小；匹配同组/粗阶段/跨度后高−低差仅+0.00773，18组9正9非正 | 无一致证据说明历史收益集中于“端点更模糊”帧；范围不是误差界或置信区间 |
+| PT二阶差分粗糙度 | 高粗糙层收益低；粗阶段匹配后13组的高−低收益差−0.04868 | 发布场空间纹理与收益有关；粗糙度混合真实梯度、采样与插值，不能直接叫噪声或插值伪影 |
+| 最近10步整体均值变化 | 粗阶段匹配后高−低差+0.00824，固定C_RAW约+0.00013 | 不能将收益简单归结为历史纠正整体参考漂移 |
+| 精确CSV→PT映射、独立原图与裂尖误差 | 仍未取得；既有网格对照也未精确复现PT | 无法可靠给每个预测像素赋原始节点支持/插值误差，更不能把颜色过渡端当物理裂尖 |
+
+matched_descriptive_contrasts.csv记录全部共同支持数量，缺少共同支持的组不填零；没有回归、模型拟合或对质量指标调阈值。粗阶段匹配只是暴露混杂，无法消除组内真实增长、加载/相位、采集和处理因素。
+
+## 4. 退化和原负结果完整保留
+
+总体退化的4组仍是C_15Deg_20%_#2及全部三个C_30Deg_20%组；没有因较差表现、编号偏移、粗糙度或边缘质量而删任何原案例。
+
+![固定案例含退化组](fixed_field_examples.png)
+
+**看到：**30°中央裂纹固定例中，历史臂仍明显漏掉位移增量幅值；其它例也同时存在红色退化区域。
+**因此：**平均改善不足以证明局部裂尖或裂缝演化准确。
+
+三例为预先列明组0、C_30Deg_20%_#1、E_0Deg_17.5%_#1的中段中位起点、H40、通道1；原始场、基线与历史预测共用每行色限。它们不是按得分挑出的代表。源数据的通道与CSV物理分量对应、网格轴和真实坐标仍须按作者说明核实。
+
+FATACRACK E005针对不同对象/表示的原负结果不变；这里的发布位移场探索不能用于“推翻”那个负结果。本轮没有复训其模型、改起点、改标签或更新其主分数。
+
+## 5. 决策与下一步
+
+继续保留H_INNOV为发布响应信息候选、C_RAW为固定强对照。优先缺口已更具体：**分段边界为何伴随原始场整体跳变、原始坐标是否为变形位置、PT精确映射以及光学裂尖参考**。收到作者材料后先核对这些语义；当前尚不能将收益写成独立物理疲劳记忆或可靠裂长预测。
+
+本轮不追加架构、调参、重拟合、训练、重跑R003或新增外联。若以后授权新的验证，应前瞻固定边界/参考处理与相同信息的对照；现有分层是开发集事后诊断，不能事后转成择优运行的选择器。
+
+## 复核与证据
+
+原分数复算最大绝对差{s['score_reproduction_max_abs']:.3g}；另一个Decimal聚合脚本核对原CSV均值，分区面积核对和原prediction/metadata/PT文件大小/mtime一致性通过。57固定抽样、167全部边界及共同支持明细均保存。无外部独立科学复核；本报告不冒称正式确认结论。
+
+代码与事前说明：`docs/research/S02/S02-E006/posthoc_history_locality_20261020/`（history-information-audit专用工作树）。三项算术测试通过；初始分析脚本提交14dd4619，后续来源分解/绘图/复核以最终提交为准。数值分析耗时约{s['wall_seconds']:.2f}秒；读取既有数据，不训练。原R003读取路径保持不变。
+
+原始证据目录：`{out.resolve()}`。主要文件：case_diagnostics.csv、spatial_case_diagnostics.csv、stage_net_contribution.csv、matched_descriptive_contrasts.csv、raw_coordinate_semantic_probe.csv、boundary_raw_vs_pt_source_pairs.csv、summary.json、verification.json、source_identity.json。图像只对已保存数组或表渲染。
+'''
+    (out/'README_analysis.md').write_text(report)
+    (Path(__file__).parent/'README_analysis.md').write_text(report.replace('](history_', ']('+str(out.resolve())+'/history_').replace('](boundary_', ']('+str(out.resolve())+'/boundary_').replace('](fixed_', ']('+str(out.resolve())+'/fixed_'))
+    write_json(out/'figure_qa.json', {'status': 'rendered_and_visually_inspected',
+               'figures': ['history_locality_summary.png', 'fixed_field_examples.png', 'mean_spatial_gain.png', 'boundary_source_audit.png'],
+               'notes': 'Checked summary and fixed-field panels; shared field color limits, retained negative groups, grid axes and source semantics. Boundary figure inspected separately before delivery.'})
+
+
+if __name__ == '__main__':
+    p = argparse.ArgumentParser()
+    p.add_argument('--out', type=Path, required=True)
+    main(p.parse_args().out)
