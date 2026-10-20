@@ -1,6 +1,6 @@
 {
   "experiment": "S02-E007",
-  "protocol_revision": "1.0",
+  "protocol_revision": "1.1",
   "author_commit": "35d4a79b2f3d42f80cd0f63496675c6dbb483add",
   "epoch": 6,
   "fold_test_specimens": [

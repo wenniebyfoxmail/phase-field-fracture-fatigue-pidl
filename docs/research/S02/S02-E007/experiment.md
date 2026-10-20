@@ -1,6 +1,6 @@
 # S02-E007 — Published raw-image-to-RUL baseline replay
 
-Protocol revision: 1.0, frozen before inference, 2026-10-20. State: draft pending independent code review. Primary Storyline: S02 (observation-conditioned prognosis); evidence domain: controlled composite-fatigue experiment. Owner: ISTRUST replay in chat 01a154fa-dd18-7432-ba1a-e918092ed6a3. Existing decision note: SCB 观测不确定性与未来预测实验方案; acquisition/search report retained in Obsidian.
+Protocol revision: 1.1, frozen before inference, 2026-10-20. State: draft pending independent code review. Primary Storyline: S02 (observation-conditioned prognosis); evidence domain: controlled composite-fatigue experiment. Owner: ISTRUST replay in chat 01a154fa-dd18-7432-ba1a-e918092ed6a3. Existing decision note: SCB 观测不确定性与未来预测实验方案; acquisition/search report retained in Obsidian.
 
 ## Goal and authorization
 
@@ -53,3 +53,7 @@ Outcomes: valid complete replay with primary-bin agreement supports aggregate di
 ## Task isolation
 
 Branch codex/s02-e007-istrust-replay-20261020, base origin/main 389f618b7a042e0a4e4d11a3ab24a7164f6902cc. Scope scripts/istrust_replay and docs/research/S02/S02-E007 only. No shared mechanics/training code, old experiment outputs or other active owners modified. A clean local commit and immutable transport snapshot provide producer identity; any GitHub publication remains separate from this task-local deployment. Code review is bound to exact commit/config/data-lock/protocol. Code review does not establish a scientific result.
+
+## Prospective environment-preparation amendment 1.1 — no inference yet
+
+The first isolated venv preparation failed because the system Python lacks ensurepip. Its original log, failed venv and environment_first_stop.json are preserved; no raw-image read, package installation, CUDA/model execution or numerical replay occurred. This dependency finding is addressed within the user's reproduction request by a new task-local bootstrap route: create venv_replay with --without-pip, retrieve the official PyPA get-pip.py and install pinned pip/setuptools/wheel entirely inside that prefix. No apt/sudo or shared environment changes. Record the bootstrap source/hash and keep the old failure intact. Numerical protocol and first-failure stop for the actual replay remain unchanged. The updated setup code must be included in the independent review before numerical execution.
