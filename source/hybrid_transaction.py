@@ -14,6 +14,7 @@ from time import perf_counter
 import numpy as np
 
 from hybrid_history import AcceptedState
+from hybrid_state_contract import envelope, verify_envelope, verify_transition
 
 
 class CommitUncertain(RuntimeError):
@@ -31,24 +32,33 @@ class StateStore:
             state = AcceptedState(**{k: data[k] for k in
                                      ("displacement", "damage", "accumulated", "driver", "fatigue", "opaque")},
                                   **meta["identity"])
+            evidence = {k[len('evidence_'):]: data[k] for k in data.files if k.startswith('evidence_')}
         if state.fingerprint() != meta["state_id"]:
             raise RuntimeError("stored state digest mismatch")
+        if 'state_contract' in meta:
+            verify_envelope(state, meta, evidence)
+        elif evidence:
+            raise RuntimeError('unbound field evidence')
         return state, meta
 
-    def _write(self, state, metadata):
+    def _write(self, state, metadata, evidence=None):
         # The caller holds the exclusive lock. No state is held in a mutable
         # controller: success returns the persisted state; failure returns none.
         temp = None
         replaced = False
         started = perf_counter()
         try:
-            fd, temp = tempfile.mkstemp(prefix=self.path.name + ".trial-", dir=self.path.parent)
             identity = {f.name: getattr(state, f.name) for f in fields(state)
                         if not isinstance(getattr(state, f.name), np.ndarray)}
             meta = dict(metadata, identity=identity, state_id=state.fingerprint())
+            evidence = {} if evidence is None else evidence
+            if 'state_contract' in meta:
+                verify_envelope(state, meta, evidence)
+            fd, temp = tempfile.mkstemp(prefix=self.path.name + ".trial-", dir=self.path.parent)
             with os.fdopen(fd, "wb") as handle:
                 np.savez(handle, **{f.name: getattr(state, f.name) for f in fields(state)
                                     if isinstance(getattr(state, f.name), np.ndarray)},
+                         **{'evidence_' + k: v for k, v in evidence.items()},
                          metadata=np.array(json.dumps(meta, sort_keys=True, allow_nan=False)))
                 handle.flush()
                 os.fsync(handle.fileno())
@@ -79,19 +89,22 @@ class StateStore:
         lock.mkdir()
         return lock
 
-    def initialize(self, state):
+    def initialize(self, state, *, context=None):
         lock = self._lock()
         try:
             if self.path.exists():
                 raise FileExistsError(self.path)
-            return self._write(state, {"kind": "declared_initial_state"})
+            meta = {"kind": "declared_initial_state"}
+            if context is not None:
+                meta['state_contract'] = envelope(state, context, None, {})
+            return self._write(state, meta)
         finally:
             lock.rmdir()
 
     def commit(self, proposal):
         lock = self._lock()
         try:
-            old, _ = self.load()
+            old, old_meta = self.load()
             new, cert = proposal.state, proposal.certificate
             if (proposal.previous_id != old.fingerprint()
                     or cert.get("previous_id") != old.fingerprint()
@@ -104,6 +117,13 @@ class StateStore:
                     or np.any(new.accumulated < old.accumulated)
                     or not np.array_equal(new.opaque, old.opaque)):
                 raise RuntimeError("stale, unaudited or inconsistent commit proposal")
-            return self._write(new, dict(kind="accepted", certificate=cert, work=proposal.work))
+            meta = dict(kind="accepted", certificate=cert, work=proposal.work)
+            if proposal.accepted_contract is not None:
+                meta['state_contract'] = proposal.accepted_contract
+                verify_transition(old, old_meta, new, meta)
+                return self._write(new, meta, proposal.field_evidence)
+            if 'state_contract' in old_meta:
+                raise RuntimeError('cannot drop accepted-state contract during commit')
+            return self._write(new, meta)
         finally:
             lock.rmdir()

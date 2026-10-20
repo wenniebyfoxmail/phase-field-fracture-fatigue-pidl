@@ -64,6 +64,8 @@ class StepProposal:
     certificate: dict
     work: tuple
     prediction_context: tuple | None = None
+    field_evidence: dict | None = None
+    accepted_contract: dict | None = None
 
 
 class NativeQ4Backend:
@@ -399,7 +401,11 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                                    iterations=iteration_records,
                                    initial_to_final_damage_rms=float(np.sqrt(np.mean((new_d-initial_damage)**2))),
                                    initial_to_final_damage_inf=float(np.max(abs(new_d-initial_damage))))
-                return StepProposal(previous_id, state, certificate, tuple(work), prediction_context)
+                # Keep the actual last solved QP coefficient. Reconstructing it
+                # from the accepted history would silently substitute f_commit.
+                evidence = dict(f_solve_gp=frozen_array(q.fatigue),
+                                psi_raw_commit_gp=frozen_array(final_psi))
+                return StepProposal(previous_id, state, certificate, tuple(work), prediction_context, evidence)
         raise RuntimeError("joint iteration cap reached; no accepted proposal")
     except Exception as exc:
         if isinstance(exc, StepFailure):

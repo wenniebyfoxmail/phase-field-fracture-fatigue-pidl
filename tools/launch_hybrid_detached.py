@@ -20,6 +20,8 @@ def main():
     args=p.parse_args()
     if platform.system()!='Linux':raise RuntimeError('launch is Linux producer-only')
     card=read_manifest(args.card);validate_card(card)
+    if card.get('execution_enabled') is not True:
+        raise RuntimeError('preparation card cannot reserve or spawn a producer')
     code=Path(__file__).resolve().parents[1];package=read_manifest(args.package)
     verify_package(code,package)
     review=read_manifest(args.review)

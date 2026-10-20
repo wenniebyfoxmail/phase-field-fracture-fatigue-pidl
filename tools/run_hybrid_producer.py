@@ -27,6 +27,9 @@ from hybrid_producer_common import verify_package, write_json, append_event
 
 
 def validate_card(card):
+    from hybrid_state_contract import CONTRACT_ID
+    if card.get('state_contract_id') != CONTRACT_ID:
+        raise ValueError('accepted-state field timing contract missing/incompatible')
     from hybrid_coupled_acceleration import CouplingSettings
     CouplingSettings(**card.get('coupling',{}))
     if any('coupling' in p for p in card['phases']):raise ValueError('one shared coupling policy required')
