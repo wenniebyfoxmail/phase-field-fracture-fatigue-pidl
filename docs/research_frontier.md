@@ -106,8 +106,13 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   nowfixesgpu-taobo/GPUServer8,/usr/bin/python3,MD03-D3-OPENING-20261020-R001,
   taskroot/mnt/data2/drtao/wennie/MD03-D3-OPENING-20261020-R001;
   oneCPU/600s/128MiB/process-local2GiBceiling. Runtimeresourceandremote
-  datafactsunknown;onlylocaldeploymentchecks,nossh/upload/launch. Parkfor
-  thisexactexecutiondecision,notfurtherhostselectionorauthorreply.
+  datafactsunknownatpreparation. NowexacthumanapprovalreceivedandfirstSSH
+  admissionpassed(actualGPUServer8/Python/NumPy/OpenCV/resources);freshroot
+  created,firstinputrsyncendedSSHreadtimeout/brokenpipe(exit255).
+  R001STOPPED_NO_RETRY,0scientificlaunch/observations/figures;payloadstatus
+  unknown,no reconnect/fallback/cleanup.9localinputhashesunchanged;notamethod
+  verdict.Furtherremoteactionneedsnewauthority.Maildaily09:00Europe/London
+  read-onlyprofessor-taylor-md03active;authorreplynotresearchdependency.
   D3decisionallowsconditionalphoto-ID/imagegeometry
   explorationwithoutwaiting;parkonlylocalopeningreference,notprogramme.
   Inventedendpointsnottruth;affinetimerelabellingdoesnotchangeoldforecast,

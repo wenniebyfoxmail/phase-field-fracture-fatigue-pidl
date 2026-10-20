@@ -546,3 +546,23 @@ upload/realCV/fit/training. Source89/132/175only. OneCPU/600s/128MiB,
 process-local2GiBvirtualceiling;exactstart/stop/retrievalcommandsandfirst-stop
 conditionsprepared. Nofallback/retryorMacproduction. Parkawaitingthisexact
 executiondecision,notauthorreplyorpost-approvalhostselection.
+
+### R001 human-approved, first admission succeeded — 2026-10-20
+
+DirecthumanapprovalreceivedforexactcardMD03-D3-OPENING-20261020-R001.
+FirstreadonlySSHpassed:actualGPUServer8,/usr/bin/python3/NumPy/OpenCV,
+CPUload/storage/memoryadmissible. NoGPUquery. Freshrootcreated,inputtransfer
+inprogress/notyetacknowledged;scientificlaunchnotcalled,noresultornewscore.
+First-stop/no-retryremainsliteral. Parentdeployment_20261020holdsapproved
+decision,authorization/first-admissionreceipts. Mailuser-reportedsent;
+daily09:00Europe/Londonread-onlyheartbeatprofessor-taylor-md03active,
+correctxw436Outlookonly,nooutbound/attachmentaccess/producerretryauthority.
+
+R001terminal: firstinputrsyncSSHreadtimeout/brokenpipe/EOF,exit255;
+STOPPED_NO_RETRY. Successfulinitialremoteshell/admissionandfreshrootpreserved,
+butpayloadcompletenessunknown. Controlupload/scientificlaunchneverinvoked;
+zeroobservations/scores/figures,nohypothesisverdict.9localinputhashesunchanged.
+No reconnect/retransfer/cleanup/fallback/newRunID. Parentdeployment_20261020/
+README_execution.md,first_stop_receipt.json,transfer_failure.stderrholdreceipt.
+Furtherremotediagnosis/status/restartrequiresnewauthority;mailheartbeatremains
+activeunderseparateread-onlyscope. Notamethod/datafailureorlicenseforMacrun.

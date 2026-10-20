@@ -434,3 +434,33 @@ RunID MD03-D3-OPENING-20261020-R001，根目录
 待传输入包113514186字节；无新数据解码。明确一次CPU600秒／128MiB输出，
 任务局部2GiB虚拟地址限；完整首检／部署／首停／停止／取回校验命令均在卡中。
 没有SSH、传输、GPU查询、真实计算或新评分；自然park，等待该精确执行决定。
+
+## 2026-10-20 R001获准执行：首检通过，部署传输中
+
+用户本轮明确批准完整待批卡，先准入、仅一次CPU比较、失败首停不重试。
+approved_decision.json已记录直接人方原文，code／protocol／输入包SHA与待批卡
+逐项一致。2026-10-20 14:18UTC观察到首次SSH检查成功，实际GPUServer8，
+/usr/bin/python3 3.10.12、NumPy1.24.4、OpenCV4.10.0，Matplotlib模块存在；
+CPU load1=4.309／64可用逻辑CPU，MemAvailable383169764KiB，data2剩596G。
+实际Matplotlib导入仍为启动前任务内检查，不把模块存在等同完整运行成功。
+
+独立远端目录创建成功，固定输入包的首次rsync仍在等待完成确认；当前未调用
+启动命令、无新科学结果，不重传或更换连接。原九输入、识别、半深度和评分
+保持不变。依据父归档deployment_20261020/first_admission_receipt.json及标准输出。
+用户报告已自行发Taylor邮件，未由本助手再发；已创建只读日检
+`professor-taylor-md03`，每日Europe/London09:00，仅相关新回复触发记录，
+不自动回信／开附件／连接producer或重试实验。
+
+### R001终态：输入传输超时首停，未启动科学比较
+
+首次输入rsync报SSH read timeout／broken pipe／unexpected EOF，命令exit255。
+依用户约定立刻STOPPED_NO_RETRY：不重连、不重传、不换host／RunID，不清理
+远端部分文件。顺序脚本set-e阻止后续control传输和launch，科学启动次数0。
+因此没有本轮测量／预测／图，不是该方法的科学负结果；不能拿旧图冒充新结果。
+远端包完整性unknown，先前首检成功仍保留，不回溯改成“未取得远端shell”。
+
+九项本地输入逐件重哈希均不变，包含原图及旧ROI/mask；半深度定义和旧评分
+未改。终态观察记录14:52:03UTC，实际错误时刻未打印，未捏造传输／计算耗时。
+父归档deployment_20261020/[README_execution.md](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E049-MD03/D3_controlled_opening_20261020/deployment_20261020/README_execution.md)、
+first_stop_receipt.json及transfer_failure.stderr保存证据。后续远端状态／传输
+排查或重启均需新的明确授权；本轮止于此，邮件只读定时任务独立继续。

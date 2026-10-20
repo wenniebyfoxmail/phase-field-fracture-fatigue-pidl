@@ -1,5 +1,15 @@
 # MD03 author enquiry — Outlook draft saved, NOT SENT
 
+## Later status update — 2026-10-20
+
+User now reports personally sending the enquiry to Professor Taylor. This is a
+human-reported send, not a new assistant send or independently inspected Sent
+Items receipt; the text below remains the historical saved draft, not a claim
+that the final sent body/attachments were unchanged. Daily09:00 Europe/London
+read-only follow-up automation `professor-taylor-md03` is active in this chat.
+It checks the correct xw436 Outlook account, deduplicates related replies and
+does not send/reply/download attachments or authorise experiment retries.
+
 2026-10-20. User requested a combined enquiry, contact verification, complete
 draft, no sending, and an assessment of proceeding under assumptions.
 
