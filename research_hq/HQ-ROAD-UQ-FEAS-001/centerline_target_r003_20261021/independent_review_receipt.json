@@ -1,0 +1,17 @@
+{
+  "status": "REVIEW_PASS",
+  "scope": "R003 Windows owned-child lifecycle control delta only",
+  "reviewer": "/root/d5_readonly_review",
+  "reviewed_utc": "2026-10-20T23:28:45.865822+00:00",
+  "code_snapshot": "36bbd0109dc2319714669b9c24c77e6dd1a44fc33a304a9b71d041589d945736",
+  "data_lock_sha256": "8751d519d869ac3f2ead4334d8146e9e99deedd1c9c01b96db1f506b2286dcd5",
+  "scientific_protocol_fingerprint_sha256": "a30121cc43bc1572e946baa56f70a993202076a1fdbf2ca388307cd024e1e83a",
+  "findings_resolved": [
+    "owned PID tree termination confirmed before normal controller completion",
+    "PowerShell rejects missing/null/noninteger exit fields",
+    "fixtures cover valid-json nonzero, malformed numeric exit and unknown-launch claim no-repeat"
+  ],
+  "remote_actions": false,
+  "training_steps": 0,
+  "road420_access": false
+}

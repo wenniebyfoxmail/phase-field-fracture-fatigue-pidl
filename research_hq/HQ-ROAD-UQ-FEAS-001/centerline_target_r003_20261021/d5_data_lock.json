@@ -1,0 +1,62 @@
+{
+  "status": "FROZEN_FOR_HQ-ROAD-CENTERLINE-001-R003",
+  "trainzip": {
+    "bytes": 115224706,
+    "sha256": "d5e9eb4bbb27163ef9778e63c7d743080d3b4458d069652f4285f07f5d02cbac"
+  },
+  "valzip": {
+    "bytes": 20836950,
+    "sha256": "78974e47e7499aa2d40829e5171c87c8001055731aaa4a92aed5d8d67073718c"
+  },
+  "gapszip": {
+    "bytes": 158730287,
+    "sha256": "e40e8eec77d09cb76896a4fa5bdb28f1a4df9d14602b13dbd998c5d361f0a2a6"
+  },
+  "weights": {
+    "bytes": 46830571,
+    "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+  },
+  "d1_checkpoint": {
+    "bytes": 7872385,
+    "sha256": "43423f84e3f56325821000c8b6845063df2e4472424cd80f612e225c04a0205d"
+  },
+  "d2_checkpoint": {
+    "bytes": 57735403,
+    "sha256": "92cd93741021ecdf63768f8885325d804eb1a595fff8af9ae4ba43c2686027e2"
+  },
+  "d3_old_cfd_csv": {
+    "bytes": 26702,
+    "sha256": "61b22b603fb09003561609ff4e8c33202387b9d59eadf594e156fa83a839b6bc"
+  },
+  "d3_old_gaps_csv": {
+    "bytes": 110837,
+    "sha256": "8e6308f9ec527422d2011dbbd3fe0ffe5ae010c927243d121d15b1f59f588c63"
+  },
+  "d3_repair_cfd_csv": {
+    "bytes": 24703,
+    "sha256": "df82289ebd4f5bbb19deeef6538500ce8175ff5b13daa0bf50778f47931671b9"
+  },
+  "d3_repair_gaps_csv": {
+    "bytes": 112183,
+    "sha256": "75577a03c79970aae831de9f9788a3a4c2756af5708bdb3f1fb32bf1f90fed75"
+  },
+  "cfd_lock": {
+    "labeled_pairs": 118,
+    "files": 236,
+    "bytes": 4143667,
+    "aggregate_sha256": "ca8f294c2d9a8ca6d696c9c20394b67d4f521176dbbbef00c03ed0dd577b57de"
+  },
+  "remote_identity": {
+    "producer_alias": "gpu-server",
+    "hostname": "D-26-09",
+    "gpu": "0",
+    "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "d1_output": "C:\\Users\\xw436\\jobs\\HQ-ROAD-UQ-FEAS-001-R001",
+    "d2_output": "C:\\Users\\xw436\\jobs\\HQ-ROAD-UQ-FEAS-002-R001",
+    "d1_data": "C:\\Users\\xw436\\jobs\\hq_road_uq_feas_001_data_20261011",
+    "d2_data": "C:\\Users\\xw436\\jobs\\hq_road_uq_feas_002_data_20261019"
+  },
+  "road420_accessed": false,
+  "parent_r001_data_lock_sha256": "563cf2fc1410a5872086f96c9769faeaaf2d4b14e137eba52665e8d3f29c122e",
+  "parent_r002_data_lock_sha256": "a88c50b5f76df462cf69e136455c8b04c47c95c101e23af254a85b3b8ec3ce28"
+}

@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "run_id": "HQ-ROAD-CENTERLINE-001-R003",
+  "approval_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R003\\approval_hq.json",
+  "lock_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r003_20261021\\d5_data_lock.json",
+  "cwd": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r003_20261021",
+  "role": "environment",
+  "command": [
+    "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "-c",
+    "j=__import__('json');d=__import__('d5_runner');print(j.dumps(d.environment()))"
+  ],
+  "receipt_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R003\\environment.exit.json",
+  "exitcode_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R003\\environment.exitcode.txt",
+  "stdout_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R003\\environment.stdout.log",
+  "stderr_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R003\\environment.stderr.log",
+  "timeout_seconds": 25
+}
