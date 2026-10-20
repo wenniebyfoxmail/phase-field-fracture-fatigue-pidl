@@ -1,0 +1,9 @@
+{
+  "reason": "CSV CRLF emitted by shared csvwrite is flagged by git diff --check; normalize compact table to LF only",
+  "old_reviewed_sha256": "54f515996d4d037cbb529aa200568c30259759cc22cdf7108646a8f3fbedc797",
+  "new_sha256": "fbfd8783260b7e891e4377f550f43a136956a20ab5659b88d874acef4ea9b496",
+  "parsed_cells_identical": true,
+  "scientific_changes": false,
+  "new_calculations": false,
+  "old_review_retained": true
+}

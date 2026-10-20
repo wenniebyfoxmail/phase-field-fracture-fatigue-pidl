@@ -48,6 +48,8 @@ def main():
             if row['E_replay_abs_error']>1e-12 or row['Ru_replay_abs_error']>1e-12:raise ValueError('independent_native_replay_mismatch')
         rows.append(row)
     csvwrite(out/'saved_fields.csv',rows)
+    # Shared writer emits CRLF; keep derived tables portable and Git-clean.
+    table=out/'saved_fields.csv';table.write_text(table.read_text())
     plus=qs['plus'];minus=qs['minus'];base=qs['source'];h=1e-6
     odd=.5*(plus-minus);even=.5*(plus+minus)-base;free=op.free
     def stats(v):return dict(free_L2=float(np.linalg.norm(v[free])),free_maxabs=float(np.max(np.abs(v[free]))),boundary_maxabs=float(np.max(np.abs(v[op.fixed]))))
