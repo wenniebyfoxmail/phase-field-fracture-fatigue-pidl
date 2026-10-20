@@ -122,3 +122,17 @@ The export-only diagnostic correction and bounded one-state proposal are ready
 in [diagnostic_proposal.md](diagnostic_proposal.md), with fresh authority still
 pending. Preserve R001, its consumed attempt and original thresholds. The
 scientific verdict for the requested comparison remains inconclusive.
+
+## R003 authority and local no-launch outcome
+
+The original research HQ subsequently approved exactly the proposed one-state
+diagnostic under its human-delegated night authority, adding 4CPU/16GiB RSS
+limits and a total180-second envelope. Local resource-binding preparation
+consumed148.92 seconds; the guard found only31.08 seconds left and stopped
+before SSH. No R003 stage/worker/solve exists. The envelope was not reset.
+See [R003 preparation receipt](runs/S04-E035-R003-preparation.md).
+
+The single-call deployment is now assembled, with transport-failure receipts
+and dirty-native source checks. It is preparation only pending a fresh execution
+window; no additional scientific result, complete trajectory, or PIDL training
+is claimed. The original shear comparison goal is unchanged.
