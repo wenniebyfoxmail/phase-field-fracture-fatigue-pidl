@@ -1,0 +1,47 @@
+{
+  "run_id": "S02-E007-R004",
+  "run_group": [
+    "S02-E007-R004",
+    "S02-E007-R005",
+    "S02-E007-R006"
+  ],
+  "execution": "completed",
+  "retrieval": "220_files_individually_hash_verified",
+  "experiment_verdict": "aggregate_display_precision_reproduced_per_specimen_discrepancies",
+  "implementation_commit": "b9b72c5e24f584f2550a50675b14d4c731976f62",
+  "runtime_snapshot_sha256": "af22a199f65f5ff35e66e86b17736b15d42bc998eb19b5d9924df8b06dbd77e7",
+  "host": "GPUServer8",
+  "remote_root": "/mnt/data2/drtao/wennie/S02-E007-R004",
+  "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+  "cuda_visible_ordinal": 5,
+  "controller_pid": 3729307,
+  "worker_pid": 3744277,
+  "seeds": [
+    1729,
+    2718,
+    31415
+  ],
+  "epoch": 6,
+  "test_windows_per_seed": 634,
+  "training_eval_windows_per_seed": 3626,
+  "primary_mae": 0.25704998467512397,
+  "primary_bin": [
+    0.255,
+    0.265
+  ],
+  "primary_bin_met": true,
+  "primary_published_fold_display_matches": 1,
+  "full_table2_reproduced": false,
+  "five_draw_diagnostic_mae": 0.2626379999007392,
+  "training_steps": 0,
+  "observation_uncertainty_testing": false,
+  "state_unchanged": true,
+  "exit_verified": true,
+  "authority_source": "human_delegated_hq",
+  "authorization_consumed": true,
+  "automatic_retry": false,
+  "raw_evidence": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E007/runs/S02-E007-R004/retrieved",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E007/runs/S02-E007-R004/analysis",
+  "current_execution_charge_seconds": 1308.752053973265,
+  "historical_cost_unknowns_preserved": true
+}

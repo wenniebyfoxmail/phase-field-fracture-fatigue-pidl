@@ -1,3 +1,31 @@
+# ISTRUST sixth-epoch replay — aggregate reproduced, specimen differences retained
+
+The released R004–R006 batch completed all six physical test folds and all three fixed seeds without training or observation-uncertainty experiments. Independent float64 recomputation from every archived draw gives primary held-out normalized MAE **0.257049984675**, within the predeclared **[0.255,0.265)** bin for the published **0.26**. Other fixed seeds give0.257469778669 and0.257622716631. This is aggregate display-precision reproduction; **only1/6 primary specimen cells matches its Table2 rounding bin**, so full Table2 reproduction has not been established.
+
+| Specimen | Published test MAE | Primary MC40 replay |
+|---|---:|---:|
+| A009 |0.14|0.13484|
+| A011 |0.41|0.41053|
+| A012 |0.15|0.15588|
+| A013 |0.31|0.32818|
+| A014 |0.29|0.27797|
+| A019 |0.21|0.20237|
+
+All six normalization reconstructions passed before any model forward (max mean/std differences5.96e-8/1.19e-7; max-training-RUL differences0). Independent checks covered634test/3626training-eval windows per seed, finite raw draws, unique keys, physical folds, metric recomputation and unchanged parameters/BN buffers. The predeclared five-draw diagnostic gives0.26263800 and does not restore every fold; it does not replace the primary. Paper training rows are online/augmented/dropout0.1 losses, whereas frozen training-eval uses saved weights/unaugmented data/dropout0.3. Python/Linux/GPU and historical RNG differences are documented without attributing all residuals to them.
+
+[Full comparison, trajectories, differences and costs](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E007/runs/S02-E007-R004/analysis/README_analysis.md). [Raw-derived comparison](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E007/runs/S02-E007-R004/analysis/comparison.json). [Table2 CSV](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E007/runs/S02-E007-R004/analysis/table2_complete_comparison.csv). [Run receipt](run_S02-E007-R004.json).
+
+![Six-specimen published versus replay comparison](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E007/runs/S02-E007-R004/analysis/published_vs_replay.png)
+
+See: the aggregate rounds to0.26, but several specimen points miss the published bins consistently across the three streams.
+Therefore: use this saved-weight component baseline with its stated discrepancies; do not claim exact Table2/training-from-scratch reproduction, observation-uncertainty benefit or future crack-geometry validation. The trajectory plot also shows structured bias/camera differences; dropout SD-bootstrap shading is not a calibrated predictive interval.
+
+Implementation remains b9b72c5e24f584f2550a50675b14d4c731976f62 and runtime archive af22a199f65f5ff35e66e86b17736b15d42bc998eb19b5d9924df8b06dbd77e7. Actual Linux15checks, numeric PCI mask and physical driver UUID admission passed. Controller3729307 and worker3744277 exited0; retrieved exit evidence confirms live=[] and noGPU5compute-apps,4MiB/0%.220retrieved files were individually hash-verified. Current execution charge1308.752054seconds includes460prelaunch+22.222339admission+826.529715controller;412.239578worker seconds are inside that controller duration. Retrieval10.568449seconds and local closing costs are separately retained. Sampled RSS4.723GiB/task13.006GiB fit the32/40GiB limits. Exact all-history cost and actual GPU busy time remain unavailable rather than zero.
+
+Human-delegated HQ approval and later scheduling release were verified and transparently recorded. The one released batch consumed its authority; no further inference/retry/seed or UQ follows automatically. The old R001 failure and immutable reviewed launcher remain intact. D2 computation/recomputation is complete; D3 concerns the residual publication differences. Observation uncertainty remains deferred as requested.
+
+## Earlier admission and preparation record
+
 # ISTRUST sixth-epoch reproduction: admission stop
 
 The baseline has **not been reproduced**. The loader ordering fix, frozen replay and source/checkpoint package passed independent local review; the first Taobo CUDA admission returned exit 1 before the controller was launched. No dataset extraction, image preprocessing, model forward, training or observation-uncertainty comparison occurred. The published 0.26 MAE has not been measured anew.
