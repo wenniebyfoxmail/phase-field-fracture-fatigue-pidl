@@ -83,7 +83,8 @@ does not create that grant.
 
 This command is documentation only and must remain disabled unless a new exact
 deployment authority exists. The candidate binds implementation commit `6a83eb3fd2f167c5ace2a846a123a214982184f4`
-and the exact candidate and plan hashes below are ready for independent rereview.
+and the exact candidate and plan hashes below were independently reviewed at
+commit `a7de1b2a017f806eee55752b5a2459e1d2c23add`.
 
 ```bash
 cd /Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012
@@ -114,10 +115,12 @@ counts and helper-hash binding. Ruff, `py_compile`, `bash -n` and a full
 `4ece34be786fc85bb9655c076c13c45d276d08dfde405a8fb1367e4b49ffdd22`
 SHA256.
 
-Independent review round 1 returned `E017_CHUNKED_DEPLOYMENT_REVISE` for commit
-`6a7f5bed...` and identified four control gaps. Those gaps are locally repaired;
-the repair has no valid review verdict until the final exact commit is bound and
-rereviewed.
+As historical context, independent review round 1 returned
+`E017_CHUNKED_DEPLOYMENT_REVISE` for commit `6a7f5bed...` and identified four
+control gaps. Later repair and counterexample review closed those gaps and three
+additional blockers. The final exact commit `a7de1b2a...` passed 27 focused
+independent tests with verdict `E017_CHUNKED_DEPLOYMENT_REVIEW_PASS`; see the
+[final independent review](chunked_deployment_review_final_20261020.md).
 
 This candidate records zero remote actions and no connection recovery, remote
 audit, verified remote chunk, authority, admission or scientific result.
