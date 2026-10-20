@@ -165,3 +165,11 @@ R001 remains an incomplete control failure, not a scientific negative. Two base 
 ## Original-producer admission, 2026-10-20
 
 On GPUServer8 with the original Python package versions, strict zero-solver recovery admitted all 253 accepted states; source hashes, parent chains and saved history recurrences passed without relaxed tolerances. Source was not modified and original processes had exited. Staging plus R001 occupied 203,085,780 bytes, within the conservative 1 GiB cumulative debit. Receipt: `/mnt/data2/drtao/wennie/pf_synmem_recovery_bc334c0c_20261020/preflight.json`. This records a mechanical admission; R002 execution rests on the fresh bounded HQ authorization documented in authority.json. The original R001 authority remains consumed.
+
+## Post-run correction and independent result review
+
+R002 failed while the rglob iterator recursively entered a removed lock directory. The earlier stat-only repair and its review omitted this iterator failure path; the earlier review is retained as history, not current assurance. Recovery of the 253 accepted states was exact, but the monitor repair was insufficient.
+
+Independent archived-state and observation reviewers verified 357 durable accepted steps (253 reused +104 new), three complete origins, and an8-pixel base/fine mismatch. The same8 pixels already differ at zero-load settle. The frozen six-mask equality therefore cannot pass; common future and full-state future replay were never executed.
+
+Post-run local control code159a63c081ce205cd87c6777b019413d8ccc4075 received a limited independent review:40 artificial tests passed,8,000 real lock/atomic-file cycles with16,054 scans produced no error. It remains undeployed and does not authorize another scientific run. Full independent reviews are linked from results_20261020.md; raw receipts preserve prior authority and review versions.
