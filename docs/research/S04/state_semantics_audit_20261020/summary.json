@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-20",
+  "state_rows": 143,
+  "field_rows": 1353,
+  "check_count": 263,
+  "statuses": {
+    "conditional_reference": 1,
+    "documented_semantic_defect": 2,
+    "verified": 260
+  },
+  "coverage": "explicit package manifests, retained paired peaks, MCS published endpoints, c1 saved commit chain, current c20 lineage",
+  "excluded": "closed holdout fields; remote data; PT/model deserialization; unretained complete original time histories; fresh scientific evaluation",
+  "fresh_solver_calls": 0,
+  "model_forward_calls": 0
+}

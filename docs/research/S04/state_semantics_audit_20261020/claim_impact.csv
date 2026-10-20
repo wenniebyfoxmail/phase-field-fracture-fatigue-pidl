@@ -1,0 +1,12 @@
+id,issue,finding,evidence,affected_conclusion,action
+I01,index_mapping,no_new_shift_in_checked_exports,actual NPZ and JSON steps; FEM cycles/field axes,retained pair same-state comparisons,keep; not whole-history certification
+I02,missing_c84,documented_gap,PIDL compact cycles omit84,event-local field discontinuity,"retain (c83,c85]; do not impute c84"
+I03,raw_active_mismatch,previously_withdrawn,original owner decision.md; raw versus g*raw,old approximately -99.98% active difference,withdrawn stays withdrawn; use corrected native GP
+I04,c1_commit_timing,no_new_mixed_timing_in_checked_chain,10 one-commit events; pre/proof/proposed/post identities,c1 original/repaired commit conclusions,keep distinct acceptance rules; no f<1 claim
+I05,MCS_reference,conditional_not_trajectory,8 accepted including anchor;3 peak budget misses;0 commits,teacher and evolution interpretations,do not stitch or promote failed endpoints
+I06,physical_damage_alias,distinct_variables,tight NN d differs in role from mechanical external FEM d,current UV head/hidden diagnostics,conditional UV evidence only
+I07,f_solve_f_commit,algorithm_and_export_difference,exact ad749c8 source fit then history/f update then export,full discrete equivalence or optimizer stationarity,save both phases prospectively; selected exports cannot certify f_solve
+I08,event_family,different_source_contracts,historical Hard5 83/86; current E011 FEM84/87,event agreement and same-event comparisons,never relabel family by offset
+I09,E027_E034,fixed_state_conditioning,98 warm-start;99 target phase; FEM prior/target f; external E030 d later,physics only versus supervision;E033/34 result,keep scoped component outcomes and original negatives
+I10,NN_parameter_updates,not_physical_time,E02410000;S1500;MCSouter18;readouts,forecast/rollout interpretations,horizon0; not fatigue evolution
+I11,hybrid_cost_stop,not_NN_effect_result,completed first step;second step watchdog;no full labels in read records,hybrid accuracy/speed claims,continue sole owner; retain stopped-run evidence

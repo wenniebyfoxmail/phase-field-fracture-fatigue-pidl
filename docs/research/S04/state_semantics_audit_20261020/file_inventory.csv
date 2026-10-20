@@ -1,0 +1,7 @@
+path,role,exists,bytes,identity_check,sha256
+/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/hard5_fixed_calendar_exposure_states_20260824_v3/manifest.json,package manifest,True,19200,not_requested,
+/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/hard5_u012_exact_peak_native_q4_c76_c82_c83_20260824_v2.1/manifest.json,package manifest,True,22790,not_requested,
+/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/common_common_initial.mat,mesh,True,32927359,verified,59a0f81368d0c46a698f94fdfcb32158e96361714d7547f00deed996d4a7c181
+/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/c0020_s003_post_commit.mat,predecessor,True,32000094,verified,c242202960ae1da66d234d8646b12f69e6bab3bd4a119daa1811391e2efc5683
+/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/output/mcs/c20_s4/case.mat,case,True,107596994,verified,315e2dc00cd57668bc287af6619b33846dc5273f21c124b6d6f84aa10ed62c48
+/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/output/mcs/c20_s4/outer_18.mat,reference,True,24195415,verified,31ab8a56c6485da0ead9b28abcb3f6e6f8973e7eadcd12b6acaed6ade5479483

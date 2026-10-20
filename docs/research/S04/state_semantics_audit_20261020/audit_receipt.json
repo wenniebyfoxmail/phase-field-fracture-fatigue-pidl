@@ -1,0 +1,18 @@
+{
+  "audit_code_commit": "a12784f4",
+  "audit_output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/pidl_fem_state_audit_20261020/audit_v1",
+  "scope": "local saved-state/metadata audit only",
+  "date": "2026-10-20",
+  "raw_arrays_modified": false,
+  "model_loads": 0,
+  "forward_calls": 0,
+  "solver_calls": 0,
+  "remote_calls": 0,
+  "base_commit": "5319bf47e6c5b7ca6fe3a95884b610e0d7251848",
+  "source_worktree_heads_at_record": {
+    "hard5-native-mesh-pidl-20260929": "5449d5a99884b48d404d0c7c3bb5a616c8afdada",
+    "fem-synthetic-augmentation-design-20261017": "dfca88f45b13a0d6bf70d114c0e9c798f23d3a2e",
+    "pidl-weight-gradient-fix-20261018": "829508617534c6c5febc813899498a31053684df",
+    "thesis-state-contract-20260929": "8ceb82c05f0ed36ce5b98490e1f822c736b78dab"
+  }
+}
