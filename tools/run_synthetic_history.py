@@ -76,22 +76,42 @@ def verify_authority(spec, authority, review, code):
 
 
 def storage_size(root):
-    size = 0
-    for path in Path(root).rglob('*'):
+    root = Path(root)
+    # Admission checks a not-yet-created run root. Once traversal starts, any
+    # missing durable directory remains an error; only StateStore's transient
+    # empty lock directory may disappear before or during scandir.
+    if not root.exists():
+        return 0
+
+    def transient(path):
+        return (path.name.startswith('.json-')
+                or path.name.startswith('latest.npz.trial-')
+                or path.name == 'latest.npz.lock')
+
+    def walk(directory):
         try:
-            entry = path.stat()
+            with os.scandir(directory) as iterator:
+                entries = list(iterator)
         except FileNotFoundError:
-            # Atomic JSON/state writes rename temporary files; StateStore also
-            # removes its empty lock directory after every commit. A scan is
-            # not a snapshot. Only those known transient names may disappear.
-            if (path.name.startswith('.json-')
-                    or path.name.startswith('latest.npz.trial-')
-                    or path.name == 'latest.npz.lock'):
-                continue
+            if directory != root and directory.name == 'latest.npz.lock':
+                return 0
             raise
-        if stat.S_ISREG(entry.st_mode):
-            size += entry.st_size
-    return size
+        total = 0
+        for entry in entries:
+            path = Path(entry.path)
+            try:
+                observed = path.stat()
+            except FileNotFoundError:
+                if transient(path):
+                    continue
+                raise
+            if stat.S_ISREG(observed.st_mode):
+                total += observed.st_size
+            elif stat.S_ISDIR(observed.st_mode) and not entry.is_symlink():
+                total += walk(path)
+        return total
+
+    return walk(root)
 
 
 def resource_check(spec, root, start, *, continuation=None):

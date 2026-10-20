@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "experiment_id": "S04-E027-SYNMEM",
   "spec_id": "bff278a41264db2070745a31b90ff742a19b88b1bbc66ad325073ff08f832f23",
   "code_commit": "bc334c0c5650b3632e7d3eb76848995091113a7e",
@@ -51,7 +51,7 @@
     "completed_log_rows": 252,
     "no_future": true
   },
-  "status": "Enabled once for R002 after independent bc334c review and strict original-producer zero-solver recovery admission; no third attempt",
+  "status": "Consumed R002: controller rglob/scandir race stopped worker after 104 new attempted steps; no third attempt or further recovery authorized",
   "admission": {
     "receipt": "/mnt/data2/drtao/wennie/pf_synmem_recovery_bc334c0c_20261020/preflight.json",
     "hostname": "GPUServer8",
@@ -67,5 +67,13 @@
       "osqp": "1.0.4",
       "matplotlib": "3.10.3"
     }
+  },
+  "terminal": {
+    "state": "failed",
+    "supervisor_seconds": 10.229431751184165,
+    "cumulative_attempted": 357,
+    "new_attempted": 104,
+    "future_executed": false,
+    "receipt": "/mnt/data2/drtao/wennie/S04-E027-SYNMEM-R002/supervisor_terminal.json"
   }
 }

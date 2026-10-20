@@ -160,15 +160,34 @@ def test_no_future_is_executed_without_current_match(tmp_path, monkeypatch):
     assert len(advanced) == 12
 
 
+def snapshot_then_remove(monkeypatch, root, victim):
+    """Real DirEntry snapshot survives the actual file/directory removal."""
+    import os
+    from contextlib import nullcontext
+    original = os.scandir
+    def scan(path):
+        with original(path) as iterator:
+            entries = list(iterator)
+        if Path(path) == root:
+            if victim.is_dir():
+                victim.rmdir()
+            else:
+                victim.unlink()
+        return nullcontext(iter(entries))
+    monkeypatch.setattr(os, 'scandir', scan)
+
+
 @pytest.mark.parametrize('name', ['.json-unit', 'latest.npz.trial-unit', 'latest.npz.lock'])
 def test_storage_scan_tolerates_only_known_removed_atomic_entries(tmp_path, monkeypatch, name):
     import run_synthetic_history as r
     transient = tmp_path/name
+    if name.endswith('.lock'):
+        transient.mkdir()
+    else:
+        transient.write_bytes(b'temporary')
     permanent = tmp_path/'state0001.npz'
     permanent.write_bytes(b'saved state')
-    # A real directory-entry snapshot can outlive an atomic rename or empty
-    # lock removal; let stat see the now-absent path.
-    monkeypatch.setattr(Path, 'rglob', lambda self, _: iter((transient, permanent)))
+    snapshot_then_remove(monkeypatch, tmp_path, transient)
     assert r.storage_size(tmp_path) == len(b'saved state')
 
 
@@ -184,9 +203,7 @@ def test_storage_scan_uses_one_observation_across_atomic_rename(tmp_path, monkey
         if self == transient:
             os.replace(transient, destination)
         return result
-    monkeypatch.setattr(Path, 'rglob', lambda self, _: iter((transient,)))
     monkeypatch.setattr(Path, 'stat', observe_then_rename)
-    # Old is_file()+stat() raised on its second lookup in this interleaving.
     assert r.storage_size(tmp_path) == len(b'atomic payload')
     assert destination.read_bytes() == b'atomic payload'
 
@@ -194,19 +211,66 @@ def test_storage_scan_uses_one_observation_across_atomic_rename(tmp_path, monkey
 @pytest.mark.parametrize('name', ['state0001.npz', 'latest.npz', 'unexpected-directory'])
 def test_storage_scan_does_not_mask_missing_durable_entries(tmp_path, monkeypatch, name):
     import run_synthetic_history as r
-    monkeypatch.setattr(Path, 'rglob', lambda self, _: iter((tmp_path/name,)))
+    victim = tmp_path/name
+    if name == 'unexpected-directory':
+        victim.mkdir()
+    else:
+        victim.write_bytes(b'durable')
+    snapshot_then_remove(monkeypatch, tmp_path, victim)
     with pytest.raises(FileNotFoundError):
         r.storage_size(tmp_path)
 
 
-def test_storage_scan_does_not_mask_permission_failure(tmp_path, monkeypatch):
+@pytest.mark.parametrize('name,allowed', [('latest.npz.lock', True), ('states', False)])
+def test_storage_scan_handles_directory_removal_after_stat(tmp_path, monkeypatch, name, allowed):
+    import os
     import run_synthetic_history as r
-    p = tmp_path/'.json-unit'
-    monkeypatch.setattr(Path, 'rglob', lambda self, _: iter((p,)))
-    def denied(*args, **kwargs): raise PermissionError('not transient absence')
-    monkeypatch.setattr(Path, 'stat', denied)
+    directory = tmp_path/name
+    directory.mkdir()
+    (tmp_path/'saved.npz').write_bytes(b'saved state')
+    original = os.scandir
+    def remove_before_recursive_scan(path):
+        if Path(path) == directory:
+            directory.rmdir()
+        return original(path)
+    monkeypatch.setattr(os, 'scandir', remove_before_recursive_scan)
+    if allowed:
+        assert r.storage_size(tmp_path) == len(b'saved state')
+    else:
+        with pytest.raises(FileNotFoundError):
+            r.storage_size(tmp_path)
+
+
+@pytest.mark.parametrize('where', ['leaf', 'directory'])
+def test_storage_scan_does_not_mask_permission_failure(tmp_path, monkeypatch, where):
+    import os
+    import run_synthetic_history as r
+    if where == 'leaf':
+        p = tmp_path/'.json-unit'; p.write_bytes(b'payload')
+        original = Path.stat
+        def denied(path, *args, **kwargs):
+            if path == p: raise PermissionError('not transient absence')
+            return original(path, *args, **kwargs)
+        monkeypatch.setattr(Path, 'stat', denied)
+    else:
+        p = tmp_path/'latest.npz.lock'; p.mkdir()
+        original = os.scandir
+        def denied(path):
+            if Path(path) == p: raise PermissionError('not transient absence')
+            return original(path)
+        monkeypatch.setattr(os, 'scandir', denied)
     with pytest.raises(PermissionError):
         r.storage_size(tmp_path)
+
+
+def test_storage_scan_counts_nested_content_and_symlinks_without_recursing(tmp_path):
+    import run_synthetic_history as r
+    directory = tmp_path/'states'; directory.mkdir()
+    (directory/'state.npz').write_bytes(b'123')
+    (tmp_path/'linked-directory').symlink_to(directory, target_is_directory=True)
+    (tmp_path/'linked-file').symlink_to(directory/'state.npz')
+    assert r.storage_size(tmp_path) == 6
+    assert r.storage_size(tmp_path/'not-created') == 0
 
 
 @pytest.mark.parametrize('failure',['cumulative_wall','cumulative_storage'])
