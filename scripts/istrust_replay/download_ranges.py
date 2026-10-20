@@ -118,9 +118,10 @@ def main():
     ap.add_argument('--bytes', type=int, required=True)
     ap.add_argument('--config', type=Path, required=True)
     a = ap.parse_args()
-    if a.root.resolve() != Path('/mnt/data2/drtao/wennie/S02-E007-R001'):
+    config = json.loads(a.config.read_text())
+    if a.root.resolve() != Path(config['remote_root']) or a.root.resolve() != Path('/mnt/data2/drtao/wennie') / config['run_ids'][0]:
         raise ValueError('Unexpected task root')
-    intake = json.loads(a.config.read_text())['data_intake']
+    intake = config['data_intake']
     expected = {'connections': 32, 'per_connection_rate': '320K', 'max_wall_seconds': 5400,
                 'curl_max_seconds': 5300, 'cpu_cores': 4, 'retry': 0}
     if intake != expected or not a.url.startswith('https://'):

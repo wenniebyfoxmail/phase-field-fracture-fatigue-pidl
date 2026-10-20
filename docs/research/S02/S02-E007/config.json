@@ -1,6 +1,6 @@
 {
   "experiment": "S02-E007",
-  "protocol_revision": "1.2",
+  "protocol_revision": "1.3",
   "author_commit": "35d4a79b2f3d42f80cd0f63496675c6dbb483add",
   "epoch": 6,
   "fold_test_specimens": [
@@ -42,9 +42,9 @@
     31415
   ],
   "run_ids": [
-    "S02-E007-R001",
-    "S02-E007-R002",
-    "S02-E007-R003"
+    "S02-E007-R004",
+    "S02-E007-R005",
+    "S02-E007-R006"
   ],
   "mc_draws": 40,
   "five_draw_estimator_seed": 8675309,
@@ -95,5 +95,9 @@
     "curl_max_seconds": 5300,
     "cpu_cores": 4,
     "retry": 0
-  }
+  },
+  "remote_root": "/mnt/data2/drtao/wennie/S02-E007-R004",
+  "prepared_environment_prefix": "/mnt/data2/drtao/wennie/S02-E007-R001/venv_replay",
+  "requires_fresh_retry_approval": true,
+  "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b"
 }

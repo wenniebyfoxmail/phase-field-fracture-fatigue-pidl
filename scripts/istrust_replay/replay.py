@@ -250,6 +250,8 @@ def main():
     config = json.loads(args.config.read_text())
     if config['training'] or config['observation_uncertainty_testing'] or config['epoch'] != 6:
         raise ValueError('Scope differs from sixth-epoch no-training replay')
+    from gpu_admission import driver_identity
+    write_json(args.root / 'worker_gpu_identity.json', driver_identity(config['gpu_uuid']))
     import torch, torchvision, numpy, PIL, scipy, matplotlib
     actual = {'python': '.'.join(map(str, sys.version_info[:3])), 'torch': torch.__version__,
               'torchvision': torchvision.__version__, 'numpy': numpy.__version__, 'Pillow': PIL.__version__,

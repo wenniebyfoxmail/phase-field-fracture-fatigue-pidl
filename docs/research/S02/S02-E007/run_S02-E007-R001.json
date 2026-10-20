@@ -1,0 +1,33 @@
+{
+  "run_id": "S02-E007-R001",
+  "execution": "failed_admission_before_controller",
+  "retrieval": "verified_small_evidence_19_files",
+  "experiment_verdict": "inconclusive_not_reproduced",
+  "host": "GPUServer8",
+  "remote_root": "/mnt/data2/drtao/wennie/S02-E007-R001",
+  "implementation_commit": "5daa9f2b66d437111378d9ec56a3312549ed6d66",
+  "source_dirty": false,
+  "launcher_sha256": "1abe627610822bdab0851f9873a1e22e5cd87d624b63e168901ef6f0c6b33dfc",
+  "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+  "cuda_probe_exit": 1,
+  "cuda_probe_original_stderr": "not retained; limitation preserved",
+  "cuda_scalar_allocation": "not established",
+  "model_forward": 0,
+  "image_decoding": 0,
+  "training_steps": 0,
+  "observation_uncertainty_testing": false,
+  "numerical_seed_runs_attempted": 0,
+  "R002_R003": "unattempted",
+  "cpu_runtime_verified": {
+    "python": "3.10.12",
+    "torch": "1.13.1+cu116",
+    "torchvision": "0.14.1+cu116",
+    "numpy": "1.23.4",
+    "Pillow": "9.4.0",
+    "scipy": "1.10.1",
+    "matplotlib": "3.7.1"
+  },
+  "diagnosis": "Installed PyTorch parser maps UUID CUDA mask to {-1}; NVML device-count intersection is zero when NVML succeeds. Pure CPU installed-source reproduction retained. Additional CUDA issues not excluded.",
+  "raw_evidence": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E007/runs/S02-E007-R001",
+  "retry_authorization": "pending; proposed fresh R004-R006; no retry performed"
+}

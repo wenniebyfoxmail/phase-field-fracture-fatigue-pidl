@@ -154,11 +154,16 @@ def main():
     ap.add_argument('--config', type=Path, required=True)
     ap.add_argument('--lock', type=Path, required=True)
     ap.add_argument('--gpu-uuid', required=True)
+    ap.add_argument('--max-seconds', type=float)
     args = ap.parse_args()
     root = args.root.resolve()
-    if root != Path('/mnt/data2/drtao/wennie/S02-E007-R001'):
-        raise ValueError('Unexpected producer root')
     config, lock = json.loads(args.config.read_text()), json.loads(args.lock.read_text())
+    if root != Path(config['remote_root']) or root != Path('/mnt/data2/drtao/wennie') / config['run_ids'][0]:
+        raise ValueError('Unexpected producer root')
+    if args.max_seconds is not None:
+        if not 0 < args.max_seconds <= config['max_wall_seconds']:
+            raise ValueError('Invalid remaining batch allowance')
+        config = dict(config, max_wall_seconds=args.max_seconds)
     def interrupted(signum, frame):
         raise InterruptedError(f'Controller signal {signum}')
     signal.signal(signal.SIGTERM, interrupted)
