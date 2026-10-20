@@ -518,3 +518,18 @@ existing3rawimages→visibility-definedfissure/texture/uncertainreferences→own
 fixedvirtualgaugesandcontrols→oldcandidate/two-sided-evidencecomparison.
 Noassumedauthorendpoints,forecast-errorselectionorchangedoldscore.
 NoCV/annotation/newidentification/fit/training/newforecastexecutedthisturn.
+
+### D3 matched-resource candidate implemented, no real execution — 2026-10-20
+
+[Fullone-shotprotocol](../research/S03/S03-E049-MD03/controlled_opening_protocol.md)
+andnew`md03_controlled_opening.py`prepared:84fixedsites×central/leftinternal/
+rightinternal×5saved-transformperturbations×2exposedpairs,matchedpatch/search/
+bidirectionalresources. Unknownvisibilitynotannotation;internalstencilsnot
+provencrack-free. Primaryper-sitecentral-minus-internalnuisanceenvelope,not
+apertureaccuracyorforecastscore. 25artificial-onlychecks/NumPyvsOpenCVand
+closed-formvsOLScheckscompleted;[localexact-diffreview](../research/S03/S03-E049-MD03/controlled_opening_review.md),
+notindependentphysicalreview. Identity-onlycontracthashes9existinginputs,
+noimagearraydecode/realCV/annotation/fit/training/produceradmissionorsend.
+ActiveD3next:reviewexactTaoboCPUhost/root/RunID/manifestforone600swall,
+128MiBgroupedexecution;noMacproduction/fallback/retry. Authorreplynotdependency;
+oldobserver/halfdepth/scoresunchanged,D01ownerindependent.

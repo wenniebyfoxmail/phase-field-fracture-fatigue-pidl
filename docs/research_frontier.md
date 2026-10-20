@@ -97,9 +97,13 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   localwidthtruth. AuthorenquirysavedinChromeOutlookDrafts,actualsender
   xw436@cam.ac.uk/signatureWinnieWen,ToTaylorhkt@berkeley.edu,notsent;
   priorHaofanidentityerrorcorrectedatvault/projectsource.
-  D3nextcomparisonprepared:existing3rawimages,visibility-definedfissure/
-  texture/uncertainsegmentsandownfixedvirtualgauges;notauthorendpoints.
-  Noannotation/newCV/fit/forecastexecuted. D3decisionallowsconditionalphoto-ID/imagegeometry
+  D3nextcomparisonimplemented:84fixedsites×central/twointernalgauges×5
+  saved-transformvariants×2exposedpairs,equalNCC/reverseQCresources;
+  allrealvisibilityunknown,noinventedlabels/authorendpoints.
+  25artificial-onlytestsandlocalexact-diffreviewcomplete,9inputidentity
+  contractprepared;noNPZ/TIFFdecode/realCV/fit/forecast/produceradmission.
+  NextreviewexactTaoboCPUhost/root/RunID/manifestforone600sgroupedrun.
+  D3decisionallowsconditionalphoto-ID/imagegeometry
   explorationwithoutwaiting;parkonlylocalopeningreference,notprogramme.
   Inventedendpointsnottruth;affinetimerelabellingdoesnotchangeoldforecast,
   realisedfutureloadnotknowninput. NoCV/fit/rescoreexecuted.
