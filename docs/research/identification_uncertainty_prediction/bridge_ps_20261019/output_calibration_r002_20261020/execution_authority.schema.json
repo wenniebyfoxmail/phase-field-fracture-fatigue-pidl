@@ -1,0 +1,23 @@
+{
+  "description": "SCHEMA ONLY. No instance/approval is created; real later HQ instruction must be verified independently. Resource-only decision cannot satisfy this schema.",
+  "required": [
+    "authority_kind",
+    "authority_source_thread_id",
+    "human_approved",
+    "authority_basis",
+    "approval_text",
+    "source_commit",
+    "package_sha256",
+    "config_sha256",
+    "run_id",
+    "run_root",
+    "budget",
+    "category_caps",
+    "scope",
+    "allow_scientific_admission",
+    "allow_old_input_native_target_read",
+    "allow_2166_solves_once",
+    "max_attempts"
+  ],
+  "rules": "package.validate_authority is the executable exact schema; unique root/execution_authority.json only; human_approved=false/HQ_DELEGATED is honest for delegated decisions; no receipt authenticates its own source"
+}

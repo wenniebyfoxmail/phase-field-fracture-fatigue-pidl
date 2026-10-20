@@ -1,0 +1,11 @@
+# Explicitly authorized repaired rerun —2026-10-20
+
+Human instruction in HQ01a14bb9-6cd1-7ee2-9647-5190d786f7ba: 请你在对应窗口继续推进：响应预测核验修复后重跑一次；S09先核清部署残片和连接问题，修好后再运行。沿用原方案。
+
+This owns only the response-prediction rerun. Original R001 root and its8.120775second/zero-fit formal first stop are preserved. New R002 is the independent execution identity explicitly permitted for this single repaired rerun, not erasure or bypass of a failure. R001 attempted source4297ddc4/package0503d28e remains immutable.
+
+Source change: producer_data native-schema Audit.enter keyword stage=stage becomes frame_stage=stage, matching the already independently reviewed candidate SHA8435c06ac36aa7a3ff430cfc60002792fff73fb7b4f5821369e3c42b9cac7920. This changes diagnostic metadata only. RunID/root in config/argv/card and one test identity assertion change to R002. No scientific data, alpha, group/origin/horizon/channel, estimator, fold, metric, candidate, figure, evidence or resource requirement changes. Existing review of unchanged code carries forward; exact differences must be independently reviewed before this one run.
+
+The older resource_decision and preparation language are retained as historical source provenance; this dated amendment and real execution_authority.json record the new direct-human rerun decision. Honest authority source is the HQ thread above, with direct human quote and current creation time. The execution receipt must bind the newly sealed package/config and exact source snapshot. Missing/mismatched authority still refuses. No schema bypass or fabricated authority.
+
+One fresh formal admission then full2166solves/1853280inner/16016outer scores,19 exposed groups/1144origins/H10H40/twochannels/sevenarms; primary L(selectedC27)-L(selectedA25). Same gpu-taobo/GPUServer8 CPU one logical thread/0GPU/1200second whole lifecycle/combined sampledRSS2GiB/remote1536MiB/archive700MiB/category caps; local retrieval+extract1536MiB,combined3GiB. Preserve old roots and failures, protect others, no new data/holdout/install/fallback/version relaxation. Any new network/admission/resource/scientific/evidence failure first-stops; no automatic second rerun. Corrected framed deployment is bound separately, transfers this exact source archive and authority without interpolation and rejects existing roots/duplicate launch.
