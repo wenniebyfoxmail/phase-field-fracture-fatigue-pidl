@@ -40,7 +40,7 @@ def main():
     env.update(PYTHONPATH=f'{root}/deps:{code}/source:{code}/tools',TMPDIR=str(root/'tmp'),
                XDG_CACHE_HOME=str(root/'cache'),TORCH_EXTENSIONS_DIR=str(root/'jitcache'),
                OMP_NUM_THREADS='16',OPENBLAS_NUM_THREADS='16',MKL_NUM_THREADS='16',
-               CUDA_VISIBLE_DEVICES='')
+               CUDA_VISIBLE_DEVICES='',MPLBACKEND='Agg',MPLCONFIGDIR=str(root/'cache/matplotlib'))
     with (root/'supervisor.log').open('x') as log:
         proc=subprocess.Popen(command,cwd=code,env=env,stdin=subprocess.DEVNULL,
                               stdout=log,stderr=subprocess.STDOUT,start_new_session=True)

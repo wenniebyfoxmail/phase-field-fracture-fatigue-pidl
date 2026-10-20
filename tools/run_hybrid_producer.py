@@ -58,6 +58,15 @@ def validate_card(card):
         raise ValueError("unidentified producer")
 
 
+def execution_specs(card):
+    """Required dependency admission precedes every replay/state/fit phase."""
+    spec=card.get('plotting_admission')
+    if spec!={'id':'plotting_admission','kind':'admission','gpu':False,'wall_seconds':120}:
+        raise ValueError('required bounded plotting admission differs')
+    if 'matplotlib' not in card['runtime_expected']:raise ValueError('Matplotlib exact-version requirement missing')
+    return [spec,*card['phases']]
+
+
 def initial_totals(card, job_started, code_root=None):
     """Charge actual admission work to the same study envelope before launch."""
     if card.get('prior_costs'):
@@ -194,7 +203,7 @@ def supervise(proc,spec,card,runroot,archive,totals,usage=None,guardian=None):
                 raise RuntimeError('total allocated host wall cap')
             if spec['gpu'] and totals['gpu_seconds']+elapsed>card['budget']['gpu_hours']*3600-reserve:
                 raise RuntimeError('total GPU wall cap')
-            if spec['id'] in ('native_replay','analysis') and totals.get('shared_analysis_seconds',0.)+elapsed>card['budget']['replay_analysis_hours']*3600-reserve:
+            if spec['id'] in ('plotting_admission','native_replay','analysis') and totals.get('shared_analysis_seconds',0.)+elapsed>card['budget']['replay_analysis_hours']*3600-reserve:
                 raise RuntimeError('shared replay and analysis wall cap')
             if spec['kind']=='trajectory':
                 marker=runroot/'active_step.json'
@@ -259,7 +268,7 @@ def run_owned_worker(command,code,env,log,spec,card,runroot,archive,totals,usage
             reserve=card['budget']['termination_reserve_seconds'];now=perf_counter()
             deadlines=[now+spec['wall_seconds']-reserve,totals['start_monotonic']+card['budget']['cpu_wall_hours']*3600-reserve]
             if spec['gpu']:deadlines.append(now+card['budget']['gpu_hours']*3600-totals['gpu_seconds']-reserve)
-            if spec['id'] in ('native_replay','analysis'):deadlines.append(now+card['budget']['replay_analysis_hours']*3600-totals.get('shared_analysis_seconds',0)-reserve)
+            if spec['id'] in ('plotting_admission','native_replay','analysis'):deadlines.append(now+card['budget']['replay_analysis_hours']*3600-totals.get('shared_analysis_seconds',0)-reserve)
             report=runroot/f"guard_{spec['id']}.json"
             guardian=subprocess.Popen([sys.executable,str(Path(code)/'tools/hybrid_deadline_guard.py'),
                 '--worker',str(proc.pid),'--supervisor',str(os.getpid()),'--fd',str(left.fileno()),
@@ -311,7 +320,7 @@ def outcome(card,archive,totals):
     quality=qualities['test_hybrid']
     speed=(ch<=(1-criteria['speed_fraction_min'])*min(cf,cc))
     fatigue=all(read_manifest(archive/x/'summary.json')['f_min']<1. for x in ['train_A','train_B','validation','test_reference','test_classical','test_hybrid'])
-    offline=sum(totals['phases'][x]['wall_seconds'] for x in ['native_replay','train_A','train_B','validation','training'])+totals.get('pre_execution_cost',{}).get('wall_seconds',0.)
+    offline=sum(totals['phases'][x]['wall_seconds'] for x in ['native_replay','train_A','train_B','validation','training'])+totals['phases'].get('plotting_admission',{}).get('wall_seconds',0.)+totals.get('pre_execution_cost',{}).get('wall_seconds',0.)
     return dict(complete=True,quality_pass=quality,matched_quality=qualities,online_speed_pass=speed,fatigue_coverage=fatigue,
                 supports_neural_online_acceleration=bool(all(qualities.values()) and speed and fatigue),
                 cost=dict(reference_wall=cf,classical_wall=cc,hybrid_wall=ch,offline_wall=offline,
@@ -341,8 +350,11 @@ def main():
     runroot=Path(card['run_root']);archive=Path(card['archive_root'])
     if archive.exists():raise FileExistsError('fresh archive required; no automatic retry/resume')
     host=host_admission(card,runroot,archive)
-    runtime={name:getattr(importlib.import_module(name),'__version__','unknown') for name in card['runtime_expected']}
-    if runtime!=card['runtime_expected']:raise RuntimeError(f'producer runtime differs: {runtime}')
+    # Matplotlib is imported/rendered in the independently bounded first worker,
+    # never in this supervisor's unguarded runtime import loop.
+    runtime_expected={k:v for k,v in card['runtime_expected'].items() if k!='matplotlib'}
+    runtime={name:getattr(importlib.import_module(name),'__version__','unknown') for name in runtime_expected}
+    if runtime!=runtime_expected:raise RuntimeError(f'producer runtime differs: {runtime}')
     totals=initial_totals(card,job_started,code)
     archive.mkdir(parents=True)
     for d in ['tmp','jitcache','cache','logs']:(runroot/d).mkdir(exist_ok=True)
@@ -354,13 +366,14 @@ def main():
     signal.signal(signal.SIGTERM,interrupted)
     status='failed'
     try:
-        for spec in card['phases']:
+        for spec in execution_specs(card):
             if spec['gpu']:write_json(runroot/f"gpu_admission_{spec['id']}.json",gpu_admission(card))
             env=os.environ.copy()
             env.update(PYTHONPATH=f'{runroot}/deps:{code}/source:{code}/tools',CUDA_VISIBLE_DEVICES=str(card['producer']['gpu_index']) if spec['gpu'] else '',
                        OMP_NUM_THREADS='16',OPENBLAS_NUM_THREADS='16',MKL_NUM_THREADS='16',NUMEXPR_NUM_THREADS='16',
                        TMPDIR=str(runroot/'tmp'),XDG_CACHE_HOME=str(runroot/'cache'),
-                       TORCH_EXTENSIONS_DIR=str(runroot/'jitcache'),PIDL_ARCHIVE_DIR=str(archive))
+                       TORCH_EXTENSIONS_DIR=str(runroot/'jitcache'),PIDL_ARCHIVE_DIR=str(archive),
+                       MPLBACKEND='Agg',MPLCONFIGDIR=str(runroot/'cache/matplotlib'))
             env['HYBRID_SUPERVISOR_PID']=str(os.getpid())
             cmd=[sys.executable,'-u',str(code/'tools/hybrid_producer_worker.py'),'--card',str(args.card.resolve()),
                  '--phase',spec['id'],'--inputs',str(args.inputs.resolve()),'--out',str(runroot),'--archive',str(archive)]
@@ -376,15 +389,19 @@ def main():
                 usage.update(wall_seconds=perf_counter()-phase_started,
                              cpu_seconds=(use_after.ru_utime+use_after.ru_stime-use_before.ru_utime-use_before.ru_stime),
                              completed=phase_ok)
+                if spec['id']=='plotting_admission' and (runroot/'plotting_admission_failure.json').exists():
+                    usage['dependency_failure']=read_manifest(runroot/'plotting_admission_failure.json')
                 totals['phases'][spec['id']]=usage
                 totals['wall_seconds']+=usage['wall_seconds'];totals['cpu_seconds']+=usage['cpu_seconds']
-                if spec['id'] in ('native_replay','analysis'):totals['shared_analysis_seconds']+=usage['wall_seconds']
+                if spec['id'] in ('plotting_admission','native_replay','analysis'):totals['shared_analysis_seconds']+=usage['wall_seconds']
                 if spec['gpu']:totals['gpu_seconds']+=usage['wall_seconds']
                 if spec['kind']=='trajectory':totals['numerical_seconds']+=usage['wall_seconds']
                 # Failed/killed work is always charged, even without a worker result.
                 write_json(runroot/'cost_ledger.json',totals)
             result=read_manifest(runroot/f"result_{spec['id']}.json")
             if result.get('completed',result.get('passed')) is not True:raise RuntimeError('incomplete worker result')
+            if spec['id']=='plotting_admission':
+                runtime['matplotlib']=result['matplotlib'];usage['plotting_runtime']=result
             if totals['numerical_seconds']>120*3600:raise RuntimeError('numerical work envelope exhausted')
         write_json(runroot/'decision.json',outcome(card,archive,totals));status='succeeded'
     except BaseException as exc:

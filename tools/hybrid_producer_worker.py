@@ -307,9 +307,17 @@ def main():
     p.add_argument('--inputs',required=True,type=Path);p.add_argument('--out',required=True,type=Path)
     p.add_argument('--archive',required=True,type=Path);args=p.parse_args()
     if platform.system()!='Linux':raise RuntimeError('producer workers are Linux-only; never train/solve on Mac')
-    card=read_manifest(args.card);spec=next(x for x in card['phases'] if x['id']==args.phase)
+    card=read_manifest(args.card)
+    spec=card['plotting_admission'] if args.phase=='plotting_admission' else next(x for x in card['phases'] if x['id']==args.phase)
     start=perf_counter()
-    if spec['kind']=='trajectory':result=trajectory(card,spec,args.inputs,args.out,args.archive)
+    if spec['kind']=='admission':
+        from hybrid_plotting_admission import probe_plotting
+        try:result=probe_plotting(card['runtime_expected'].get('matplotlib'))
+        except Exception as exc:
+            write_json(args.out/'plotting_admission_failure.json',dict(phase='plotting_admission',
+                       first_cause=str(exc),exception_type=type(exc).__name__,no_project_state_or_training=True))
+            raise
+    elif spec['kind']=='trajectory':result=trajectory(card,spec,args.inputs,args.out,args.archive)
     elif spec['kind']=='training':result=fit(card,args.inputs,args.out,args.archive)
     elif spec['kind']=='replay':
         from replay_hybrid_native_operators import replay
