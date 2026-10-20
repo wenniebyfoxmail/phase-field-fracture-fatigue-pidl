@@ -195,3 +195,7 @@ Exact scientific18d0e7cb retained; clean source tar/final review receipts/88 inp
 ## 2026-10-20 — D013 production-role clarification (static only)
 
 Mac v1 held: existing code binds Mac, not producer-role authority. Historical E024 records identify Taobo GPUServer8/drtao and /usr/bin/python3; CPU2 is thread limit, live capacity unverified. Unchanged science18d0e7cb reused; r2 card lists deployment/environment/input/hash-and-approval gaps in one place, no deployable v2 or execution. [Owner/card](S04-E024/physical_field_budget_execution_approval_r2.md).
+
+## 2026-10-20 — D013 Taobo CPU2 v2 preparation complete
+
+Unchanged science18d0e7cb/ownE023 three states/12profiles/13actual guards/immutable centre and originalcaps. Linux deployment r4 and exact104member/88input/source/argv binding independently PASS. Wire4e9f6f7e…8427d, actionb6463fde…87806; one272097280B upload, twoSSH conditional dispatch; current environment UNKNOWN, all authority false, no transport/science. OldMacv1 stays held. Await one exact [final approval card](S04-E024/physical_field_budget_taobo_cpu2_approval_v2.md); [owner details](S04-E024/experiment.md), [receipt](S04-E024/physical_field_budget_taobo_cpu2_package_receipt.json). .001 historical; coupled history/crack/fatigue application not validated.

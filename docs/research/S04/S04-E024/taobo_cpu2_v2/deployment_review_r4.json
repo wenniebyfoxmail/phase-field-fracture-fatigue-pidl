@@ -1,0 +1,61 @@
+{
+  "verdict": "PASS",
+  "review_status": "REVIEW_PASS",
+  "scope": "Focused r4 deployment code review: D3 surviving owned-session worker cleanup and retained literal machine checks. Final regenerated package binding excluded.",
+  "reviewer": "independent Codex sub-agent d013_linux_pack_review",
+  "reviewed_utc": "2026-10-20T15:50:18.412864+00:00",
+  "scientific_source_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "scientific_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "science_code_ready_reused_unchanged": true,
+  "material_sha256": {
+    "remote_entry.py": "90fd6877578e9c1b992df140ef4708075f5df1e46622387ecdf7980ff5c70171",
+    "transfer_and_start.py": "7423e5e2dde20d32a5cda9135ebbaf4dd4f32bd245e42a55b1ad02deebe5b2c9",
+    "test_deployment.py": "0b8dc865e124fe02eda70ed936a562acd10ef2cc87bd4fa78f096965121f8b67"
+  },
+  "prior_review_receipts_sha256": {
+    "deployment_review_r2.json": "28a417b969205dad8e99fb87cd4c54688e7139fca9f49e5e5bf5cb4caa9531cb",
+    "deployment_review_r3.json": "44d4309baab1790432378fac641b63dad906f49d4134d7b4cea83299fd7891c3"
+  },
+  "resolved_findings": [
+    {
+      "id": "D3",
+      "status": "RESOLVED",
+      "evidence": "owned_group_snapshot first filters the fresh Popen session+PGID, then checks each surviving member cmdline, unique expected cwd, creation time>=bound leader and nonnegative elapsed, immediately re-reading identity. terminate_owned checks survivors and signals the owned group after leader exit, with a second full attribution check before escalation. supervise_child rejects unexpected live workers after a zero parent exit and invokes cleanup for both zero/nonzero exit paths. Failure cleanup no longer depends on leader liveness. Artificial parent-exit0/3 worker-live cases passed."
+    }
+  ],
+  "findings": [],
+  "performed_checks": [
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "docs/research/S04/S04-E024/taobo_cpu2_v2/test_deployment.py"
+      ],
+      "result": "39 pure fixtures passed, including owned orphan after zero/nonzero leader exit, actual local owned-group cleanup, three-path df and default/false authority",
+      "wall_seconds": 0.7296236250549555,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/checks_12.log",
+      "log_sha256": "0bc2a1ab3c6477205a66ffee663af48809fef2e76dc8730a62c9c209019710e3"
+    }
+  ],
+  "v2_check_cumulative_wall_seconds": 4.430669543682598,
+  "original_prior_charge_seconds": 71.93754945798841,
+  "v2_preparation_reserved_seconds": 10.0,
+  "scientific_execution_authorized": false,
+  "actual_approval_generated": false,
+  "final_binding_reviewed": false,
+  "real_Torch_imports": 0,
+  "scientific_solves": 0,
+  "NN_optimizer_steps": 0,
+  "SSH_calls": 0,
+  "SCP_calls": 0,
+  "source_edits": 0,
+  "remaining_conditions": [
+    "Freeze new unapproved wire/control/action hashes carrying exact r4 code and review receipts; preserve prior candidate metadata/identity history.",
+    "Independently recheck final member/input/source/control hashes and recompute single1GiB peak/local reserve after candidate preservation.",
+    "Reconcile all v2 preparation, failed/passed checks, old/new build and final byte check wall within reserved10s; no prior71.937549s reset.",
+    "Actual producer metadata remains UNKNOWN; exact final human approval is required before any SSH/SCP/producer work."
+  ]
+}

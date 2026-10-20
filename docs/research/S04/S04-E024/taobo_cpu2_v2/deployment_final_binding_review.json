@@ -1,0 +1,126 @@
+{
+  "verdict": "FINAL_BINDING_PASS",
+  "review_status": "REVIEW_PASS",
+  "reviewer": "independent Codex sub-agent d013_linux_pack_review",
+  "reviewed_utc": "2026-10-20T15:52:29.923382+00:00",
+  "scope": "Independent final bytes-only package/action/control/argv/source/input/storage/budget binding; no current producer observation, execution or scientific conclusion",
+  "action_manifest": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/control/action_manifest.json",
+    "sha256": "b6463fdec674328c989ea123c5d4aeb6a41bb6776e38481b0bfeace9e3387806"
+  },
+  "payload": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/D013_Taobo_CPU2_18d0e7cb_v2.tar",
+    "bytes": 272097280,
+    "sha256": "4e9f6f7ee2df07d62aac85c290398de261246a9971914d609a4c33c2d708427d",
+    "regular_members": 104,
+    "payload_manifest_sha256": "7e9fcf09a97212cdfe883a71f421d085e740350ddc779b42d4ff2d0bbbf26675"
+  },
+  "proposed_exact_argv": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/proposed_exact_argv.json",
+    "sha256": "d221420461700a00a9f770ed12bd5c80a9ffb32c9df7ccd06ccfa0caa939018e",
+    "checks": "Both complete SSH command strings shlex-decode exactly to /usr/bin/python3 -c plus bound remote_entry bytes and mode; local client/SCP/scientific argv equal frozen target/path/source arguments; no command executed"
+  },
+  "science": {
+    "commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+    "tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+    "source_tar_sha256": "4682bf96f178c4ca6dc9faf56a9f591cb687077e554240d77a997b818681d7b1",
+    "source_regular_files": 1455,
+    "source_unpacked_bytes": 47994968,
+    "source_clean_staging_verified": true,
+    "all_nested_regular_files_match_clean_staging": true,
+    "existing_scientific_CodeReady_reused_unchanged": true
+  },
+  "inputs": {
+    "count": 88,
+    "bytes": 238110147,
+    "all_local_files_regular_non_symlink": true,
+    "all_source_destination_bytes_hashes_verified": true,
+    "all_wire_member_hashes_verified": true,
+    "D012": "Exact saved c20s4/c60s4/c83s4 _full_head.npz bytes plus original ARCHIVE_MANIFEST.json carried; no model/array opened or historical head refit"
+  },
+  "control": {
+    "all_frozen_hashes_verified": true,
+    "remote_entry_sha256": "90fd6877578e9c1b992df140ef4708075f5df1e46622387ecdf7980ff5c70171",
+    "client_sha256": "7423e5e2dde20d32a5cda9135ebbaf4dd4f32bd245e42a55b1ad02deebe5b2c9",
+    "r4_code_review_receipt_sha256": "a92fc422b0f044f6bf4c329a43fc0f92dabbb4de739ce4bb2bedf4507aa1a17b",
+    "default_and_false_auth_closure_reused": true,
+    "authorization_template_false": true,
+    "actual_approval_file_absent": true,
+    "one_shot_claim_absent": true,
+    "new_scientific_output_absent": true
+  },
+  "storage": {
+    "local_roots": [
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_package_20261020_v1",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_code_ready_v1",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2"
+    ],
+    "actual_local_archive_bytes_at_check": 436561414,
+    "fixed_local_archive_bytes": 444931767,
+    "local_receipt_reserve_bytes": 8388608,
+    "remote_peak_bytes": 594206519,
+    "combined_peak_bytes": 1039138286,
+    "combined_cap_bytes": 1073741824,
+    "after_transport_cleanup_combined_bytes": 733393575,
+    "science_output_headroom_bytes": 340348249,
+    "calculation_independently_recomputed": true
+  },
+  "budget": {
+    "prior_nontraining_charge_seconds": 71.93754945798841,
+    "v2_conservative_reserved_seconds": 10.0,
+    "base_charged_seconds": 81.93754945798841,
+    "all_v2_check_attempt_wall_seconds": 5.166722668684088,
+    "both_v2_build_wall_seconds": 1.0468220819020644,
+    "recorded_total_v2_preparation_seconds": 6.213544750586152,
+    "reserve_remaining_seconds": 3.786455249413848,
+    "phase_caps_seconds": {
+      "nontraining": 300,
+      "numerical": 1800,
+      "replay": 900,
+      "render": 120,
+      "total": 3120
+    },
+    "anchored_producer_deadline_and_5s_scientific_handoff_reused": true,
+    "old_cost_reset": false
+  },
+  "preservation": {
+    "prior_candidate_unapproved_metadata_and_byte_receipt_preserved": true,
+    "prior_candidate_wire_superseded_not_sent_not_executed": true,
+    "original_Mac_v1_source_tar_identity_reverified_unchanged": true,
+    "earlier_CHANGES_REQUIRED_and_PASS_reviews_retained": true
+  },
+  "performed_checks": [
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/reviewer_final_binding_checks.py"
+      ],
+      "result": "Final all-member/all-input/source/argv/storage/budget/false-authority independent verifier passed",
+      "wrapper_wall_seconds": 0.7360531250014901,
+      "body_wall_seconds": 0.5844900000374764,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/checks_13.log",
+      "log_sha256": "d1c9f832da8febf2a1ea019ac75a6dec1257796015719c5bad046676e4938d28",
+      "probe": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/reviewer_final_binding_checks.py",
+      "probe_sha256": "3fbc35bb3845dd8c5b2bec9e909420561853435dc371af4ca42ad3f5cc152731",
+      "byte_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/independent_final_binding_byte_receipt.json",
+      "byte_receipt_sha256": "62e1b5ab7e135790ac947f94d6591199651a047a1e717dbb819f139a420dca9c"
+    }
+  ],
+  "findings": [],
+  "scientific_execution_authorized": false,
+  "remote_actions_authorized": false,
+  "actual_approval_generated": false,
+  "real_Torch_imports": 0,
+  "model_array_deserializations": 0,
+  "scientific_solves": 0,
+  "NN_optimizer_steps": 0,
+  "SSH_calls": 0,
+  "SCP_calls": 0,
+  "remote_probes": 0,
+  "current_producer_environment": "UNKNOWN_NOT_PROBED",
+  "remaining_execution_condition": "Human must approve this exact final manifest/payload/account/action/path version before any actual authorization or SSH/SCP. Approved producer metadata/resources and unchanged per-state numerical checks may still stop the run without retry/fallback/install; preparation review does not establish Linux scientific admission or success."
+}

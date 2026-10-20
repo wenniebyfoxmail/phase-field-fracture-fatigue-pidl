@@ -1,0 +1,86 @@
+{
+  "status": "PREPARED_FOR_EXACT_FINAL_HUMAN_APPROVAL_NOT_EXECUTED",
+  "package_id": "D013-Taobo-CPU2-20261020-v2",
+  "scientific_source_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "scientific_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "source_CodeReady_reused": true,
+  "producer": "Taobo/GPUServer8",
+  "account": "drtao@172.16.100.2",
+  "python": "/usr/bin/python3",
+  "CPU_threads": 2,
+  "GPU_hours": 0,
+  "owner": "Winnie/xw436",
+  "remote_root": "/mnt/data2/drtao/wennie/S04-E024-D013-CPU2-18d0e7cb-20261020-v2",
+  "approval_card": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/physical_field_budget_taobo_cpu2_approval_v2.md",
+  "payload": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/D013_Taobo_CPU2_18d0e7cb_v2.tar",
+    "bytes": 272097280,
+    "sha256": "4e9f6f7ee2df07d62aac85c290398de261246a9971914d609a4c33c2d708427d",
+    "regular_members": 104
+  },
+  "action_manifest": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/control/action_manifest.json",
+    "sha256": "b6463fdec674328c989ea123c5d4aeb6a41bb6776e38481b0bfeace9e3387806"
+  },
+  "payload_manifest": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/control/payload_manifest.json",
+    "sha256": "7e9fcf09a97212cdfe883a71f421d085e740350ddc779b42d4ff2d0bbbf26675"
+  },
+  "exact_argv": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/proposed_exact_argv.json",
+    "sha256": "d221420461700a00a9f770ed12bd5c80a9ffb32c9df7ccd06ccfa0caa939018e"
+  },
+  "inputs_manifest": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/control/inputs_manifest.json",
+    "sha256": "fddc2591fe83f6e33731526c84735016ef6377217d70644db6644493cdca63b3",
+    "file_count": 88,
+    "total_bytes": 238110147,
+    "saved_D012_heads": 3,
+    "saved_D012_original_manifest": 1
+  },
+  "deployment_code_review": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/taobo_cpu2_v2/deployment_review_r4.json",
+    "sha256": "a92fc422b0f044f6bf4c329a43fc0f92dabbb4de739ce4bb2bedf4507aa1a17b",
+    "verdict": "PASS"
+  },
+  "final_binding_review": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/taobo_cpu2_v2/deployment_final_binding_review.json",
+    "sha256": "ce61f03442062f475adcbe33a565d8e87bf56c8bf3dddb0fd55e4c300c4cd414",
+    "verdict": "FINAL_BINDING_PASS"
+  },
+  "original_findings_retained": [
+    "r1 connection-time accounting / combined upload admission",
+    "r3 orphan worker cleanup regression; fixed r4",
+    "Mac v1 role alignment on hold"
+  ],
+  "check_scope": "39 pure deployment fixtures plus independent local artificial pipe handshake; source70synthetic/10semantic checks reused, no real Torch import",
+  "previous_nontraining_charge_seconds": 71.93754945798841,
+  "v2_conservative_reserved_seconds": 10.0,
+  "base_nontraining_charge_seconds": 81.93754945798841,
+  "recorded_v2_test_and_build_wall_seconds": 6.213544750586152,
+  "recorded_v2_test_wall_seconds": 5.166722668684088,
+  "builds_wall_seconds": [
+    0.5500614159973338,
+    0.49676066590473056
+  ],
+  "accounting_note": "6.214s measured tests/builds are subset of conservative10s v2 preparation charge; base81.937549 not measured full elapsed. No original cost reset.",
+  "combined_archive": {
+    "cap_bytes": 1073741824,
+    "fixed_local_archive_bytes": 444931767,
+    "predicted_remote_peak_bytes": 594206519,
+    "predicted_combined_peak_bytes": 1039138286,
+    "predicted_science_headroom_bytes": 340348249
+  },
+  "current_producer_environment": "UNKNOWN_NOT_PROBED",
+  "true_authorization_created": false,
+  "remote_actions_authorized": false,
+  "training_authorized": false,
+  "scientific_solves": 0,
+  "real_model_or_FEM_forward_count": 0,
+  "NN_optimizer_steps": 0,
+  "SSH_calls": 0,
+  "SCP_calls": 0,
+  "remote_probes": 0,
+  "old_v1": "Original Mac v1 payload/manifest/source and approval snapshots retained, ON_HOLD, not executed",
+  "next": "Exact final user approval, then only approved two-SSH/one-SCP conditional single dispatch; first-stop/no retry"
+}

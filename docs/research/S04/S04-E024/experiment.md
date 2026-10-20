@@ -145,3 +145,13 @@ Same own E023 c20/c60/c83/D/BC/window/fullmass/seven actual protections/original
 核查发现v1确切写的是Mac＋Conda，不是已闭合生产机许可；Mac“非训练analysis”条文不能自动当本次12profile科学批次的生产例外。现有部署／回收记录已确定拟生产机为drtao@172.16.100.2／GPUServer8，历史解释器/usr/bin/python3；CPU2是线程上限，不是资源已预留或当前可用证明。
 原v1 zip/manifest/source/审批卡与初始状态原样保留，当前收据标记ON_HOLD_MACHINE_ROLE_ALIGNMENT。科学18d0e7cb、三态E023／12比较／13保护／累计中心／预算／首停均未改，无需重做科学审查。单张r2静态卡集中列出Linux部署包装、环境证据、88输入/D012生产来源及最终payload/hash/动作审批四项缺口；没有可执行v2，不向人方单独索要机器名确认。仅本地静态文字/JSON与哈希核验；无SSH／资源探针／真实Torch／预检／solve／train，本委派不构成执行批准。
 [完整机器角色及缺项卡](physical_field_budget_execution_approval_r2.md) · [来源/保留收据](machine_role_alignment/static_role_review.json)。下一步本地补齐部署差异后，向人方一次展示准确Taobo包＋预检＋条件单次运行方案；不能拿原Mac v1 manifest去启动Taobo或Mac。
+
+## 2026-10-20 — D013 Taobo CPU2 v2 complete local execution package, not executed
+
+目的：用三态完整头物理场预算判断可获得多少UV收益，以及13项物理／背景保护的代价；不再用参数2%或.001淘汰路线。本轮只补生产部署，科学18d0e7cb／tree14f6ba5d不变，各自E023 c20s4/c60s4/c83s4、12profiles、原13保护、永久原E023累计中心和预算／首停不变。
+
+Linux/GPUServer8／drtao／/usr/bin/python3 CPU2包装完成，全部88输入238,110,147B含D012保存三头与原manifest随包携带，不依赖旧远端目录；当前环境UNKNOWN，未来元数据不符首停。第一SSH先交换同一生产monotonic deadline再查询环境；SCP前合并容量检查；source/input/receipt全核验后仅删两个已声明远端传输副本，再单次科学调用。df三路径、共享账号自有cmdline/elapsed/cwd/session核验及父退出worker清理已补。
+
+部署首审／r3问题保留，r4独审及39纯fixture通过；完整104member/88input/1455source/clean18/tree/全部SHA/实际argv/false权限最终绑定通过。最终wire4e9f6f7e…8427d、actionb6463fde…87806；272,097,280B。合并峰值1,039,138,286B<1GiB，临时副本清理后科学输出余340,348,249B。原71.937549s不清零，v2检查及两次构建实录约6.214s包含于保守10s，本次base81.937549s，未来transfer/preflight仍从300s余额扣；1800numeric/900replay/120render/总3120s、RSS3GiB及原loader2GiB不改。
+
+结论：PREPARED_FOR_EXACT_FINAL_HUMAN_APPROVAL_NOT_EXECUTED。没有SSH/SCP/远端探针/真实Torch/NN或FEM前向/solve/train，没有真实批准文件；原Mac v1原样保留暂停，首个未发送v2候选仅保留小型metadata/source/hash收据并在最终定稿前替换wire，未产生科学证据。下一步仅审批[完整Taobo v2卡](physical_field_budget_taobo_cpu2_approval_v2.md)，不能把准备PASS当执行或物理成功。[最终包收据](physical_field_budget_taobo_cpu2_package_receipt.json) · [独立绑定审阅](taobo_cpu2_v2/deployment_final_binding_review.md)。后续报告全/损伤/背景/窗口内背景UV、应变、真实弱残差、瞬时driver与成本；history/裂纹/疲劳应用仍未验证。

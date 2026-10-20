@@ -19,7 +19,7 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S04 fixed-damage UV reproduction (2026-10-20)** — D013 science18d0e7cb unchanged; Mac v1 ON HOLD for producer-role alignment. Static records identify Taobo GPUServer8/drtao /usr/bin/python3 for proposed CPU2 route; Linux wrapper/environment/88-input source manifest/final action hashes remain to complete locally in one approval card. No SSH/probe/real preflight/solve/training. [Owner](research/S04/S04-E024/experiment.md), [Current role/approval card](research/S04/S04-E024/physical_field_budget_execution_approval_r2.md).
+- **S04 fixed-damage UV reproduction (2026-10-20)** — D013 science18d0e7cb unchanged; Taobo GPUServer8 CPU2 v2 package and exact source/input/action binding independently reviewed. Await exact human transmission/preflight/single-dispatch approval; environment UNKNOWN, no SSH/real preflight/solve/train. Mac v1 stays held. [Owner](research/S04/S04-E024/experiment.md), [Final approval card](research/S04/S04-E024/physical_field_budget_taobo_cpu2_approval_v2.md).
 
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
 - c86 true diffuse damage 条件化可近闭合后续场，二值裂缝几何失败约 `100x` support area：缺失的是近核状态幅值，不只是裂缝位置。

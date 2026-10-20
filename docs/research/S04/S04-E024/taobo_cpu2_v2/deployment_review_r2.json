@@ -1,0 +1,93 @@
+{
+  "verdict": "PASS",
+  "review_status": "REVIEW_PASS",
+  "scope": "Focused r2 deployment-code difference review only; final assembled payload/action binding and current producer environment excluded",
+  "reviewer": "independent Codex sub-agent d013_linux_pack_review",
+  "reviewed_utc": "2026-10-20T15:43:53.384927+00:00",
+  "scientific_source_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "scientific_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "science_code_ready_reused_unchanged": true,
+  "material_sha256": {
+    "remote_entry.py": "99a194ee0544a74dca2fc8be7a5ab17600f08e01633f6e47ce6e640e1d42995e",
+    "transfer_and_start.py": "7423e5e2dde20d32a5cda9135ebbaf4dd4f32bd245e42a55b1ad02deebe5b2c9",
+    "test_deployment.py": "fd3d8caf59b0f30adaa44949f367a382ac890cc6f537c6a4bc02767b6fc28032"
+  },
+  "initial_CHANGES_REQUIRED_preserved_sha256": {
+    "deployment_review.md": "f03441579de7b12bd6f6742d10ba647788e0394c3e0be15370a2ddda09399bfe",
+    "deployment_review.json": "48d634875e61e951c0756b05f08f230810604cec61ab01a5f15c40d57ec56836"
+  },
+  "resolved_findings": [
+    {
+      "id": "D1",
+      "status": "RESOLVED",
+      "evidence": "First SSH emits a monotonic anchor and waits for the second client message before environment/resource queries or root claim. Client measures elapsed after receiving ACK and preserves anchor/ACK-elapsed into the final SSH. Remote anchored_deadlines checks the stored producer anchor/action and derives the same conservative absolute300s/3120s deadlines in create/start/dispatcher/science supervision. runtime nontraining charge is300-server_remaining+5; the scientific handoff is checked before/after spawn. A delayed final SSH cannot reset deadlines. Lost outcome remains unknown/no-retry; local SSH kill is explicitly not remote cancellation."
+    },
+    {
+      "id": "D2",
+      "status": "RESOLVED",
+      "evidence": "upload_capacity now checks nonnegative integer accounting and both fixed local + full wire bytes and fixed local + predicted remote peak <=1GiB before the first SSH/SCP. Exact peak amount still requires final assembly verification. Combined archive supervision remains active after dispatch."
+    }
+  ],
+  "findings": [],
+  "performed_checks": [
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "docs/research/S04/S04-E024/taobo_cpu2_v2/test_deployment.py"
+      ],
+      "wall_seconds": 0.23686083394568413,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/checks_5.log",
+      "log_sha256": "d4a7c7f09dfeeef4820e31f0b82fa121458e9fa74103b2ee792f7a3771a00af7"
+    },
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/reviewer_handshake_fixtures.py"
+      ],
+      "wall_seconds": 0.1871173749677837,
+      "exit_code": 0,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/checks_6.log",
+      "log_sha256": "676c039cd601751da725e740624ce733b8b3fc6d9b9b559643388b34f76f27d3"
+    }
+  ],
+  "test_results": [
+    "35 deployment fixtures passed in independent rerun",
+    "1 additional reviewer-owned local artificial two-message pipe exchange fixture passed"
+  ],
+  "reviewer_fixture": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/reviewer_handshake_fixtures.py",
+    "sha256": "83e144cb7c9f8f3f6cc36e40dc0b00543f8dd0a1a326963616244a7e02ce8e64",
+    "scope": "Python child only, JSON/stdio simulated handshake; no remote or science"
+  },
+  "v2_check_cumulative_wall_seconds": 1.3610040016938,
+  "prior_nontraining_charge_seconds": 71.93754945798841,
+  "v2_preparation_reserved_seconds": 10.0,
+  "final_binding_reviewed": false,
+  "scientific_execution_authorized": false,
+  "actual_approval_generated": false,
+  "source_edits": 0,
+  "real_Torch_imports": 0,
+  "real_data_deserializations": 0,
+  "scientific_solves": 0,
+  "NN_optimizer_steps": 0,
+  "SSH_calls": 0,
+  "SCP_calls": 0,
+  "remote_probes": 0,
+  "remaining_final_binding_conditions": [
+    "Final payload/action manifest bytes and all88 exact input members have not yet been assembled or reviewed in this receipt; perform separate final binding review.",
+    "Final control metadata and human-facing prose must describe the anchored deadline mechanism and current35+1 fixture results rather than obsolete independent5s final-SSH accounting.",
+    "Final binding must recompute complete fixed local archive scope (including reviewer fixture/check logs) and conservative peak remote extraction bytes/control allowance, validate actual wire size and remaining science-output headroom within the single1GiB.",
+    "All preparation/check costs remain inside the reserved10s; if measured total preparation exceeds it, increase the actual cumulative charge within the unchanged300s and regenerate bindings.",
+    "Current producer environment is UNKNOWN; approved metadata mismatch must stop before upload/science without install, alternate interpreter, fallback or retry.",
+    "Human approval must bind exact final account, object/action/version, source, payload and paths before any transport; this receipt authorizes none."
+  ]
+}

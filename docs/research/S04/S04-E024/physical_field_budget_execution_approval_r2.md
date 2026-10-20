@@ -46,3 +46,7 @@ v1不是代码上未指定机器：原审批卡第14行明确“当前Mac”；�
 - 科学Code Ready、18非训练启动器检查和FINAL_BINDING_PASS仍是原范围内的历史事实；它们没有审核Mac生产角色，也没有审核Linux包装或Taobo当前环境，不能改写为科学代码失败，也不能扩成Taobo READY。
 - r2是**静态路由与审批卡修订，不是v2可执行包**；差异仅拟部署机／解释器／路径／来源／权限／部署核验。数值方案、三态配对、12比较、13保护、原预算和首停均不改。
 - 当前状态：v1 `ON_HOLD_MACHINE_ROLE_ALIGNMENT`；r2 `STATIC_PRODUCER_ROUTE_SPECIFIED_NOT_RUN_READY`。不要运行原v1 Mac命令，也不要将原v1 manifest当Taobo新版批准对象。
+
+## 后续完成（2026-10-20，保留以上静态纠正历史）
+
+四项部署缺口已在本地合并补齐，当前可审版本改见[Taobo CPU2 v2最终审批卡](physical_field_budget_taobo_cpu2_approval_v2.md)及[最终绑定收据](physical_field_budget_taobo_cpu2_package_receipt.json)。本r2卡不再是最新准备状态；原Mac v1仍暂停，环境尚未远端核验，未发送／运行。

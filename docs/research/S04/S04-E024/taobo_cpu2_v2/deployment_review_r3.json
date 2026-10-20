@@ -1,0 +1,57 @@
+{
+  "verdict": "CHANGES_REQUIRED",
+  "review_status": "MODIFY_AND_REREVIEW",
+  "scope": "Focused r3 machine-rule deployment delta: df mount record and fresh Popen attribution/termination; prior handshake/budget/size findings carried forward, science unchanged",
+  "reviewer": "independent Codex sub-agent d013_linux_pack_review",
+  "reviewed_utc": "2026-10-20T15:48:27.727482+00:00",
+  "scientific_source_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "scientific_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "science_code_ready_reused_unchanged": true,
+  "material_sha256": {
+    "remote_entry.py": "c571f4ecfdb20932c4970039009bca031a3db83baaf56a88e5afe5415b146310",
+    "transfer_and_start.py": "7423e5e2dde20d32a5cda9135ebbaf4dd4f32bd245e42a55b1ad02deebe5b2c9",
+    "test_deployment.py": "b27f0a53997e9b990ff8108aba78832cd9095fb57b612582b676c2727d7ea247"
+  },
+  "findings": [
+    {
+      "id": "D3",
+      "priority": 2,
+      "file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/taobo_cpu2_v2/remote_entry.py",
+      "start": 88,
+      "end": 88,
+      "title": "Continue supervising the owned group after scientific parent exit",
+      "detail": "terminate_owned returns immediately when the tracked Popen parent has exited. supervise_child exits its loop when that same parent exits, then calls terminate_owned on nonzero return, so an abrupt parent exit can leave an active same-group scientific worker unsupervised. A successful parent exit with an unexpected remaining worker is also never checked. The previous unconditional owned-group cleanup handled this leader-exit path; the new attribution guard removes it. Parent death does not imply process-group death.",
+      "required_change": "Retain enough attributable identity for the owned session/group to inspect and clean surviving task workers even after the leader exits. Before any member/group signal verify cmdline, elapsed/create_time and cwd plus the owned session/group; never signal a reused/ambiguous group by username or numeric PGID alone. Do not mark supervision complete while attributable owned workers remain. Add a pure synthetic case with a parent that exits while its child remains alive, and verify cleanup and stopped/failure accounting without touching other work."
+    }
+  ],
+  "verified_changes": [
+    "resource_check records exact df -h / /mnt/data2 /mnt/data3 with bounded subprocess timeout and keeps data2 mount/capacity requirement.",
+    "Fresh Popen bind checks exact args, cwd, create_time and own group; live-leader TERM and escalation recheck identity instead of relying on shared username."
+  ],
+  "performed_checks": [
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "docs/research/S04/S04-E024/taobo_cpu2_v2/test_deployment.py"
+      ],
+      "result": "37 pure deployment fixtures passed; they do not cover surviving worker after leader exit",
+      "wall_seconds": 0.2409038330661133,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/checks_10.log",
+      "log_sha256": "5e7517f5849ea55932897ed61f0f7fd409340620f4164a2ff79c98278ffa9798"
+    }
+  ],
+  "v2_check_cumulative_wall_seconds": 2.9766400436637923,
+  "scientific_execution_authorized": false,
+  "actual_approval_generated": false,
+  "final_binding_reviewed": false,
+  "real_Torch_imports": 0,
+  "scientific_solves": 0,
+  "NN_optimizer_steps": 0,
+  "SSH_calls": 0,
+  "SCP_calls": 0,
+  "source_edits": 0
+}

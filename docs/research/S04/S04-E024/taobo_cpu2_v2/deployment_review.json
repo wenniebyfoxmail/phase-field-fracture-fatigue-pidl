@@ -1,0 +1,78 @@
+{
+  "verdict": "CHANGES_REQUIRED",
+  "review_status": "MODIFY_AND_REREVIEW",
+  "reviewer": "independent Codex sub-agent d013_linux_pack_review",
+  "reviewed_utc": "2026-10-20T15:38:25.630822+00:00",
+  "scope": "Deployment difference review only: Linux/GPUServer8 CPU2 producer wrapper, transport client, pure deployment fixtures and proposed metadata. Existing unchanged science Code Ready carried forward.",
+  "scientific_source_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "scientific_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "scientific_code_ready_reused": true,
+  "source_edits": 0,
+  "material_sha256": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/taobo_cpu2_v2/remote_entry.py": "00af88cb397edbaca0f4c108672ccbbf17cd088ac851bc3d8a7767078654c2cb",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/taobo_cpu2_v2/transfer_and_start.py": "968eb32070e2cc83cacbec3d5f97b21669fd4b8105ccff0746e4c4b20bdbd7b0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/taobo_cpu2_v2/test_deployment.py": "24a45918204b4cf74be17ff612c0b0ed81f2c9e4bf11cbb5821306cbc2d03261",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/control/plan.json": "eaf59292c10fb65b4af513ef4ff14be9ff36a6a271140e335d05754660dd85f4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/control/requirements.json": "95e09fd79162cc0bd48191acf48c76317724a4c86b57f45a971846ceaad40f2f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/control/inputs_manifest.json": "fddc2591fe83f6e33731526c84735016ef6377217d70644db6644493cdca63b3"
+  },
+  "findings": [
+    {
+      "id": "D1",
+      "priority": 2,
+      "file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/taobo_cpu2_v2/transfer_and_start.py",
+      "start": 84,
+      "end": 89,
+      "title": "Account the full final SSH and remote handoff interval",
+      "detail": "The client books elapsed+5 seconds and times out its own SSH after5 seconds. The remote bootstrap starts a separate5-second monotonic window only after the SSH command arrives. Killing/timing out local SSH does not prove termination of the remote bootstrap. With4 seconds of connection/delivery delay and4 seconds of remote bootstrap work, the dispatcher can start8 seconds after the client invocation while only5 seconds is charged. run_science then starts a new monotonic origin; its additional science-handoff reservation does not cover that omitted transport/bootstrap interval. This can undercharge the300s preflight phase and shift the3120s cumulative deadline.",
+      "required_change": "Use an enforceable end-to-end final dispatch envelope or explicitly charge separate bounded connection and remote bootstrap envelopes, entirely inside the unchanged300s. Keep unknown outcomes no-retry. Add a pure synthetic delayed-delivery/client-timeout case that proves no uncharged remote launch is admitted; update plan/prose consistently."
+    },
+    {
+      "id": "D2",
+      "priority": 2,
+      "file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/taobo_cpu2_v2/transfer_and_start.py",
+      "start": 61,
+      "end": 82,
+      "title": "Admit the combined remote upload size before SCP",
+      "detail": "The pretransport check verifies only local_archive_roots<=fixed_local_archive_bytes. It never checks fixed_local_archive_bytes+payload_bytes plus initial remote metadata allowance against the single1GiB cap. bootstrap-create checks an almost-empty remote root; SCP can then create the entire payload.tar without a remote watcher. If the manifest parameters leave insufficient combined capacity, the first combined-size rejection is after the full over-cap tar has already been uploaded. Final payload bytes are not yet frozen, so this review cannot establish that the assembled package avoids the path.",
+      "required_change": "Before any transport, reject unless the frozen local charge plus the full planned remote wire bytes and bounded bootstrap/control overhead fit the one1GiB cap. Bind/check this admission in the final action manifest; do not rely on a post-upload guard. Add a pure fixture proving over-cap payloads never invoke SSH/SCP."
+    }
+  ],
+  "performed_checks": [
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "docs/research/S04/S04-E024/taobo_cpu2_v2/test_deployment.py"
+      ],
+      "result": "28 pure synthetic deployment tests passed",
+      "wall_seconds": 0.2328909169882536,
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_taobo_cpu2_package_20261020_v2/checks_2.log",
+      "log_sha256": "2ce2a51ff72e09c8dbc0bdc5a12eb659b112c2e9a114a5140af3064870d835e7"
+    },
+    {
+      "result": "Static read of client/remote wrapper plus unchanged scientific runner and runtime supervision; read proposed plan/requirements/input manifest and existing metadata construction script; no input/model/array deserialization"
+    }
+  ],
+  "v2_check_cumulative_seconds": 0.4669456259580329,
+  "prior_nontraining_charge_seconds": 71.93754945798841,
+  "v2_preparation_reserved_seconds": 10.0,
+  "scientific_execution_authorized": false,
+  "actual_approval_generated": false,
+  "real_Torch_imports": 0,
+  "scientific_solves": 0,
+  "NN_optimizer_steps": 0,
+  "SSH_calls": 0,
+  "SCP_calls": 0,
+  "remote_probes": 0,
+  "final_binding_reviewed": false,
+  "remaining_conditions": [
+    "Repair the two deployment findings and obtain focused re-review.",
+    "Freeze and independently check final payload/action-manifest exact bytes, all88 input members, source tar, full local/producer storage headroom and cumulative preparation costs.",
+    "Final human approval must identify the exact account, target, action version, payload, source, paths and commitments before any transport.",
+    "Current producer environment remains UNKNOWN; metadata admission may abort without installation, alternate interpreter, Mac fallback or retry."
+  ]
+}
