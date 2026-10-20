@@ -1,3 +1,5 @@
+> 当前任务管理条款见 [current_entry.md](current_entry.md)（2026-10-20前瞻修订）。下文为已有运行快照；本次迁移未查询生产状态，未修改已用执行卡或签名记录。
+
 # Complete hybrid comparison — submitted and running
 
 Run `pf_hybrid_complete_20261020_r2` on GPUServer8/drtao, source d703e3c8, exact card f3cc0463, original3600 steps/onefit/12GPUh/136hosth envelope. User's conditional authority and exact independent review were satisfied before this single dispatch. No material/property extension launched.
