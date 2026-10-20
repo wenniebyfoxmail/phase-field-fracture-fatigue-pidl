@@ -1,16 +1,28 @@
 {
   "verdict": "REVIEW_PASS",
-  "scope": "preparation/code only; no scientific execution or physical validation",
-  "code_commit": "95709f9ca50edd6da2377d983ab1f2e994a0b31b",
+  "scope": "R002 control-only recovery and cumulative-budget implementation; original science/observation review carries forward. Original-producer strict zero-solver admission remains required.",
+  "code_commit": "bc334c0c5650b3632e7d3eb76848995091113a7e",
   "spec_id": "bff278a41264db2070745a31b90ff742a19b88b1bbc66ad325073ff08f832f23",
   "reviewer": "/root/physics_transition_audit",
   "channel": "independent read-only Codex subagent",
   "receipt": "review.md",
-  "independent_tests": "23 targeted artificial tests passed in 0.19s",
+  "independent_tests": "36 artificial tests passed in 0.25s; no FEM or SSH",
   "execution_authorized": false,
-  "observation_review": {
-    "reviewer": "/root/observation_state_audit",
+  "original_scientific_review": {
     "verdict": "REVIEW_PASS",
-    "scope": "design/observation only; independent source read, no tests or solver executed"
-  }
+    "scope": "preparation/code only; no scientific execution or physical validation",
+    "code_commit": "95709f9ca50edd6da2377d983ab1f2e994a0b31b",
+    "spec_id": "bff278a41264db2070745a31b90ff742a19b88b1bbc66ad325073ff08f832f23",
+    "reviewer": "/root/physics_transition_audit",
+    "channel": "independent read-only Codex subagent",
+    "receipt": "review.md",
+    "independent_tests": "23 targeted artificial tests passed in 0.19s",
+    "execution_authorized": false,
+    "observation_review": {
+      "reviewer": "/root/observation_state_audit",
+      "verdict": "REVIEW_PASS",
+      "scope": "design/observation only; independent source read, no tests or solver executed"
+    }
+  },
+  "evidence_review": "R001 complete253 accepted-state chains incl latest40,293 file hashes independently verified; six-mask/future not yet evaluated"
 }
