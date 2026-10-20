@@ -1,0 +1,37 @@
+{
+  "status": "STOPPED_BEFORE_SCIENTIFIC_EXECUTION__ADMISSION_EVIDENCE_MISSING",
+  "experiment_id": "HQ-ROAD-CENTERLINE-001",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R001",
+  "date": "2026-10-20",
+  "zero_start_checks_consumed": 2,
+  "zero_start_check_cap": 2,
+  "cumulative_check_wall_seconds_approx": 43,
+  "check_1": {
+    "ssh_connected": true,
+    "result": "MISSING_DEPENDENCY",
+    "error": "ModuleNotFoundError: No module named 'skimage'",
+    "admission_json_emitted": false
+  },
+  "in_scope_repair": {
+    "status": "TASK_LOCAL_DEPENDENCIES_INSTALLED",
+    "path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+    "shared_environment_mutated": false,
+    "focused_review": "REVIEW_PASS"
+  },
+  "check_2": {
+    "ssh_connected": true,
+    "exit_code": 0,
+    "wall_seconds": 9.1,
+    "admission_json_emitted": false,
+    "captured_stdout": ""
+  },
+  "scientific_execution_started": false,
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "scientific_attempts": 0,
+  "scheduled_task_created_by_this_task": false,
+  "road420_access": false,
+  "code_snapshot": "9c5a7c759f4db6a67595a424302bd65bc72bbffd604887d48b09a57de591480e",
+  "data_lock_sha256": "563cf2fc1410a5872086f96c9769faeaaf2d4b14e137eba52665e8d3f29c122e",
+  "resume_requirement": "explicit authority for one additional bounded zero-start admission check"
+}
