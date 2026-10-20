@@ -160,7 +160,7 @@ class ProductionChecks(unittest.TestCase):
             with self.assertRaises(RuntimeError):run.terminate_owned(Mock(pid=77),self.p,11)
         kill.assert_not_called()
     def test_managed_wrapper_is_own_tree_only(self):
-        text=(HERE/'producer.ps1').read_text();self.assertIn('CreationDate',text);self.assertIn('WaitForExit(100)',text);self.assertIn('Arguments="/PID $key /T /F"',text);self.assertNotIn('Stop-Process -Name',text);self.assertIn('3480',text);self.assertIn("'package' 3600",text)
+        text=(HERE/'producer.ps1').read_text();self.assertIn('CreationDate',text);self.assertIn('WaitForExit(100)',text);self.assertIn('Arguments="/PID $key /T /F"',text);self.assertNotIn('Stop-Process -Name',text);self.assertIn("'producer' 3460",text);self.assertIn("'package' 3580",text)
     def test_counts_no_hidden_new_native_replay(self):
         plan,_=c.config();counts=plan['counts'];self.assertEqual(counts['native_tiles'],497*40);self.assertEqual(counts['reused_contexts']+counts['new_contexts'],31156);self.assertEqual(counts['linear_solves'],18);self.assertEqual(counts['case_captures'],6)
     def test_lazy_library_import_under_exact_caps(self):
@@ -216,7 +216,7 @@ class ProductionChecks(unittest.TestCase):
         text=(HERE/'producer.ps1').read_text()
         self.assertLess(text.index('Assert-Bindings $Source'),text.index('if(!$p.Start())'))
         self.assertIn('Assert-Bindings $runtime.overlay $runtime.files 121 $true',text)
-        self.assertIn('OperationTimeoutSec 2',text);self.assertIn('WaitForExit(2000)',text);self.assertIn('task.Wait(1000)',text)
+        self.assertIn('OperationTimeoutSec 2',text);self.assertIn('WaitForExit(2000)',text);self.assertIn('task.Wait([int]$waitMs)',text)
         self.assertNotIn('$stdout.Result',text);self.assertNotIn('$p.WaitForExit();',text)
-        self.assertIn('strict approval types',text);self.assertIn('cleanup_uncertain',text)
+        self.assertIn('-CaseSensitive',text);self.assertIn('$deadline+20',text);self.assertIn('$cleanupEnd-6',text);self.assertIn('strict approval types',text);self.assertIn('cleanup_uncertain',text)
 if __name__=='__main__':unittest.main()

@@ -39,7 +39,7 @@ $runtime=Get-Content -Raw -LiteralPath (Join-Path $Source 'docs/research/S01/S01
 Assert-Bindings $runtime.overlay $runtime.files 121 $true
 $a=Get-Content -Raw -LiteralPath $ApprovalFile|ConvertFrom-Json
 $keys=@('run_id','reviewed_commit','source_manifest_sha256','execute_once','wall_seconds','GPU_uuid')
-if(@($a.PSObject.Properties).Count -ne 6 -or @(Compare-Object @($a.PSObject.Properties.Name) $keys).Count -ne 0){throw 'exact approval fields required'}
+if(@($a.PSObject.Properties).Count -ne 6 -or @(Compare-Object @($a.PSObject.Properties.Name) $keys -CaseSensitive).Count -ne 0){throw 'exact approval fields required'}
 if($a.execute_once -isnot [bool] -or $a.execute_once -ne $true -or ($a.wall_seconds -isnot [int] -and $a.wall_seconds -isnot [long]) -or $a.wall_seconds -ne 3600){throw 'strict approval types'}
 foreach($key in @('run_id','reviewed_commit','source_manifest_sha256','GPU_uuid')){if($a.$key -isnot [string]){throw 'strict approval identity type'}}
 if($a.run_id -cne 'S01-E029-R001' -or $a.reviewed_commit -cne $ReviewedCommit -or $a.source_manifest_sha256 -cne $ManifestSha256 -or $a.GPU_uuid -cne 'GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7'){throw 'new exact E029 approval required; package is disabled'}
@@ -58,6 +58,7 @@ function Invoke-Owned([string]$arguments,[string]$tag,[double]$deadline){
   $owned[[int]$p.Id]=@{ProcessId=$p.Id;CreationDate=$p.StartTime.ToUniversalTime();CommandLine=$null;Root=$true}
   @{python_launcher_pid=$p.Id;wrapper_pid=$PID;arguments=$arguments;tag=$tag;started_at=(Get-Date -Format o)}|ConvertTo-Json|Set-Content "$logs\$tag-launch.json" -Encoding UTF8
   do{
+   if($clock.Elapsed.TotalSeconds -ge ($deadline-2)){throw 'stage deadline reserves CIM/cleanup'}
    $all=@(Get-CimInstance Win32_Process -OperationTimeoutSec 2);$ids=@($p.Id);$oldCount=0
    while($oldCount -ne $ids.Count){$oldCount=$ids.Count;foreach($v in $all){if(($ids -contains $v.ParentProcessId) -and ($ids -notcontains $v.ProcessId)){$ids+=@($v.ProcessId)}}}
    foreach($v in $all){if($ids -contains $v.ProcessId){$owned[[int]$v.ProcessId]=$v}}
@@ -69,10 +70,11 @@ function Invoke-Owned([string]$arguments,[string]$tag,[double]$deadline){
  }catch{$failure=$_.Exception.Message}
  finally{
   # Every cleanup/log item is independent and bounded. Preserve the first cause.
-  $cleanupEnd=[Math]::Min(3600,$clock.Elapsed.TotalSeconds+20)
-  foreach($key in @($owned.Keys)){
+  $cleanupEnd=[Math]::Min(3600,[Math]::Min($deadline+20,$clock.Elapsed.TotalSeconds+20))
+  $ordered=@();if($started){$ordered=@($p.Id)+@($owned.Keys|Where-Object {$_ -ne $p.Id})}
+  foreach($key in $ordered){
    try{
-    if($clock.Elapsed.TotalSeconds -ge $cleanupEnd){throw 'cleanup time bound; inspect remaining owned IDs'}
+    if($clock.Elapsed.TotalSeconds -ge ($cleanupEnd-6)){throw 'cleanup time bound; inspect remaining owned IDs'}
     $saved=$owned[$key]
     if($key -eq $p.Id -and $started){
      if($p.HasExited){continue}
@@ -94,7 +96,8 @@ function Invoke-Owned([string]$arguments,[string]$tag,[double]$deadline){
   foreach($entry in @(@{task=$stdout;name='stdout'},@{task=$stderr;name='stderr'})){
    try{
     if($null -ne $entry.task){
-     if(!$entry.task.Wait(1000)){throw 'log pipe timeout'}
+     $waitMs=[Math]::Min(1000,[Math]::Floor(($cleanupEnd-$clock.Elapsed.TotalSeconds)*1000))
+     if($waitMs -le 0 -or !$entry.task.Wait([int]$waitMs)){throw 'log pipe timeout'}
      $entry.task.GetAwaiter().GetResult()|Set-Content (Join-Path $logs ($tag+'-'+$entry.name+'.log')) -Encoding UTF8
     }
    }catch{$uncertain+=@(('log '+$entry.name+': '+$_.Exception.Message))}
@@ -108,14 +111,14 @@ function Invoke-Owned([string]$arguments,[string]$tag,[double]$deadline){
  return $code
 }
 try{
- Invoke-Owned ('"'+$Source+'\scripts\pavetrack_target_spatial\runtime_preflight.py"') 'preflight' ([Math]::Min(120,3480))|Out-Null
+ Invoke-Owned ('"'+$Source+'\scripts\pavetrack_target_spatial\runtime_preflight.py"') 'preflight' 100|Out-Null
  $producerArgs='"'+$Source+'\scripts\pavetrack_qualified_spatial_selector\run.py" --run "'+$r+'" --paths "'+$Source+'\docs\research\S01\S01-E029\private_paths.template.json" --reviewed-commit '+$ReviewedCommit+' --manifest-sha256 '+$ManifestSha256+' --approval-file "'+$ApprovalFile+'"'
- $exitCode=Invoke-Owned $producerArgs 'producer' 3480;$state='completed';$reason='producer completed, no scientific verdict inferred by wrapper'
+ $exitCode=Invoke-Owned $producerArgs 'producer' 3460;$state='completed';$reason='producer completed, no scientific verdict inferred by wrapper'
 }catch{$reason=$_.Exception.Message}
 try{@{state=$state;reason=$reason;exit_code=$exitCode;reviewed_commit=$ReviewedCommit;elapsed_seconds=$clock.Elapsed.TotalSeconds;no_retry=$true;finished_at=(Get-Date -Format o)}|ConvertTo-Json|Set-Content "$logs\wrapper_status.json" -Encoding UTF8}catch{[Console]::Error.WriteLine('wrapper status persistence failed: '+$_.Exception.Message)}
-# Reserve the final120s inside the same3600s outer wall for a success/stop package.
-$left=3600-$clock.Elapsed.TotalSeconds
+# Reserve the final120s inside the same3600s outer wall (last20s reserved for owned cleanup/log) for a success/stop package.
+$left=3580-$clock.Elapsed.TotalSeconds
 if($left -le 0){throw 'outer deadline: inspect saved stop files; no automatic packaging retry'}
 $pack='"'+$Source+'\scripts\pavetrack_qualified_spatial_selector\pack.py" --run "'+$r+'" --logs "'+$logs+'" --manifest "'+$m+'" --output "'+$r+'-fixed-v1.tar.gz" --seconds '+([Math]::Max(1,$left-1))
-Invoke-Owned $pack 'package' 3600|Out-Null
+Invoke-Owned $pack 'package' 3580|Out-Null
 if($state -ne 'completed'){throw $reason}
