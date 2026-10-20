@@ -1,0 +1,187 @@
+{
+  "protocol": "S01-E029-candidate-v1",
+  "stage": "local design and adapter preparation only; no producer runner",
+  "execution_authorized": false,
+  "producer_package_ready": false,
+  "upstream_source": "a5a8f46510885f585fc1b84f004662e09309413d",
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "excluded_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "qualification_reused": [
+    "24",
+    "1638",
+    "2027"
+  ],
+  "primary_locations": [
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "arms": [
+    "E003",
+    "saved_E018_geometry",
+    "aligned",
+    "half_shift"
+  ],
+  "main": "aligned",
+  "threshold": 0.5,
+  "foreground_comparison": ">=",
+  "shift": [
+    16,
+    16
+  ],
+  "gates": [
+    0,
+    0.0625,
+    0.125,
+    0.25,
+    "abstain"
+  ],
+  "ridge": 0.01,
+  "heads": {
+    "Q": {
+      "columns": [
+        0,
+        1,
+        4,
+        5
+      ],
+      "target": "corrected_max_IoU"
+    },
+    "N": {
+      "columns": [
+        2,
+        4,
+        5
+      ],
+      "target": "valid_localisation AND novel_reference"
+    },
+    "A": {
+      "columns": [
+        3
+      ],
+      "target": "cached admitted AND lost==0 AND FP==0"
+    }
+  },
+  "policy": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "score": "sqrt(original_proposer_confidence * corrected_E003_probability)",
+    "eligibility": "unchanged E012 base eligible19384, additionally strict positive original/corrected intersection; base indices/eligibility remain immutable",
+    "correction_order": "learned Q*N*A descending, unchanged s0 descending, image/box/key; no detector rescore",
+    "max_per_image": 1,
+    "max_per_source_group": 3,
+    "source_group_unit": "fixed four-site E012 group; apply same cap to each included group during FIT/jackknife/held",
+    "originals": "immutable prefix, all original scores unchanged; retain E003 as deployed comparator"
+  },
+  "locality": {
+    "predicate": "min(old_x2,new_x2)>max(old_x1,new_x1) AND min(old_y2,new_y2)>max(old_y1,new_y1)",
+    "edge_contact": false,
+    "epsilon": false,
+    "threshold_search": false,
+    "trainable_parameters": 0,
+    "field": "positive_intersection",
+    "base_eligibility_unchanged": true
+  },
+  "primary": {
+    "name": "protected_net_GT_advantage_over_strongest_fixed_control",
+    "scope": "nine sites not used for E028 localisation qualification; still previously consumed development data",
+    "formula": "U_aligned - max(0,U_saved_E018_geometry,U_half_shift)",
+    "minimum_integer_GT": 1,
+    "old_retention_guard_scopes": [
+      "pooled9",
+      "pooled12"
+    ],
+    "lost_old_max": 0,
+    "macro": "descriptive only; original FIT gate calibration keeps old macro rule"
+  },
+  "proposed_budget": {
+    "new_runs": 1,
+    "wall_seconds": 3600,
+    "cpu_threads": 1,
+    "GPU_count": 1,
+    "peak_RSS_bytes": 4294967296,
+    "peak_GPU_allocated_bytes": 4294967296,
+    "peak_GPU_reserved_bytes": 4294967296,
+    "output_bytes": 2147483648,
+    "archive_bytes": 2147483648,
+    "minimum_free_disk_bytes": 17179869184,
+    "source_image_decodes": 497,
+    "native_tiles": 19880,
+    "cached_forwards": 0,
+    "spatial_fit_updates": 0,
+    "selector_model_sets": 6,
+    "linear_solves": 18,
+    "training_target_rows": 77536,
+    "prediction_rows": 116304,
+    "context_builds": 6,
+    "FIT_baselines": 3,
+    "FIT_policy_comparisons": 30,
+    "jackknife": 0,
+    "full12_refit": 0,
+    "retries": 0
+  },
+  "preparation_actual": {
+    "real_input_fits": 0,
+    "model_forwards": 0,
+    "GT_reads": 0,
+    "SSH": 0,
+    "push": 0,
+    "synthetic_checks": 14
+  },
+  "open_implementation": [
+    "producer runner/loader with delayed held GT",
+    "E018 saved model/gate/prediction exact identities",
+    "bounded projected cache and row-level source identity joins",
+    "all six models/predictions freeze barrier",
+    "nine/twelve-scope matched operating-point scoring",
+    "strict output inventory and original figures",
+    "runtime/admission/first-stop wrapper"
+  ],
+  "frozen_inputs": "existing E017 candidate/supervision/context; E018 saved policy; E028 native projections; no new GT or sites"
+}

@@ -1,0 +1,29 @@
+{
+  "scope": "offline review packet; no run entrypoint or execution authority",
+  "files": {
+    "docs/research/S01/S01-E029/experiment.md": "9710d79c31c88903d7e72afb344229a1ec8c91d8fde174b778cad8609bbb97b1",
+    "docs/research/S01/S01-E029/candidate_config.json": "226ac1c89d49021bee36d26cce1dc9e65b1b5dd18ce35a105b9dac353feae39c",
+    "docs/research/S01/S01-E029/reuse_lock.json": "bf37766cb808b33f5b8a6dff0917173a4fe86c54e863e462f6b1930bb5f6c558",
+    "scripts/pavetrack_qualified_spatial_selector/adapter.py": "83b91bc23d84f5857b8336398656aad2fe8e1b74c62da1a0ffd69b9a880cbfa8",
+    "tests/pavetrack_qualified_spatial_selector/test_adapter.py": "90c9f3b60684d962b24f2daee29139232a5657738ca9b8607d8c0fd27ff632b7",
+    "scripts/pavetrack_target_spatial/geometry.py": "bc748502b32c97db2aa8abef0ce324fa33219c039c586f5484ee040ad6132b2c",
+    "scripts/pavetrack_target_spatial/run.py": "2389ff79ffb73a37d572bf06dd65774d72ddf9bda32dc2b8b3111b70f898fe42",
+    "scripts/pavetrack_spatial_source/probe.py": "c02026047300605cf3baf04e9ab8fe6630772176651ceef3e7ff51104cc0b85b",
+    "scripts/pavetrack_spatial_source/run.py": "4fe3eeca24db36c60078d083ea30481d02fb6cbe655d72ae1f7c4906b9c512d4",
+    "scripts/pavetrack_role_probe/learning.py": "472a76af84332a8c04a7079df8d9e8c8211355fd3d04d9fd0adb0a6dc7d9ef43",
+    "scripts/pavetrack_role_probe/run.py": "72328f4cd7a8010de07c546d6c876c83de46e19685800fdcd6bba14c54e6b06f",
+    "scripts/pavetrack_semantic_selector/learning.py": "b891482a8e8a747a344820d8630d12d45f0dae587a019045af5c2d2e622df7a1",
+    "scripts/pavetrack_semantic_selector/run.py": "bce0580cdf091b99d8b84ca16cf57c4804f3e41724aee5dc3c6fecab80460620",
+    "scripts/pavetrack_spatial_selector/spatial.py": "2dec2042dac32c9c053442bff0ed427684c10082f2f7bca70cf8b37eeeccd7b9",
+    "scripts/pavetrack_protected_selector/core.py": "459b2b6dbea91a34b2a13fe4be7cdcda8d897a11c654842ba1a2b0610f7d65be",
+    "scripts/pavetrack_protected_selector/run.py": "87e48b1e6a0c8980018adc825a775090e2e73120b387871c4ab0e3d6d9f18ec0",
+    "docs/research/S01/S01-E022/run_config.json": "60f6a9a0638d5d95c16893686a67fab831c1c18f2e82bcc96f8455cf489efb53",
+    "docs/research/S01/S01-E022/data_lock.json": "7a45566d329d97ea00a1e4d2c55927a43a8777e9a1239138a55d1e06a32d28cb",
+    "docs/research/S01/S01-E028/run_config.json": "394e056d42d6383d58234ae5acc911fde9d41799039f6354f0c1ea159d6f26b0",
+    "docs/research/S01/S01-E028/runtime_lock.json": "096967e170b61231c48981febd646b1f2241f20dcd71008982b330b1dde1117a",
+    "docs/research/S01/S01-E028/data_lock.json": "7c2da167be34b714246b8c3e0aff7d50c18b474b7112ed0717517aa459892d0a",
+    "docs/research/S01/S01-E028/source_manifest.json": "eba54f07032bc8fa03ef00b02ecf51074b08290254db2ad5db692468a1cefff3",
+    "docs/research/S01/S01-E018/runs/S01-E018-R001/run_receipt.json": "d3fb1c3947b026e03c63252e0b52b37f03369dc8ef35356251b5310d53b2638f",
+    "docs/research/S01/S01-E022/runs/S01-E022-R001/run_receipt.json": "2e3d836b1f0ef271d12d1759c272e20710c78bac711c9b1d82e0498c1a9dd824"
+  }
+}
