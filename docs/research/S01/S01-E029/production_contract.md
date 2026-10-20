@@ -33,3 +33,9 @@ run_config固定：source reads/decodes497、native forward19880、reuse12238/ne
 pack.py只读本任务run/wrapper与source manifest，成功/停止同一路径，安全普通tar成员与每文件hash，raw及压缩包均2GiB内；部分包不覆盖、不重试。receive.py不联网、不调用模型/评分，只接已批准取回的固定对象，先SHA/bytes和完整gzip CRC，再安全抽取/双清单绑定；接收验证不代替后续独立数字复算、原图验收和科学解释。
 
 精确源码包/本地source-only commit、指定分支、私有复用清单11项、未来一次命令、固定包路径与Mac验收命令在execution_approval.md（生成后）中。该审批版仅提出完整执行决定；当前没有SSH、部署、占卡、推送、真实fit/forward/OOF或GT/留出访问。
+
+## 生产差异修复v2（科学标准不变）
+
+v1独立审查的五项执行阻断已逐项修订：每角色只增加已绑定121个Pillow文件的精确读能力；首个Python之前PowerShell核验252源码绑定、121运行库库存/哈希和六字段严格授权；Guard用RLock、单次内存快照并容忍自有原子文件rename消失；原因持久化失败仍进入finally清理；CIM/taskkill/日志等待有界且每项失败不跳过后续清理。原触发原因保留，清理不明另记cleanup_uncertain。每FIT/held还从GT-free bank推导本角色准确次数，角色结束和每阶段总计均立即检查，不能到全流程结束才发现超量。
+
+本地49项人工数组/mock/权限子进程测试不拟合、不导入Torch、不解码真实GT/地图/图像、不计算真实政策读数。人工图仅验证显示，零值增加标注，独立红色SYNTHETIC标记不作为研究结果。没有本机PowerShell，Windows原生解析/运行仍在未来同一受批执行链，未声称Mac测试已经验证。

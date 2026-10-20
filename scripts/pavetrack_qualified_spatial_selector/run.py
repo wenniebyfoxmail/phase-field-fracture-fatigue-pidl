@@ -1,7 +1,7 @@
 """E029 bounded managed controller and isolated role worker. No execution on import."""
 import time
 START=time.monotonic()
-import argparse,collections,json,os,subprocess,sys,uuid
+import argparse,collections,copy,json,os,subprocess,sys,threading,uuid
 from pathlib import Path
 import e029_support as c
 from e029_guard import Guard
@@ -64,6 +64,34 @@ def read_caps(role,k,run,paths,bank=None):
         local += list((run/'spatial').glob('case_*_rgb.npy'))
     return local,extras
 
+def runtime_reads(lock):
+    if len(lock['files'])!=121:raise ValueError('frozen Pillow runtime inventory')
+    out=[]
+    for rel in lock['files']:
+        if Path(rel).is_absolute() or '..' in Path(rel).parts or '\\' in rel:raise ValueError('unsafe library path')
+        out.append(Path(lock['overlay'])/rel)
+    return out
+
+
+def role_counts(role,k,bank,plan):
+    if role=='bank' or role=='render':return {}
+    if role=='spatial':return {key:plan['counts'][key] for key in ['source_image_reads','source_image_decodes','native_tiles','reused_contexts','new_contexts','descriptor_rows','case_captures']}
+    if role=='evaluate':return dict(evaluation_baselines=6,evaluation_comparisons=24)
+    held=set(plan['held_groups'][k]);n=sum(r['eligible'] and ((r['location'] in held)==(role=='held')) for r in bank['candidates'])
+    if role=='fit':return dict(model_sets=2,model_fits=6,linear_solves=6,training_target_rows=2*n,prediction_rows=2*n,context_builds=1,FIT_baselines=1,FIT_policy_comparisons=10)
+    if role=='held':return dict(prediction_rows=2*n,B1_replay_rows=n,context_builds=1)
+    raise ValueError('phase')
+
+
+def persist_then_cleanup(path,payload,cleanup):
+    try:
+        try:c.write(path,payload)
+        except BaseException:
+            try:os.write(2,('E029 first stop persistence failed: '+repr(payload)+'\n').encode()[:4096])
+            except BaseException:pass
+    finally:cleanup()
+
+
 def worker(args,plan,cfg,lock,paths,manifest_sha):
     env=c.core.module('e029_environment',c.ROOT/'scripts/pavetrack_target_spatial/environment.py');env.production_environment(plan)
     launch=c.read(args.run/'launch.json');authority(launch['approval_value'],manifest_sha,args.reviewed_commit,plan)
@@ -75,8 +103,9 @@ def worker(args,plan,cfg,lock,paths,manifest_sha):
         for f,binding in frozen['files'].items():c.checked(args.run/f,binding)
     if ident['manifest']!=manifest_sha or control['expected']!=ident or control['controller_pid'] not in [p.pid for p in psutil.Process().parents()]:raise PermissionError('worker parent/control identity')
     out=args.run/name(args.role,args.fold);out.mkdir(exist_ok=False)
-    guard=Guard(plan,args.run);guard.note=out
-    bank=c.read(args.run/'bank/bank.json') if args.role=='spatial' else None
+    bank=c.read(args.run/'bank/bank.json') if args.role!='bank' else None
+    expected_counts=role_counts(args.role,args.fold,bank,plan);role_plan=copy.deepcopy(plan);role_plan['counts']=expected_counts
+    guard=Guard(role_plan,args.run);guard.note=out
     local,extras=read_caps(args.role,args.fold,args.run,paths,bank)
     # These checks spawn identity/inventory commands, before restricting subprocesses.
     t=None;engine=None
@@ -84,8 +113,10 @@ def worker(args,plan,cfg,lock,paths,manifest_sha):
         source=c.core.module('e029_frozen_source',c.ROOT/'scripts/pavetrack_spatial_source/run.py')
         t,identity=env.production_checks(plan,guard,source.prior.runtime.desktop_inventory,c.sha);c.write(out/'runtime.json',identity)
     code_roots=[Path(sys.prefix),Path(sys.base_prefix),Path(os.environ.get('WINDIR','C:/Windows'))/'System32',Path(os.environ.get('WINDIR','C:/Windows'))/'Fonts']
+    library_files=runtime_reads(c.read(c.ROOT/'docs/research/S01/S01-E028/runtime_lock.json'))
     source_files=[c.ROOT/f for f in c.read(c.DOC/'source_manifest.json')['files'] if f.startswith('scripts/') and f.endswith('.py')]
-    caps=Files(local+extras+source_files,[out,Path(os.environ['MPLCONFIGDIR'])],code_roots);sys.addaudithook(caps.hook)
+    if os.environ['MPLCONFIGDIR']!=str(args.run/('_mplcache_'+name(args.role,args.fold))):raise PermissionError('own phase font cache only')
+    caps=Files(local+extras+source_files+library_files,[out,Path(os.environ['MPLCONFIGDIR'])],code_roots);sys.addaudithook(caps.hook)
     stop=guard.watch()
     try:
         if args.role=='bank':phases.bank(paths,lock,plan,cfg,args.run,out,guard)
@@ -100,7 +131,9 @@ def worker(args,plan,cfg,lock,paths,manifest_sha):
         elif args.role=='render':
             from e029_analyze import render
             render(args.run,out,plan)
-        guard.check();c.write(out/'resource.json',guard.receipt());phase_inventory(out,args.role,args.fold)
+        guard.check()
+        if dict(guard.counts)!=expected_counts:raise ValueError('exact role counts')
+        c.write(out/'resource.json',guard.receipt());phase_inventory(out,args.role,args.fold)
         c.write(out/'receipt.json',dict(role=args.role,fold=args.fold,manifest=manifest_sha,files={p.relative_to(out).as_posix():c.sha(p) for p in out.rglob('*') if p.is_file()}))
     finally:stop.set()
 
@@ -110,7 +143,7 @@ def terminate_owned(child,run,controller_pid):
     p=psutil.Process(child.pid)
     if controller_pid not in [q.pid for q in p.parents()] or str(run) not in ' '.join(p.cmdline()):raise RuntimeError('own child identity uncertain; external wrapper must inspect')
     ids=[(q.pid,q.create_time()) for q in [p,*p.children(recursive=True)]]
-    subprocess.run(['taskkill.exe','/PID',str(child.pid),'/T','/F'],check=True,stdout=subprocess.DEVNULL)
+    subprocess.run(['taskkill.exe','/PID',str(child.pid),'/T','/F'],check=True,stdout=subprocess.DEVNULL,timeout=5)
     child.wait(timeout=10)
     for pid,birth in ids:
         try:
@@ -124,9 +157,11 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
     authority(c.read(args.approval_file),manifest_sha,args.reviewed_commit,plan)
     if paths!=c.read(c.DOC/'private_paths.template.json'):raise ValueError('exact private input placement')
     if args.run!=Path(plan['run_path']) or args.run.exists():raise PermissionError('fresh named run only')
-    args.run.mkdir(parents=True,exist_ok=False);guard=Guard(plan,args.run,start=START);guard.note=args.run;done=[];counts=collections.Counter();active=[None];trusted={}
+    args.run.mkdir(parents=True,exist_ok=False);guard=Guard(plan,args.run,start=START);guard.note=args.run;done=[];counts=collections.Counter();active=[None];trusted={};cleanup_lock=threading.Lock()
     def cleanup():
-        if active[0] is not None and active[0].poll() is None:terminate_owned(active[0],args.run,os.getpid())
+        with cleanup_lock:
+            if active[0] is not None and active[0].poll() is None:terminate_owned(active[0],args.run,os.getpid())
+            active[0]=None
     guard.on_fatal=cleanup;stop=guard.watch()
     try:
         c.write(args.run/'launch.json',dict(reviewed_commit=args.reviewed_commit,source_manifest_sha256=manifest_sha,paths_sha256=c.sha(args.paths),approval_sha256=c.sha(args.approval_file),approval_value=c.read(args.approval_file),pid=os.getpid(),command=sys.argv,producer=plan['producer'],execution_enabled_in_package=False))
@@ -152,9 +187,10 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
                     while child.poll() is None:guard.check();time.sleep(.1)
                 except BaseException as exc:
                     # Persist the trigger before attempting our exact Popen tree cleanup.
-                    c.write(args.run/'first_stop.json',dict(reason=repr(exc),phase=name(role,k),child_pid=child.pid,no_retry=True))
-                    try:terminate_owned(child,args.run,os.getpid())
-                    except BaseException as cleanup:c.write(args.run/'cleanup_uncertain.json',dict(reason=repr(cleanup),child_pid=child.pid,no_retry=True))
+                    try:persist_then_cleanup(args.run/'first_stop.json',dict(reason=repr(exc),phase=name(role,k),child_pid=child.pid,no_retry=True),cleanup)
+                    except BaseException as failure:
+                        try:c.write(args.run/'cleanup_uncertain.json',dict(reason=repr(failure),child_pid=child.pid,no_retry=True))
+                        except BaseException:pass
                     raise
             active[0]=None
             if child.returncode!=0:raise RuntimeError(f'first-stop {name(role,k)} exit={child.returncode}; see stderr; no retry')
@@ -162,6 +198,7 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
             if (receipt['role'],receipt['fold'],receipt['manifest'])!=(role,k,manifest_sha):raise ValueError('phase receipt identity')
             for f,h in receipt['files'].items():c.checked(args.run/name(role,k)/f,h)
             resource=c.read(args.run/name(role,k)/'resource.json');counts.update(resource['counts'])
+            if any(key not in plan['counts'] or value>plan['counts'][key] for key,value in counts.items()):raise RuntimeError('aggregate count cap before next phase')
             for key in ['peak_RSS_bytes','peak_GPU_allocated_bytes','peak_GPU_reserved_bytes']:
                 if resource[key]>4*1024**3:raise MemoryError('phase memory cap')
             done=transition(done,role,k)
@@ -177,7 +214,8 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
         c.write(args.run/'output_receipt.json',dict(files={p.relative_to(args.run).as_posix():dict(bytes=p.stat().st_size,sha256=c.sha(p)) for p in args.run.rglob('*') if p.is_file()}));guard.check()
     except BaseException as ex:
         c.write(args.run/'status.json',dict(state='stopped',reason=repr(ex),completed=done,counts=dict(counts),science=None,no_retry=True));raise
-    finally:stop.set()
+    finally:
+        stop.set();cleanup()
 
 
 def main():

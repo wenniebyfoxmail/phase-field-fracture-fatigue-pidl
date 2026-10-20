@@ -21,7 +21,7 @@ class ProductionChecks(unittest.TestCase):
     def test_authority_must_be_exact(self):
         plan,_=c.config();good=dict(run_id='S01-E029-R001',reviewed_commit='abc',source_manifest_sha256='def',execute_once=True,wall_seconds=3600,GPU_uuid=plan['producer']['gpu_uuid'])
         run.authority(good,'def','abc',plan)
-        for change in [dict(execute_once=False),dict(reviewed_commit='other'),dict(wall_seconds=3601),dict(run_id='S01-E028-R002'),dict(extra='GT')]:
+        for change in [dict(execute_once=False),dict(execute_once=1),dict(wall_seconds=3600.0),dict(wall_seconds="3600"),dict(reviewed_commit='other'),dict(wall_seconds=3601),dict(run_id='S01-E028-R002'),dict(extra='GT')]:
             with self.assertRaises(PermissionError):run.authority(dict(good,**change),'def','abc',plan)
     def test_phase_order_no_retry(self):
         done=[]
@@ -160,7 +160,63 @@ class ProductionChecks(unittest.TestCase):
             with self.assertRaises(RuntimeError):run.terminate_owned(Mock(pid=77),self.p,11)
         kill.assert_not_called()
     def test_managed_wrapper_is_own_tree_only(self):
-        text=(HERE/'producer.ps1').read_text();self.assertIn('CreationDate',text);self.assertIn('WaitForExit(100)',text);self.assertIn('taskkill.exe /PID $key /T /F',text);self.assertNotIn('Stop-Process -Name',text);self.assertIn('3480',text);self.assertIn("'package' 3600",text)
+        text=(HERE/'producer.ps1').read_text();self.assertIn('CreationDate',text);self.assertIn('WaitForExit(100)',text);self.assertIn('Arguments="/PID $key /T /F"',text);self.assertNotIn('Stop-Process -Name',text);self.assertIn('3480',text);self.assertIn("'package' 3600",text)
     def test_counts_no_hidden_new_native_replay(self):
         plan,_=c.config();counts=plan['counts'];self.assertEqual(counts['native_tiles'],497*40);self.assertEqual(counts['reused_contexts']+counts['new_contexts'],31156);self.assertEqual(counts['linear_solves'],18);self.assertEqual(counts['case_captures'],6)
+    def test_lazy_library_import_under_exact_caps(self):
+        lib=self.p/'runtime';(lib/'PIL').mkdir(parents=True)
+        (lib/'PIL/__init__.py').write_text('')
+        (lib/'PIL/JpegImagePlugin.py').write_text('VALUE=7')
+        bad=lib/'GT_SENTINEL.json';bad.write_text('secret')
+        listed=[str(lib/'PIL/__init__.py'),str(lib/'PIL/JpegImagePlugin.py')]
+        code="import sys;sys.dont_write_bytecode=True;sys.path[:0]=sys.argv[1:3];from e029_permissions import Files;f=Files(sys.argv[3:5],[],[sys.base_prefix]);sys.addaudithook(f.hook);from PIL import JpegImagePlugin;assert JpegImagePlugin.VALUE==7;\ntry:open(sys.argv[5]).read()\nexcept PermissionError:pass\nelse:raise AssertionError('GT leaked')"
+        r=subprocess.run([sys.executable,'-c',code,str(lib),str(HERE),*listed,str(bad)],capture_output=True,text=True)
+        self.assertEqual(r.returncode,0,r.stderr)
+    def test_runtime_caps_exact_and_no_traversal(self):
+        lock=dict(overlay=str(self.p),files={f'PIL/file{i}.py':'hash' for i in range(121)})
+        self.assertEqual(len(run.runtime_reads(lock)),121)
+        lock['files']['../GT.json']=lock['files'].pop('PIL/file0.py')
+        with self.assertRaises(ValueError):run.runtime_reads(lock)
+    def test_guard_atomic_rename_and_single_memory_snapshot(self):
+        import psutil
+        from e029_guard import Guard
+        plan,_=c.config();g=Guard(plan,self.p);process=Mock(pid=7);process.children.return_value=[];process.memory_info.return_value=Mock(rss=8,peak_wset=8)
+        vanished=Mock();vanished.is_file.return_value=True;vanished.stat.side_effect=FileNotFoundError()
+        with patch.object(psutil,'Process',return_value=process),patch.object(Path,'rglob',return_value=[vanished]):g.check()
+        self.assertEqual(process.memory_info.call_count,1);self.assertEqual(g.receipt()['peak_RSS_bytes'],8)
+        vanished.stat.side_effect=PermissionError('not an atomic rename')
+        with patch.object(psutil,'Process',return_value=process),patch.object(Path,'rglob',return_value=[vanished]):
+            with self.assertRaises(PermissionError):g.check()
+    def test_guard_counts_thread_safe(self):
+        from e029_guard import Guard
+        from concurrent.futures import ThreadPoolExecutor
+        plan,_=c.config();plan['counts']={'mock':100};g=Guard(plan,self.p)
+        with patch.object(g,'check'):
+            with ThreadPoolExecutor(max_workers=4) as pool:list(pool.map(lambda _:g.take('mock'),range(100)))
+        self.assertEqual(g.receipt()['counts'],{'mock':100})
+        with self.assertRaises(RuntimeError):g.take('mock')
+    def test_fatal_write_failure_still_cleans_and_exits(self):
+        from e029_guard import Guard
+        plan,_=c.config();g=Guard(plan,self.p);g.on_fatal=Mock();die=Mock()
+        with patch.object(c,'write',side_effect=OSError('disk full')),patch('os.write'):
+            g.fatal(RuntimeError('first cause'),die)
+        g.on_fatal.assert_called_once();die.assert_called_once_with(124)
+    def test_controller_persistence_failure_still_cleans(self):
+        cleanup=Mock()
+        with patch.object(c,'write',side_effect=OSError('disk full')),patch('os.write'):
+            run.persist_then_cleanup(self.p/'stop',{},cleanup)
+        cleanup.assert_called_once()
+    def test_exact_phase_counts_derive_from_own_GT_free_bank(self):
+        plan,_=c.config();h=plan['held_groups'][0][0];other=plan['held_groups'][1][0]
+        bank={'candidates':[dict(eligible=True,location=h),dict(eligible=True,location=other),dict(eligible=False,location=other)]}
+        self.assertEqual(run.role_counts('fit',0,bank,plan)['training_target_rows'],2)
+        self.assertEqual(run.role_counts('held',0,bank,plan)['B1_replay_rows'],1)
+        self.assertEqual(run.role_counts('render',None,None,plan),{})
+    def test_wrapper_checks_before_python_and_bounds_each_cleanup(self):
+        text=(HERE/'producer.ps1').read_text()
+        self.assertLess(text.index('Assert-Bindings $Source'),text.index('if(!$p.Start())'))
+        self.assertIn('Assert-Bindings $runtime.overlay $runtime.files 121 $true',text)
+        self.assertIn('OperationTimeoutSec 2',text);self.assertIn('WaitForExit(2000)',text);self.assertIn('task.Wait(1000)',text)
+        self.assertNotIn('$stdout.Result',text);self.assertNotIn('$p.WaitForExit();',text)
+        self.assertIn('strict approval types',text);self.assertIn('cleanup_uncertain',text)
 if __name__=='__main__':unittest.main()
