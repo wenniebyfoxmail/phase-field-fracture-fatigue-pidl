@@ -12,9 +12,9 @@
   "outer_timeout_pid": 3210954,
   "worker_pid": 3211535,
   "start_london": "2026-10-20T19:04:35.768586+01:00",
-  "observed_london": "2026-10-20T19:05:11.699238+01:00",
+  "observed_london": "2026-10-20T19:06:47.862089+01:00",
   "current_phase": "train_A",
-  "accepted_substeps": 0,
+  "accepted_substeps": 1,
   "training_started": false,
   "command": [
     "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/code/tools/run_hybrid_producer.py",
@@ -65,7 +65,8 @@
     "proposed_hybrid_gpu_hours": 6,
     "remaining_host_hours_after_all_known_prior_runs": 135.82619478322061
   },
-  "monitor_evidence": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/monitor_snapshot2.json",
+  "monitor_evidence": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/monitor_snapshot3.json",
   "local_endpoint": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1",
-  "automatic_retry_allowed": false
+  "automatic_retry_allowed": false,
+  "first_accepted_substep_wall_seconds": 34.249059395864606
 }
