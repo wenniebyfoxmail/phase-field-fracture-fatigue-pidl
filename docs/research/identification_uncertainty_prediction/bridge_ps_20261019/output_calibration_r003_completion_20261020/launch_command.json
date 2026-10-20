@@ -1,0 +1,22 @@
+{
+  "host_alias": "gpu-taobo",
+  "expected_hostname": "GPUServer8",
+  "producer": "CPU only",
+  "python": "/usr/bin/python3",
+  "run_id": "IU-OUTPUT-CALIBRATION-C27A25-20261020-R003",
+  "run_root": "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003",
+  "cwd": "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/code",
+  "argv": [
+    "/usr/bin/python3",
+    "-W",
+    "error",
+    "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/code/launch.py",
+    "--config",
+    "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/code/config.json",
+    "--approval-receipt",
+    "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/execution_authority.json"
+  ],
+  "detached_shell_command": "cd /mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/code && nohup /usr/bin/python3 -W error /mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/code/launch.py --config /mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/code/config.json --approval-receipt /mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/execution_authority.json >/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/launch.stdout 2>/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/launch.stderr < /dev/null &",
+  "execution_authority_created": false,
+  "ssh_or_command_executed": false
+}
