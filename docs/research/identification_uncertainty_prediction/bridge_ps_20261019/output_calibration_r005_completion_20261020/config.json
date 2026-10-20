@@ -1,0 +1,108 @@
+{
+  "status": "FOUR_GROUP_COMPLETION_CANDIDATE",
+  "enabled": true,
+  "run_root": "/mnt/data2/drtao/wennie/IU-OUTPUT-CALIBRATION-C27A25-20261020-R005",
+  "approved_budget": {
+    "wall_seconds": 1800,
+    "threads": 1,
+    "rss_bytes": 2147483648,
+    "total_generated_bytes": 1610612736,
+    "archive_bytes": 734003200,
+    "gpu": 0
+  },
+  "proposed_budget": {
+    "wall_seconds": 1800,
+    "threads": 1,
+    "rss_bytes": 2147483648,
+    "total_generated_bytes": 1610612736,
+    "archive_bytes": 734003200,
+    "gpu": 0
+  },
+  "accepted_design_commit": "fe54ab36df890551f13e0e515ab50c2ad69c97c8",
+  "accepted_design_sha256": "334d050d2fb1924f5d9f6c4c647e04844c1a1ee9189b4d731581c98f7b655d8b",
+  "predictor_alpha": 10.0,
+  "input_residualizer_alpha": 10.0,
+  "groups": 19,
+  "cases": 1144,
+  "H": [
+    10,
+    40
+  ],
+  "channels": 2,
+  "candidate_counts": {
+    "U": 25,
+    "C": 27,
+    "A": 25,
+    "unique": 45
+  },
+  "primary": "L(selected C27)-L(selected A25)",
+  "expected_work": {
+    "training_sets": 152,
+    "predictor": 304,
+    "residualizer": 152,
+    "inner_rows": 8624,
+    "outer_rows": 528,
+    "inner_scores": 388080,
+    "outer_scores": 3696
+  },
+  "dependencies": {
+    "numpy": "1.24.4",
+    "torch": "2.7.0",
+    "matplotlib": "3.10.3"
+  },
+  "original100MiB_not_feasible": "Two complete copies of inner native-loss triples and outer bases alone are126444032bytes; self-contained native anchors/outer targets add449839104bytes before copies. No real data or timing measured.",
+  "run_id": "IU-OUTPUT-CALIBRATION-C27A25-20261020-R005",
+  "resource_decision": "HQ_RESOURCES_APPROVED_ONLY_NOT_EXECUTION",
+  "expected_hostname": "GPUServer8",
+  "producer_alias": "gpu-taobo",
+  "python_version": "3.10.12",
+  "dependency_basis": "Historical R003 admission record2026-10-19 only; not rechecked; mismatch must first-stop before scientific bytes",
+  "memory_scope": "sampled sum of process HWMs for watchdog + controller session/group including worker/helpers; no hard combined RSS guarantee",
+  "execution_authority_granted": false,
+  "category_caps": {
+    "raw_arrays": 513802240,
+    "models": 16777216,
+    "metadata": 33554432,
+    "figures": 25165824,
+    "logs": 16777216,
+    "cache": 67108864,
+    "code": 8388608,
+    "temporary": 16777216,
+    "archive": 734003200
+  },
+  "outer_groups": [
+    "E_0Deg_17.5%_#2",
+    "E_0Deg_20%_#1",
+    "E_0Deg_20%_#2",
+    "E_0Deg_20%_#3"
+  ],
+  "completion_of": "IU-OUTPUT-CALIBRATION-C27A25-20261020-R002",
+  "local_storage_roots": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R002",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R004",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R005",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020-R002",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020-R003",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020-R004",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020-R005",
+    "/Users/wenxiaofang/obsidian/attachments/identification-uncertainty-prediction/2026-10-20"
+  ],
+  "execution_total_envelope": {
+    "execution_package_started_unix": 1792535144.358228,
+    "execution_package_deadline_unix": 1792536944.358228,
+    "total_wall_seconds": 1800,
+    "producer_lifecycle_cap_seconds": 600,
+    "minimum_retrieval_and_readout_reserve_seconds": 180,
+    "mechanical_rechecks_max": 2,
+    "mechanical_requests_total_cap_seconds": 60,
+    "authority_basis": "HQ_DELEGATED",
+    "authority_source_thread_id": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+    "no_private_payload_transfer": true,
+    "no_new_host": true
+  },
+  "producer_lifecycle_subcap_seconds": 600,
+  "deployment_mode": "remote_hash_verified_copy_of_existing_R004_code_only_no_payload_upload"
+}
