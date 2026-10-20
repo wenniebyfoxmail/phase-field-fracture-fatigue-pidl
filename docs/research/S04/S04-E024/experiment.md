@@ -155,3 +155,11 @@ Linux/GPUServer8／drtao／/usr/bin/python3 CPU2包装完成，全部88输入238
 部署首审／r3问题保留，r4独审及39纯fixture通过；完整104member/88input/1455source/clean18/tree/全部SHA/实际argv/false权限最终绑定通过。最终wire4e9f6f7e…8427d、actionb6463fde…87806；272,097,280B。合并峰值1,039,138,286B<1GiB，临时副本清理后科学输出余340,348,249B。原71.937549s不清零，v2检查及两次构建实录约6.214s包含于保守10s，本次base81.937549s，未来transfer/preflight仍从300s余额扣；1800numeric/900replay/120render/总3120s、RSS3GiB及原loader2GiB不改。
 
 结论：PREPARED_FOR_EXACT_FINAL_HUMAN_APPROVAL_NOT_EXECUTED。没有SSH/SCP/远端探针/真实Torch/NN或FEM前向/solve/train，没有真实批准文件；原Mac v1原样保留暂停，首个未发送v2候选仅保留小型metadata/source/hash收据并在最终定稿前替换wire，未产生科学证据。下一步仅审批[完整Taobo v2卡](physical_field_budget_taobo_cpu2_approval_v2.md)，不能把准备PASS当执行或物理成功。[最终包收据](physical_field_budget_taobo_cpu2_package_receipt.json) · [独立绑定审阅](taobo_cpu2_v2/deployment_final_binding_review.md)。后续报告全/损伤/背景/窗口内背景UV、应变、真实弱残差、瞬时driver与成本；history/裂纹/疲劳应用仍未验证。
+
+## 2026-10-20 — D013 当前管理入口：一次有界授权，机械链自动完成
+
+目的／本轮：仅迁移执行卡管理，不改变科学或启动计算。当前active卡仍为[原Taobo CPU2 v2审批卡的前瞻治理修订](physical_field_budget_taobo_cpu2_approval_v2.md#bounded-authority-20261020)，不制造新卡。整包首次执行／私有传输许可仍缺；取得一次任务许可后，同范围修复、已有Codex通道必要聚焦复审、版本／环境／资源与传输一致性、命令／RunID／路径／哈希补齐和卡实例化自动完成，不再逐项人方批准；元数据不重开完整Code Ready。
+
+三态12profiles／13保护／永久中心／原data与Taobo producer／CPU2和300+1800+900+120≤3120秒／两份删除对象／科学首停与无重试不改，base81.937549秒不重置。前瞻机械重查最多2轮／15秒且计入原300与总预算，只有明确零科学启动、无未知结果且当前实现支持时可用；零启动资源等待记NO_START_RESOURCE_WAIT，不改写科学失败，不越过现有claim或首停。原精确辅助pin等属Agent实现约束，不是逐项人方许可，冻结包此次仍不修改或放宽。
+
+结论：文档治理已同步；唯一当前人方边界是首次整包执行及私有输入传输许可。本轮未做远端操作、安装／探针、求解／训练、新审查或true权限，未重写签名快照或旧失败。共享Roadmap由总部处理。
