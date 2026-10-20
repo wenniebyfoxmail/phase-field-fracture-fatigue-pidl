@@ -2,6 +2,9 @@ param([Parameter(Mandatory=$true)][string]$Config)
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
 $c=Get-Content -LiteralPath $Config -Raw | ConvertFrom-Json
+$limitSeconds=14400
+if ($null -ne $c.timeout_seconds) { $limitSeconds=[double]$c.timeout_seconds }
+if ($limitSeconds -le 0 -or $limitSeconds -gt 14400) { throw 'Invalid bounded timeout' }
 $receipt=Join-Path $c.root 'launch.json'
 if (Test-Path -LiteralPath $receipt) { throw 'Launch already recorded; inspect before any retry' }
 if (Test-Path -LiteralPath $c.output) { throw 'Output already exists; fresh run required' }
@@ -24,23 +27,31 @@ if ($c.kind -eq 'fem') {
 }
 $claim=[System.IO.File]::Open($receipt,[System.IO.FileMode]::CreateNew)
 $claim.Dispose()
+$started=[DateTime]::UtcNow
 $proc=Start-Process -FilePath $c.executable -ArgumentList $c.arguments -WorkingDirectory $c.root `
     -RedirectStandardOutput (Join-Path $c.root 'stdout.log') `
     -RedirectStandardError (Join-Path $c.root 'stderr.log') -PassThru
 $childHandle=$proc.Handle
-$started=[DateTime]::UtcNow
 @{pid=$proc.Id;started_utc=$started.ToString('o');host=$env:COMPUTERNAME;kind=$c.kind;
   executable=$c.executable;arguments=$c.arguments;root=$c.root;output=$c.output;code_commit=$c.commit;
-  deadline_hours=4;output_limit_GiB=10} | ConvertTo-Json | Set-Content -LiteralPath $receipt
+  deadline_seconds=$limitSeconds;output_limit_GiB=10} | ConvertTo-Json | Set-Content -LiteralPath $receipt
 $reason='exited'
-while (-not $proc.WaitForExit(30000)) {
+while ($true) {
+    $remaining=[int][Math]::Ceiling(($started.AddSeconds($limitSeconds)-[DateTime]::UtcNow).TotalMilliseconds)
+    if ($remaining -le 0) {
+        $reason='budget_stopped'
+        if (-not $proc.HasExited) { $proc.Kill(); $proc.WaitForExit() }
+        break
+    }
+    if ($proc.WaitForExit([Math]::Min(30000,$remaining))) { break }
     $bytes=(Get-ChildItem -LiteralPath $c.output -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum
-    if (([DateTime]::UtcNow-$started).TotalHours -ge 4 -or $bytes -gt 10GB) {
+    if ($bytes -gt 10GB) {
         $reason='budget_stopped'
         # This Process object is the exact child created above; no name/user kill.
         $proc.Kill(); $proc.WaitForExit(); break
     }
 }
 @{pid=$proc.Id;finished_utc=[DateTime]::UtcNow.ToString('o');exit_code=$proc.ExitCode;
-  reason=$reason;completed_marker=(Test-Path -LiteralPath (Join-Path $c.output 'COMPLETED.txt'))} |
+  reason=$reason;completed_marker=(Test-Path -LiteralPath (Join-Path $c.output 'COMPLETED.txt'));
+  prefix_completed=(Test-Path -LiteralPath (Join-Path $c.output 'PREFIX_COMPLETED.txt'))} |
   ConvertTo-Json | Set-Content -LiteralPath (Join-Path $c.root 'exit.json')

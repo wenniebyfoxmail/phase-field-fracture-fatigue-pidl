@@ -104,7 +104,9 @@ for step=1:max_steps
     [~,~,~,history_vars_old]=pf(sys.MESH,sys.DOFS,sys.GEOM.t,sys.QUADRATURE,...
         sys.MAT_CHAR,sys.CC,p_field,p_field_old,driver,sys.stress_state.as_number,history_vars_old);
 end
-fid_done=fopen(fullfile(out_root,'COMPLETED.txt'),'w');
+marker='PREFIX_COMPLETED.txt';
+if max_steps==numel(schedule), marker='COMPLETED.txt'; end
+fid_done=fopen(fullfile(out_root,marker),'w');
 fprintf(fid_done,'All %d requested states accepted (full trajectory=%d). Elapsed %.3f seconds.\n',max_steps,numel(schedule),toc(start)); fclose(fid_done);
 diary off;
 end
