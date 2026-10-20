@@ -1,0 +1,1 @@
+case_id,run_id,attempt_id,role,initializer,loading_definition,material_definition,completed,accepted_substeps,planned_substeps,elapsed_seconds,elapsed_hours,worker_trajectory_seconds,cpu_seconds,hostname,cpu_cores,gpu_id,source_commit,timing_source,failure_reason

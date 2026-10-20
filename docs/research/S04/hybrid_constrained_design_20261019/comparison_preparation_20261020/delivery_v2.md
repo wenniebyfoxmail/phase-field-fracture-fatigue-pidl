@@ -23,3 +23,7 @@
 当前完整卡execution_enabled=false、Matplotlib exact pin=null。按原v4合同只能先送审一次drtao@172.16.100.2/GPUServer8的标准库metadata核查，remote20秒加3秒kill、本地45秒、CPU10秒/256MiB、0GPU、0项目数据/科学包import/远端文件/安装/重试。具体完整命令与payload见APPROVAL；尚待人方批准。结果不等于包真实import/render可用性。随后须落实新run依赖来源/pin、入账、重建准确科学卡与差量审查，再给人方启动审批，保留原Agg/runtime/容量检查。
 
 扩展B：见[载荷与材料设计](loading_property_extension.md)。优先变幅路径、Gc和alpha_T；目前FrozenGraphInterface和backend/state0绑定单physics_id，尚未实现材料族runner。候选新标签3000步+三配置三臂测试5400步，共8400新步和一次材料族fit；沿旧阶段上限算248hosth/24GPUh仅规模参考，尚无完整控制/存储预算，未获准，也未混入A预算。
+
+## 2026-10-20 用户补充：逐case实测耗时
+
+后续重新计算FEM case时按[逐case elapsed time要求](case_elapsed_time_recording.md)导出实测汇总，使用[空表模板](case_elapsed_times_template.csv)。主计时复用已有supervisor逐phase wall_seconds（含失败/清理），并区分worker轨迹时长、子步/内核分解和共享开销。本补充不修改已审核v2源包或授权任何新运行。
