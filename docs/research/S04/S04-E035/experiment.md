@@ -136,3 +136,7 @@ The single-call deployment is now assembled, with transport-failure receipts
 and dirty-native source checks. It is preparation only pending a fresh execution
 window; no additional scientific result, complete trajectory, or PIDL training
 is claimed. The original shear comparison goal is unchanged.
+
+## R004 diagnostic outcome and next decision
+
+R004 retrieved the failing vector under the new900s total window. Both bounds and residuals pass; healing.00960853>.005 fails on250nodes, all on the initial fully damaged line. Independent recomputation confirms localisation and identical initial data. Accepted loaded states0/30; PIDL still not launched. See [receipt](runs/S04-E035-R004.md) and [prospective paired repair/resource proposal](repair_and_comparison_plan.md). D2 now awaits review/authority for the common hard initial-crack condition; no further solve is authorised by R004. Earlier pending-status paragraphs are historical.

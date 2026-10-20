@@ -51,7 +51,7 @@ plt.close(fig)
 text=f'''# First-state damage decrease diagnostic
 
 Source: S04-E035-R004, failed_state_001.mat, U=.03, unaccepted post-solve/pre-history-update state.
-Initial FEM mesh/profile are bytewise array-identical to R001. Native candidate
+Initial FEM mesh/profile are array-identical to R001. Native candidate
 alpha_min={a.min():.12g}, alpha_max={a.max():.12g}; both satisfy the original
 [-.005,1.005] checks. Maximum damage decrease={delta.max():.12g} > .005;
 all {int(bad.sum())} violating nodes lie on the initial fully damaged y=0 line.
