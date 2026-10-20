@@ -1,6 +1,8 @@
-# S01-E029：完整代码已批，当前准入首停、未启动
+# S01-E029：Windows代码已审已批；Taobo空闲候选需Linux适配
 
-2026-10-20。完整runner、逐fold GT隔离、六模型/预测冻结屏障、B1可信重放、全空间身份join、限量流式前向、9/12同scope评价、三图、受管首停与成功/停止打包接收均已实现。独立gpt-6.1-sol / High精确代码复审REVIEW_PASS，绑定owner `e6ef93c3dd6c3a833fe8d095c6e4143c8f8964d7`、source-only `5307a6f52a0877ad56f13df6efeb86e1481df6d6` 与manifest `7e4a45c848f6122d4e05a9c2104d485f35fdae9da9a04515208f302aaec3727c`。49项人工/mock测试通过；252绑定/253源码文件逐字节核验。v1/v2修改意见及原包保留，最终v3修复未变科学标准。
+2026-10-20最新：恢复授权后查遍gpu-server两卡及Taobo八卡；Windows两卡有compute且CPU79%，Taobo GPU5无compute/0%/24GB空闲，但Linux runtime不符合已审Windows锁。已完成独立最小迁移范围核查，见[Taobo迁移边界](taobo_migration_scope.md)；不是Linux Code Ready，没有实际生产或预算消耗。
+
+原Windows交付：完整runner、逐fold GT隔离、六模型/预测冻结屏障、B1可信重放、全空间身份join、限量流式前向、9/12同scope评价、三图、受管首停与成功/停止打包接收均已实现。独立gpt-6.1-sol / High精确代码复审REVIEW_PASS，绑定owner `e6ef93c3dd6c3a833fe8d095c6e4143c8f8964d7`、source-only `5307a6f52a0877ad56f13df6efeb86e1481df6d6` 与manifest `7e4a45c848f6122d4e05a9c2104d485f35fdae9da9a04515208f302aaec3727c`。49项人工/mock测试通过；252绑定/253源码文件逐字节核验。v1/v2修改意见及原包保留，最终v3修复未变科学标准。
 
 当前execution_enabled=false；未生成授权文件，没有真实fit/模型前向/GT或地图解码/源RGB/政策OOF/SSH/传送/推送。测试不等于实际净收益。Windows原生行为/私有输入与实时GPU准入留在未来同一首停链，不单独偷跑。
 
