@@ -418,7 +418,7 @@
     "gpu_seconds": 0.0,
     "numerical_seconds": 497.477721337229
   },
-  "accounting": "R2 cumulative study total already contains R1/validation/pre-R2 prep once; do not add those again. Measured local dispatch/query durations charged as separate control work; overlapping calendar wall is conservatively not deducted. R3 staging has not executed and is not recorded as zero actual work.",
+  "accounting": "R2 cumulative study total already contains R1/validation/pre-R2 prep once; do not add those again. Measured local dispatch/query durations charged as separate control work; overlapping calendar wall is conservatively not deducted. R3 staging succeeded: measured local stage wall includes remote stage work and is added once; remote wall is not added again. Remote and local self CPU are distinct measured processes. No R3 numerical solve or training has started.",
   "missing_observations": {
     "control_cpu_seconds": null,
     "initial_R2_monitor_query_wall_seconds": null,

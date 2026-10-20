@@ -203,7 +203,7 @@
   "prior_costs": [
     {
       "source": "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/budget_reconciliation.json",
-      "sha256": "8a4a06086edec7a0ad49843122c9e4d9934248402afed3b432c3f20fe48b1f03",
+      "sha256": "026142fb8c199ba88dc4fc87a4aac93bebc8187cfe53f5dceb0ae656465992d6",
       "lineage": [
         "pf_hybrid_full_20261019_r1",
         "pf_hybrid_validate_20261020_01",
@@ -257,7 +257,7 @@
   "budget_reconciliation": {
     "complete": true,
     "receipt": "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/budget_reconciliation.json",
-    "receipt_sha256": "8a4a06086edec7a0ad49843122c9e4d9934248402afed3b432c3f20fe48b1f03",
+    "receipt_sha256": "026142fb8c199ba88dc4fc87a4aac93bebc8187cfe53f5dceb0ae656465992d6",
     "active_or_unknown_runs": [],
     "remaining_numerical_steps": 3600,
     "remaining_training_fits": 1,
