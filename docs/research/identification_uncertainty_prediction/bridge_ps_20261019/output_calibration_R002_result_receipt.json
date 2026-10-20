@@ -1,0 +1,75 @@
+{
+  "run_id": "IU-OUTPUT-CALIBRATION-C27A25-20261020-R002",
+  "source_commit": "b47154c65258e246412b4a11cd414b1d4a6b096f",
+  "package_sha256": "8ced997c0421f61a74ce704e7d4439218d2fa2d78d4c4f13635b8f948ff21d30",
+  "config_sha256": "b3740acadd443a92773ced6b41c6057329ee51286c5d5451b137e65a375fb53a",
+  "started_Europe_London": "2026-10-20T10:19:47.993519+01:00",
+  "trigger_Europe_London": "2026-10-20T10:39:48.001531+01:00",
+  "host": "GPUServer8",
+  "first_stop_reason": "DeadlineExceeded: whole_lifecycle_wall_deadline",
+  "checkpoint_counts": {
+    "inner_rows": 32560,
+    "inner_scores": 1465200,
+    "outer_rows": 1760,
+    "outer_scores": 12320,
+    "predictor": 1140,
+    "residualizer": 570
+  },
+  "complete_prefix_groups": 15,
+  "planned_groups": 19,
+  "peak_combined_sampled_HWM_bytes": 1306099712,
+  "all_recorded_pids_verified_absent": true,
+  "status": "STOPPED_AT_1200S_VERIFIED_PARTIAL_RESULTS",
+  "full19_primary": "INCONCLUSIVE",
+  "retrieval": {
+    "status": "STOPPED_SNAPSHOT_ALL_HASHES_VERIFIED",
+    "recorded_utc": "2026-10-20T09:49:09.274771+00:00",
+    "source_commit": "b47154c65258e246412b4a11cd414b1d4a6b096f",
+    "snapshot_sha256": "666c7934a90999f2902eb9e38901324e2fd1419318a5d2617deb39c77a9d7a29",
+    "files": 1054,
+    "unpacked_bytes": 552504456,
+    "snapshot_hashes_verified": true,
+    "source_and_config_lock_verified": true,
+    "recorded_pids_verified_inactive": [
+      2227396,
+      2227398,
+      2227400
+    ],
+    "main_primary_available": false,
+    "watchdog_status": "STOPPED_NO_RETRY",
+    "first_stop_reason": "DeadlineExceeded: whole_lifecycle_wall_deadline",
+    "all_stderr_empty": true,
+    "no_fatal_event_records": true,
+    "worker_controller_clean_success_seals": "not produced; controllers were killed at budget, no success asserted",
+    "watchdog_final_callback_seal": {
+      "pid": 2227396,
+      "status": "RETURNED_AND_EXIT_CALLBACKS_COMPLETE",
+      "time_monotonic": 5511270.929823763,
+      "time_unix": 1792489188.4227388
+    },
+    "full_result_archive_created": false,
+    "durable_checkpoint_counts": {
+      "inner_rows": 32560,
+      "inner_scores": 1465200,
+      "outer_rows": 1760,
+      "outer_scores": 12320,
+      "predictor": 1140,
+      "residualizer": 570
+    },
+    "local_cumulative_R001_R002_bytes": 926859958,
+    "local_total_cap_bytes": 1610612736,
+    "no_scientific_retry_or_original_input_read_for_analysis": true
+  },
+  "local_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R002",
+  "independent_review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R002/analysis/evidence_review.md",
+  "native_reconstruction_max_abs_difference": 7.105427357601002e-15,
+  "complete_group_horizon_cells": 30,
+  "all_completed_selectors_weights": [
+    1,
+    1
+  ],
+  "completed_C_minus_A": 0,
+  "original_R001_preserved": true,
+  "next_decision": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R002/analysis/decision.md",
+  "no_new_execution_authorized": true
+}
