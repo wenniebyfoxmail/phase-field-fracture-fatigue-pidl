@@ -444,3 +444,18 @@ Localcheckcomplete;retainstructurecandidate,identifylocatedopening/DICreference
 availabilityandcoordinatesnext(noacquisitionperformed). Stoprepeatingsame-image
 selfvalidation,notglobalroutefailure;noMD03newforecastscores,oldobserver/
 halfdepth/5.81%kept,D01ownerunblocked.
+
+### D3 existing reference inventory completed — 2026-10-20
+
+[Metadata/text inventory](../research/S03/S03-E049-MD03/reference_inventory_20261020.md):
+cached2026-10-18cataloguehas273TIFF+2ZIP;3knownlocaloriginals89/132/175.
+ExistingpublishertextnamesOpteCAL/Fig.7strainfieldsandload–deflectionassociation;
+authorDICworkdocumented,butnolocatedexport/manualopeningreferenceinhand.
+IMG→DICstate,grid→nativepixels,openingdefinitionandper-fileloadjoinunresolved;
+ZIPinteriorsunknown,nottreatedasempty.275rowTSV/10text-metadatahashesinparent
+local_archive/experiments/S03-E049-MD03/reference_inventory_20261020/.
+Zeronetwork/download/newattachmentopening/imagedecode/forecastscore;oldobserver,
+halfdepth/scoresunchanged. Inventorycomplete. ActiveD3nextproposaljointFig.7+
+bendingZIPfilelist/readme/headerschecktorecoveridentity/state/coordinatechain;
+requiresseparatescopedattachmentaccess,notexecuted. Retaincandidatecomponent,
+nofurtherunchangedsame-imageselfvalidation,D01independentrouteunblocked.

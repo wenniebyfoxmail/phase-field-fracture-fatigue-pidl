@@ -87,9 +87,12 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   D3localcheckcompleted:prior-field-selectedx2782plus3fixedcomparisons,
   12rawcrops/8matchsets. Candidate175pairJ1.576px,Q−.457gray,minNCC.965;
   texturejumpreproduciblebutsourcecoherentgapnotconfirmed.481hashesunchanged.
-  ActiveD3identifieslocatedopening/DICreferenceavailabilityandcoordinatesnext;
-  noindependentreferenceobtained,norepeatselfvalidation/thresholdrepairs/new
-  forecastcomparison. Old5.81%kept,D01independentrouteunblocked.
+  Existing-referenceinventorycompleted2026-10-20(cachedmetadata/textonly):
+  273TIFF+2unopenedZIP,3localoriginals;papertextconfirmsOpteCAL/Fig.7DIC,
+  butnoIMG→DICstate/grid→pixeljoinorlocatedopeningreferenceinhand.
+  ActiveD3proposaljointFig.7+bendingZIPfilelist/readme/headerscheckawaits
+  scopedattachmentaccess;nonewdownload/opening,ZIPinteriorsunknown.
+  Old5.81%/observer/halfdepthkept,D01independentrouteunblocked.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
