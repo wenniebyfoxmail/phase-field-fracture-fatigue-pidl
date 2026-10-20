@@ -130,3 +130,11 @@ Same own E023 c20/c60/c83/D/BC/window/fullmass/seven actual protections/original
 **当前及下一步：** 真实三态新头求解0、真实NN／FEM前向0、训练0、checkpoint写入0、远端操作0；没有新物理收益或演化结果。Code Ready不等于已运行或科学成功，下一步仅准备具体离线执行包另获人方批准。原严格Mac／历史负结果／缺失history保留，损伤／裂纹／疲劳用途仍需耦合与历史验证。
 
 [实现及边界](physical_field_budget_implementation.md) · [独立Code Ready](physical_field_budget_code_ready_review.md) · [检查收据](physical_field_budget_nontraining_checks.json)。
+
+
+## 2026-10-20 — E024-D013 offline execution package v1 prepared; awaiting human approval
+
+**目的：** 执行已审的三态物理场预算／完整固定特征输出头比较，判断去掉2%球后真实UV收益与13项保护能否并存，继续条件FEM复现；不把Code Ready或`.001`当应用成功。
+**本轮：** 科学源码18d0e7cb1153dc969c1ee0c21c77ada1297b2d89／树14f6ba5…813c23不变，单独封装clean浅Git快照，最终科学Code Ready／累计检查置于源码外。88文件238,110,147 bytes的配对字节身份核验完成，真实三态数值准入尚未运行。c20s4/c60s4/c83s4各自原E023 joint10000 seed7、producerD/BC/window/features/damage/history/fatigue冻结；每态strict η.1/.3/1＋中央旧7消融，13实际保护／永久原E023累计Q／零分母／最多3模型×9有限步均按原契约。
+**包装检查：** 新启动器18项人工检查及独审PACKAGE_READY_PASS。初审L1预检尾部记账／L2合并存储监督已修复，原件保留。启动器持续监督仅本次新进程组，预检和保守5秒交接均入原300秒；包／旧D013检查／控制／科学输出合计1GiB。记录检查66.937549秒，最终绑定保守另预记5秒，当前预算记账71.937549秒，非实测全耗时。数值1800／重放900／绘图120／检查300总3120秒、CPU2/0GPU、每进程RSS3GiB和原loader2GiB不改。
+**当前结论／下一步：** 最终包已冻结、待用户准确版本批准。无科学新头求解／真实model或FEM前向／训练／远端操作；authorization模板false，真实授权／控制／结果根都不存在。审批后才一次执行本地CPU固定模型离线分析（不授权Mac神经训练），统一字节预检后每态新进程数值准入，失败停余下任务不自动重试；三态完整重放后才比较实际场与成本。损伤／裂纹／疲劳应用仍需后续history耦合验证。完整最终命令／哈希／禁止项：[待审批方案](physical_field_budget_execution_approval.md)；[冻结包收据](physical_field_budget_package_receipt.json)；[启动器复审](offline_package/launcher_review.md)。

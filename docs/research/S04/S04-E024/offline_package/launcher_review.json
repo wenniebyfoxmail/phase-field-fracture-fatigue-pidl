@@ -1,0 +1,74 @@
+{
+  "verdict": "PACKAGE_READY_PASS",
+  "review_scope": "Focused repaired launcher/material-change review only; not final assembled package manifest review and not execution approval",
+  "launcher_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/offline_package/launch_d013.py",
+  "launcher_sha256": "56825d5b72b49e2f6c3887ac251085e4e8df276baa7345f31d859950ade78e5f",
+  "launcher_tests_sha256": "2ac715c8f9211608954a38c20b3fa2ff5d8e9bd63027e84e7ca75434eaa8569d",
+  "science_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "science_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "science_code_ready_reused_unchanged": true,
+  "source_tar_sha256": "4682bf96f178c4ca6dc9faf56a9f591cb687077e554240d77a997b818681d7b1",
+  "initial_review": {
+    "verdict": "CHANGES_REQUIRED",
+    "launcher_sha256": "69b100e5ea3a3177d147e9272c058679e9039266d0a783087b6ddf5e5be0bf7e",
+    "preserved_files": {
+      "initial_launcher_review.md": "0db5861659de0af5a0ac154631090e56874303e7beefeb77cdbe8a0fd1783113",
+      "initial_launcher_review.json": "9939815622c5445fe60fc64c7692aab85cafd3d40716cc78f0c67c6bfb46378b"
+    }
+  },
+  "resolved_findings": [
+    {
+      "id": "L1",
+      "status": "RESOLVED",
+      "evidence": "Timer starts before parsing/authorization; remaining300s deadline governs package/input hashing, extraction and source checks, with remaining-time subprocess timeouts and checks around environment work. The handoff reserves5s within the original300s and is explicitly labelled conservative charge, not measured wall time; it is checked before and after spawn. Overall supervision also has start+3120-prior_used deadline. No phase budget is reset or enlarged."
+    },
+    {
+      "id": "L2",
+      "status": "RESOLVED",
+      "evidence": "Launcher stays alive while the unchanged science parent runs. It monitors one combined1GiB across package root including staging/check logs, prior D013 checks,CONTROL andOUTPUT, observes maximum per-process RSS in its owned tree and enforces the cumulative deadline. Limit/failure handling targets only its Popen-created session/group; one-shot root prevents reuse/retry. README and execution plan describe the shared cap and persistent nohup wrapper."
+    }
+  ],
+  "findings": [],
+  "checks": [
+    {
+      "result": "18 launcher-only artificial tests passed, including combined-cap owned-group termination and global-deadline versus success distinction",
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-s",
+        "docs/research/S04/S04-E024/offline_package/test_launch_d013.py"
+      ],
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_package_20261020_v1/package_checks_5.log",
+      "wall_seconds": 0.36325712502002716,
+      "log_sha256": "1ff69954a3399b259df9d999fcbb21e8f28105318e96f42cc6025da38165a28f"
+    },
+    {
+      "result": "Carried forward unchanged byte-only source/tar/input check:clean18d0e7cb/tree,1455regular tar members matching staging,88input identities238110147bytes",
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_package_20261020_v1/independent_launcher_identity_check.json",
+      "log_sha256": "3e96883c71c12b7c8d97832b9d89b60e9dbaeb9ba86b7275b4b9390684ba6e8d"
+    }
+  ],
+  "material_files_reviewed": {
+    "launch_d013.py": "56825d5b72b49e2f6c3887ac251085e4e8df276baa7345f31d859950ade78e5f",
+    "test_launch_d013.py": "2ac715c8f9211608954a38c20b3fa2ff5d8e9bd63027e84e7ca75434eaa8569d",
+    "execution_plan.json": "46e430487dc475bf6f70e35a7be8b273a8c5d9dc417897a6cf81c16637e9b814",
+    "README.md": "a555ad4112aa207e9a52d4696b46278f25cbd4f330d37e2452514875b115948f"
+  },
+  "package_check_ledger": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_package_20261020_v1/package_check_attempts.json",
+  "package_check_ledger_seconds": 1.5639915419742465,
+  "scientific_execution_authorized": false,
+  "actual_approval_generated": false,
+  "real_model_FEM_forward_count": 0,
+  "real_three_state_head_solves": 0,
+  "NN_optimizer_steps": 0,
+  "remote_actions": 0,
+  "source_edits": 0,
+  "conditions": [
+    "Copy these exact reviewed launcher bytes into the final package and bind final manifest after this review.",
+    "Final nontraining receipt must include all preparation/packaging tests and byte checks; do not reset the existing300s.",
+    "Human must approve the exact completed manifest/package scope before any actual authorization file or execution.",
+    "Run wrapper under persistent detached supervision as documented; do not launch science parent directly or retry a claimed control root."
+  ]
+}

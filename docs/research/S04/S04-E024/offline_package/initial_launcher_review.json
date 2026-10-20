@@ -1,0 +1,73 @@
+{
+  "verdict": "CHANGES_REQUIRED",
+  "review_scope": "Focused independent offline package launcher/material-change review; unchanged science Code Ready reused; final package manifest not yet assembled and not reviewed",
+  "launcher_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/offline_package/launch_d013.py",
+  "launcher_sha256": "69b100e5ea3a3177d147e9272c058679e9039266d0a783087b6ddf5e5be0bf7e",
+  "science_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "science_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "source_tar_sha256": "4682bf96f178c4ca6dc9faf56a9f591cb687077e554240d77a997b818681d7b1",
+  "source_tar_bytes": 33647431,
+  "unpacked_source_bytes": 47994968,
+  "source_regular_files": 1455,
+  "all_tar_members_match_clean_staging": true,
+  "input_files": 88,
+  "input_bytes": 238110147,
+  "prepared_files": {
+    "authorization.template.json": "7141f5deebcb29b9aebd88fe9fa2a0eb1d72bf38601ec4787cbc8c57c3cddfb3",
+    "launch_d013.py": "a6068955f002a4aac0741c0ee630e83c23856056b91374f00c45e1451c382f5c",
+    "D013_source_18d0e7cb.tar.gz": "4682bf96f178c4ca6dc9faf56a9f591cb687077e554240d77a997b818681d7b1",
+    "execution_plan.json": "f4311823913764b81e546885a207099e44590ae328e5054d17205629467e73a3",
+    "README.md": "55db30ce2d4ad21ae1896fb3d0974623e24e7ccaad5cf8fb6ea40f2be01779ca",
+    "inputs_manifest.json": "36954ce1fd4a53f1331606f209f468e090fb221a1890a21d7496a12878a2bb6e",
+    "receipts/code_ready.md": "addf7fa7c869a2b0a5171f52aef166a2d9a1708a580b344a8c90c5123fe98fd5",
+    "receipts/nontraining.json": "3347211db188c7dd5bd8eb816df355d694edda96ab5ef75d484ab4ed9e74fb35",
+    "receipts/reviewed_contract.json": "8bc35175839dc69ee4fcab618903a5043401d871f45cdfc104c88f6527834236",
+    "receipts/reviewed_plan.md": "0441e6cc847c501b822c5bb1fbf0ed816bd8a97bc5c526178a0d88aa50280d32",
+    "receipts/code_ready.json": "5025606c8ee0b6e28c79e4bbf223af52bb3364a65de203bdb72a722e2635b725"
+  },
+  "findings": [
+    {
+      "id": "L1",
+      "priority": 2,
+      "file": "docs/research/S04/S04-E024/offline_package/launch_d013.py",
+      "start": 141,
+      "end": 185,
+      "title": "Enforce and charge the entire prelaunch phase",
+      "detail": "The300s timer starts after authorization-manifest hashing. validate_package is called without its check callback and environment_admission also runs before any resource guard; a slow hash/git/filesystem/environment operation can exceed the phase ceiling before rejection. Later, runtime_check.wall_seconds is frozen at line167, before writing/hashing the runtime receipts and launch claim, the final guard, and spawn/launch overhead. The detached science parent sees only that earlier number, leaving a gap in cumulative accounting. The final guard can prevent a late start but cannot retroactively enforce or charge the complete prelaunch interval.",
+      "required_change": "Use one absolute prelaunch deadline and resource guard from the start of authorized byte work, including package/environment admission and bounded subprocesses. Bind a conservative, explicitly labelled handoff allowance or another enforceable end-to-end accounting mechanism so all remaining prelaunch/spawn work is charged without borrowing numerical time. Keep the default/false-approval gate before preflight/spawn and preserve one-shot failure semantics. Add artificial clock/blocking-operation tests."
+    },
+    {
+      "id": "L2",
+      "priority": 2,
+      "file": "docs/research/S04/S04-E024/offline_package/launch_d013.py",
+      "start": 154,
+      "end": 185,
+      "title": "Enforce one declared new-archive budget across control and scientific output",
+      "detail": "guard checks only CONTROL against1GiB while the unchanged scientific supervisor checks only OUTPUT against1GiB. The extracted source alone is47,994,968bytes in CONTROL, before receipt/log growth, so an otherwise permitted near1GiB OUTPUT would exceed the frozen single new_archive_bytes=1GiB budget. The launcher two-GiB free-space check does not enforce the stated one-GiB archive cap; the prepared package/source tar adds further storage if it is included in that policy.",
+      "required_change": "Keep the frozen scientific code unchanged and enforce the declared combined archive scope while detached work runs, stopping only task-owned work if total controlled new bytes exceed1GiB. Explicitly identify whether immutable prepared package bytes count, and reserve/account for control/source/log bytes; do not silently turn the single cap into two independent caps. Add a synthetic combined-storage boundary check."
+    }
+  ],
+  "checks": [
+    {
+      "result": "16 launcher-only synthetic tests passed",
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_package_20261020_v1/package_checks_2.log",
+      "wall_seconds": 0.25886525004170835,
+      "log_sha256": "c90d8cd4f84a5b9b876ef8d7d17999fc5aa779c3276d3b04d76177763896b74e"
+    },
+    {
+      "result": "clean exact science source/tree; all tar members and88 byte input identities match; no array/model load",
+      "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_package_20261020_v1/independent_launcher_identity_check.json",
+      "wall_seconds": 0.4129773329477757,
+      "log_sha256": "3e96883c71c12b7c8d97832b9d89b60e9dbaeb9ba86b7275b4b9390684ba6e8d"
+    }
+  ],
+  "package_check_ledger": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/physical_field_budget_package_20261020_v1/package_check_attempts.json",
+  "scientific_execution_authorized": false,
+  "actual_approval_generated": false,
+  "real_model_FEM_forward_count": 0,
+  "real_three_state_head_solves": 0,
+  "NN_optimizer_steps": 0,
+  "remote_actions": 0,
+  "source_edits": 0,
+  "remaining_review": "After packaging-only repairs, re-review launcher bytes and separately bind/check the completed final package manifest and human-facing plan; no science-code re-review is required for unchanged18d0e7cb."
+}

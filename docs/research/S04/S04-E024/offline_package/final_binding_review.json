@@ -1,0 +1,18 @@
+{
+  "verdict": "FINAL_BINDING_PASS",
+  "scope": "Final frozen package byte binding only; no changed-code review, no real input rehash or scientific invocation",
+  "science_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "science_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "scientific_execution_authorized": false,
+  "manifest_sha256": "7c77c4db5448d64d8d9e3f647ce7210615df9506d276a7b86740d46ef866f91a",
+  "launcher_sha256": "56825d5b72b49e2f6c3887ac251085e4e8df276baa7345f31d859950ade78e5f",
+  "source_tar_sha256": "4682bf96f178c4ca6dc9faf56a9f591cb687077e554240d77a997b818681d7b1",
+  "zip_sha256": "e6e11df3ef2e86676dcafa06a648a7d3a19e1253a07ee21781a7dffdcbdd91d1",
+  "manifest_files_verified": 15,
+  "zip_files_verified": 16,
+  "receipt_nontraining_charged_seconds": 71.93754945798841,
+  "authorization_template_false": true,
+  "true_authorization_control_output_absent": true,
+  "real_inputs_rehashed": false,
+  "actual_byte_verification_compute_seconds": 0.05886904103681445
+}
