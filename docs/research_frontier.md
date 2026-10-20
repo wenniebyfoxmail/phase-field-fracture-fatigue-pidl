@@ -126,6 +126,12 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   Localmetadata/hash/syntaxcheckspass;noSSH/imagealgorithmthisturn.
   Onefutureapprovalcoversnormaladmission/deploy/status/retrieval;firstfailure
   stopswithoutretry.Parkforcardreview;R001evidenceandolddefinitionskept.
+  R002nowcompleted:oneCPUworker12.5061s/0retry/0GPU,18filesretrieved/SHA
+  verified,9inputsunchanged;R001preserved.All84sitesusableineachpair,
+  fixedpositiveenvelope21/84and34/84,notcrackaccuracy.Localcomponentadvance,
+  physicalidentityunknown.Internalgeometryaliasesnotindependentbackground.
+  [Resultsandall-sitevisuals](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E049-MD03/D3_controlled_opening_20261020/recovery_20261020_R002/README_analysis.md).
+  Nextfixed-locationappearance/saved-matchoverlay,noNCCrerunornewthresholds.
   D3decisionallowsconditionalphoto-ID/imagegeometry
   explorationwithoutwaiting;parkonlylocalopeningreference,notprogramme.
   Inventedendpointsnottruth;affinetimerelabellingdoesnotchangeoldforecast,
