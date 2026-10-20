@@ -1,0 +1,13 @@
+{
+  "E017_zip": "C:\\Users\\xw436\\pavetrack_runs\\S01-E017-R001\\delivery\\S01-E017-R001-evidence-v1.zip",
+  "metadata": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\manifest_train_validation.json",
+  "contexts": "C:\\Users\\xw436\\pavetrack_stage\\S01-E028-R002-v1\\private_inputs\\pixel_contexts.json",
+  "R002_scope": "C:\\Users\\xw436\\pavetrack_runs\\S01-E028-R002\\scope.json",
+  "R002_projections": "C:\\Users\\xw436\\pavetrack_runs\\S01-E028-R002\\projections.npz",
+  "checkpoint": "C:\\Users\\xw436\\pavetrack_stage\\S01-E028-R002-v1\\private_inputs\\DeepCrack_CT260_FT1.pth",
+  "network": "C:\\Users\\xw436\\pavetrack_stage\\S01-E028-R002-v1\\private_inputs\\deepcrack.py",
+  "E018_OOF": "C:\\Users\\xw436\\pavetrack_runs\\S01-E018-R001\\OOF_predictions.json",
+  "E018_model_0": "C:\\Users\\xw436\\pavetrack_runs\\S01-E018-R001\\model_fold_0.json",
+  "E018_model_1": "C:\\Users\\xw436\\pavetrack_runs\\S01-E018-R001\\model_fold_1.json",
+  "E018_model_2": "C:\\Users\\xw436\\pavetrack_runs\\S01-E018-R001\\model_fold_2.json"
+}

@@ -1,0 +1,8 @@
+{
+  "run_id": "S01-E029-R001",
+  "reviewed_commit": "FINAL_REVIEWED_COMMIT",
+  "source_manifest_sha256": "FINAL_SOURCE_MANIFEST_SHA256",
+  "execute_once": false,
+  "wall_seconds": 3600,
+  "GPU_uuid": "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7"
+}
