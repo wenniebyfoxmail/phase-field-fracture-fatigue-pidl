@@ -1,0 +1,11 @@
+# 精确完整执行包独立差量审核
+
+**REVIEW_PASS — EXACT_STATIC_EXECUTION_PACKAGE_REVIEW_ONLY**。源码d703e3c88c60adbeebc4a5c899f4ce862e45fe76；artifact7c150a6839dc368c9e536f03d326050ce20d26681cd3c71374969ce8d5d72846；准确卡SHA f3cc0463755b43ab6d84f5b54153c74a8bb86f8ecf0469d57d217a4109d16fd5。没有剩余静态执行阻断；本审查不创造人方授权。
+
+独立核验78源字节、canonical artifact、准确卡及包内tracked卡一致，原61文件未改。solver、training、criteria、phases及coupling与既有合同一致，保持3600步/一次fit/12GPUh。Matplotlib3.10.3来自真实metadata，Torch metadata2.7.0与实际import预期2.7.0+cu126区分。OSQP来自已阶段复制/哈希的旧自有依赖。inventory和stage费用各计一次：已知墙钟625.6987804058008秒，已观测CPU572.694553秒，余135.82619478322061hosth；未测全的本地CPU不称为零。
+
+新receiver仅标准库，通过压缩/展开大小、规则成员、路径/重复、闭包、canonical artifact、逐源hash、精确review/card及已stage文件hash后独占抽取并调用一次budgeted launcher。SSH20秒加3秒kill、本地45秒/一次连接；未知状态不重发。launcher保留原准入/独占reservation，外层timeout为136h减已知实际费用、45秒未支出dispatch预留、45秒清理预留及launcher elapsed；kill20秒小于清理预留。预留未伪入actual priorcost。
+
+本次只运行4项纯deadline函数检查（通过）及两新脚本语法/静态检查；原69+5项不重复。测试Python为 /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python。未SSH、未读科学数组、未求解或训练。
+
+本receipt纳入最终tar后须再机械核验准确81成员和最终SHA，不能改变源/卡。实际六依赖import、guarded Agg及资源/GPU准入仍必须通过；本审查不证明运行时准入或科学成功。launch返回PID属于GNUtimeout，实际supervisor PID应从launch_receipt读取；未实现专门timeout exit reaper，进程消失且无terminal时只能未知/失败并查证，不能凭spawn回执判成功。完整费用最后结算实际dispatch/终止开销；保留原OS/fs调度无法绝对实时保证和首停不重试。

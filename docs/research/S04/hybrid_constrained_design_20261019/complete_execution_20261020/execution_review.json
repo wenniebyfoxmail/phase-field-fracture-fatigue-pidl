@@ -1,0 +1,106 @@
+{
+  "verdict": "REVIEW_PASS",
+  "scope": "EXACT_STATIC_EXECUTION_PACKAGE_REVIEW_ONLY",
+  "reviewer": "Codex /root/hybrid_readiness_review",
+  "reviewed_utc": "2026-10-20T18:03:29.762038+00:00",
+  "reviewed_commit": "d703e3c88c60adbeebc4a5c899f4ce862e45fe76",
+  "artifact_id": "7c150a6839dc368c9e536f03d326050ce20d26681cd3c71374969ce8d5d72846",
+  "card_sha256": "f3cc0463755b43ab6d84f5b54153c74a8bb86f8ecf0469d57d217a4109d16fd5",
+  "findings": [],
+  "remaining_static_execution_blockers": [],
+  "authority": {
+    "human_conditional_authorization_source": "Card authority.user_text and parent human-message relay; direct user authorizes actual version confirmation, exact independent review then submission if no remaining error.",
+    "scope": "One original3600-substep/single-fit/12GPUh comparison only; no retry or property extension.",
+    "review_creates_authority": false
+  },
+  "checks": {
+    "source_files_verified": 78,
+    "canonical_artifact_verified": true,
+    "source_hash_mismatches": [],
+    "original61_files_unchanged": true,
+    "tracked_and_outer_card_bytes_equal": true,
+    "validate_card": true,
+    "verify_package": true,
+    "initial_totals": true,
+    "solver_training_criteria_phases_coupling_unchanged": true,
+    "metadata_matplotlib_pin": "3.10.3",
+    "torch_import_expected": "2.7.0+cu126",
+    "torch_observed_metadata": "2.7.0",
+    "osqp_staged_from_old_self_owned_deps": true,
+    "inventory_and_stage_prior_costs_each_counted_once": true
+  },
+  "actual_prior_costs": {
+    "wall_seconds": 625.6987804058008,
+    "observed_cpu_seconds": 572.694553,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 340.00019496213645,
+    "shared_analysis_seconds": 285.69858544366434,
+    "remaining_host_hours_before_final_dispatch": 135.82619478322061,
+    "local_control_cpu": "not fully measured; not claimed zero"
+  },
+  "dispatch": {
+    "receiver_sha256": "dfd1c4d9431715a288144ffa784d837be4411fc25b15567dd481eb1d69d87fc2",
+    "budgeted_launcher_sha256": "d9118c283cad4dd45db8f8015814a93bf4fa73ed498cc427f52a7f54c4d97b72",
+    "destination": "drtao@172.16.100.2",
+    "expected_hostname": "GPUServer8",
+    "remote_command_form": "/usr/bin/timeout --signal=TERM --kill-after=3s 20s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /usr/bin/python3 -I -B -c <exact receiver script text> <mechanically verified final bundle SHA256>",
+    "stdin": "final gzip tar: exact78 code files plus source_manifest.json/execution_card.json/this execution_review.json only",
+    "remote_timeout_seconds": 20,
+    "remote_kill_after_seconds": 3,
+    "local_timeout_seconds": 45,
+    "connect_timeout_seconds": 10,
+    "connection_attempts": 1,
+    "retries": 0,
+    "compressed_bytes_max": 2097152,
+    "expanded_bytes_max": 4194304,
+    "members_max": 256,
+    "final_bundle_sha256": "PENDING_MECHANICAL_FINALIZATION_ONLY",
+    "tar_required_file_count": 81,
+    "tar_rules": "regular members only; no absolute/parent paths or duplicate members; exact closure and hashes; source manifest/card/review exact binding",
+    "extraction_and_launch": "exclusive fresh dispatch reservation/code files/launch reservation; staged input and OSQP hashes rechecked; one budgeted launch subprocess only; unknown/failure never auto-resubmits"
+  },
+  "global_deadline": {
+    "known_prior_wall_seconds": 625.6987804058008,
+    "unspent_dispatch_reserve_seconds": 45,
+    "unspent_cleanup_reserve_seconds": 45,
+    "kill_after_seconds": 20,
+    "outer_timeout_seconds_before_launch_overhead": 488884.3012195942,
+    "formula": "136*3600 - actual_prior_wall - 45 dispatch reserve -45 cleanup reserve - launcher elapsed",
+    "reserves_reported_as_actual_cost": false,
+    "original_supervisor_budget_unchanged": true
+  },
+  "actual_new_checks": {
+    "python": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "syntax_parses": 2,
+    "pure_deadline_cases_passed": 4,
+    "deadline_cases": [
+      "finite exact reserve formula",
+      "NaN prior rejected",
+      "negative overhead rejected",
+      "exhausted allowance rejected"
+    ],
+    "subprocesses_started": 0,
+    "project_arrays_read": 0,
+    "ssh_calls": 0,
+    "fem_solves": 0,
+    "training_updates": 0
+  },
+  "inherited_checks": {
+    "original_owner_tests": 69,
+    "original_owner_test_seconds": 3.87,
+    "preparation_export_tests": 5,
+    "preparation_export_test_seconds": 0.02,
+    "rerun_unchanged_tests": false,
+    "prior_reviews": "v2 preparation review and exact staging-only review; unchanged original61 bytes reuse prior reviewed solver/history/worker/guard contracts"
+  },
+  "runtime_admission_established": false,
+  "scientific_result_established": false,
+  "operational_limits": [
+    "Final tar SHA and exact81-member bytes must be mechanically verified after this receipt is included; no source/card change is admitted by this review.",
+    "Real six-package imports, independently guarded Agg render, host and per-GPU admissions remain mandatory and can stop before scientific progress.",
+    "Returned launcher PID identifies GNU timeout; actual supervisor PID comes from launch_receipt.json. No durable GNUtimeout reaper exit record is implemented. Missing terminal after process disappearance is unknown/failed and requires inspection; spawn is never scientific success.",
+    "Final dispatch actual wall/observed CPU and any termination overhead must be reconciled with the original study ledger; unspent45s reserve is not actual cost.",
+    "No absolute realtime guarantee against blocked OS/filesystem scheduling is added; original declared limitation and first-stop/no-retry remain.",
+    "Review does not establish full-trajectory reachability, physical validation, teacher qualification, neural benefit, or loading/property generalization."
+  ]
+}
