@@ -847,3 +847,14 @@
   S03-E019/font_svg_display_evidence_review.md. Structural progress retained,
   no scientific fail or B003 rescue; no frozen edits/retry/real/held/C/D.
   Propose separately approved derived-description clarification, no redraw.
+
+- **2026-10-20 — F01 S01 colour-vs-spatial clarification package prepared.**
+  See S03-E019/font_svg_sidecar_s01_plan.md. D3 uses one exact sentence
+  replacement per two companion sidecars, plus explicit SVG mapping receipt;
+  three new exclusive files in V001 keep existing relative receipt references
+  valid. Original seven bytes/hashes preserved; prospective membership ten,
+  not an assertion that frozen exact-seven acceptance passes. No source/
+  derived content or hash reread this turn, metadata confirms new paths absent.
+  Exact stdlib singleCPU/soft60s/zeroSVDQR command prepared, not run/imported/
+  tested or independently reviewed. No diagram open/redraw/recompute, frozen
+  edits, B003 numeric/real/held/C/D or acceptance continuation. Await approval.
