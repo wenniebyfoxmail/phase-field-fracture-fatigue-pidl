@@ -300,3 +300,16 @@ receipt, resolver, admission, runner or scientific result.
 This authority is consumed and closed. The compact record is
 `chunked_deployment_attempt_stop_20261020.md` with machine-readable receipt
 `chunked_deployment_attempt_stop_receipt_20261020.json`.
+
+## 2026-10-20 redeployment provenance incident
+
+A second content-addressed deployment technically completed and verified the
+frozen archive SHA256 `4ece34be...dd22`, but the owner learned immediately
+after completion that the visible “请重新投放” instruction had already been
+consumed by the preceding stopped attempt. The second authority provenance is
+therefore invalid. No resolver, admission, runner or training path was entered.
+The deployed archive is preserved as observed machine state only and cannot
+open the next gate. See
+`chunked_redeployment_provenance_incident_20261020.md` and its machine-readable
+receipt. A fresh explicit human decision acknowledging the incident is required
+before any further remote action.

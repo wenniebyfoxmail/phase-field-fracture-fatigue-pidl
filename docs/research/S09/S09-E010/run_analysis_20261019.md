@@ -136,3 +136,14 @@ The original result package plus its same-run raw-log supplement received
 `RESULT_EVIDENCE_READY_PASS`: 48/48 A25 update-500 projection counts matched
 the frozen E009 reference and the exact replay gate passed 33/33 clauses.
 
+
+## 2026-10-20 historical verification addendum
+
+An independent exact-diff review returned `CODE_READY` for historical producer
+commit `010281be8045301f7e56b938de82969982c89bc9`. A separate bounded CPU-only
+no-training regression then passed 117/117 E009+E010 tests with zero real
+optimizer-step or CUDA-init attempts. The strict audit wrapper exited one only
+because it rejected three optional dependency probes; pytest itself exited
+zero. See `historical_code_review_and_no_training_regression_20261020.md` and
+the preserved evidence directory. This addendum does not rerun the producer,
+reopen the holdout, or alter `NO_TARGETED_RANKING_SIGNAL`.

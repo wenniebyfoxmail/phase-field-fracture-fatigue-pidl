@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Europe/London",
+  "commit": "010281be8045301f7e56b938de82969982c89bc9",
+  "status": "TESTS_PASSED_WITH_BLOCKED_OPTIONAL_IMPORT_PROBES",
+  "snapshot_files_verified_against_git_before_tests": 63,
+  "pytest_exit_code": 0,
+  "strict_wrapper_exit_code": 1,
+  "strict_wrapper_exit_reason": "Wrapper treats any blocked audit event as nonzero; the three events were subsequently reproduced by dependency imports alone, without rerunning tests.",
+  "pytest_reported_seconds": 5.21,
+  "measured_pytest_call_seconds": 5.23,
+  "e010_passed": 47,
+  "e009_passed": 70,
+  "total_passed": 117,
+  "failed": 0,
+  "skipped": 0,
+  "passed_by_file": {
+    "test_s09_e010_support_amplitude.py": 17,
+    "test_s09_e010_runner_integration.py": 14,
+    "test_s09_e010_producer.py": 16,
+    "test_s09_e009_four_arm.py": 20,
+    "test_s09_e009_runner_integration.py": 25,
+    "test_s09_e009_producer.py": 25
+  },
+  "real_optimizer_step_attempts": 0,
+  "cuda_initialization_attempts": 0,
+  "scientific_or_holdout_payload_read": false,
+  "producer_execution_started": false,
+  "blocked_optional_import_probes": [
+    {"event": "open", "path": "/proc/self/maps"},
+    {"event": "subprocess", "command": ["uname", "-p"]},
+    {"event": "subprocess", "command": ["system_profiler", "-xml", "SPFontsDataType"]}
+  ],
+  "boundary": "Only generated fixtures and Git-tracked source/control/scalar-reference files; no real packet, checkpoint weights, scientific arrays or holdout data. Exact source snapshot rather than the later owner HEAD. One test-suite invocation; subsequent diagnosis imported dependencies only. No owner source, protocol or Obsidian changes."
+}
