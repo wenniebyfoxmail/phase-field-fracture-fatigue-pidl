@@ -1,0 +1,11 @@
+--- reviewed/producer_data.py
++++ candidate/producer_data.py
+@@ -72,7 +72,7 @@
+  # This validates the frozen float32 native representation, not an inferred physical clock.
+  loader=BoundedLoader(root);required=sorted({(c['group'],c['origin_stage']+offset) for c in frozen['cases'] for offset in (0,10,40)})
+  for group,stage in required:
+-  audit.enter('native_schema_admission_before_any_fit',group=group,stage=stage)
++  audit.enter('native_schema_admission_before_any_fit',group=group,frame_stage=stage)
+   if (group,stage) not in frames:raise ValueError('native target/source frame mapping missing')
+   field=loader.get(frames[(group,stage)])
+   if field.shape!=(2,128,128) or field.dtype!=np.float32 or not np.isfinite(field).all():raise ValueError('native current/target schema')
