@@ -3,13 +3,16 @@ import subprocess,base64,hashlib,json,time,datetime,argparse
 parser=argparse.ArgumentParser()
 parser.add_argument("--execute",action="store_true")
 parser.add_argument("--authority-start-utc")
+parser.add_argument("--run-id",default="S04-E035-R004")
 args=parser.parse_args()
 if args.execute and not args.authority_start_utc: parser.error("Fresh explicit authority-start-utc required; do not reuse expired envelope")
-root=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E035/preparation/R003_corrected_packet')
+case_root=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E035')
+assert args.run_id == 'S04-E035-R004', 'Only the newly authorized R004 is admitted'
+root=case_root/'runs'/args.run_id
 root.mkdir(parents=True,exist_ok=True)
 deadline=None
 if args.authority_start_utc:
-    deadline=datetime.datetime.fromisoformat(args.authority_start_utc.replace('Z','+00:00')).timestamp()+180
+    deadline=datetime.datetime.fromisoformat(args.authority_start_utc.replace('Z','+00:00')).timestamp()+900
 deadline_iso=datetime.datetime.fromtimestamp(deadline,datetime.timezone.utc).isoformat() if deadline else 'AUTHORITY_NOT_SUPPLIED'
 ps=(root/'supervise.ps1').read_text()
 ps=ps.replace('$childHandle=$proc.Handle', '''$childHandle=$proc.Handle
@@ -31,14 +34,14 @@ ps=ps.replace('    $bytes=(Get-ChildItem', '''    $sample=$null
 ps=ps.replace("  reason=$reason;completed_marker=", "  peak_RSS_bytes=$peakRSS;cpu_affinity=15;reason=$reason;completed_marker=")
 (root/'supervise_resource_bound.ps1').write_text(ps)
 c=json.loads((root/'config.template.json').read_text())
-c['arguments']="-batch \"maxNumCompThreads(4); checkcode('C:/q4runs/S04-E035-R003-20261020/run_shear_fem.m','-id'); addpath('C:/q4runs/S04-E035-R003-20261020'); run_shear_fem('C:/Users/xw436/GRIPHFiTH','C:/q4runs/S04-E035-R003-20261020/fem',1)\""
+c['arguments']="-batch \"maxNumCompThreads(4); checkcode('C:/q4runs/S04-E035-R004-20261021/run_shear_fem.m','-id'); addpath('C:/q4runs/S04-E035-R004-20261021'); run_shear_fem('C:/Users/xw436/GRIPHFiTH','C:/q4runs/S04-E035-R004-20261021/fem',1)\""
 (root/'config.json').write_text(json.dumps(c,indent=2))
 payload={'run_shear_fem.m':(root/'run_shear_fem.m').read_bytes(),'supervise.ps1':ps.encode(),'config.json':(root/'config.json').read_bytes()}
 manifest={k:hashlib.sha256(v).hexdigest() for k,v in payload.items()}
 (root/'deployment_manifest.json').write_text(json.dumps(manifest,indent=2))
-lines=["$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'", "$r='C:/q4runs/S04-E035-R003-20261020'", "if ($env:COMPUTERNAME -ne 'CITPC12') {throw 'Wrong producer'}", "if ([Security.Principal.WindowsIdentity]::GetCurrent().Name.Split([char]92)[-1] -ne 'xw436') {throw 'Wrong account'}", "if (Test-Path $r) {throw 'Run root already exists'}", "if (@(Get-CimInstance Win32_Process -Filter \"Name='MATLAB.exe'\").Count -gt 0) {throw 'Competing MATLAB'}", "if ((Get-PSDrive C).Free -lt 15GB) {throw 'Insufficient disk'}", "if ((git -C C:/Users/xw436/GRIPHFiTH rev-parse HEAD) -ne '2098dc9114fe9e8140f1f25607e1c74ddc4a032e') {throw 'Native source identity changed'}", "New-Item -ItemType Directory $r | Out-Null"]
+lines=["$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'", "$r='C:/q4runs/S04-E035-R004-20261021'", "if ($env:COMPUTERNAME -ne 'CITPC12') {throw 'Wrong producer'}", "if ([Security.Principal.WindowsIdentity]::GetCurrent().Name.Split([char]92)[-1] -ne 'xw436') {throw 'Wrong account'}", "if (Test-Path $r) {throw 'Run root already exists'}", "if (@(Get-CimInstance Win32_Process -Filter \"Name='MATLAB.exe'\").Count -gt 0) {throw 'Competing MATLAB'}", "if ((Get-PSDrive C).Free -lt 15GB) {throw 'Insufficient disk'}", "if ((git -C C:/Users/xw436/GRIPHFiTH rev-parse HEAD) -ne '2098dc9114fe9e8140f1f25607e1c74ddc4a032e') {throw 'Native source identity changed'}", "New-Item -ItemType Directory $r | Out-Null"]
 lines.pop() # Check retained dirty native files before creating the run root.
-native_root=root.parent/'native_sources'
+native_root=case_root/'preparation/native_sources'
 native_paths={
     'newton_raphson.m':'Sources/+phase_field/+fem/+solver/newton_raphson.m',
     'post_iter_update.m':'Sources/+phase_field/+fem/+solver/+stag/post_iter_update.m',
@@ -54,15 +57,17 @@ lines.append("New-Item -ItemType Directory $r | Out-Null")
 for name,b in payload.items():
  lines.append("[IO.File]::WriteAllBytes(($r+'/%s'),[Convert]::FromBase64String('%s'))"%(name,base64.b64encode(b).decode()))
  lines.append("if ((Get-FileHash ($r+'/%s') -Algorithm SHA256).Hash.ToLower() -ne '%s') {throw 'Stage mismatch'}"%(name,manifest[name]))
-lines += ["$tokens=$null; $parseErrors=$null; [Management.Automation.Language.Parser]::ParseFile(($r+'/supervise.ps1'),[ref]$tokens,[ref]$parseErrors)|Out-Null; if($parseErrors.Count){throw 'Supervisor syntax error'}", "$end=[DateTime]::Parse('{deadline_iso}').ToUniversalTime(); $remaining=($end-[DateTime]::UtcNow).TotalSeconds; if($remaining -lt 65){throw 'Insufficient remaining total budget'}", "$c=Get-Content ($r+'/config.json') -Raw|ConvertFrom-Json; $c.timeout_seconds=[Math]::Min(90,[Math]::Floor($remaining-25)); $c|ConvertTo-Json|Set-Content ($r+'/config.json')", "$cmd='C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\\q4runs\\S04-E035-R003-20261020\\supervise.ps1 -Config C:\\q4runs\\S04-E035-R003-20261020\\config.json'", "$launch=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=$cmd;CurrentDirectory='C:\\q4runs\\S04-E035-R003-20261020'}; if($launch.ReturnValue -ne 0){throw 'Create failed'}; $launch|Select-Object ProcessId,ReturnValue|ConvertTo-Json|Set-Content ($r+'/supervisor_submission.json')", "while (-not (Test-Path ($r+'/exit.json'))) { if([DateTime]::UtcNow -ge $end.AddSeconds(-15)){throw 'Retrieval deadline reached; inspect existing worker before any further action'}; Start-Sleep -Milliseconds 500 }", "Compress-Archive -Path ($r+'/launch.json'),($r+'/exit.json'),($r+'/stdout.log'),($r+'/stderr.log'),($r+'/fem'),($r+'/config.json'),($r+'/run_shear_fem.m'),($r+'/supervise.ps1'),($r+'/supervisor_submission.json') -DestinationPath ($r+'/result.zip')", "Write-Output 'ARCHIVE_BEGIN'; [Convert]::ToBase64String([IO.File]::ReadAllBytes($r+'/result.zip')); Write-Output 'ARCHIVE_END'", "Get-Content ($r+'/exit.json'); Get-Content ($r+'/stdout.log') -Tail 7; Get-Content ($r+'/stderr.log') -Tail 12"]
+lines += ["$tokens=$null; $parseErrors=$null; [Management.Automation.Language.Parser]::ParseFile(($r+'/supervise.ps1'),[ref]$tokens,[ref]$parseErrors)|Out-Null; if($parseErrors.Count){throw 'Supervisor syntax error'}", "$end=[DateTime]::Parse('{deadline_iso}').ToUniversalTime(); $remaining=($end-[DateTime]::UtcNow).TotalSeconds; if($remaining -lt 210){throw 'Insufficient remaining total budget'}", "$c=Get-Content ($r+'/config.json') -Raw|ConvertFrom-Json; $c.timeout_seconds=[Math]::Min(90,[Math]::Floor($remaining-120)); $c|ConvertTo-Json|Set-Content ($r+'/config.json')", "$mechanicalEnd=[DateTime]::Parse('{mechanical_deadline_iso}').ToUniversalTime(); if([DateTime]::UtcNow -gt $mechanicalEnd){throw 'Mechanical admission budget exceeded'}; $cmd='C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\\q4runs\\S04-E035-R004-20261021\\supervise.ps1 -Config C:\\q4runs\\S04-E035-R004-20261021\\config.json'", "$launch=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=$cmd;CurrentDirectory='C:\\q4runs\\S04-E035-R004-20261021'}; if($launch.ReturnValue -ne 0){throw 'Create failed'}; $launch|Select-Object ProcessId,ReturnValue|ConvertTo-Json|Set-Content ($r+'/supervisor_submission.json')", "while (-not (Test-Path ($r+'/exit.json'))) { if([DateTime]::UtcNow -ge $end.AddSeconds(-120)){throw 'Retrieval deadline reached; inspect existing worker before any further action'}; Start-Sleep -Milliseconds 500 }", "Compress-Archive -Path ($r+'/launch.json'),($r+'/exit.json'),($r+'/stdout.log'),($r+'/stderr.log'),($r+'/fem'),($r+'/config.json'),($r+'/run_shear_fem.m'),($r+'/supervise.ps1'),($r+'/supervisor_submission.json') -DestinationPath ($r+'/result.zip')", "Write-Output 'ARCHIVE_BEGIN'; [Convert]::ToBase64String([IO.File]::ReadAllBytes($r+'/result.zip')); Write-Output 'ARCHIVE_END'", "Get-Content ($r+'/exit.json'); Get-Content ($r+'/stdout.log') -Tail 7; Get-Content ($r+'/stderr.log') -Tail 12"]
 script='try { & {\n'+'\n'.join(lines)+'\n} } catch { [Console]::Error.WriteLine($_.Exception.ToString()); exit 1 }; exit 0\n'
 script=script.replace('{deadline_iso}',deadline_iso)
+mechanical_deadline_iso=datetime.datetime.fromtimestamp(time.time()+60,datetime.timezone.utc).isoformat()
+script=script.replace('{mechanical_deadline_iso}',mechanical_deadline_iso)
 (root/'stage_and_run.ps1').write_text(script)
 if not args.execute:
     print(json.dumps({"prepared_only":True,"manifest":manifest,"authority_required":True}));raise SystemExit(0)
 remaining=deadline-time.time()
-print(json.dumps({'remaining_total_seconds':remaining,'deployment_sha256':manifest}),flush=True)
-if remaining<65: raise SystemExit('Insufficient remaining budget before SSH; no launch')
+print(json.dumps({'remaining_total_seconds':remaining,'required_child_plus_retrieval_seconds':210,'deployment_sha256':manifest}),flush=True)
+if remaining<210: raise SystemExit('Insufficient remaining budget before SSH; no launch')
 started=time.monotonic()
 if (root/'result.zip').exists(): raise SystemExit('Existing result archive; inspect, do not overwrite')
 with (root/'invocation.json').open('x') as claim:
