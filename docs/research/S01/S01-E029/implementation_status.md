@@ -1,3 +1,17 @@
+# S01-E029：完整代码就绪，待一次具体执行批准
+
+2026-10-20。完整runner、逐fold GT隔离、六模型/预测冻结屏障、B1可信重放、全空间身份join、限量流式前向、9/12同scope评价、三图、受管首停与成功/停止打包接收均已实现。独立gpt-6.1-sol / High精确代码复审REVIEW_PASS，绑定owner `e6ef93c3dd6c3a833fe8d095c6e4143c8f8964d7`、source-only `5307a6f52a0877ad56f13df6efeb86e1481df6d6` 与manifest `7e4a45c848f6122d4e05a9c2104d485f35fdae9da9a04515208f302aaec3727c`。49项人工/mock测试通过；252绑定/253源码文件逐字节核验。v1/v2修改意见及原包保留，最终v3修复未变科学标准。
+
+当前execution_enabled=false；未生成授权文件，没有真实fit/模型前向/GT或地图解码/源RGB/政策OOF/SSH/传送/推送。测试不等于实际净收益。Windows原生行为/私有输入与实时GPU准入留在未来同一首停链，不单独偷跑。
+
+唯一下一决定是[精确执行审批版](execution_approval.md)：自有gpu-server/GPU0一次R001、新3600秒总预算，传送此源码包、推送指定source-only分支及本次固定结果取回验收。无普通代码准备的额外审批，也不继承E028余额。E003、原容量/弃权/正交集、新地点封存保持；九主地点是既有开发地点。
+
+正式报告：/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E029/production_v3/independent_review.md。源包530050bytes / 253files / SHA256 `790dbba6ea1804fe3d3f4b04f4ebf6d21770b714796c7d54ac9dbd23fc069d3b`。
+
+---
+
+## 以下为此前离线设计阶段的原记录（当前状态以上文为准）
+
 # S01-E029：离线设计与最小接缝准备
 
 2026-10-20。候选设计2da7e4df；gpt-6.1-sol / High独立差异复审REVIEW_PASS，范围仅离线设计与数值adapter。D8目标是让E028已有空间能力转成原前三预算内的保旧实际收益，不重复证明定位器有响应。
