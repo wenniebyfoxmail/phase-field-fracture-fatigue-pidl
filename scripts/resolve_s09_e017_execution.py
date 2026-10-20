@@ -41,6 +41,7 @@ def main() -> None:
     args = parser.parse_args()
     if not args.resolve_authorised_config:
         parser.error("--resolve-authorised-config is required")
+    base_bytes = args.base_package_config.read_bytes()
     base = _strict_json(args.base_package_config)
     candidate_bytes = args.execution_candidate.read_bytes()
     candidate = _strict_json(args.execution_candidate)
@@ -54,6 +55,12 @@ def main() -> None:
     ).stdout.strip()
     validate_package_config(base)
     validate_execution_candidate(candidate)
+    expected_base = ROOT / (
+        "docs/research/S09/S09-E017/final_run_package_config_20261019.json"
+    )
+    if args.base_package_config.resolve() != expected_base.resolve():
+        raise ValueError("base package config path drift")
+    base_sha256 = sha256_bytes(base_bytes)
     archive_cap = candidate["resources"]["code_archive_cap_bytes"]
     if args.code_archive.stat().st_size > archive_cap:
         raise ValueError("code archive cap exceeded")
@@ -64,6 +71,7 @@ def main() -> None:
         candidate,
         authority,
         observed_commit=observed_commit,
+        base_package_config_sha256=base_sha256,
         candidate_sha256=candidate_sha256,
         code_archive_sha256=archive_sha256,
     )
@@ -72,6 +80,7 @@ def main() -> None:
         "run_id": candidate["run_id"],
         "reviewed_control_commit": observed_commit,
         "reviewed_adapter_commit": candidate["source"]["reviewed_adapter_commit"],
+        "base_package_config_sha256": base_sha256,
         "candidate_config_sha256": candidate_sha256,
         "execution_authority_sha256": sha256_bytes(canonical_json(authority)),
         "code_archive_sha256": archive_sha256,

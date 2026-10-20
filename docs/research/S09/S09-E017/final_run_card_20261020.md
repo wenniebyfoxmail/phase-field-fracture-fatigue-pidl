@@ -47,6 +47,7 @@ full incremental variational inequality.
 | Real adapter | `662005f1fde22cb9a6e8069f4e430b7190f21860` |
 | Final execution control | Must equal the focused-review commit recorded in the final package manifest and later one-run authority receipt |
 | Packet manifest SHA256 | `1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6` |
+| Frozen package config SHA256 | `46c0cc6b9c5dcc62794845a20502a2eaa98c7ce7dd05b423a6b00a3d1784a2e6` |
 | Base runtime config SHA256 | `0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b` |
 | B25 checkpoint SHA256 | `24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05` |
 
@@ -61,6 +62,8 @@ commit, candidate-config SHA256 and exact code-archive SHA256. Hand-editing
 ```text
 packet:
   /mnt/data2/drtao/wennie/S09-E008-P1-STAGING-20261016/packet
+base package config:
+  /mnt/data2/drtao/wennie/S09-E017-R001-factorised-head-p0/code/docs/research/S09/S09-E017/final_run_package_config_20261019.json
 base config:
   /mnt/data2/drtao/wennie/S09-E017-R001-factorised-head-p0/code/docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json
 initial B25 checkpoint:
@@ -128,20 +131,24 @@ the prior connection, change networking or create a new S09 attempt.
 After both network recovery and exact user authority exist, the single live
 admission performs these checks in order and stops on the first failure:
 
-1. authority schema, exact reviewed control commit, candidate hash and code
+1. exclusive creation of the one-attempt token;
+2. authority schema, exact reviewed control commit, candidate hash and code
    archive hash;
-2. Linux, `GPUServer8`, exact code-root cwd and task-owned process identity;
-3. fresh output/archive roots, expected control/tmp/cache roots and fixed env;
-4. disk/RSS/temp/archive budgets and tracked execution-file cleanliness;
-5. packet/base-config/B25-checkpoint identities without changing them;
-6. visible GPU 5 and UUID `GPU-5622bd47-1050-3003-246d-3cabe2b4791b`;
-7. pristine cross-arm state, parameter/storage isolation, exact trainable
+3. Linux, `GPUServer8`, exact code-root cwd and task-owned process identity;
+4. fresh output/archive roots, expected control/tmp/cache roots and fixed env;
+5. disk/RSS/temp/archive budgets and tracked execution-file cleanliness;
+6. packet/base-config/B25-checkpoint identities without changing them;
+7. visible GPU 5 and UUID `GPU-5622bd47-1050-3003-246d-3cabe2b4791b`;
+8. pristine cross-arm state, parameter/storage isolation, exact trainable
    counts, FAS seed offset and empty optimizers;
-8. zero model-forward/autograd/optimizer-step counters before the first
+9. zero model-forward/autograd/optimizer-step counters before the first
    scientific operation.
 
-Admission success writes `control/admission_receipt.json` before scientific
-binding resolution. Admission failure writes
+The launcher first creates `control/admission_attempt.json` with exclusive
+create semantics. Its existence consumes the only admission, including when a
+later check fails or the process stops unexpectedly. Admission success writes
+`control/admission_receipt.json` before scientific binding resolution.
+Admission failure writes
 `control/admission_failure_receipt.json` when the control root is writable,
 with zero scientific counters and no retry.
 
@@ -167,6 +174,7 @@ TMPDIR=/mnt/data2/drtao/wennie/S09-E017-R001-factorised-head-p0/tmp \
 XDG_CACHE_HOME=/mnt/data2/drtao/wennie/S09-E017-R001-factorised-head-p0/cache \
 python3 scripts/run_s09_e017_producer.py \
   --resolved-config /mnt/data2/drtao/wennie/S09-E017-R001-factorised-head-p0/control/config_resolved.json \
+  --base-package-config /mnt/data2/drtao/wennie/S09-E017-R001-factorised-head-p0/code/docs/research/S09/S09-E017/final_run_package_config_20261019.json \
   --execution-candidate docs/research/S09/S09-E017/final_execution_candidate_20261020.json \
   --execution-authority /mnt/data2/drtao/wennie/S09-E017-R001-factorised-head-p0/control/execution_authority.json \
   --code-archive /mnt/data2/drtao/wennie/S09-E017-R001-factorised-head-p0/control/code.tar.gz \

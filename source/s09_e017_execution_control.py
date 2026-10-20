@@ -27,9 +27,14 @@ ADAPTER_REVIEWED_COMMIT = "662005f1fde22cb9a6e8069f4e430b7190f21860"
 CORE_REVIEWED_COMMIT = "5ac6b7955b56309ac8ff2fda50b16b2e1669110a"
 DESIGN_REVIEWED_COMMIT = "06bf5fef693be5321ce7daf9d2384b8fa3953fde"
 INTEGRATION_REVIEWED_COMMIT = "3a5a2020c7b16555e9ecd9ec19377bf87a52d5c5"
+BASE_PACKAGE_CONFIG_SHA256 = (
+    "46c0cc6b9c5dcc62794845a20502a2eaa98c7ce7dd05b423a6b00a3d1784a2e6"
+)
 ARMS = ("D_DIRECT", "F_AMP", "F_AMP_SHAPE")
 CYCLES = (1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73)
 ALLOWED_ACTIONS = ("LIVE_ADMISSION", "COMPLETE_THREE_ARM_RUN")
+TASK_ROOT = Path("/mnt/data2/drtao/wennie") / RUN_ID
+CONTROL_ROOT = TASK_ROOT / "control"
 
 
 def _require(
@@ -119,6 +124,7 @@ def validate_execution_candidate(candidate: Mapping[str, Any]) -> None:
             "reviewed_design_commit": DESIGN_REVIEWED_COMMIT,
             "reviewed_integration_commit": INTEGRATION_REVIEWED_COMMIT,
             "reviewed_adapter_commit": ADAPTER_REVIEWED_COMMIT,
+            "base_package_config_sha256": BASE_PACKAGE_CONFIG_SHA256,
             "control_review_binding": (
                 "EXECUTION_AUTHORITY_MUST_MATCH_FOCUSED_REVIEWED_HEAD"
             ),
@@ -126,28 +132,45 @@ def validate_execution_candidate(candidate: Mapping[str, Any]) -> None:
         "reviewed source identities drift",
     )
     science = candidate["science"]
-    _require(tuple(science["arms"]) == ARMS, "arm order drift")
-    _require(tuple(science["cycles"]) == CYCLES, "cycle order drift")
     _require(
-        science["updates_per_arm"] == 64
-        and science["total_update_cap"] == 192,
-        "update budget drift",
-    )
-    _require(
-        science["beta"] == 0.25
-        and science["fresh_holdout"] is False
-        and science["autoregressive"] is False,
-        "science boundary drift",
-    )
-    _require(science["shape_seed_epsilon"] == 1e-6, "shape seed drift")
-    _require(
-        science["parameter_counts"]
-        == {"D_DIRECT": "width+1", "F_AMP": "width+1", "F_AMP_SHAPE": "2*width+1"},
-        "parameter count contract drift",
+        science
+        == {
+            "arms": list(ARMS),
+            "autoregressive": False,
+            "beta": 0.25,
+            "cycles": list(CYCLES),
+            "fresh_holdout": False,
+            "parameter_counts": {
+                "D_DIRECT": "width+1",
+                "F_AMP": "width+1",
+                "F_AMP_SHAPE": "2*width+1",
+            },
+            "shape_seed_epsilon": 1e-6,
+            "total_update_cap": 192,
+            "updates_per_arm": 64,
+        },
+        "science contract drift",
     )
 
     paths = candidate["paths"]
-    task_root = Path("/mnt/data2/drtao/wennie") / RUN_ID
+    task_root = TASK_ROOT
+    _require(
+        set(paths)
+        == {
+            "archive_root",
+            "base_package_config",
+            "base_runtime_config",
+            "cache_root",
+            "code_archive",
+            "code_root",
+            "control_root",
+            "initial_checkpoint",
+            "output_root",
+            "packet_dir",
+            "temp_root",
+        },
+        "candidate path keys drift",
+    )
     _require(Path(paths["code_root"]) == task_root / "code", "code root drift")
     _require(Path(paths["output_root"]) == task_root / "run", "output root drift")
     _require(Path(paths["control_root"]) == task_root / "control", "control root drift")
@@ -171,6 +194,12 @@ def validate_execution_candidate(candidate: Mapping[str, Any]) -> None:
             "B25_support_amplitude_beta0p25/checkpoint_update500.pt"
         ),
         "checkpoint path drift",
+    )
+    _require(
+        Path(paths["base_package_config"])
+        == task_root
+        / "code/docs/research/S09/S09-E017/final_run_package_config_20261019.json",
+        "base package config path drift",
     )
     _require(
         Path(paths["base_runtime_config"])
@@ -209,34 +238,36 @@ def validate_execution_candidate(candidate: Mapping[str, Any]) -> None:
         },
         "attempt policy drift",
     )
-    network = candidate["network_precondition"]
     _require(
-        network["current_state"] == "BLOCKED_NO_REMOTE_SHELL",
-        "network state drift",
-    )
-    _require(network["last_ssh_exit_code"] == 255, "network receipt drift")
-    _require(network["remote_shell_obtained"] is False, "remote shell drift")
-    _require(network["s09_retry_authorized"] is False, "network retry drift")
-    _require(
-        network["required_before_authority"]
-        == "EXTERNAL_CONFIRMATION_THAT_CONNECTION_CONDITION_RECOVERED",
-        "network recovery condition drift",
-    )
-    launch = candidate["launch"]
-    _require(
-        launch["entrypoint"] == "scripts/run_s09_e017_producer.py",
-        "entrypoint drift",
-    )
-    _require(launch["cuda_visible_devices"] == "5", "visible GPU drift")
-    _require(launch["hostname"] == "GPUServer8", "hostname drift")
-    _require(
-        launch["gpu_uuid"] == "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
-        "GPU identity drift",
+        candidate["network_precondition"]
+        == {
+            "current_state": "BLOCKED_NO_REMOTE_SHELL",
+            "known_local_observation": (
+                "172.16.100.2 routes through default en0; VPN service not "
+                "connected; no recovery evidence"
+            ),
+            "last_ssh_exit_code": 255,
+            "remote_shell_obtained": False,
+            "required_before_authority": (
+                "EXTERNAL_CONFIRMATION_THAT_CONNECTION_CONDITION_RECOVERED"
+            ),
+            "s09_retry_authorized": False,
+        },
+        "network precondition drift",
     )
     _require(
-        launch["required_environment"]
-        == {"TMPDIR": paths["temp_root"], "XDG_CACHE_HOME": paths["cache_root"]},
-        "runtime environment drift",
+        candidate["launch"]
+        == {
+            "cuda_visible_devices": "5",
+            "entrypoint": "scripts/run_s09_e017_producer.py",
+            "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+            "hostname": "GPUServer8",
+            "required_environment": {
+                "TMPDIR": paths["temp_root"],
+                "XDG_CACHE_HOME": paths["cache_root"],
+            },
+        },
+        "launch contract drift",
     )
     _require(
         candidate["authority"]
@@ -251,13 +282,61 @@ def validate_execution_candidate(candidate: Mapping[str, Any]) -> None:
         "authority template binding drift",
     )
     _require(
-        candidate["admission"]["first_stop_scope"] == "WHOLE_RUN_NO_RETRY",
-        "admission stop scope drift",
+        candidate["admission"]
+        == {
+            "first_stop_scope": "WHOLE_RUN_NO_RETRY",
+            "ordered_checks": [
+                "exclusive_attempt_token",
+                "authority_and_exact_commit",
+                "code_archive_hash",
+                "linux_hostname_cwd",
+                "fresh_task_paths",
+                "disk_rss_temp_budgets",
+                "tracked_execution_files_clean",
+                "packet_base_config_checkpoint_hashes",
+                "gpu_index_and_uuid",
+                "parameter_and_storage_isolation",
+                "zero_operation_counters_before_first_forward",
+            ],
+        },
+        "admission contract drift",
     )
     _require(
-        candidate["receipts"]["terminal_states"]
-        == ["ADMISSION_STOPPED", "EXECUTION_FAILED", "COMPLETED"],
-        "terminal receipt states drift",
+        candidate["receipts"]
+        == {
+            "control_attempt_receipt": str(
+                task_root / "control/admission_attempt.json"
+            ),
+            "control_failure_receipt": str(
+                task_root / "control/admission_failure_receipt.json"
+            ),
+            "control_receipt": str(task_root / "control/admission_receipt.json"),
+            "required_first_stop_fields": [
+                "schema_version",
+                "run_id",
+                "terminal_state",
+                "first_reason",
+                "arm",
+                "attempted_update",
+                "counters",
+                "last_complete_update",
+                "missing_or_unreadable",
+                "process_identity",
+                "resource_snapshot",
+                "retry",
+                "alternate_gpu",
+            ],
+            "run_completion_receipt": str(
+                task_root / "run/completion_receipt.json"
+            ),
+            "run_failure_receipt": str(task_root / "run/failure_receipt.json"),
+            "terminal_states": [
+                "ADMISSION_STOPPED",
+                "EXECUTION_FAILED",
+                "COMPLETED",
+            ],
+        },
+        "receipt contract drift",
     )
 
 
@@ -265,44 +344,28 @@ def validate_authority_template(
     authority: Mapping[str, Any], candidate: Mapping[str, Any]
 ) -> None:
     validate_execution_candidate(candidate)
-    required = {
-        "schema_version",
-        "approval_status",
-        "execution_authorized",
-        "run_id",
-        "reviewed_adapter_commit",
-        "reviewed_control_commit",
-        "candidate_config_sha256",
-        "code_archive_sha256",
-        "allowed_actions",
-        "maximum_launches",
-        "retry",
-        "alternate_host",
-        "alternate_gpu",
-        "network_recovery_confirmed",
-        "granted_by",
-        "granted_at",
-    }
-    _require(set(authority) == required, "authority template keys drift")
-    _require(authority["schema_version"] == AUTHORITY_SCHEMA, "authority schema drift")
-    _require(authority["approval_status"] == "NOT_GRANTED", "template is not disabled")
-    _require(authority["execution_authorized"] is False, "template grants authority")
-    _require(authority["run_id"] == RUN_ID, "authority run id drift")
     _require(
-        authority["reviewed_adapter_commit"] == ADAPTER_REVIEWED_COMMIT,
-        "authority adapter drift",
+        authority
+        == {
+            "allowed_actions": [],
+            "alternate_gpu": False,
+            "alternate_host": False,
+            "approval_status": "NOT_GRANTED",
+            "candidate_config_sha256": "TO_BE_BOUND_AFTER_CANDIDATE_FREEZE",
+            "code_archive_sha256": "TO_BE_BOUND_AFTER_FOCUSED_REVIEW",
+            "execution_authorized": False,
+            "granted_at": "NOT_GRANTED",
+            "granted_by": "NOT_GRANTED",
+            "maximum_launches": 0,
+            "network_recovery_confirmed": False,
+            "retry": False,
+            "reviewed_adapter_commit": ADAPTER_REVIEWED_COMMIT,
+            "reviewed_control_commit": "TO_BE_BOUND_AFTER_FOCUSED_REVIEW",
+            "run_id": RUN_ID,
+            "schema_version": AUTHORITY_SCHEMA,
+        },
+        "authority template drift",
     )
-    _require(
-        authority["reviewed_control_commit"] == "TO_BE_BOUND_AFTER_FOCUSED_REVIEW",
-        "template control binding drift",
-    )
-    _require(
-        authority["candidate_config_sha256"] == "TO_BE_BOUND_AFTER_CANDIDATE_FREEZE"
-        and authority["code_archive_sha256"] == "TO_BE_BOUND_AFTER_FOCUSED_REVIEW",
-        "template package binding drift",
-    )
-    _require(authority["allowed_actions"] == [], "template contains allowed actions")
-    _require(authority["maximum_launches"] == 0, "template contains launch authority")
 
 
 def validate_execution_authority(
@@ -394,9 +457,19 @@ def resolve_runtime_config(
     authority: Mapping[str, Any],
     *,
     observed_commit: str,
+    base_package_config_sha256: str,
     candidate_sha256: str,
     code_archive_sha256: str,
 ) -> dict[str, Any]:
+    _require(
+        _digest(base_package_config_sha256, "base package config")
+        == BASE_PACKAGE_CONFIG_SHA256,
+        "base package config hash drift",
+    )
+    _require(
+        sha256_bytes(canonical_json(base_config)) == base_package_config_sha256,
+        "base package config content drift",
+    )
     validate_execution_authority(
         authority,
         candidate,
@@ -411,6 +484,7 @@ def resolve_runtime_config(
     resolved["launch"]["wrapper_enabled"] = True
     resolved["_execution_control"] = {
         "schema_version": RUNTIME_CONTROL_SCHEMA,
+        "base_package_config_sha256": base_package_config_sha256,
         "candidate_config_sha256": candidate_sha256,
         "authority_sha256": sha256_bytes(canonical_json(authority)),
         "code_archive_sha256": code_archive_sha256,
@@ -426,10 +500,12 @@ def resolve_runtime_config(
 
 def validate_runtime_control(
     resolved: Mapping[str, Any],
+    base_config: Mapping[str, Any],
     candidate: Mapping[str, Any],
     authority: Mapping[str, Any],
     *,
     observed_commit: str,
+    base_package_config_sha256: str,
     candidate_sha256: str,
     code_archive_sha256: str,
 ) -> None:
@@ -441,14 +517,96 @@ def validate_runtime_control(
         code_archive_sha256=code_archive_sha256,
     )
     expected = resolve_runtime_config(
-        {key: value for key, value in resolved.items() if key != "_execution_control"},
+        base_config,
         candidate,
         authority,
         observed_commit=observed_commit,
+        base_package_config_sha256=base_package_config_sha256,
         candidate_sha256=candidate_sha256,
         code_archive_sha256=code_archive_sha256,
     )
     _require(resolved == expected, "resolved runtime config drift")
+
+
+def begin_admission_attempt(control_dir: Path) -> Path:
+    """Consume the single live admission before any mutable control check."""
+    _require(control_dir == CONTROL_ROOT, "control root drift")
+    _require(control_dir.is_dir(), "control root missing")
+    for name in ("admission_receipt.json", "admission_failure_receipt.json"):
+        _require(
+            not (control_dir / name).exists(),
+            f"prior admission receipt exists: {name}",
+            FileExistsError,
+        )
+    path = control_dir / "admission_attempt.json"
+    receipt = {
+        "schema_version": "s09-e017-admission-attempt-v1",
+        "run_id": RUN_ID,
+        "terminal_state": "ADMISSION_ATTEMPT_STARTED",
+        "started_at": datetime.now().astimezone().isoformat(),
+        "process_identity": process_identity(),
+        "maximum_launches": 1,
+        "retry": False,
+        "alternate_gpu": False,
+    }
+    with path.open("xb") as stream:
+        stream.write(canonical_json(receipt))
+    return path
+
+
+def _error_paths(error: BaseException) -> list[str]:
+    paths: list[str] = []
+    seen: set[int] = set()
+    cursor: BaseException | None = error
+    while cursor is not None and id(cursor) not in seen:
+        seen.add(id(cursor))
+        filename = getattr(cursor, "filename", None)
+        if filename is not None and str(filename) not in paths:
+            paths.append(str(filename))
+        cursor = cursor.__cause__ or cursor.__context__
+    return paths
+
+
+def write_admission_failure_receipt(
+    control_dir: Path,
+    *,
+    error: BaseException,
+    config: Mapping[str, Any] | None,
+    output_dir: Path | None,
+) -> Path:
+    """Write the smallest independent first-stop receipt after token creation."""
+    snapshot = None
+    if config is not None and output_dir is not None:
+        try:
+            control = config.get("_execution_control")
+            if isinstance(control, Mapping):
+                snapshot = resource_snapshot(control, output_dir)
+        except Exception:
+            snapshot = None
+    failure = {
+        "schema_version": "s09-e017-first-stop-v1",
+        "run_id": RUN_ID,
+        "terminal_state": "ADMISSION_STOPPED",
+        "first_reason": f"{type(error).__name__}: {error}",
+        "arm": None,
+        "attempted_update": 0,
+        "counters": {
+            "model_forwards": 0,
+            "autograd_collections": 0,
+            "optimizer_constructions": 0,
+            "optimizer_steps": 0,
+        },
+        "last_complete_update": 0,
+        "missing_or_unreadable": _error_paths(error),
+        "process_identity": process_identity(),
+        "resource_snapshot": snapshot,
+        "retry": False,
+        "alternate_gpu": False,
+    }
+    path = control_dir / "admission_failure_receipt.json"
+    with path.open("xb") as stream:
+        stream.write(canonical_json(failure))
+    return path
 
 
 def tree_size(path: Path) -> int:

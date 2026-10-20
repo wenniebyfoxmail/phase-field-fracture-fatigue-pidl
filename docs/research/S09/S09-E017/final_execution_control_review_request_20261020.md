@@ -27,6 +27,18 @@ Verify:
    prerequisite and no test or command in this package contacts a remote host,
    reads real scientific assets or constructs a scientific runtime.
 
+The round-1 control review returned REVISE. Re-run its concrete counterexamples:
+
+- change a resolved ordinary field such as `producer.wall_time_cap_seconds`;
+  validation must now fail against the frozen package config and its SHA256;
+- place either a prior attempt token or admission failure receipt in the
+  control root; another admission must fail before any scientific operation;
+- fail candidate/archive/authority/CLI-path validation after token creation;
+  an independent minimal failure receipt must retain the first reason and path
+  even when resource-snapshot collection also fails;
+- mutate every previously unchecked candidate/template field, including
+  nested extra keys; the exact contract validators must reject it.
+
 Return one verdict: `E017_FINAL_EXECUTION_CONTROL_READY_PASS` or
 `E017_FINAL_EXECUTION_CONTROL_REVISE`. For REVISE, give the smallest concrete
 counterexample. This review cannot grant execution or establish a scientific
