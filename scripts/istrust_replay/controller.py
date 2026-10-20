@@ -169,9 +169,11 @@ def main():
         if archive.exists():
             raise ValueError('Fresh run root unexpectedly contains a dataset archive')
         # Public inbound download, bounded write rate; no global installation or shared data mutation.
-        download_config = dict(config, max_wall_seconds=min(1800, config['max_wall_seconds']))
-        supervise(['curl', '-sS', '--fail', '--retry', '0', '--limit-rate', '10M', '--max-time', '1750',
-                   '--output', str(archive), lock['dataset_download_url']], root, download_config, 'download_receipt.json')
+        download_config = dict(config, max_wall_seconds=min(config['data_intake']['max_wall_seconds'], config['max_wall_seconds']))
+        intake = Path(__file__).with_name('download_ranges.py')
+        supervise([str(args.python), '-u', str(intake), '--root', str(root),
+                   '--url', lock['dataset_download_url'], '--bytes', str(lock['dataset_bytes']), '--config', str(args.config)],
+                  root, download_config, 'download_receipt.json')
         if archive.stat().st_size != lock['dataset_bytes']:
             raise ValueError('Dataset byte count mismatch')
         verify(archive, lock['dataset_sha256'])

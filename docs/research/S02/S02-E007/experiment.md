@@ -1,6 +1,6 @@
 # S02-E007 — Published raw-image-to-RUL baseline replay
 
-Protocol revision: 1.1, frozen before inference, 2026-10-20. State: draft pending independent code review. Primary Storyline: S02 (observation-conditioned prognosis); evidence domain: controlled composite-fatigue experiment. Owner: ISTRUST replay in chat 01a154fa-dd18-7432-ba1a-e918092ed6a3. Existing decision note: SCB 观测不确定性与未来预测实验方案; acquisition/search report retained in Obsidian.
+Protocol revision: 1.2, frozen before inference, 2026-10-20. State: draft pending independent code review. Primary Storyline: S02 (observation-conditioned prognosis); evidence domain: controlled composite-fatigue experiment. Owner: ISTRUST replay in chat 01a154fa-dd18-7432-ba1a-e918092ed6a3. Existing decision note: SCB 观测不确定性与未来预测实验方案; acquisition/search report retained in Obsidian.
 
 ## Goal and authorization
 
@@ -57,3 +57,9 @@ Branch codex/s02-e007-istrust-replay-20261020, base origin/main 389f618b7a042e0a
 ## Prospective environment-preparation amendment 1.1 — no inference yet
 
 The first isolated venv preparation failed because the system Python lacks ensurepip. Its original log, failed venv and environment_first_stop.json are preserved; no raw-image read, package installation, CUDA/model execution or numerical replay occurred. This dependency finding is addressed within the user's reproduction request by a new task-local bootstrap route: create venv_replay with --without-pip, retrieve the official PyPA get-pip.py and install pinned pip/setuptools/wheel entirely inside that prefix. No apt/sudo or shared environment changes. Record the bootstrap source/hash and keep the old failure intact. Numerical protocol and first-failure stop for the actual replay remain unchanged. The updated setup code must be included in the independent review before numerical execution.
+
+## Prospective intake amendment 1.2 — no numerical replay attempted
+
+A bounded 1 MiB request to the locked public S3 object returned HTTP 206 and the requested bytes, but took 36.234 seconds (28,938 bytes/s). A single connection cannot credibly deliver 3.93 GB within the original 30-minute intake allowance. Replace only archive delivery with 32 disjoint, inclusive byte ranges in a fresh task-owned directory. Each connection is capped at 320 KiB/s (10 MiB/s aggregate), with no retry. Restrict intake to four physical CPU cores. Validate HTTP 206, exact Content-Range and every part's length, assemble in order, then require the original full byte count and published SHA-256 before any extraction/image read. Retain all partials and first failure; owned child cleanup and parent-death behavior must be reviewed.
+
+The intake phase may use at most 5,400 seconds; this is part of, not additional to, the unchanged 14,400-second total batch limit. Every second spent acquiring/extracting data reduces the remaining replay allowance. One GPU, four CPUs, 32 GiB sampled RSS and 40 GiB task files remain unchanged. No numerical source, data identity, preprocessing, checkpoints, target/split, seeds, scoring or acceptance criterion changes. The scientific replay is still unattempted. Review this amendment/helper/controller/config and revised immutable transport snapshot before execution. Earlier reviews and preparation-stop receipts are preserved.

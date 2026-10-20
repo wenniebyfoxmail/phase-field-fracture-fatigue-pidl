@@ -1,6 +1,6 @@
 {
   "experiment": "S02-E007",
-  "protocol_revision": "1.1",
+  "protocol_revision": "1.2",
   "author_commit": "35d4a79b2f3d42f80cd0f63496675c6dbb483add",
   "epoch": 6,
   "fold_test_specimens": [
@@ -87,5 +87,13 @@
     "Pillow": "9.4.0",
     "scipy": "1.10.1",
     "matplotlib": "3.7.1"
+  },
+  "data_intake": {
+    "connections": 32,
+    "per_connection_rate": "320K",
+    "max_wall_seconds": 5400,
+    "curl_max_seconds": 5300,
+    "cpu_cores": 4,
+    "retry": 0
   }
 }
