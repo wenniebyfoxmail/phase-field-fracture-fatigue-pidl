@@ -44,3 +44,12 @@ Actual evidence is stored in /Users/wenxiaofang/phase-field-fracture-with-pidl/l
 保留H_INNOV候选：Δ=0.072689，H10/H40均正，逐组删一均正，优于对应donor；但C30/H40双通道失效和有限估计/选择敏感性阻止物理状态充分性或稳定局部演化主张。下一承重比较为已有SCB方案内加载匹配/独立裂长参考的自身vs替换历史干预，非rich/权重扫描；数据未确认不虚构运行准备。C27-A25四组单独冻结，未获本次重跑权限。
 
 [科学判断、完整38单元表及下一完整验证](scientific_continuation_20261020/README.md) · [复用回执](scientific_continuation_20261020/reuse_receipt.json)。
+
+
+## 2026-10-20 SCB状态接口：本地接入与预算准备已推进
+
+当前仍无物理执行卡。沿原SCB-v0.1补充已实际完成：8项来源文件哈希/字节与实体—帧/cycle/load/phase—独立参考接入表、六张空接收元数据接口、纯metadata检查器及9项人工检查；未假造论文六个试件为六个独立core。四臂主效应前瞻固定为逐core等权ΔCRPS(H−C,mm)，MAE为解释；共用误差/过程/参数处理，原UQ A/B/C保留。不要求先完全标定R/Q才能做状态预测比较。
+
+真正阻塞为未接收实体清单、同步观测/载荷和独立未来裂长参考及许可；实际K、帧数、O与处理/参考成本未知，总CPU/磁盘/标注预算保留null。已给结构工作量K*J*(K+4)、6*O，不能把旧1800秒换作新额度。格式/版本/路径/预算实数补齐在同包络内自动完成；新资料/真实科学预算/标注费用等超包络决定届时一次合并提出。
+
+[唯一SCB前瞻补充与完整实际表](</Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/STATE_INTERFACE_AMENDMENT_20261020.md>) · [准备收据](scientific_continuation_20261020/scb_preparation_receipt.json)。本轮未发送、未查邮箱、未SSH/拟合/评分；原BRIDGE/C27停止与结果均不重开。

@@ -131,3 +131,10 @@ C27-A25独立冻结比较仍是15/19完整组、1710完成solve/1200秒及第16�
 原完整分析：[BRIDGE R003](</Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/README_analysis.md>)；[既有独立审阅](</Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/independent_evidence_review_R003.md>)；[原警告违约](</Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-BRIDGE-PS-20261019-R003/warning_contract_audit.json>)；[固定alpha15组证据](</Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R002/analysis/checkpoint_verification_and_C30.json>)。
 
 本轮新增solve和原生评分均0，整理成本仅为保存标量的算术汇总；复用988旧闭式solve/344.11秒和固定alpha检查点的1710完成solve/1200秒记录，不把它们计作新执行或混成同一比较。原桥接设计`execution_enabled=false`保留历史状态；本轮不写执行授权、不重连、不重拟合旧15、不重开已封存机制诊断、不改变任何科学阈值。
+
+
+## 2026-10-20 SCB承接补充：CRPS主效应与实际来源
+
+上述下一物理验证已在原SCB case实际承接，未重复建Experiment。[合并接入/比较/分组/成本](</Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/STATE_INTERFACE_AMENDMENT_20261020.md>)给出8项现有来源与6项具体缺口、无虚构试样的元数据接口及9项人工反例检查。**状态主效应为逐core等权ΔCRPS=H−C（mm），长度增量MAE只作解释诊断**；本条前瞻细化旧讨论，不改任何已使用协议。共同E0误差/过程/参数处理与四臂对应关系已写清，原SCB观测UQ A/B/C保持独立主张；不把缺完整R/Q标定变成所有状态预测工作的前置门。
+
+本地只有文献/代码/设计，未接收到实体—frame/cycle/load/phase—独立裂长的真实接入表；实际组数/起点数/规模与总运行预算未知，不用论文试件数或BRIDGE1800秒替代。优先取得现有资料清单/许可，再自动补适配与容量，只有包络外的新数据/科学额度/必要标注费用需人方一次决定。

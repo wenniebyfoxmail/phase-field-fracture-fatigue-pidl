@@ -1,0 +1,61 @@
+{
+  "status": "LOCAL_SCB_STATE_INTERFACE_PREPARATION_COMPLETE_DATA_AND_TOTAL_EXECUTION_COST_UNRESOLVED",
+  "date_Europe_London": "2026-10-20",
+  "existing_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019",
+  "canonical_prospective_amendment": "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/STATE_INTERFACE_AMENDMENT_20261020.md",
+  "source_asset_join_table": "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/state_interface_preparation_20261020/actual_asset_entity_join_table.csv",
+  "readiness_and_total_cost": "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/state_interface_preparation_20261020/readiness_and_total_cost.json",
+  "metadata_interface": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/scientific_continuation_20261020/scb_metadata_interface.py",
+  "tests": {
+    "kind": "ARTIFICIAL_METADATA_ONLY",
+    "count": 9,
+    "result": "PASS",
+    "python": "3.10.19",
+    "not_production_validation": true
+  },
+  "state_primary": "equal-core DeltaCRPS=own-history minus current-DIC, mm; negative favors history",
+  "independent_length_increment_MAE": "diagnostic, not replacement primary",
+  "original_SCB_UQ_A_B_C": "unchanged distinct claim",
+  "physical_data_count_not_inferred_from_paper": true,
+  "current_core_count": null,
+  "current_frame_count": null,
+  "numerical_full_run_budget": null,
+  "new_scientific_data_or_holdout_opened": false,
+  "new_fit_native_scoring_Torch_SSH_FEM_mail_or_run": false,
+  "duplicate_experiment_or_owner": false,
+  "source_document_bytes_not_data_volume": 17809386,
+  "files": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/STATE_INTERFACE_AMENDMENT_20261020.md": {
+      "bytes": 16192,
+      "sha256": "7c691331422020a2130d9c0573ccecaf0a57d3298cbef5c20989357da977f8d2"
+    },
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/state_interface_preparation_20261020/normalized_metadata_columns.json": {
+      "bytes": 1482,
+      "sha256": "835b90b3262a281775c05304be99ccef176d6b8d962a5b4e3b9578b529b1ef2a"
+    },
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/state_interface_preparation_20261020/readiness_and_total_cost.json": {
+      "bytes": 1718,
+      "sha256": "7bff73adcfc5309a52c4c29f6ac3e4da2d673ea7843a26f0a3cbd78b757d3c06"
+    },
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/state_interface_preparation_20261020/received_metadata.json": {
+      "bytes": 132,
+      "sha256": "cb7718e1680cf980f4c938bc07eafa23728fb66a990541d930d384d1b5248214"
+    },
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/state_interface_preparation_20261020/state_interface_prospective_contract.json": {
+      "bytes": 2595,
+      "sha256": "2f89facc04312bf2fbbaf766cafa062c92384a32fc35903d7605bf4105a0e483"
+    },
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/research_hq/identification_uncertainty_prediction_20261006/scb_request_design_20261019/state_interface_preparation_20261020/actual_asset_entity_join_table.csv": {
+      "bytes": 5912,
+      "sha256": "c900d34c6b17ae0a0f80c0dea3a11f4aa35ce7f77a006037d53790b6b6eaab54"
+    },
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/scientific_continuation_20261020/scb_metadata_interface.py": {
+      "bytes": 7880,
+      "sha256": "315616f73075e8d28db21a86684649e3ee8d078b3a75b572d29f0b8e69155c3e"
+    },
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/mendeley-info-value-20261019/docs/research/identification_uncertainty_prediction/bridge_ps_20261019/scientific_continuation_20261020/test_scb_metadata_interface.py": {
+      "bytes": 4525,
+      "sha256": "685de9dc9f0138e5479d1ab0641d7213561505eef61d69e08c510c0489c4dabb"
+    }
+  }
+}
