@@ -25,7 +25,14 @@ Codex may also review evidence when it can independently recompute the result. P
 
 ## HQ handoff and user choice
 
-Before dispatch, give the user a compact choice: recommended channel and why, alternatives, expected usage category, exact material to be shared, and the conclusion each channel could support. If the user has already chosen a channel and authorized the material, proceed within that scope. Otherwise wait for the choice; do not silently substitute a channel after access, model, quota, or transport failure. Preparing the packet is not permission to transmit it.
+Choose the channel once per task with the user: recommendation, alternatives,
+usage, material and review scope. Reuse an existing authorised choice; do not
+silently switch after an access/model/quota/transport failure.
+
+Use the core's **Bounded Task Authority**: in-scope repairs and focused review
+through that channel need no repeat human approval. Review changed scientific
+or control risks, not every commit. Card metadata, paths, Run IDs and observed
+auxiliary versions need consistency checks, not a fresh Code Ready review.
 
 Reuse the Experiment or task record for the request. State only the review question, immutable protocol/commit or external snapshot identity, material actually provided, requested checks, and blocked conclusions. A local path by itself is not evidence that Chat or cloud Work received the file. Give a reviewer the frozen material and questions, not the desired verdict. Keep reviewers read-only; after a material change to a reviewed formal package, request focused review of the changed risk and downstream effects. Reuse unchanged findings rather than restarting the whole review.
 

@@ -155,6 +155,36 @@ explain progress and repairs; they do not overturn the primary result. Do not
 relabel known exploratory results as prospective confirmation or lower a viewed
 criterion to rescue an old result.
 
+## 一次授权，机械检查自动完成 / Bounded Task Authority
+
+Approve the task once: goal, allowed code/data, producer, total budget,
+stop/retry limits and result, in the existing card. Conditional execution
+approval covers implementation -> tests/necessary review -> deployment ->
+automatic admission -> execution. The agent completes that chain without
+asking again for each step. An explicitly plan-only task still permits no run.
+
+- **Agent:** in-scope repairs, chosen-channel review, environment/resources,
+  actual versions, Run IDs, paths, hashes and card instantiation. Verify these
+  against the approved envelope/reviewed template. Check compatibility rather
+  than imposing exact pins on every auxiliary library. Isolated dependency
+  repairs stay within scope; model/data execution is not a metadata check.
+- **Reviewer:** changed scientific behaviour, data interpretation or control
+  safety; carry forward unchanged findings. Metadata-only fields need consistency
+  checks, not another Code Ready review or human approval.
+- **User:** one consolidated decision only for a scope/data/producer/expenditure
+  or budget expansion, shared-system changes requiring permission, or a scientific
+  retry outside the approved limits.
+
+For new cards, set a short zero-start recheck cap within the total budget before
+trying. GPU busy means not ready, not scientific failure. Unknown launch state
+requires process/receipt checks before another spawn. Preserve explicit user
+connection/attempt and scientific stop limits, not agent-invented approval gates.
+
+Migrate active cards prospectively: replace administrative per-step approvals,
+state remaining authority, and preserve signed snapshots, consumed attempts and
+scientific protocols. This governance update itself starts no new experiment
+and reopens no stopped scientific run.
+
 ## Turn Results Into The Next Action
 
 At topic intake, around a useful brainstorming decision, or when a measured

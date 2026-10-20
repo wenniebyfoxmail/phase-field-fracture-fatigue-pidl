@@ -226,6 +226,15 @@ do not invent a conclusion when there is only preparation or visibility.
 
 ## Research Readiness Gates
 
+### Bounded Task Authority (user update, 2026-10-20)
+
+Use `research-decision-core`'s **一次授权，机械检查自动完成**: approve a
+task envelope once; agents complete its implementation, relevant review and
+mechanical admission without serial human approvals. Prospectively replace
+older administrative gates in active cards, preserving scientific/data/budget/
+stop limits and signed history. This governance update itself launches no run;
+escalate a genuine authority change once, not every resolved mechanical field.
+
 - **Code Ready:** before a formal claim-bearing run, search the repository for
   reusable runners, parsers, plotters, validators, and tests; run relevant local
   sanity tests; then obtain a read-only independent code review bound to the

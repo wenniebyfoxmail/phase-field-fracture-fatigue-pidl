@@ -92,6 +92,9 @@ review. These resource checks do not add scientific acceptance criteria.
 Shared-resource conflict, storage and protected-data requirements apply at
 any run size.
 
+Use the core's **Bounded Task Authority**: automate resource/version/card checks
+within the approved task, rather than requesting approval for each field.
+
 Use the core's first-principles route design to select a comparison with enough
 states, horizons and fields to resolve the actual claim. Reuse existing evidence;
 an offline or reduced test comes first only when it resolves a real blocker,

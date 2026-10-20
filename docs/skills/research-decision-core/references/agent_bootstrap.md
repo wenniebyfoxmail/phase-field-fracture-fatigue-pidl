@@ -33,6 +33,15 @@ return/redirect condition to live and future sub-agents.
 Keep one owner record and carry material scope changes into portfolio summaries.
 A refresh alone never launches a run, retry, cloud task or producer operation.
 
+## 2026-10-20: one bounded approval, automatic mechanical checks
+
+Use the core's **一次授权，机械检查自动完成 / Bounded Task Authority**.
+Within actual task authority, this replaces per-step administrative approvals
+in active cards; write the amendment in the original owner record. Preserve
+signed history, consumed attempts and scientific/data/budget/stop boundaries.
+HQs pass one authority envelope to executors; resolved mechanical fields need
+no repeat approval. This migration alone authorises no scientific launch.
+
 For `0 idea test`, keep code, logs and reproduction payloads in the case;
 archive the research report, verified source PDFs and reading notes in
 Obsidian, linked back to the case. Paper archival can precede reproduction.
