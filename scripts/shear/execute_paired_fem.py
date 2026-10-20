@@ -78,8 +78,8 @@ def prepare():
 
 def launch():
     # All identity/failed-transport costs remain counted; the guard never resets them.
-    prior=sum(json.loads(p.read_text())['seconds'] for p in [RUN/'identity_cost.json',RUN/'identity_cost_002.json'])
-    remaining=60-prior
+    remaining=mechanical_remaining()
+    prior=60-remaining
     assert remaining>10
     with (RUN/'invocation.json').open('x') as f:json.dump(dict(prior_identity_seconds=prior,remaining_mechanical_seconds=remaining,no_retry=True,deadline_utc=DEADLINE),f)
     end=time.monotonic()+remaining
