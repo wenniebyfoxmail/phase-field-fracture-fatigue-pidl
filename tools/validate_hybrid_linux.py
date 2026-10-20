@@ -181,6 +181,7 @@ def main(a):
     if not sys.platform.startswith('linux'):raise RuntimeError('Linux producer only')
     if a.parent_only:
         return control_case('hang',a.root.resolve(),a.code.resolve(),json.loads(a.card.read_text()))
+    if not a.outer_worker:raise RuntimeError('validation driver requires independent outer controller and gate')
     card=verify_contract(a)
     root=a.root.resolve();code=a.code.resolve()
     if root.exists():raise FileExistsError('validation root already exists; no automatic retry')

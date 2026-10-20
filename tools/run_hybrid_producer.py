@@ -55,6 +55,26 @@ def validate_card(card):
         raise ValueError("unidentified producer")
 
 
+def initial_totals(card, job_started):
+    """Charge actual admission work to the same study envelope before launch."""
+    pre=card.get('pre_execution_cost')
+    if pre is None:
+        return dict(wall_seconds=0.,gpu_seconds=0.,numerical_seconds=0.,cpu_seconds=0.,phases={},
+                    start_monotonic=job_started,shared_analysis_seconds=0.)
+    receipt=Path(pre['receipt'])
+    if sha256(receipt)!=pre['receipt_sha256']:raise RuntimeError('admission cost receipt differs')
+    actual=read_manifest(receipt)
+    if actual.get('passed') is not True:raise RuntimeError('actual Linux admission did not pass')
+    wall=float(actual['wall_seconds']);cpu=float(actual['cpu_seconds_children']+actual['cpu_seconds_self'])
+    numerical=float(pre['numerical_seconds']);shared=wall-numerical
+    if (not all(__import__('math').isfinite(v) for v in (wall,cpu,numerical)) or not 0<=numerical<=wall<=1800
+            or cpu<0 or actual['gpu_seconds']!=0 or actual['diagnostic_substeps_max']!=5
+            or wall!=pre['wall_seconds'] or cpu!=pre['cpu_seconds']):
+        raise RuntimeError('invalid or mismatched actual admission cost')
+    return dict(wall_seconds=wall,gpu_seconds=0.,numerical_seconds=numerical,cpu_seconds=cpu,phases={},
+                start_monotonic=job_started-wall,shared_analysis_seconds=shared,pre_execution_cost=pre)
+
+
 def bytes_under(path):
     total=0
     for base,dirs,files in os.walk(path,followlinks=False):
@@ -258,7 +278,7 @@ def outcome(card,archive,totals):
     quality=qualities['test_hybrid']
     speed=(ch<=(1-criteria['speed_fraction_min'])*min(cf,cc))
     fatigue=all(read_manifest(archive/x/'summary.json')['f_min']<1. for x in ['train_A','train_B','validation','test_reference','test_classical','test_hybrid'])
-    offline=sum(totals['phases'][x]['wall_seconds'] for x in ['native_replay','train_A','train_B','validation','training'])
+    offline=sum(totals['phases'][x]['wall_seconds'] for x in ['native_replay','train_A','train_B','validation','training'])+totals.get('pre_execution_cost',{}).get('wall_seconds',0.)
     return dict(complete=True,quality_pass=quality,matched_quality=qualities,online_speed_pass=speed,fatigue_coverage=fatigue,
                 supports_neural_online_acceleration=bool(all(qualities.values()) and speed and fatigue),
                 cost=dict(reference_wall=cf,classical_wall=cc,hybrid_wall=ch,offline_wall=offline,
@@ -292,8 +312,7 @@ def main():
     if runtime!=card['runtime_expected']:raise RuntimeError(f'producer runtime differs: {runtime}')
     archive.mkdir(parents=True)
     for d in ['tmp','jitcache','cache','logs']:(runroot/d).mkdir(exist_ok=True)
-    totals=dict(wall_seconds=0.,gpu_seconds=0.,numerical_seconds=0.,cpu_seconds=0.,phases={},
-                start_monotonic=job_started,shared_analysis_seconds=0.)
+    totals=initial_totals(card,job_started)
     write_json(runroot/'launch_receipt.json',dict(pid=os.getpid(),hostname=socket.gethostname(),
                                                 command=sys.argv,card_sha256=sha256(args.card),
                                                 artifact_id=package['artifact_id'],host_admission=host,
@@ -340,7 +359,8 @@ def main():
                                                rule='no retries/partial fit/threshold relaxation; inspect latest durable versions'))
         raise
     finally:
-        totals['total_job_wall_seconds']=perf_counter()-job_started
+        totals['producer_wall_seconds']=perf_counter()-job_started
+        totals['total_job_wall_seconds']=perf_counter()-totals['start_monotonic']
         totals['supervisor_overhead_seconds']=totals['total_job_wall_seconds']-totals['wall_seconds']
         totals['allocated_cpu_core_hours_upper']=16*totals['total_job_wall_seconds']/3600
         write_json(runroot/'cost_ledger.json',totals)

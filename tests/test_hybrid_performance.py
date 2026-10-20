@@ -233,3 +233,10 @@ def test_validation_cpu_environment_is_fixed_before_numerical_imports(tmp_path,m
     assert calls==[set(range(16))] and os.environ['CUDA_VISIBLE_DEVICES']==''
     assert all(os.environ[k]=='16' for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS'))
     assert all(Path(os.environ[k]).parent==tmp_path for k in ('TMPDIR','XDG_CACHE_HOME','TORCH_EXTENSIONS_DIR'))
+
+
+def test_validation_driver_refuses_bare_uncontrolled_invocation(monkeypatch):
+    import argparse,validate_hybrid_linux as v
+    monkeypatch.setattr(v.sys,'platform','linux')
+    with pytest.raises(RuntimeError,match='requires independent outer controller'):
+        v.main(argparse.Namespace(parent_only=False,outer_worker=False))

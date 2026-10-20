@@ -16,8 +16,8 @@ def main(a):
     try:
         command=[sys.executable,'-u',str(a.code/'tools/validate_hybrid_linux.py'),'--outer-worker']
         for key in ('root','code','card','inputs','package'):command+=['--'+key,str(getattr(a,key).resolve())]
-        spec=dict(id='actual_linux_validation',kind='admission',gpu=False,wall_seconds=1800)
-        run_owned_worker(command,a.code,dict(os.environ,HYBRID_SUPERVISOR_PID=str(os.getpid())),outer/'driver.log',spec,card,outer,outer,
+        spec=dict(id='actual_linux_validation',kind='admission',gpu=False,wall_seconds=1800-(time.perf_counter()-started))
+        run_owned_worker(command,a.code,dict(os.environ,HYBRID_SUPERVISOR_PID=str(os.getpid())),outer/'driver.log',spec,card,outer,a.root,
                          dict(start_monotonic=started,gpu_seconds=0.),usage=usage)
         evidence=json.loads((a.root/'admission.json').read_text())
         if evidence.get('passed') is not True:raise RuntimeError('actual validation evidence not passed')

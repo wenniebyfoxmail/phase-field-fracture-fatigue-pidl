@@ -159,3 +159,16 @@ def test_portable_geometry_matches_independent_lapack_and_linear_patch():
     u=np.column_stack((2*points[:,0]+3*points[:,1],-points[:,0]+4*points[:,1])).ravel()
     strain=np.einsum('egij,ej->egi',p.b_matrices,u[p.element_dofs])
     assert np.max(np.abs(strain-np.array([2.,4.,2.])))<1e-14
+
+
+def test_actual_admission_cost_is_verified_and_deducted_from_global_envelope(tmp_path):
+    from run_hybrid_producer import initial_totals
+    rp=tmp_path/'admission.json';receipt=dict(passed=True,wall_seconds=200.,cpu_seconds_children=300.,cpu_seconds_self=10.,gpu_seconds=0.,diagnostic_substeps_max=5)
+    write_json(rp,receipt);c=card();c['pre_execution_cost']=dict(receipt=str(rp),receipt_sha256=sha256(rp),wall_seconds=200.,cpu_seconds=310.,numerical_seconds=60.)
+    t=initial_totals(c,1000.)
+    assert t['start_monotonic']==800. and t['wall_seconds']==200. and t['cpu_seconds']==310.
+    assert t['shared_analysis_seconds']==140. and t['numerical_seconds']==60. and t['gpu_seconds']==0.
+    receipt['passed']=False;write_json(rp,receipt)
+    with pytest.raises(RuntimeError,match='receipt differs'):initial_totals(c,1000.)
+    c['pre_execution_cost']['receipt_sha256']=sha256(rp)
+    with pytest.raises(RuntimeError,match='did not pass'):initial_totals(c,1000.)
