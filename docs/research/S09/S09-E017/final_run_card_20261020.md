@@ -280,3 +280,23 @@ No remote action occurred during preparation or review. The tracked authority
 template is disabled. A future deployment therefore requires a new explicit
 deployment-only authority bound to these identities; resolver, admission and
 the three-arm run remain separate later gates.
+
+## 2026-10-20 content-addressed redeployment stop
+
+The user later authorised one deployment-only attempt. The guard consumed the
+authority and established one SSH master connection. Remote precheck found
+`GPUServer8`, clean exact checkout `2002538d...` and no blocked execution,
+authority, admission, output or final-archive path. The preserved legacy
+partial matched its recorded identity; 23 complete chunks (12,058,624 bytes)
+were reverified and imported.
+
+The pre-transfer store was missing five chunks (2,300,692 bytes). The only
+missing-chunk `rsync` returned `unexpected end of file`; the guard stopped after
+156.632 seconds with return code 255 and did not reach post-transfer inspection
+or archive assembly. The post-failure remote chunk-store state is unknown
+because the no-reconnect rule was honoured. There is no deployment-success
+receipt, resolver, admission, runner or scientific result.
+
+This authority is consumed and closed. The compact record is
+`chunked_deployment_attempt_stop_20261020.md` with machine-readable receipt
+`chunked_deployment_attempt_stop_receipt_20261020.json`.
