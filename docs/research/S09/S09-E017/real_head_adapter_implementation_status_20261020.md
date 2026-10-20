@@ -33,7 +33,9 @@ cycles, 64 updates per arm, no-retry rule or holdout boundary.
 
 ## Local verification
 
-The focused suite completed with `122 passed in 2.29s`. It uses only hand-made
+The focused E017 suite completed with `125 passed in 2.27s`; the broader suite
+including the E016 factorisation tests completed with `147 passed in 2.29s`.
+It uses only hand-made
 float64 tensors, synthetic checkpoint state and temporary output directories.
 It exercises the actual adapter, autograd, PCGrad, AdamW, transactional writer,
 metric evaluator and figure path. It does not instantiate the real Stage0A
@@ -56,6 +58,15 @@ and persists readout norms/feature variance, hard-constraint audit, endpoint
 profiles, per-arm wall/peak-memory/counters, exact resolved config and complete
 metric/gradient JSONL streams. These are evidence-closure corrections, not
 scientific results.
+
+The first exact source review then found two further failure-path
+counterexamples: `COMPLETED` could be written before the final full artifact
+reread, and the real exception handlers always supplied an empty
+`missing_or_unreadable` list. The revised candidate makes completion the last
+published artifact after full reread plus inventory verification, carries the
+exact failed artifact identity through persistence/retrieval exceptions, and
+tests missing, corrupted and public-wrapper failure paths. This is also an
+evidence-closure correction; it does not change the scientific protocol.
 
 ## Claim boundary
 

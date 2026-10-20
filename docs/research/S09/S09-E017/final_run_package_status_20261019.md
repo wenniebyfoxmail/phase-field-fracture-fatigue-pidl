@@ -76,6 +76,15 @@ counting with pre-arm failure preservation, and the frozen readout-diagnostic
 obligation is now materialised together with hard-constraint/profile/runtime
 audit and full JSONL streams. The candidate remains disabled and unexecuted.
 
+The first exact source review returned `E017_REAL_ADAPTER_REVISE` for two
+failure-evidence paths. The revised candidate now performs the final full
+artifact and inventory reread before publishing `COMPLETED`, removes a failed
+terminal receipt, and propagates the exact persistence/retrieval artifact into
+`missing_or_unreadable`. Missing, corrupted and public-wrapper failure
+counterexamples are now covered; the full synthetic suite reports `147
+passed` (`125 passed` in the focused E017 package suite). Exact-commit rereview
+remains required.
+
 ## Prohibited and not performed
 
 No real packet, checkpoint or FEM array read; no fresh holdout; no real runtime

@@ -669,20 +669,41 @@ class TransactionalEvidenceStore:
             "invalid artifact path",
         )
         path = self.root / relative
-        _require(not path.exists(), f"artifact already exists: {relative}")
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("xb") as stream:
-            stream.write(payload)
-            stream.flush()
-            os.fsync(stream.fileno())
-        observed = path.read_bytes()
-        _require(observed == payload, f"artifact retrieval mismatch: {relative}")
+        try:
+            _require(not path.exists(), f"artifact already exists: {relative}")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("xb") as stream:
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+            observed = path.read_bytes()
+            _require(observed == payload, f"artifact retrieval mismatch: {relative}")
+        except Exception as error:
+            raise EvidenceArtifactError(
+                relative, "write_or_retrieval", error
+            ) from error
         digest = sha256_bytes(payload)
         self.inventory[relative] = {"sha256": digest, "size_bytes": len(payload)}
         return digest
 
     def write_verified(self, relative: str, value: Any) -> str:
         return self.write_bytes_verified(relative, canonical_json(value))
+
+    def read_bytes_verified(self, relative: str) -> bytes:
+        """Read one registered artifact and retain its identity on failure."""
+        try:
+            item = self.inventory[relative]
+            payload = (self.root / relative).read_bytes()
+            _require(
+                len(payload) == item["size_bytes"]
+                and sha256_bytes(payload) == item["sha256"],
+                f"artifact retrieval mismatch: {relative}",
+            )
+            return payload
+        except Exception as error:
+            if isinstance(error, EvidenceArtifactError):
+                raise
+            raise EvidenceArtifactError(relative, "retrieval", error) from error
 
     def commit_update(
         self,
@@ -714,18 +735,54 @@ class TransactionalEvidenceStore:
         return digest
 
     def finalise(self, completion: Mapping[str, Any]) -> dict[str, Any]:
+        # Completion is the final published artifact.  Every artifact already
+        # registered by the run must survive a full reread before that terminal
+        # state can exist.
+        for relative in tuple(self.inventory):
+            self.read_bytes_verified(relative)
         inventory_payload = {"files": dict(sorted(self.inventory.items()))}
         inventory_sha = self.write_verified("inventory.json", inventory_payload)
+        self.read_bytes_verified("inventory.json")
         receipt = {**dict(completion), "inventory_sha256": inventory_sha}
-        self.write_verified("completion_receipt.json", receipt)
-        for relative, item in self.inventory.items():
-            payload = (self.root / relative).read_bytes()
-            _require(
-                len(payload) == item["size_bytes"]
-                and sha256_bytes(payload) == item["sha256"],
-                f"final retrieval mismatch: {relative}",
-            )
+        try:
+            self.write_verified("completion_receipt.json", receipt)
+        except Exception:
+            # A failed terminal write must never leave a readable declaration
+            # of COMPLETED beside the failure receipt.
+            (self.root / "completion_receipt.json").unlink(missing_ok=True)
+            self.inventory.pop("completion_receipt.json", None)
+            raise
         return {**receipt, "retrieval_verified": True}
+
+
+class EvidenceArtifactError(RuntimeError):
+    """Evidence persistence/retrieval error carrying the exact artifact id."""
+
+    def __init__(self, artifact: str, operation: str, cause: Exception):
+        self.artifact = artifact
+        self.operation = operation
+        super().__init__(f"{operation} failed for {artifact}: {cause}")
+
+
+def missing_or_unreadable_from_error(error: BaseException) -> list[str]:
+    """Recover exact failed artifact identities without using the normal store."""
+    identities: list[str] = []
+    has_artifact_identity = False
+    current: BaseException | None = error
+    while current is not None:
+        artifact = getattr(current, "artifact", None)
+        if isinstance(artifact, str) and artifact not in identities:
+            identities.append(artifact)
+            has_artifact_identity = True
+        filename = getattr(current, "filename", None)
+        if (
+            not has_artifact_identity
+            and isinstance(filename, str)
+            and filename not in identities
+        ):
+            identities.append(filename)
+        current = current.__cause__
+    return identities
 
 
 def write_minimal_failure_receipt(
@@ -1551,7 +1608,7 @@ def _run_reviewed_producer_inner(
             for row in metric_history[arm][update]
         )
         gradient_jsonl = b"".join(
-            (store.root / f"arms/{arm}/updates/{update:04d}.json").read_bytes()
+            store.read_bytes_verified(f"arms/{arm}/updates/{update:04d}.json")
             for arm in ARM_ORDER
             for update in range(1, 65)
         )
@@ -1602,7 +1659,7 @@ def _run_reviewed_producer_inner(
                 arm=active_arm,
                 attempted_update=counters.operation_entered,
                 counters=counters,
-                missing_or_unreadable=[],
+                missing_or_unreadable=missing_or_unreadable_from_error(error),
             )
         except Exception:
             pass
@@ -1652,7 +1709,7 @@ def run_reviewed_producer(
                     arm=context["arm"],
                     attempted_update=counters.operation_entered,
                     counters=counters,
-                    missing_or_unreadable=[],
+                    missing_or_unreadable=missing_or_unreadable_from_error(error),
                 )
             except Exception:
                 pass

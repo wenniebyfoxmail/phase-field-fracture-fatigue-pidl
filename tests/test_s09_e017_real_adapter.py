@@ -26,6 +26,7 @@ import s09_e017_real_adapter as real_adapter_module  # noqa: E402
 from s09_e017_real_adapter import (  # noqa: E402
     E017DamageAdapter,
     E017OptimisationEngine,
+    EvidenceArtifactError,
     OperationCounters,
     SplitNodeDecoder,
     TransactionalEvidenceStore,
@@ -36,6 +37,7 @@ from s09_e017_real_adapter import (  # noqa: E402
     build_real_group_losses,
     convert_pristine_checkpoint,
     evaluate_real_arm,
+    missing_or_unreadable_from_error,
     render_evidence_figures,
     run_reviewed_producer,
     state_sha256,
@@ -318,6 +320,35 @@ def test_inventory_and_completion_are_non_self_referential_and_retrievable(tmp_p
     )
 
 
+@pytest.mark.parametrize("failure_mode", ["missing", "corrupt"])
+def test_final_retrieval_failure_prevents_completed_and_names_artifact(
+    tmp_path, failure_mode
+):
+    store = TransactionalEvidenceStore(tmp_path / "run")
+    store.write_verified("arms/F_AMP/metrics/0064.json", {"finite": True})
+    artifact = store.root / "arms/F_AMP/metrics/0064.json"
+    if failure_mode == "missing":
+        artifact.unlink()
+    else:
+        artifact.write_bytes(b"corrupted")
+
+    with pytest.raises(EvidenceArtifactError) as captured:
+        store.finalise({"terminal_state": "SYNTHETIC_TEST_COMPLETED"})
+
+    missing = missing_or_unreadable_from_error(captured.value)
+    assert missing == ["arms/F_AMP/metrics/0064.json"]
+    assert not (store.root / "completion_receipt.json").exists()
+    failure = write_minimal_failure_receipt(
+        store.root,
+        reason=f"{type(captured.value).__name__}: {captured.value}",
+        arm=ARM_AMPLITUDE,
+        attempted_update=64,
+        counters=OperationCounters(complete_update_committed=64),
+        missing_or_unreadable=missing,
+    )
+    assert json.loads(failure.read_text())["missing_or_unreadable"] == missing
+
+
 def hashlib_sha256(value: bytes) -> str:
     import hashlib
 
@@ -517,3 +548,38 @@ def test_public_producer_preflight_failure_writes_zero_operation_receipt(
     assert receipt["arm"] is None
     assert receipt["counters"]["model_forwards"] == 0
     assert receipt["counters"]["optimizer_step_returned"] == 0
+
+
+def test_public_producer_preserves_failed_artifact_identity(tmp_path, monkeypatch):
+    output = tmp_path / "run"
+
+    def fail_after_root_ownership(*, output_dir, failure_context, **_kwargs):
+        output_dir.mkdir()
+        failure_context["output_path_valid"] = True
+        failure_context["root_owned"] = True
+        failure_context["arm"] = ARM_AMPLITUDE_SHAPE
+        failure_context["counters"] = OperationCounters(operation_entered=7)
+        raise EvidenceArtifactError(
+            "arms/F_AMP_SHAPE/updates/0007.json",
+            "write_or_retrieval",
+            OSError("synthetic persistence failure"),
+        )
+
+    monkeypatch.setattr(
+        real_adapter_module, "_run_reviewed_producer_inner", fail_after_root_ownership
+    )
+    with pytest.raises(EvidenceArtifactError):
+        run_reviewed_producer(
+            config={"producer": {"output_root": str(output)}},
+            packet_dir=tmp_path / "packet",
+            base_runtime_config=tmp_path / "config.json",
+            initial_checkpoint=tmp_path / "checkpoint.pt",
+            output_dir=output,
+            bindings={},
+        )
+    receipt = json.loads((output / "failure_receipt.json").read_text())
+    assert receipt["arm"] == ARM_AMPLITUDE_SHAPE
+    assert receipt["attempted_update"] == 7
+    assert receipt["missing_or_unreadable"] == [
+        "arms/F_AMP_SHAPE/updates/0007.json"
+    ]

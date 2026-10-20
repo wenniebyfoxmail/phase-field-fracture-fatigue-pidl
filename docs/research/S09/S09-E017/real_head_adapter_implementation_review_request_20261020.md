@@ -31,6 +31,11 @@ Check specifically:
    `||v_A||`, across-cycle `v_A^T h_bar` variance, spatial shape-logit
    variance, hard constraints, endpoint profiles, runtime counters and JSONL
    evidence are all durably recoverable.
+8. the first source-review repair: all registered artifacts and the inventory
+   are reread and hash-verified before a completion receipt can exist; a failed
+   completion write removes any terminal declaration; and real persistence or
+   retrieval exceptions populate `missing_or_unreadable` with the exact
+   artifact identity while retaining the first reason and counters.
 
 This review may establish implementation Code Ready only. It cannot authorise
 execution or establish a scientific result.
