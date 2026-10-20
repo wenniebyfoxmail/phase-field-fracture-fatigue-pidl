@@ -1,0 +1,497 @@
+{
+  "scope": "offline source/header binding only; no scientific-array decode or FEM",
+  "sources": {
+    "Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m",
+      "sha256": "b08b0187657a019c941cd707a904cb8e39623ac7d56f22e00158625aee5110b9",
+      "matches_existing_lock": true
+    },
+    "Scripts/fatigue_fracture/solve_fatigue_fracture.m": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/solve_fatigue_fracture.m",
+      "sha256": "d3603548b392d01d64c8a32c78aaa5247b92ae24d8b7645886d190b240687d91",
+      "matches_existing_lock": true
+    },
+    "Scripts/fatigue_fracture/init_fatigue_fracture.m": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/init_fatigue_fracture.m",
+      "sha256": "cd3ba4bd77e321da53ae733a40c6ef69537864c622f0eaf53f912f91c08c415d",
+      "matches_existing_lock": true
+    },
+    "Sources/+phase_field/+fem/+solver/+stag/post_iter_update.m": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Sources/+phase_field/+fem/+solver/+stag/post_iter_update.m",
+      "sha256": "6313b4ad7b1bd7bbad6a1b793d6b54992bcf4d97089c82a81b360567e2c965b0",
+      "matches_existing_lock": true
+    }
+  },
+  "anchors": {
+    "zero_u": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/init_fatigue_fracture.m",
+      "line": 37,
+      "matching_lines": [
+        37
+      ],
+      "literal": "displ       = zeros"
+    },
+    "zero_history": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/init_fatigue_fracture.m",
+      "line": 43,
+      "matching_lines": [
+        43
+      ],
+      "literal": "history_vars_old = zeros"
+    },
+    "recovery_call": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m",
+      "line": 166,
+      "matching_lines": [
+        166
+      ],
+      "literal": "res_pf_recovery, p_field"
+    },
+    "reset_A": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m",
+      "line": 179,
+      "matching_lines": [
+        179
+      ],
+      "literal": "history_vars_old(:,:,2) = 0.0"
+    },
+    "reset_q": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m",
+      "line": 180,
+      "matching_lines": [
+        180
+      ],
+      "literal": "history_vars_old(:,:,3) = 0.0"
+    },
+    "reset_f": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m",
+      "line": 181,
+      "matching_lines": [
+        181
+      ],
+      "literal": "history_vars_old(:,:,4) = 1.0"
+    },
+    "state0_saved": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m",
+      "line": 190,
+      "matching_lines": [
+        190
+      ],
+      "literal": "'state0_node', 'state0_p_field'"
+    },
+    "boundary": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m",
+      "line": 107,
+      "matching_lines": [
+        107
+      ],
+      "literal": "'fix_Y', NODESET.bot_edge, 'disp_Y', NODESET.top_edge"
+    },
+    "commit_lower": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/solve_fatigue_fracture.m",
+      "line": 183,
+      "matching_lines": [
+        183
+      ],
+      "literal": "p_field_old = p_field;"
+    },
+    "optional_clip": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/solve_fatigue_fracture.m",
+      "line": 134,
+      "matching_lines": [
+        134,
+        186
+      ],
+      "literal": "p_field = min(p_field, damage_upper_bound);"
+    },
+    "history_commit": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/solve_fatigue_fracture.m",
+      "line": 188,
+      "matching_lines": [
+        188
+      ],
+      "literal": "[~, ~, ~, history_vars_old] = assembly_pf_fh"
+    },
+    "scalar_response": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/solve_fatigue_fracture.m",
+      "line": 208,
+      "matching_lines": [
+        208
+      ],
+      "literal": "SOL_STEP_VAR = phase_field.fem.solver.step.post_iter_update"
+    },
+    "post_snapshot": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/solve_fatigue_fracture.m",
+      "line": 273,
+      "matching_lines": [
+        273
+      ],
+      "literal": "phase_field.audit.capture_post_commit_state(request28_state)"
+    },
+    "peak_oracle": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Scripts/fatigue_fracture/solve_fatigue_fracture.m",
+      "line": 171,
+      "matching_lines": [
+        171
+      ],
+      "literal": "matlab_residual = phase_field.audit.assemble_residual_oracle"
+    },
+    "cached_stiffness": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/endpoint_replay_preparation/source_minimal/Sources/+phase_field/+fem/+solver/+stag/post_iter_update.m",
+      "line": 51,
+      "matching_lines": [
+        51
+      ],
+      "literal": "KK_updated = sparse"
+    },
+    "mirror_Fy": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/GRIPHFiTH/Sources/+phase_field/+fem/+solver/+step/post_iter_update.m",
+      "line": 45,
+      "matching_lines": [
+        45
+      ],
+      "literal": "SOL_STEP_VAR.F_Y(i_step) = - sum"
+    }
+  },
+  "initial": {
+    "raw_state0": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/S04_E011_raw_outputs_ad749c8_20261005_backup_20261015/S04_E011_FEM_Q4_C120/state0_analysis.mat",
+    "raw_state0_schema": {
+      "state0_node": {
+        "shape": [
+          2,
+          86756
+        ],
+        "dtype": "float64"
+      },
+      "state0_p_field": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64"
+      }
+    },
+    "reset_metadata": {
+      "Umax": 0.12,
+      "R": 0.0,
+      "alpha_T": 0.5,
+      "alpha_bar_initial": 0.0,
+      "driver_degraded_initial": 0.0,
+      "f_alpha_initial": 1.0,
+      "n_step": 5.0,
+      "recovery_residual": 0.00020761578903803955
+    },
+    "recovery_is_physical_cycle": false,
+    "complete_common_state": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/common_common_initial.mat",
+    "common_schema": {
+      "d": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64"
+      },
+      "history": {
+        "shape": [
+          4,
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "lower": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64"
+      },
+      "raw": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "u": {
+        "shape": [
+          1,
+          173512
+        ],
+        "dtype": "float64"
+      },
+      "version": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64"
+      }
+    },
+    "common_source_commit": "67942510c38c420c9ebc343e88b781a018cd1c7b",
+    "common_version": 0.0,
+    "existing_stored_state0_maxerr": 2.7755575615628914e-16,
+    "status": "full common-state header exists; stored scalar comparison reused, no new array equivalence check",
+    "derivative_policy": "fixed_recovered_profile, zero initial tangents by declared inverse problem; do not claim recovery was differentiated"
+  },
+  "reaction": {
+    "boundary": "fixed bottom Y nodes (minimum y), sign minus internal-force sum",
+    "matlab_dofs": "fix_Y + N in 1-based [ux_all;uy_all]",
+    "python_dofs": "2*(node_id_matlab-1)+1 in interleaved 0-based ordering",
+    "scalar_file_phase": "written after history commit using final-staggered cached K",
+    "force_state": "cached K assembled before possible damage clipping/history commit; not guaranteed exact post-clip snapshot force",
+    "peak_oracle_phase": "separate freshly assembled converged peak, BEFORE damage/history commit, with frozen pre_phase history/lower",
+    "target_new_contract": "fresh force at exact supplied u,d; source family, units and phase must match",
+    "step_source_mirror": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/GRIPHFiTH/Sources/+phase_field/+fem/+solver/+step/post_iter_update.m",
+      "sha256": "9c198f887490de29c50c1a7cf12d1a77b5f76387b447a965f2622deba0a5df8b",
+      "status": "local library mirror; exact legacy producer blob not in four-file source lock"
+    },
+    "remaining": "original scalar-vs-fresh-force equivalence and recovery/common array identity need authorized numerical comparison"
+  },
+  "snapshot": {
+    "first_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/S04_E011_raw_outputs_ad749c8_20261005_backup_20261015/S04_E011_FEM_Q4_C120/request28_post_commit/c0001_s001_post_commit.mat",
+    "field_schema": {
+      "alpha_bar_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "alpha_bar_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "connectivity": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "cycle": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64"
+      },
+      "cyclemax_updated": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "d_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "d_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "d_node": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64"
+      },
+      "damage_committed": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "element_ids": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "f_alpha_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "f_alpha_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "g_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "history_H_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "history_committed": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "history_vars_old": {
+        "shape": [
+          4,
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "load_factor": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64"
+      },
+      "node_coords": {
+        "shape": [
+          2,
+          86756
+        ],
+        "dtype": "float64"
+      },
+      "node_ids": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64"
+      },
+      "num_gauss_points": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64"
+      },
+      "psi_cyclemax_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "psi_cyclemax_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "psi_eff_prev_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "psi_raw_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "psi_raw_peak_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "semantic_class": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32"
+      },
+      "staggered_iterations": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64"
+      },
+      "state_timing": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32"
+      },
+      "strain_gp": {
+        "shape": [
+          3,
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "substep": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64"
+      },
+      "topology": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32"
+      },
+      "trace_strain_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64"
+      },
+      "u_node": {
+        "shape": [
+          2,
+          86756
+        ],
+        "dtype": "float64"
+      }
+    },
+    "phase": "post damage/history commit and cyclemax update; opaque channel1 preserved"
+  },
+  "qualifications": {
+    "source_text_and_headers": true,
+    "numerical_equivalence": false,
+    "original_solver_matches_changed_nodalK_model": false,
+    "native_execution_authorized": false
+  }
+}
