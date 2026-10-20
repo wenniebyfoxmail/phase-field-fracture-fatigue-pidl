@@ -310,3 +310,13 @@ This is not a consumed/failedr2 attempt or a numerical result. No source
 payload, GPU, fitting, SSH, freezing or scientific retrieval occurred here.
 Main section18 and Obsidian now distinguish approval conflict from run
 failure; exact budget and scientific conclusions remain unchanged.
+
+2026-10-20 coordination refresh: the preceding conflict is a historical
+snapshot, superseded by main section19. Sole coupling owner completed one
+private/nonmultiplexed hostname-only probe (4.356s, GPUServer8, exit0) and
+prepared reviewedr3: Devfd8408d5/Producer039c1501/Carde81fdc03,
+indexS04-E011-FN776-r3-A1. Main read existing local receipts and verified
+unchanged science/contracts only; no new probe, resource query or computation.
+Old timeout cause remains unknown; r2 unused, r3 not started and awaiting
+its exact human approval. Oldr2 permission does not authoriser3. Existing
+Obsidian/Roadmap now show this current state without duplicate material.

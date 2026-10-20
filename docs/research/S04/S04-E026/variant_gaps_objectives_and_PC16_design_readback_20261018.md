@@ -444,6 +444,8 @@ owner回执为 `uv_head_c1_solver_d3_20261019/static_review_fn776_r2.md`及本�
 
 ## 18. 2026-10-20：执行许可已转交，但较晚直接指令要求先诊断，尚未启动
 
+历史快照：本节保留当时冲突及未执行事实；后续已按只读诊断路线交付r3，当前状态见§19，不再等待本节的二选一。
+
 本轮用户在主对话明确批准adbf0b9d／Devde0a6514／Producer722788c7的唯一FN776-r2，索引S04-E011-FN776-r2-A1，含卡内检查、部署、五源读取、求解及取回；25424单位／900秒／RSS与CUDA各8GiB／100MiB／4GiB余量，失败或触限不重试，主对话统一Obsidian。主对话已将原文和精确边界转交唯一耦合owner，没有另开producer。
 
 交接前只读核对：owner仍在8fa7e76f、工作树干净；adbf0b9d到HEAD的卡与plan无差异，控制plan SHA256仍为68fb14b435dd9f9c1cbdb6f82843e9d94cff8b47362530277a0e3fbdb32a31fc。今天20日不改已批RunID中的20261019。本主工作树base6aef9db7，仅写自有记录／共享Obsidian，无SSH、科学payload读取或计算。
@@ -465,4 +467,26 @@ owner回执为 `uv_head_c1_solver_d3_20261019/static_review_fn776_r2.md`及本�
 
 共享Obsidian以2026-10-20里程碑标记“已转交许可但范围待统一，尚未启动”，不保留误导性的“只待第一次审批”，也不声称已经冻结核验了新结果。后续若有澄清或新终态，在同一记录追加，不覆盖本次分歧事实。
 
-来源：E021/run_result.md，E025-R002和E026-R001既有summary.json，r2结果fd8f3588及现有源码定义，PC16提案52d24088；FN776来源见§15、准备授权见§16、新卡核对见§17、本轮授权分歧见§18。
+## 19. 2026-10-20：当前已到r3待审批，不再停留在r2范围冲突
+
+目的：统一既有交接状态，复用唯一耦合owner的已完成诊断和新卡，不重复工作。本对话只读查看owner最新completed turn `01a158c5-21c3-7581-8682-e6b3c48e93af`（revision205）、本地诊断回执／stdout、新卡及差异审核；未运行SSH、探针、资源查询、控制入口、科学数组或计算，未发起另一审核／producer。主工作树basefe9b8e43，仅更新本记录及共享Obsidian。
+
+owner按较新只读范围完成一次独立私有非复用SSH探针，远端仅hostname；已有probe_receipt.json为completed、exit_code0、elapsed_seconds4.356057333992794、scientific_data=false，原stdout为GPUServer8。主对话读这些现成小型本地控制记录，未重复探针。诊断时间为2026-10-20 11:05:55–11:06:00 BST；连接路径此时可用，但r1因原阶段输出缺失，历史超时根因仍未知，不能认定旧复用连接就是原因，也不能推断当前GPU7准入或数值可行。
+
+唯一owner已交付r3（提交afd50343）：
+
+| 当前对象 | 既有最终身份 |
+|---|---|
+| 卡／计划提交 | e81fdc03d1f459297ca7037ec0de6e0f45e6985f |
+| Dev／Producer | fd8408d53cbab3234d5066ba6706c25915a8a8d4／039c15015f64ca17b7013ad760cca8e6d19a5777 |
+| Card／批准索引 | S04-E011-UVH-C1-FN776-CARD-r3／S04-E011-FN776-r3-A1 |
+| Run | pf_s04e011_uvh_c1_fn776_r3_20261020 |
+| 静审 | REVIEW_PASS_CONNECTION_IDENTITY_DIFF_ONLY；只读Codex /root/uvh_static_review，复用不变科学及控制审查，后台模型未独立暴露 |
+
+主对话Git比较de0a6514→fd8408d5：source/、SENS_tensile/、worker.py及square_root.py无差异；旧新输入清单去除run_id/control_plane/preparation_authority后逐字段相同。r3仅更新必要私有非复用SSH参数和新Run／卡／路径身份，现有控制文件名不代表另起一套实现。25424代理单位、guard900秒、RSS/CUDA各8GiB、4GiB运行余量、100MiB=98+1+1、600/840/890+10秒截止及失败不重试均保留。hostname成功不代替未来卡内真实重复／资源检查。
+
+当前事实是**r2未使用，r3未启动；精确r3仍待人方另批**。不沿旧r2批准启动r3，也不继续要求用户解决已经由只读路线推进完的旧二选一。当前active D3＝等待r3精确卡审批；这次协调消息本身不构成执行批准。无新增数值结果，不改变旧PC16负结果或物理／容量／泛化结论。
+
+复用owner现有路径，不新建方案或重复材料：耦合工作树 `docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/`中的`connection_diagnosis_20261020.md`、`run_card_fn776_r3.md`、`static_review_fn776_r3.md`；原始诊断在主项目`local_archive/experiments/S04-E011/preparation/connection_diagnostic_20261020/`，r3准备回执在同级`fn776_r3_20261020/`。主对话只更新现有residual主题及Roadmap单条状态，未改owner材料、未重复发送任务或创建第二生产owner。
+
+来源：E021/run_result.md，E025-R002和E026-R001既有summary.json，r2结果fd8f3588及现有源码定义，PC16提案52d24088；FN776来源见§15、准备授权见§16、新卡核对见§17、历史授权分歧见§18、当前r3交接见§19。
