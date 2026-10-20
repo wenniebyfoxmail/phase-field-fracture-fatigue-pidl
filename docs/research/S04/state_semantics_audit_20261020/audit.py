@@ -51,7 +51,9 @@ def check(name, passed, detail, source, kind='saved_data'):
 
 
 def state(package, family, c, q, label, source, role, timing, level='metadata', **extra):
+    umax=extra.pop('umax',.12)
     row = dict(package=package, family=family, cycle=c, substep=q,
+               umax=umax,trajectory=extra.pop('trajectory',family+':Umax='+str(umax)),
                recovery_offset_raw_step=raw_step(c, q) if c and q else '',
                export_label=label, source=str(source), role=role, timing=timing,
                verification=level, **extra)
@@ -61,6 +63,7 @@ def state(package, family, c, q, label, source, role, timing, level='metadata', 
 
 def field(row, name, location, support, timing, counterpart='', meaning='', level=None):
     fields.append(dict(package=row['package'], family=row['family'], cycle=row['cycle'],
+                       umax=row['umax'],trajectory=row['trajectory'],
                        substep=row['substep'], state_label=row['export_label'],
                        field=name, location=location, support=support, timing=timing,
                        counterpart=counterpart, meaning=meaning,
@@ -133,15 +136,16 @@ def manifest_packages():
                 if sf.is_file():
                     schema=list(csv.DictReader(sf.open()))
             for f in schema:
-                n=f.get('name',f.get('field',f.get('field_name','UNKNOWN')))
-                field(row,n,str(p)+'::request28_snapshot/'+n,str(f.get('shape','native declared')),
-                      f.get('state_timing',s['state_timing']),meaning=f.get('origin','manifest schema'))
+                n=f.get('name',f.get('export_field',f.get('field',f.get('field_name','UNKNOWN'))))
+                field(row,n,str(p)+'::request28_snapshot/'+n,str(f.get('support',f.get('shape','native declared'))),
+                      f.get('state_timing',s['state_timing']),meaning=f.get('solver_variable_or_expression',f.get('origin','manifest schema'))+'; '+f.get('notes',''))
     root=CLOUD/'hard5_first_detect_state_semantics_export_20260817'
     for s in csv.DictReader((root/'state_index.csv').open()):
         c,q=int(s['source_cycle']),int(s['source_substep'])
         p=root/s['array_file'].replace('\\','/')
         row=state(root.name,'Hard5_original',c,q,s['output_id'],p,s['semantic_class'],
-                  'post_commit per export name; detailed fields not re-opened',payload_present=p.is_file())
+                  'post_commit per export name; detailed fields not re-opened',payload_present=p.is_file(),
+                  umax=float(s['output_id'].split('_')[0][1:])/100)
         for n in ['u_node','d_node','alpha_bar_gp','psi_eff_prev_gp','f_alpha_gp']:
             field(row,n,str(p)+'::request28_snapshot/'+n,'native node or GP4','post_commit',level='schema_not_rechecked')
 
@@ -347,7 +351,7 @@ def main():
         raise FileExistsError('fresh audit output required')
     args.out.mkdir(parents=True,exist_ok=True)
     self_checks();manifest_packages();paired_trajectories();mcs_metadata();c20_identity();c1_chain();current_outputs()
-    keys=[(r['package'],r['family'],r['cycle'],r['substep'],r['export_label']) for r in states]
+    keys=[(r['package'],r['trajectory'],r['umax'],r['cycle'],r['substep'],r['export_label']) for r in states]
     check('compound state identity unique',len(keys)==len(set(keys)),dict(rows=len(keys),unique=len(set(keys))),__file__,'index')
     write_csv(args.out/'state_map.csv',states);write_csv(args.out/'field_map.csv',fields)
     write_csv(args.out/'checks.csv',checks);write_csv(args.out/'file_inventory.csv',files)
