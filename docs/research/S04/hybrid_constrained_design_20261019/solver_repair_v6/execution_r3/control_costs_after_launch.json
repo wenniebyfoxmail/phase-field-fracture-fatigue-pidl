@@ -1,0 +1,58 @@
+{
+  "known_control_wall_seconds": 60.861933501204476,
+  "known_control_local_self_cpu_seconds": 0.011888000000000003,
+  "sources": [
+    {
+      "source": "dispatch_attempt1.json",
+      "local_wall_seconds": 6.509370499989018,
+      "local_self_cpu_seconds": 0.004175999999999999,
+      "remote_wall_contained_not_added": true
+    },
+    {
+      "source": "status_query1_receipt.json",
+      "local_wall_seconds": 5.626733375014737,
+      "local_self_cpu_seconds": null,
+      "remote_wall_contained_not_added": true
+    },
+    {
+      "source": "status_query2_receipt.json",
+      "local_wall_seconds": 11.428704250021838,
+      "local_self_cpu_seconds": 0.001058,
+      "remote_wall_contained_not_added": true
+    },
+    {
+      "source": "status_query3_receipt.json",
+      "local_wall_seconds": 10.716476917034015,
+      "local_self_cpu_seconds": 0.0011709999999999984,
+      "remote_wall_contained_not_added": true
+    },
+    {
+      "source": "status_query4_receipt.json",
+      "local_wall_seconds": 10.104708709055558,
+      "local_self_cpu_seconds": 0.0010369999999999997,
+      "remote_wall_contained_not_added": true
+    },
+    {
+      "source": "status_query5_receipt.json",
+      "local_wall_seconds": 8.89839500002563,
+      "local_self_cpu_seconds": 0.0013130000000000017,
+      "remote_wall_contained_not_added": true
+    },
+    {
+      "source": "terminal_evidence_query_receipt.json",
+      "local_wall_seconds": 7.57754475006368,
+      "local_self_cpu_seconds": 0.003133000000000004,
+      "remote_wall_contained_not_added": true
+    }
+  ],
+  "producer_cumulative_total_job_wall_seconds": 1171.6006941357628,
+  "prior_included_in_producer_cumulative": 825.6491945487214,
+  "known_producer_and_control_wall_charge_seconds": 1232.4626276369672,
+  "known_cpu_seconds_observed": 2284.3829929999997,
+  "gpu_seconds": 0.0,
+  "numerical_seconds": 830.5096827689558,
+  "historical_control_reserve_seconds": 600,
+  "reserve_is_actual": false,
+  "missing_cpu": "query1 local self CPU and some remote/control CPU were not measured; notzero",
+  "accounting": "Sum measured production and separately measured postlaunch control work; no duplication of prior825.6491945, stage remote wall, or600s reserve; concurrent calendar intervals conservatively not deducted. This is known producer/control cost, not all development labour or reconstructed missing measurements."
+}

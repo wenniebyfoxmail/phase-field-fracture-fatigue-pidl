@@ -1,0 +1,105 @@
+{
+  "verdict": "TERMINAL_RECORD_VERIFIED",
+  "scope": "TERMINAL_STOPPING_ELAPSED_AND_KNOWN_COST_RECORD_ONLY",
+  "reviewer": "Codex /root/hybrid_readiness_review",
+  "reviewed_utc": "2026-10-20T21:33:12.494593+00:00",
+  "run_id": "pf_hybrid_solver_v6_20261020_r3",
+  "execution_artifact_id": "016c3c5dcf2a4f76f3ac3dc548a48ea3967ddfe005e7cb2f8fe4d12142f5daaf",
+  "execution_card_sha256": "c46bdac4a076def860852a8d6329edf980782d0198fdfe384fa8655b695c9430",
+  "evidence_hashes": {
+    "status_snapshot5.json": "78d4458dcabb9b355476e6dec8209782964219d7930ac53558965c0744ad0750",
+    "control_costs_after_launch.json": "09a06d19c7fdbcd88f374430d805c7dc3c71ab9fc4614a0913ca7666547fbb4d",
+    "terminal_diagnostics.json": "4ad9f97e821baf5584e3d41d19611cc7e7c53a5d71c6b3592f3d6aac062f8f1c",
+    "step2_residuals.csv": "a74f341d5987e1f7a2df9cf56d629815c866da1d4127dd309c9066aaa9b973cd",
+    "case_elapsed_times.csv": "ff49f4509e1a90e1f472a03d58382dd3a9451c74139e18b02496bed8f413ff12",
+    "terminal_evidence/inventory.json": "50a2db471178b0749d564eccb5d0804d5150bc179d8cd3511b3e1d6ae5029a05"
+  },
+  "findings": [],
+  "resolved_finding": {
+    "id": "POSTLAUNCH_CONTROL_OMISSIONS",
+    "status": "RESOLVED",
+    "evidence": "Exactly7 dispatch/query1..5/retrieval receipts matched to actual localwall and available selfCPU. Previously omitted query4/query5/terminal retrieval now included once."
+  },
+  "terminal": {
+    "status": "failed",
+    "end_london": "2026-10-20T22:29:18.399685+01:00",
+    "first_scientific_stop_verified": true,
+    "no_automatic_retry_verified_in_observed_run_chain": true,
+    "stop_reason": "physical-substep300s deadline",
+    "failed_step": 2,
+    "worker_exit": -15,
+    "attributed_processes": {
+      "3631794": null,
+      "3631795": null,
+      "3632262": null
+    },
+    "phases_started": [
+      "plotting_admission",
+      "native_replay",
+      "train_A"
+    ],
+    "accepted_train_A_substeps": 1,
+    "expected_train_A_substeps": 600,
+    "all_later_cases_not_started": true,
+    "training_fits": 0
+  },
+  "elapsed": {
+    "first_accepted_step_seconds": 30.748071529902518,
+    "train_A_phase_wall_seconds": 333.0319614317268,
+    "producer_wall_seconds": 345.9514985168353,
+    "producer_cumulative_total_job_wall_seconds": 1171.6006941357628,
+    "prior_included_in_cumulative_seconds": 825.6491945487214,
+    "unstarted_case_elapsed": "null/blank, not zero elapsed",
+    "interpretation": "Accepted-step wall, phase wall, producer wall and cumulative study charge are distinct. Failed incomplete work is charged; parent/nested work intervals must not be summed twice."
+  },
+  "known_costs": {
+    "postlaunch_control_receipts": 7,
+    "postlaunch_control_wall_seconds": 60.861933501204476,
+    "postlaunch_observed_local_self_cpu_seconds": 0.011888000000000003,
+    "known_total_producer_and_control_wall_seconds": 1232.4626276369672,
+    "known_cpu_seconds_observed": 2284.3829929999997,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 830.5096827689558,
+    "historical_control_reserve_seconds": 600,
+    "reserve_is_actual": false,
+    "missing_cpu": "query1 local self CPU and some remote/control CPU unmeasured, not zero",
+    "accounting": "Cumulative producer total already contains prior825.6491945487214. Add separately measured control wall once; contained remote wall not added again; overlap is conservatively not deducted. This is known production/control cost, not all development labour or complete recovery of missing observations."
+  },
+  "bounded_trace_findings": {
+    "step2_fresh_evaluations": 38,
+    "step2_completed_qps": 39,
+    "best_merit": 1.7827456777474993,
+    "best_merit_elapsed_seconds": 134.06392009742558,
+    "last_merit": 6.530113786615174,
+    "last_fresh_elapsed_seconds": 294.01348117459565,
+    "all_step2_fresh_acceptance_checks_false": true,
+    "unfinished_parent_child_blocks": [
+      "mechanics_re_equilibration",
+      "mechanical.recycled_gmres"
+    ],
+    "unfinished_blocks_are_not_two_independent_costs": true,
+    "unfinished_work_completion_or_would_have_converged": "unknown"
+  },
+  "scientific_boundary": {
+    "static_execution_review_remains_static_only": true,
+    "runtime_admission_and_replay_completed_for_this_run": true,
+    "complete_trajectory_achieved": false,
+    "neural_model_trained": false,
+    "three_arm_comparison_performed": false,
+    "repair_effectiveness_established": false,
+    "physical_teacher_qualification_established": false,
+    "verdict_interpretation": "Valid evidence of a negative bounded complete-trajectory attempt at the unchanged physical criteria and300-second engineering cap. No proof of mathematical nonexistence or inability to converge with any alternative method."
+  },
+  "review_actions": {
+    "ssh_calls": 0,
+    "tests": 0,
+    "fem_solves": 0,
+    "training_updates": 0,
+    "project_array_decodes": 0,
+    "scientific_source_card_or_execution_review_edits": 0,
+    "written_files": [
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v6_20261020/execution_r3/terminal_review.json",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/terminal_review.json"
+    ]
+  }
+}

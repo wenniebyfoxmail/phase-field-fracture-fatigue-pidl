@@ -1,0 +1,7 @@
+case,expected_substeps,accepted_substeps,phase_elapsed_seconds,last_accepted_step_seconds,status,error,journal_error,elapsed_source,observed_london
+train_A,600,1,333.0319614317268,30.748071529902518,FAILED,worker exit -15,,terminal_or_cost_ledger_phase_wall,2026-10-20T22:29:43.823930+01:00
+train_B,600,0,,,NOT_STARTED,,,unavailable_not_started,2026-10-20T22:29:43.823930+01:00
+validation,600,0,,,NOT_STARTED,,,unavailable_not_started,2026-10-20T22:29:43.823930+01:00
+test_reference,600,0,,,NOT_STARTED,,,unavailable_not_started,2026-10-20T22:29:43.823930+01:00
+test_classical,600,0,,,NOT_STARTED,,,unavailable_not_started,2026-10-20T22:29:43.823930+01:00
+test_hybrid,600,0,,,NOT_STARTED,,,unavailable_not_started,2026-10-20T22:29:43.823930+01:00

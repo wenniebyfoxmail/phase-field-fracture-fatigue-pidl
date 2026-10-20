@@ -1,3 +1,7 @@
+> 最新终态：R3已在2026-10-20 22:29:18英国时间按首科学失败停止，第2子步300秒未接受；train_A1/600、phase333.032秒，其余case/fit未开始、GPU0，三个归属PID均退出，没有重试。[终态与边界](../solver_repair_v6/execution_r3/terminal_summary.md)／[逐case elapsed](../solver_repair_v6/execution_r3/case_elapsed_times.csv)。下方启动/运行中/审批阻断条目均为历史状态，不代表当前仍在运行。
+
+> 当前D14更新：用户已明确批准原GPUServer8的具体脚本、同机R2→R3复制和一次修复后重跑。R3 stage成功、准确独立执行绑定REVIEW_PASS后已单次提交；源9216909d，物理/历史/预算不变。依赖/Agg/native replay准入通过，最新真实进度见[运行记录](../solver_repair_v6/execution_r3/run_status.md)和[逐case elapsed](../solver_repair_v6/execution_r3/case_elapsed_times.csv)。首科学失败即停，不自动重试。下方stage被拦文字属已解决历史，不能代表当前状态。
+
 > 当前D14（2026-10-20）：R2已核实失败且三个归属PID均不在；train_A接受1步、在第2步120秒停，累计生产研究wall797.079秒。新用户授权一次修复后完整重跑，沿同owner实现v6，保留D13字段/历史合同和物理精度。实现、142项人工测试及独立代码复审已完成；[当前准备](../solver_repair_v6/repair_plan.md)、[准确动作](../solver_repair_v6/stage_request.json)。远端stage被自动审批拒绝，未执行；新卡禁用并待具体服务器/脚本/复制动作的人方确认及实际stage成本绑定。以下D12/D13条款为历史治理沿革，不代表R2目前仍在运行。旧R2源/卡/收据不变。
 
 # FEM surrogate比较：当前任务入口与前瞻治理修订

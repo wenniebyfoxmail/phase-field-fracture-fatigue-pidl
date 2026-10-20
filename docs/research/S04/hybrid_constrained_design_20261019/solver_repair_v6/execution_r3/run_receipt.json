@@ -1,0 +1,143 @@
+{
+  "run_id": "pf_hybrid_solver_v6_20261020_r3",
+  "status": "failed_first_scientific_stop",
+  "source_commit": "9216909dffc90df09d60da8cfb076c2be32c79f5",
+  "source_branch": "codex/fem-surrogate-solver-repair-v6-20261020",
+  "sync_mode": "Mac immutable SHA-bound106-file snapshot",
+  "dirty_scientific_sources": false,
+  "artifact_id": "016c3c5dcf2a4f76f3ac3dc548a48ea3967ddfe005e7cb2f8fe4d12142f5daaf",
+  "card_sha256": "c46bdac4a076def860852a8d6329edf980782d0198fdfe384fa8655b695c9430",
+  "review_sha256": "b0f2e79c72ba4ab3e93ff0f0abec26425e8853032ab4448239b5e4b8978c7855",
+  "bundle_sha256": "968e3e302db2107d98fbf283701fc887ae2547e68dfea95e4fd8449462df3949",
+  "producer": "GPUServer8",
+  "account": "drtao",
+  "gpu_index": 5,
+  "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+  "gpu_currently_used": false,
+  "outer_timeout_pid": 3631794,
+  "supervisor_pid": 3631795,
+  "worker_pid": 3632262,
+  "command": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=20s",
+    "488084.342330s",
+    "/usr/bin/python3",
+    "-u",
+    "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/code/tools/run_hybrid_producer.py",
+    "--card",
+    "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/execution_card.json",
+    "--package",
+    "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/source_manifest.json",
+    "--inputs",
+    "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/inputs",
+    "--review",
+    "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/execution_review.json",
+    "--execute"
+  ],
+  "run_root": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_hybrid_solver_v6_20261020_r3",
+  "log": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/supervisor.log",
+  "worker_log": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/logs/train_A.log",
+  "start_london": "2026-10-20T22:23:33.819854+01:00",
+  "runtime": {
+    "numpy": "1.24.4",
+    "scipy": "1.15.3",
+    "torch": "2.7.0+cu126",
+    "osqp": "1.0.4",
+    "h5py": "3.13.0",
+    "psutil": "7.0.0"
+  },
+  "matplotlib": "3.10.3",
+  "backend": "Agg",
+  "native_replay_passed": true,
+  "physical_precision_history_contract_unchanged": true,
+  "engineering_step_seconds": 300,
+  "scientific_launches": 1,
+  "retries": 0,
+  "stop_rule": "first scientific failure stops whole pipeline; no automatic retry/resume",
+  "actual_prior_costs": {
+    "wall_seconds": 825.6491945487214,
+    "cpu_seconds": 833.843971,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 497.477721337229
+  },
+  "historical_control_reserve_seconds": 600,
+  "dispatch_local_wall_seconds": 6.509370499989018,
+  "dispatch_cost_accounting": "measured separately after launch;45s dispatch/45s cleanup reserves already subtracted from outer timeout, never fabricated as prior actual",
+  "latest_snapshot": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v6_20261020/execution_r3/status_snapshot5.json",
+  "initial_health": "exact versions, Agg, saved-field native replay passed; attributed supervisor+worker alive;train_A1 accepted,step2 active; no error",
+  "case_elapsed_csv": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v6_20261020/execution_r3/case_elapsed_times.csv",
+  "scientific_result": "Numerical completion failed; no training or three-arm outcome; no automatic retry",
+  "latest_observed_london": "2026-10-20T22:29:43.823930+01:00",
+  "latest_progress": "train_A1/600 accepted;step2failed300s guardian; remaining phases not started;fit0/GPU0",
+  "end_london": "2026-10-20T22:29:18.399685+01:00",
+  "terminal_reason": "physical-substep300s deadline",
+  "processes_stopped": {
+    "3631794": null,
+    "3631795": null,
+    "3632262": null
+  },
+  "producer_wall_seconds": 345.9514985168353,
+  "train_A_phase_elapsed_seconds": 333.0319614317268,
+  "known_final_producer_and_control_cost": {
+    "known_control_wall_seconds": 60.861933501204476,
+    "known_control_local_self_cpu_seconds": 0.011888000000000003,
+    "sources": [
+      {
+        "source": "dispatch_attempt1.json",
+        "local_wall_seconds": 6.509370499989018,
+        "local_self_cpu_seconds": 0.004175999999999999,
+        "remote_wall_contained_not_added": true
+      },
+      {
+        "source": "status_query1_receipt.json",
+        "local_wall_seconds": 5.626733375014737,
+        "local_self_cpu_seconds": null,
+        "remote_wall_contained_not_added": true
+      },
+      {
+        "source": "status_query2_receipt.json",
+        "local_wall_seconds": 11.428704250021838,
+        "local_self_cpu_seconds": 0.001058,
+        "remote_wall_contained_not_added": true
+      },
+      {
+        "source": "status_query3_receipt.json",
+        "local_wall_seconds": 10.716476917034015,
+        "local_self_cpu_seconds": 0.0011709999999999984,
+        "remote_wall_contained_not_added": true
+      },
+      {
+        "source": "status_query4_receipt.json",
+        "local_wall_seconds": 10.104708709055558,
+        "local_self_cpu_seconds": 0.0010369999999999997,
+        "remote_wall_contained_not_added": true
+      },
+      {
+        "source": "status_query5_receipt.json",
+        "local_wall_seconds": 8.89839500002563,
+        "local_self_cpu_seconds": 0.0013130000000000017,
+        "remote_wall_contained_not_added": true
+      },
+      {
+        "source": "terminal_evidence_query_receipt.json",
+        "local_wall_seconds": 7.57754475006368,
+        "local_self_cpu_seconds": 0.003133000000000004,
+        "remote_wall_contained_not_added": true
+      }
+    ],
+    "producer_cumulative_total_job_wall_seconds": 1171.6006941357628,
+    "prior_included_in_producer_cumulative": 825.6491945487214,
+    "known_producer_and_control_wall_charge_seconds": 1232.4626276369672,
+    "known_cpu_seconds_observed": 2284.3829929999997,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 830.5096827689558,
+    "historical_control_reserve_seconds": 600,
+    "reserve_is_actual": false,
+    "missing_cpu": "query1 local self CPU and some remote/control CPU were not measured; notzero",
+    "accounting": "Sum measured production and separately measured postlaunch control work; no duplication of prior825.6491945, stage remote wall, or600s reserve; concurrent calendar intervals conservatively not deducted. This is known producer/control cost, not all development labour or reconstructed missing measurements."
+  },
+  "terminal_independent_review": "terminal_review.json",
+  "terminal_review_sha256": "8e101c0c10b63d489e0f53afd2ad71ae42c20fec05e83a254331fc135bed4be7"
+}

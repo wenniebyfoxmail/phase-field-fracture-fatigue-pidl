@@ -50,3 +50,13 @@ Historical next candidate (superseded as main route by the user on2026-10-19): o
 Current workflow: installed research-decision-core plus road-fracture/PIDL adapters; project-local skill files remain historical snapshots. This workflow refresh changes no scientific thresholds, allowed evidence, execution authority or budget. Obsidian owner note is mesh对齐.md with its one current Roadmap link.
 
 Actual result review: [scoped independent receipt](../research/S04/S04-E011/runs/loss_weight_fixed200_evidence_review_20261018.json). Current execution succeeded; retrieval verified/partial by declared compact scope; gamma25 field claim negative; research disposition repair with one proposed offline discriminator. No active producer remains from this Run.
+
+
+<!-- HYBRID_SOLVER_V6_R3_LAUNCHED_20261020 -->
+### 2026-10-20 D14：原质量三臂比较的v6一次重跑已提交
+
+沿D12/D13：按新具体动作授权在原GPUServer8单次提交`pf_hybrid_solver_v6_20261020_r3`，源9216909d；数值候选/机械成本修复143项人工检查、独立代码与预算差量及准确执行包绑定复核通过。新工程单步300秒，原物理阈值、历史/CAS、逐字段时刻、网络/fit/载荷族不变；旧成本825.649秒与600秒缺测预留从原136hosth/12GPUh扣除。
+
+依赖、Agg3.10.3和native saved-field replay实际通过，train_A首步30.748秒接受、第2步运行中，无新科学结论。各case elapsed/accepted/error持续落盘；首个科学失败停止整条pipeline且不重试，不把运行启动视为NN额外收益。详见[准确执行审核](../research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/execution_review.json)、[运行状态](../research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/run_status.md)。
+
+2026-10-20 22:29 D14终态：R3按第2步300秒首停，train_A仅1/600、phase333.032秒，后续case/fit未开始，GPU0；3归属PID均退出且未重试。38fresh末KKT/联合L2仍不达标，完整轨迹失败不能称NN比较完成。已知生产及控制费用1232.463秒，600秒预留非actual；详见[终态](../research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/terminal_summary.md)。
