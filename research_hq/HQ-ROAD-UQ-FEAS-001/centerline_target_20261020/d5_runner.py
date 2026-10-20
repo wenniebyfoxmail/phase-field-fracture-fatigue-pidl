@@ -52,10 +52,14 @@ def sha256(path):
 
 def snapshot():
     files = [HERE / "d5_runner.py", HERE / "centerline_core.py", HERE / "d5_preflight.py",
+             HERE / "d5_admission.ps1",
+             HERE / "invoke_d5_admission_once.ps1",
              HERE / "d5_protocol.json", HERE / "d5_data_lock.json", OWNER / "runner.py",
              OWNER / "frozen_protocol.json", OWNER / "d2_public_b_repair_20261019" / "repair_model.py",
              OWNER / "d2_public_b_repair_20261019" / "d2_runner.py",
-             OWNER / "d2_public_b_repair_20261019" / "d2_protocol.json"]
+             OWNER / "d2_public_b_repair_20261019" / "d2_protocol.json",
+             OWNER / "runs" / "HQ-ROAD-CENTERLINE-001-R001" / "launch_gpu_server.cmd",
+             OWNER / "runs" / "HQ-ROAD-CENTERLINE-001-R001" / "register_and_start.ps1"]
     payload = {path.relative_to(OWNER).as_posix(): sha256(path) for path in files}
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 

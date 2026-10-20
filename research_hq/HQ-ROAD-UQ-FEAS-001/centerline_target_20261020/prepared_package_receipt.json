@@ -3,7 +3,7 @@
   "experiment_id": "HQ-ROAD-CENTERLINE-001",
   "run_id": "HQ-ROAD-CENTERLINE-001-R001",
   "prepared_date": "2026-10-20",
-  "code_snapshot": "9c5a7c759f4db6a67595a424302bd65bc72bbffd604887d48b09a57de591480e",
+  "code_snapshot": "cd28472154eb4912a6c0f975943512052ddcedf88f2dc1bdbb36bb54831c64ae",
   "data_lock_sha256": "563cf2fc1410a5872086f96c9769faeaaf2d4b14e137eba52665e8d3f29c122e",
   "local_checks": [
     "centreline target and scale unit tests",

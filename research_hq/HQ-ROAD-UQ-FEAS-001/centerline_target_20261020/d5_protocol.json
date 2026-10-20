@@ -67,7 +67,15 @@
     "gaps_nonempty": 382,
     "gaps_empty": 2
   },
-  "mechanical_rechecks": {"max_checks": 2, "cumulative_seconds": 120},
+  "mechanical_rechecks": {
+    "original_max_checks": 2,
+    "original_cumulative_seconds": 120,
+    "original_checks_consumed": 2,
+    "hq_additional_checks": 1,
+    "additional_check_seconds": 75,
+    "total_check_ceiling": 3,
+    "receipt_required": "remote on-disk JSON; SSH exit code alone is insufficient"
+  },
   "scientific_retry": false,
   "road420_access": false,
   "new_data_access": false,
