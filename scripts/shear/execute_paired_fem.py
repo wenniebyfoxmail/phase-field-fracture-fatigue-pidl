@@ -13,10 +13,21 @@ DEADLINE='2026-10-21T07:17:49Z'
 def ps_command(s):
     return 'powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand '+base64.b64encode(s.encode('utf-16le')).decode()
 
-def call(argv,timeout,receipt):
+def mechanical_remaining():
+    paths=list(RUN.glob('identity_cost*.json'))+list(RUN.glob('status_*.json'))
+    paths += [RUN/'upload.json',RUN/'launch_transport.json']
+    spent=sum(json.loads(p.read_text())['seconds'] for p in paths if p.exists())
+    return 60-spent
+
+
+def call(argv,timeout,receipt,mechanical=False):
     remaining=datetime.datetime.fromisoformat(DEADLINE.replace('Z','+00:00')).timestamp()-time.time()
     if remaining<=0: raise RuntimeError('Original total deadline exhausted; no remote call')
     timeout=min(timeout,remaining)
+    if mechanical:
+        left=mechanical_remaining()
+        if left<=0: raise RuntimeError('Mechanical60s envelope exhausted; no remote call or reset')
+        timeout=min(timeout,left)
     started=time.monotonic();out=err='';rc=None
     normalise=lambda v: v.decode(errors='replace') if isinstance(v,bytes) else (v or '')
     try:
@@ -32,6 +43,7 @@ def call(argv,timeout,receipt):
 
 
 def prepare():
+    assert not (RUN/'invocation.json').exists(),'Preserve consumed invocation and immutable payload'
     identity=json.loads((RUN/'native_identity.json').read_text())
     assert identity['host']=='CITPC12' and identity['head']=='2098dc9114fe9e8140f1f25607e1c74ddc4a032e'
     locks=json.loads((CASE/'runs/S04-E035-R004/native_source_lock.json').read_text())
@@ -75,22 +87,37 @@ def launch():
     script=(RUN/'stage_and_launch.template.ps1').read_text().replace('MECHANICAL_DEADLINE',mechanical_end.isoformat())
     local=RUN/'stage_and_launch.ps1';local.write_text(script)
     remote='C:/q4staging/S04E035_R005_'+uuid.uuid4().hex+'.ps1'
-    p=call(['scp','-q','-o','BatchMode=yes','-o','ConnectTimeout=10',str(local),HOST+':'+remote],max(1,end-time.monotonic()-5),'upload')
+    with (RUN/'staging_identity.json').open('x') as f:
+        json.dump(dict(remote_outer_path=remote,outer_sha256=hashlib.sha256(script.encode()).hexdigest(),mechanical_deadline_utc=mechanical_end.isoformat()),f,indent=2)
+    p=call(['scp','-q','-o','BatchMode=yes','-o','ConnectTimeout=10',str(local),HOST+':'+remote],max(1,end-time.monotonic()-5),'upload',mechanical=True)
     assert p.returncode==0,'Upload failed; no invocation'
     cmd="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';if((Get-FileHash '"+remote+"').Hash.ToLower() -ne '"+hashlib.sha256(script.encode()).hexdigest()+"'){throw 'Outer transfer mismatch'};& '"+remote+"'"
-    p=call(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10',HOST,ps_command(cmd)],max(1,end-time.monotonic()),'launch_transport')
+    p=call(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10',HOST,ps_command(cmd)],max(1,end-time.monotonic()),'launch_transport',mechanical=True)
     print(p.stdout,p.stderr[-500:]);assert p.returncode==0,'Unknown launch state; inspect receipt before any further action'
 
 
 def status():
     s="$ProgressPreference='SilentlyContinue';$r='"+REMOTE+"';$o=@{root_exists=(Test-Path $r)};foreach($n in @('launch.json','exit.json','supervisor_submission.json')){if(Test-Path ($r+'/'+$n)){$o[$n]=Get-Content ($r+'/'+$n) -Raw|ConvertFrom-Json}};$o['states']=@(Get-ChildItem ($r+'/fem/state_*.mat') -ErrorAction SilentlyContinue).Count;$o['stdout_tail']=@(Get-Content ($r+'/stdout.log') -Tail 4 -ErrorAction SilentlyContinue);$o['stderr_tail']=@(Get-Content ($r+'/stderr.log') -Tail 12 -ErrorAction SilentlyContinue);$o|ConvertTo-Json -Depth 6"
     label='status_'+datetime.datetime.now(datetime.timezone.utc).strftime('%H%M%S')
-    p=call(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10',HOST,ps_command(s)],30,label)
+    p=call(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10',HOST,ps_command(s)],30,label,mechanical=not (RUN/'producer_started.json').exists())
     print(p.stdout,p.stderr[-300:]);assert p.returncode==0
+    state=json.loads(p.stdout)
+    if state.get('launch.json'):
+        launch=state['launch.json']
+        expected=json.loads((RUN/'prepared.json').read_text())['commit']
+        assert launch['root']==REMOTE and launch['code_commit']==expected and launch['host']=='CITPC12'
+        assert launch['kind']=='fem' and launch['pid']>0
+        (RUN/'producer_started.json').write_text(json.dumps(launch,indent=2))
+    if state.get('exit.json'):
+        assert (RUN/'producer_started.json').exists()
+        terminal=state['exit.json']; started=json.loads((RUN/'producer_started.json').read_text())
+        assert terminal['pid']==started['pid']
+        (RUN/'producer_terminal.json').write_text(json.dumps(terminal,indent=2))
 
 
 def retrieve():
     # Direct copy avoids duplicating a 10GiB producer tree with an archive.
+    assert (RUN/'producer_terminal.json').exists(),'Verify terminal receipt before copying a producer tree'
     dest=RUN/'retrieved'
     assert not dest.exists(),'Existing retrieval; verify before another transfer'
     p=call(['scp','-q','-r','-o','BatchMode=yes','-o','ConnectTimeout=10',HOST+':'+REMOTE,str(dest)],540,'retrieval')
