@@ -15,9 +15,9 @@ import subprocess
 import sys
 import time
 
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r2'
-INDEX = 'S04-E011-FN776-r2-A1'
-RUN = 'pf_s04e011_uvh_c1_fn776_r2_20261019'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r3'
+INDEX = 'S04-E011-FN776-r3-A1'
+RUN = 'pf_s04e011_uvh_c1_fn776_r3_20261020'
 CASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs') / RUN / 'authorized_execution'
 CAP = 1024**2
 RECEIPT_RESERVE = 64*1024
@@ -161,7 +161,7 @@ def main():
     args = p.parse_args()
     if (not args.execute_approved or args.approval_ref != CARD or args.approval_index != INDEX or
             sys.flags.optimize or sys.platform != 'darwin'):
-        raise SystemExit('exact human-approved r2 plan, Mac control only; preparation never executes')
+        raise SystemExit('exact human-approved r3 plan, Mac control only; preparation never executes')
     raw = args.plan.read_bytes()
     assert hashlib.sha256(raw).hexdigest() == args.plan_sha256
     plan = json.loads(raw)
