@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E034
 protocol_revision: v1-finite-raw-reaction-F8-F802-20261019
-status: code_ready_awaiting_HQ_evaluation
+status: completed_primary_negative_no_admitted_correction
 ---
 # E034：反力保护下的实际有限 raw 双臂比较
 
@@ -48,3 +48,9 @@ F8成功即证明已有八轴足够此次有限目标，优先简单方案。F8�
 代码冻结于 `5319bf47e6c5b7ca6fe3a95884b610e0d7251848`；17项本地合成fixture通过，另完成全合成完整入口/导出/归档路径检查。独立审查初审和两次焦点复审保留，最终 REVIEW_PASS；收尾双重故障被修复，原异常、首停和watchdog清理均有针对性检查。数学、目标、预算和旧E033源码/判据不改。
 
 [确切运行包与HQ决定项](hq_handoff_20261019.md)、[准备回执](preparation_receipt.json)、[独立审查回执](independent_review.md)。当前是Code Ready本地准备，不是Run Ready；本轮0真实数据拟合/模型加载/NN梯度/GPU/资源预检/远程传送/执行。下一步由HQ决定是否批准此确切源版本的资源预检和一次运行，不能沿用旧E033授权。
+
+## 2026-10-20 一次明确授权执行完成
+
+用户明确批准5319bf47的一次模型兼容/实时GPU5预检及通过后双臂比较。所有准入/来源/起点/Jac核验通过；F8与F802各一次正常status0收敛，分别7主迭代/7点与39主迭代/45点，无目标接受、正式终点均精确E032。F8末试探raw降0.01553054%；F802末试探0.24283853%达到幅度，但u_global等平方比超界最高5.48e-13、锥slack负约9.35e-16；按原零slack拒绝，actualNN候选复核0。原科学主标准negative，不能把诊断幅度当完整收益或空间容量结论。
+
+全进程203.081081s，保守新增0.0564114115GPUh、累计1.1647510661<2；完整回执/完成标记/48项producer清单，worker退出、GPU5无残留。无重试/换卡/替代权重/判据更改。当前Run结束、当前冻结配方不追加；[完整结果与HQ下一决定](result_20261020.md)、[结构化回执](run_summary.json)。

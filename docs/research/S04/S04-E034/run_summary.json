@@ -1,0 +1,122 @@
+{
+  "experiment_id": "S04-E034",
+  "protocol": "S04-E034/v1-finite-raw-reaction-F8-F802-20261019",
+  "run_id": "pf_s04e034_finite_reaction_v1_20261020T100112Z",
+  "client_date": "2026-10-20",
+  "source_commit": "5319bf47e6c5b7ca6fe3a95884b610e0d7251848",
+  "source_dirty": false,
+  "authorization": "user-explicit-E034-5319bf47-execution-2026-10-20",
+  "engineering_status": "completed",
+  "scientific_primary": "NOT_MET_NO_STRICTLY_ADMITTED_TARGET",
+  "formal_endpoints": "exact_cached_E032",
+  "accepted_head_updates": 0,
+  "actual_NN_candidate_verifications": 0,
+  "projected_reproduction_points": 0,
+  "arms": {
+    "F8": {
+      "solver_status": 0,
+      "major_iterations": 7,
+      "distinct_points": 7,
+      "accepted": false,
+      "formal_endpoint_raw_reduction_percent": 0.0,
+      "last_trial_raw_reduction_percent": 0.015530542923380963,
+      "max_trial_raw_reduction_percent": 0.027257043993944574,
+      "max_trial_point": 2,
+      "strict_protected_visited_points": 0,
+      "fully_target_pass_points": 0,
+      "last_trial_metric_excess": 1.9806378759312793e-13,
+      "last_trial_cone_ball_violation": 9.354496344204932e-16,
+      "last_trial_metric_violations": {
+        "UV_Z": 3.441691376337985e-14,
+        "u_Z": 6.838973831690964e-14,
+        "v_Z": 3.042011087472929e-14,
+        "top_error_squared": 1.9806378759312793e-13
+      },
+      "last_trial_geometric_violations": {
+        "raw_Z_cone": 8.411240454142543e-16,
+        "active_global_cone": 9.354496344204932e-16,
+        "active_Z_cone": 9.11380346191315e-16,
+        "force_squared_cone": 9.009720053354542e-16,
+        "u_global_cone": 8.697469827678717e-16
+      },
+      "last_trial_reactions": [
+        0.07313218093845131,
+        -0.0793435240151166
+      ],
+      "new_actual_NN_candidate_verifications": 0
+    },
+    "F802": {
+      "solver_status": 0,
+      "major_iterations": 39,
+      "distinct_points": 45,
+      "accepted": false,
+      "formal_endpoint_raw_reduction_percent": 0.0,
+      "last_trial_raw_reduction_percent": 0.2428385293646529,
+      "max_trial_raw_reduction_percent": 1.2659947234063162,
+      "max_trial_point": 6,
+      "strict_protected_visited_points": 0,
+      "fully_target_pass_points": 0,
+      "last_trial_metric_excess": 5.475619957451272e-13,
+      "last_trial_cone_ball_violation": 9.35015953551499e-16,
+      "last_trial_metric_violations": {
+        "force_squared": 5.329070518200751e-15,
+        "u_global": 5.475619957451272e-13,
+        "v_Z": 9.103828801926284e-15
+      },
+      "last_trial_geometric_violations": {
+        "active_global_cone": 7.511352650979575e-16,
+        "active_Z_cone": 7.389922007661198e-16,
+        "u_global_cone": 9.35015953551499e-16,
+        "v_Z_cone": 8.187894806610529e-16
+      },
+      "last_trial_reactions": [
+        0.07313218093845104,
+        -0.07083391136771568
+      ],
+      "new_actual_NN_candidate_verifications": 0
+    }
+  },
+  "resource": {
+    "worker_elapsed_seconds": 199.9068325124681,
+    "whole_process_seconds": 203.08108139038086,
+    "additional_conservative_GPU_hours": 0.056411411497328014,
+    "cumulative_conservative_GPU_hours": 1.164751066078951,
+    "additional_GPU_hours_cap": 0.5,
+    "total_GPU_hours_cap": 2,
+    "shared_seconds": 180.72481223009527,
+    "peak_RSS_bytes": 3493916672,
+    "peak_cuda_reserved_bytes": 1522532352,
+    "peak_cuda_allocated_bytes": 1465567232,
+    "manifest_payload_bytes": 570298104
+  },
+  "producer": {
+    "host": "GPUServer8",
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "gpu": "5",
+    "worker_pid": 2278651,
+    "launcher_pid": 2278648,
+    "timeout_pid": 2278650,
+    "root": "/mnt/data2/drtao/wennie/pf_s04e034_finite_reaction_v1_20261020T100112Z",
+    "code": "/mnt/data2/drtao/wennie/pf_s04e034_finite_reaction_v1_20261020T100112Z_stage/code",
+    "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e034_finite_reaction_v1_20261020T100112Z"
+  },
+  "local_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E034/runs/pf_s04e034_finite_reaction_v1_20261020T100112Z",
+  "manifest_sha256": "59bc09d1cd36dd2820870cc26bf72bef7349acce4998dad98ba96093499d308d",
+  "manifest_entries": 48,
+  "download_status": "VERIFIED_ALL48_SIZE_SHA256",
+  "retry": false,
+  "card_switch": false,
+  "weight_substitution": false,
+  "FEM_solves": 0,
+  "history_commits": 0,
+  "post_run_GPU5_apps": [],
+  "new_source_changes": false,
+  "criterion_changed": false,
+  "scope": "single exposed synthetic c20s4/horizon0/seed1, bounded local finite-head search only",
+  "disposition": "stop this run and frozen recipe additions; HQ evaluates potential numerical-feasibility redesign, no automatic rerun",
+  "download_verification": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E034/runs/pf_s04e034_finite_reaction_v1_20261020T100112Z/download_verification.json",
+  "formal_fields_bitwise_E032": true,
+  "formal_heads_bitwise_E032": true,
+  "local_PT_deserialization": false,
+  "authorization_consumed": true
+}

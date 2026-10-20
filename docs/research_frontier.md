@@ -53,4 +53,4 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 - 暂停新的 PIDL loss/architecture sweep、Freeze-Then-Select 阈值调节、未合格 FEM corpus 和单轨迹 foundation-model 宣称。
 
 
-**2026-10-19 FEM合成状态修复**：E033原raw.1%幅度未达、11组件收益与反力代价保留。按已批准F8/原802同E032起点、原保护/锥球和双端反力设计，E034代码5319bf47、17合成检查与独立代码审查通过，确切包待HQ评估；未资源预检/运行，0新增GPU。目标与新增cap.5GPUh/累计2限不变，最坏累计1.60834<2；局部未达不作全局容量判断。[canonical track](experiments/fem_synthetic_supervision_track.md)。
+**2026-10-20 FEM合成状态修复**：E034原保护/双反力下F8/原802一次比较完成，正式E032不变、原raw.1%严格目标未达。F802末试探降.24284%但数值级保护/锥超界，未接受；不作容量/全局无解判断。203.08s、保守累计1.16475GPUh<2，无重试换卡/改标准，Run结束、交HQ评估可行性数值路线，不追加运行。[canonical track](experiments/fem_synthetic_supervision_track.md)。
