@@ -86,6 +86,8 @@
 
 ### 主线A：沿唯一owner完成共同物理问题，停止把固定头小修当主研究
 
+这里的唯一owner是工作区`pidl-weight-gradient-fix-20261018`下的[混合方法主记录](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/hybrid_constrained_design_20261019/decision.md)，不是本审计分支。2026-10-20本轮读到的当前科学选择为[D12完整比较v1](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/hybrid_constrained_design_20261019/coupled_scientific_decision_v1.md)；具体参数及首次停止条件见[准备卡v4](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/hybrid_constrained_design_20261019/coupled_repair_card_v4.json)，该卡仍禁用，不能从本文直接启动。[D10实际成本结果](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/hybrid_constrained_design_20261019/linux_validation_result_v1.md)、[D11修复v2与预算](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018/docs/research/S04/hybrid_constrained_design_20261019/coupled_repair_v2.md)保留其原日期/版本；未来精确执行卡只能由原owner按最新授权准备。本审计不接管该分支、协议或producer。
+
 复用已实现的受约束增量混合框架：NN只提出可行damage初值；机械FEM解平衡；全节点damage约束块允许释放活跃集；trial历史永远从old重建；最后fresh联合验收后原子提交。reference、经典外推与NN三臂使用同一新合同与同一接受精度。旧软罚FEM/PIDL保持历史比较身份。不是再换一套网络，也不另起第二个producer。
 
 当前明确瓶颈是完整耦合重复调用的实际成本：已有Linux记录中首步从56.952s降到38.733s，但第二步仍在第9轮机械重平衡的LU里达到120s；9次QP、8次完成重平衡，尚未得到全链数值/训练收益。既有受保护Anderson修复及当前owner后续D12衔接应继续复用，不重新提出同一方向或把首步31.99%当NN加速。保留失败和现行停止条件；不能因总预算未耗完自动重启。
