@@ -37,6 +37,9 @@ from hybrid_transaction import StateStore
 from hybrid_work_trace import PersistentWorkTrace
 from hybrid_guard_client import notify
 from hybrid_coupled_acceleration import CouplingSettings
+from hybrid_state_contract import (CONTRACT_ID, FEATURE_TIMING, step_context,
+                                   bind_proposal, verify_expected, verify_transition,
+                                   verify_comparable)
 
 
 def coupling_identity(card):return object_sha(asdict(CouplingSettings(**card.get('coupling',{}))))
@@ -60,7 +63,7 @@ def trajectory(card, spec, inputs, out, archive):
     phase.mkdir()
     (phase/"states").mkdir()
     store = StateStore(phase/"latest.npz")
-    store.initialize(old)
+    store.initialize(old, context=step_context(card,spec,old,0,dofs,bc))
     shutil.copy2(store.path, phase/"states/state0000.npz")
     previous, previous_load, current_load = None, 0., 0.
     predictor = None
@@ -73,6 +76,8 @@ def trajectory(card, spec, inputs, out, archive):
             raise RuntimeError("training did not complete; cannot evaluate NN")
         if receipt.get('coupling_policy_id')!=coupling_id or receipt['model_manifest'].get('coupling_policy_id')!=coupling_id:
             raise RuntimeError('frozen network coupling provenance differs')
+        if receipt.get('state_contract_id')!=CONTRACT_ID or receipt['model_manifest'].get('state_contract_id')!=CONTRACT_ID:
+            raise RuntimeError('frozen network field timing provenance differs')
         checkpoint = torch.load(model_dir/"best.pt", map_location="cpu", weights_only=True)
         if sha256(model_dir/"best.pt") != receipt["checkpoint_sha256"]:
             raise RuntimeError("frozen checkpoint changed")
@@ -103,6 +108,8 @@ def trajectory(card, spec, inputs, out, archive):
             write_json(phase/"failure.json", dict(step=index+1, reason=str(exc), work=exc.work,
                                                  accepted_id=old.fingerprint(), version=old.version))
             raise
+        proposal = trace.call('bind_field_timing',lambda:bind_proposal(
+            proposal,step_context(card,spec,proposal.state,index+1,dofs,bc)))
         trace.call("durable_commit",lambda:store.commit(proposal))
         io_tick = perf_counter()
         state_path = phase/f"states/state{index+1:04d}.npz"
@@ -112,6 +119,7 @@ def trajectory(card, spec, inputs, out, archive):
                       state_sha256=sha256(state_path), commit_io_seconds=store.last_io_seconds,
                       snapshot_io_seconds=perf_counter()-io_tick,
                       work=proposal.work, f_min=float(proposal.state.fatigue.min()))
+        record.update(state_contract_id=CONTRACT_ID, state_contract=proposal.accepted_contract)
         if spec["role"] == "labels":
             from hybrid_network import features_for, FEATURES
             u_pred, psi_pred = proposal.prediction_context
@@ -126,6 +134,7 @@ def trajectory(card, spec, inputs, out, archive):
                           physics_id=backend.physics_id, role="numerically_accepted_new_contract_label",
                           settings_id=proposal.certificate['settings_id'],domain='nodal-K-v1',
                           coupling_policy_id=coupling_id,
+                          feature_timing=FEATURE_TIMING,
                           input_accepted_verified=True,output_joint_verified=True,trial_map_verified=True,
                           array_hashes_verified=True,features_origin_verified=True,original_operator_verified=True,
                           trajectory_id=spec['id'],certificate_sha256=object_sha(proposal.certificate),
@@ -144,6 +153,7 @@ def trajectory(card, spec, inputs, out, archive):
                    final_state_id=old.fingerprint(), physical_acceptance=True,
                    backend_setup_seconds=backend.setup_seconds,
                    coupling_policy_id=coupling_id,
+                   state_contract_id=CONTRACT_ID,
                    network_setup_seconds=getattr(predictor,"setup_seconds",0.))
     write_json(phase/"summary.json", summary)
     return summary
@@ -151,7 +161,7 @@ def trajectory(card, spec, inputs, out, archive):
 
 def analyze(card,inputs,out,archive):
     """Reference scoring after every candidate is frozen; outside online timing."""
-    backend,_,_,_=load_backend(inputs,read_manifest(Path(inputs)/'inputs.json'))
+    backend,_,dofs,bc=load_backend(inputs,read_manifest(Path(inputs)/'inputs.json'))
     phase=archive/'analysis';phase.mkdir();summary={}
     weights=backend.kin.det_jacobians
     for name in ['test_classical','test_hybrid']:
@@ -159,6 +169,10 @@ def analyze(card,inputs,out,archive):
         for step in range(1,601):
             reference,refmeta=StateStore(archive/f'test_reference/states/state{step:04d}.npz').load()
             candidate,meta=StateStore(archive/name/f'states/state{step:04d}.npz').load()
+            for state,metadata,phase_id in ((reference,refmeta,'test_reference'),(candidate,meta,name)):
+                spec=next(p for p in card['phases'] if p['id']==phase_id)
+                verify_expected(state,metadata,step_context(card,spec,state,step,dofs,bc))
+            verify_comparable(candidate,meta,reference,refmeta)
             r=compare_states(backend,candidate,reference)
             r['J']=float(np.sqrt(((r['u_gp_rms']/card['displacement_scale'])**2
                                   +(r['v_gp_rms']/card['displacement_scale'])**2+r['d_gp_rms']**2)/3))
@@ -169,15 +183,19 @@ def analyze(card,inputs,out,archive):
             rr=np.array(refmeta['certificate']['mechanics']['reaction_values'])
             r['reaction_relative_l2']=float(np.linalg.norm(nr-rr)/max(np.linalg.norm(rr),1.e-8))
             from hybrid_diagnostics import compare_diagnostics,plot_fields
-            prevref,_=StateStore(archive/f'test_reference/states/state{step-1:04d}.npz').load()
-            prevcan,_=StateStore(archive/name/f'states/state{step-1:04d}.npz').load()
+            prevref,prm=StateStore(archive/f'test_reference/states/state{step-1:04d}.npz').load()
+            prevcan,pcm=StateStore(archive/name/f'states/state{step-1:04d}.npz').load()
+            verify_transition(prevref,prm,reference,refmeta)
+            verify_transition(prevcan,pcm,candidate,meta)
             r['diagnostics']=compare_diagnostics(backend,candidate,reference,prevcan,prevref)
             r['correction']={k:meta['certificate'][k] for k in ('initialization_source','initial_to_final_damage_rms','initial_to_final_damage_inf')}
             if name=='test_hybrid' and step in (4,304,599,600):
-                classic,_=StateStore(archive/f'test_classical/states/state{step:04d}.npz').load()
+                classic,cm=StateStore(archive/f'test_classical/states/state{step:04d}.npz').load()
+                verify_comparable(classic,cm,reference,refmeta)
                 plot_fields(backend,[reference,classic,candidate],step,phase/'figures',
                             dict(run=card['run_id'],reference=refmeta['state_id'],candidate=meta['state_id'],source='sealed states; common posthoc only'))
-            rows.append(dict(step=step,**r))
+            rows.append(dict(step=step,physical_key=meta['state_contract']['context']['physical'],
+                             state_contract_id=CONTRACT_ID,**r))
         append_event(phase/'comparison.jsonl',dict(candidate=name,rows=rows))
         summary[name]=dict(mean_J=float(np.mean([r['J'] for r in rows])),
                            max_J=max(r['J'] for r in rows),
@@ -200,12 +218,14 @@ def fit(card, inputs, out, archive):
     from hybrid_network import DamageGraphPredictor, FEATURES, mesh_graph, weights_id
     from audit_hybrid_labels import qualify_transition
     from hybrid_incremental import digest_config
-    backend,_,_,_ = load_backend(inputs, read_manifest(Path(inputs)/"inputs.json"))
+    backend,_,dofs,bc = load_backend(inputs, read_manifest(Path(inputs)/"inputs.json"))
     phase=archive/"training";phase.mkdir()
     config=card["training"]
     torch.manual_seed(config["seed"])
     train_rows, validation_rows = [], []
     for phase_id in ("train_A","train_B","validation"):
+        seen_steps=[]
+        spec=next(p for p in card['phases'] if p['id']==phase_id)
         if not read_manifest(archive/phase_id/"summary.json").get("completed"):
             raise RuntimeError("incomplete label trajectory")
         for line in (archive/phase_id/"events.jsonl").read_text().splitlines():
@@ -220,12 +240,32 @@ def fit(card, inputs, out, archive):
                 qualification=qualify_transition(row,physics_id=backend.physics_id,mesh_id=backend.mesh_id,
                                                   settings_id=digest_config(asdict(SolverSettings(**card['solver']))))
                 if not qualification['metadata_eligible']:raise RuntimeError('label metadata contract not qualified')
-                a,_=StateStore(archive/row['input_state_file']).load()
+                a,am=StateStore(archive/row['input_state_file']).load()
                 b,meta=StateStore(archive/row['state_file']).load()
+                verify_transition(a,am,b,meta)
+                verify_expected(a,am,step_context(card,spec,a,row['step']-1,dofs,bc))
+                verify_expected(b,meta,step_context(card,spec,b,row['step'],dofs,bc))
+                if row.get('state_contract') != meta['state_contract']:
+                    raise RuntimeError('label event field timing envelope differs from sealed state')
                 if (a.fingerprint()!=row['predecessor_id'] or b.fingerprint()!=row['state_id']
                         or object_sha(meta['certificate'])!=row['certificate_sha256']):
                     raise RuntimeError('accepted predecessor/label certificate chain mismatch')
+                # Recompute the cheap feature transform from sealed old state
+                # and saved common predictor. No future label enters features.
+                from hybrid_network import features_for
+                with np.load(archive/row['features_file'],allow_pickle=False) as z:
+                    recomputed=features_for(backend,a,z['u_pred'],z['psi_pred'],dofs,
+                                            bc*meta['state_contract']['context']['physical']['prescribed_load'])
+                    pred_hash=__import__('hashlib').sha256(z['u_pred'].tobytes()+z['psi_pred'].tobytes()).hexdigest()
+                    if (not np.array_equal(z['x'],recomputed.astype(np.float32))
+                            or not np.array_equal(z['d_old'],a.damage.astype(np.float32))
+                            or not np.array_equal(z['d_target'],b.damage.astype(np.float32))
+                            or pred_hash!=row['input_predictor_sha256']):
+                        raise RuntimeError('label feature/target timing or predictor evidence mismatch')
+                seen_steps.append(row['step'])
                 (validation_rows if phase_id=="validation" else train_rows).append(row)
+        if seen_steps!=list(range(1,601)):
+            raise RuntimeError('label trajectory steps missing, duplicated or reordered')
     if len(train_rows)!=1200 or len(validation_rows)!=600:
         raise RuntimeError("whole planned label trajectories required; no partial fit")
     total=np.zeros(len(FEATURES));squares=total.copy();n=0
@@ -284,6 +324,7 @@ def fit(card, inputs, out, archive):
     frozen=DamageGraphPredictor(len(FEATURES));frozen.load_state_dict(checkpoint["state_dict"])
     # Attestation is separate from the model manifest to avoid a self hash.
     training_record=dict(completed=True,config=config,updates=updates,end_reason=end_reason,
+                         state_contract_id=CONTRACT_ID,feature_timing=FEATURE_TIMING,
                          coupling_policy_id=coupling_identity(card),
                          train_transitions=len(train_rows),validation_transitions=len(validation_rows),
                          input_rows_sha256=__import__('hybrid_producer_common').object_sha(train_rows+validation_rows),
@@ -291,11 +332,13 @@ def fit(card, inputs, out, archive):
                          weights_id=weights_id(frozen),test_opened=False)
     write_json(phase/"training_record.json",training_record)
     summary=dict(completed=True,updates=updates,wall_seconds=perf_counter()-begin,
+                 state_contract_id=CONTRACT_ID,
                  coupling_policy_id=coupling_identity(card),
                  checkpoint_sha256=sha256(phase/"best.pt"),
                  model_manifest=dict(trained=True,training_receipt_sha256=sha256(phase/"training_record.json"),
                                      feature_names=list(FEATURES),physics_id=backend.physics_id,
                                      coupling_policy_id=coupling_identity(card),
+                                     state_contract_id=CONTRACT_ID,feature_timing=FEATURE_TIMING,
                                      weights_id=weights_id(frozen)))
     write_json(phase/"receipt.json",summary)
     return summary

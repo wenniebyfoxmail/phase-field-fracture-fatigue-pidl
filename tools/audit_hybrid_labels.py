@@ -81,6 +81,11 @@ def qualify_transition(record, *, physics_id, mesh_id, settings_id):
     authorized producer/reviewer. This validates the metadata contract only.
     """
     reasons = []
+    from hybrid_state_contract import CONTRACT_ID, FEATURE_TIMING
+    if record.get('state_contract_id') != CONTRACT_ID:
+        reasons.append('state_contract_id')
+    if record.get('feature_timing') != FEATURE_TIMING:
+        reasons.append('feature_timing')
     for key, expected in (("physics_id", physics_id), ("mesh_id", mesh_id),
                           ("settings_id", settings_id), ("domain", "nodal-K-v1")):
         if record.get(key) != expected:

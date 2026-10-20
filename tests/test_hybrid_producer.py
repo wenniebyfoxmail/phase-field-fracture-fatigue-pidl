@@ -17,7 +17,10 @@ from test_hybrid_incremental import AlgebraicBackend,state,settings
 
 
 def card():
-    return json.loads((Path(__file__).resolve().parents[1]/'docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json').read_text())
+    c=json.loads((Path(__file__).resolve().parents[1]/'docs/research/S04/hybrid_constrained_design_20261019/execution_card_v2.json').read_text())
+    from hybrid_state_contract import CONTRACT_ID
+    c['state_contract_id']=CONTRACT_ID
+    return c
 
 
 def test_native_dof_vector_and_boundary_permutation_are_consistent():
@@ -93,6 +96,7 @@ def test_detached_launcher_reservation_prevents_duplicate_spawn(tmp_path,monkeyp
     import launch_hybrid_detached as launch
     from types import SimpleNamespace
     c=card();c['run_root']=str(tmp_path);c['archive_root']=str(tmp_path/'archive')
+    c['execution_enabled']=True  # artificial launcher fixture only
     cp=tmp_path/'card.json';write_json(cp,c)
     m=dict(files={},artifact_id=object_sha({}));mp=tmp_path/'package.json';write_json(mp,m)
     rp=tmp_path/'review.json';write_json(rp,dict(verdict='REVIEW_PASS',card_sha256=sha256(cp),artifact_id=m['artifact_id']))

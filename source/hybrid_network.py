@@ -108,11 +108,14 @@ def weights_id(module):
 class FrozenGraphInterface:
     def __init__(self, module, backend, *, manifest, mean, scale, device="cpu"):
         setup_started = perf_counter()
+        from hybrid_state_contract import CONTRACT_ID, FEATURE_TIMING
         # The manifest is an attestation to be linked to a real training receipt
         # by the future run card. Its existence is not teacher qualification.
         if (manifest.get("trained") is not True or not manifest.get("training_receipt_sha256")
                 or manifest.get("feature_names") != list(FEATURES)
                 or manifest.get("physics_id") != backend.physics_id
+                or manifest.get('state_contract_id') != CONTRACT_ID
+                or manifest.get('feature_timing') != FEATURE_TIMING
                 or manifest.get("weights_id") != weights_id(module)):
             raise ValueError("untrained/unidentified/incompatible frozen model")
         self.weights_identity = manifest["weights_id"]
@@ -134,6 +137,7 @@ class FrozenGraphInterface:
                                            mean=self.mean.tolist(), scale=self.scale.tolist(),
                                            features=list(FEATURES), mesh_id=backend.mesh_id,
                                            physics_id=backend.physics_id,
+                                           state_contract_id=CONTRACT_ID, feature_timing=FEATURE_TIMING,
                                            training_receipt=manifest["training_receipt_sha256"]))
         self.setup_seconds = perf_counter() - setup_started
 
