@@ -41,6 +41,8 @@ def require_enabled_execution(card, code_root=None):
     if sha256(path)!=reconciliation['receipt_sha256']:
         raise RuntimeError('reconciliation receipt hash differs')
     receipt=read_manifest(path)
+    if card.get('numerical_solver_revision')=='coupled-recycle-v6' and receipt.get('historical_control_reserve_seconds')!=600:
+        raise RuntimeError('unmeasured historical control reserve not bound')
     consumed='pf_hybrid_complete_20261020_r2'
     if (receipt.get('schema')!='hybrid-budget-reconciliation-v1'
             or receipt.get('complete') is not True or receipt.get('active_or_unknown_runs')!=[]
@@ -90,6 +92,8 @@ def validate_card(card):
     if revision is None:
         if card['solver']['wall_seconds']!=120:raise ValueError('legacy step allowance changed')
     elif revision=='coupled-recycle-v6':
+        if card.get('historical_control_reserve_seconds')!=600:
+            raise ValueError('v6 unmeasured historical control reserve missing')
         expected=dict(force_scale=1.,damage_gradient_scale=1.,force_tolerance=1e-8,
             joint_residual_sum_tolerance=4e-6,damage_tolerance=1e-7,bound_tolerance=1e-10,
             fatigue_tolerance=1e-8,qp_precision=1e-10,max_outer=100,max_mechanics=50,

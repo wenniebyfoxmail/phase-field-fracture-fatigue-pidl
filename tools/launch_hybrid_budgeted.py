@@ -23,7 +23,11 @@ def dispatch_timeout_seconds(card, prior_wall, overhead):
         raise ValueError('invalid actual cost/launch overhead')
     if card['dispatch_accounting'] != dict(dispatch_reserve_seconds=45, cleanup_reserve_seconds=45, kill_after_seconds=20):
         raise ValueError('reviewed outer deadline changed')
-    seconds = card['budget']['cpu_wall_hours']*3600 - prior_wall - 45 - 45 - overhead
+    reserve=card.get('historical_control_reserve_seconds',0.)
+    if isinstance(reserve,bool) or not isinstance(reserve,(int,float)) or not math.isfinite(reserve) or reserve<0:
+        raise ValueError('invalid unmeasured historical control reserve')
+    # A reserve reduces usable wall time; it is never recorded as actual work.
+    seconds = card['budget']['cpu_wall_hours']*3600 - prior_wall - 45 - 45 - overhead - reserve
     if seconds <= 0:
         raise RuntimeError('study allowance exhausted before dispatch')
     return seconds

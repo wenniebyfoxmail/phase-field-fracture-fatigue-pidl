@@ -54,6 +54,8 @@ def build(code,retained,out):
         charged=dict(wall_seconds=wall,cpu_seconds=cpu,gpu_seconds=ledger['gpu_seconds'],numerical_seconds=ledger['numerical_seconds']),
         accounting='R2 cumulative study total already contains R1/validation/pre-R2 prep once; do not add those again. Measured local dispatch/query durations charged as separate control work; overlapping calendar wall is conservatively not deducted. R3 staging has not executed and is not recorded as zero actual work.',
         missing_observations=dict(control_cpu_seconds=None,initial_R2_monitor_query_wall_seconds=None,meaning='not measured; not zero. Scientific worker costs are settled; missing historical read-only control observations are disclosed, never reconstructed as actual.'),
+        historical_control_reserve_seconds=600,
+        reserve_policy='Unmeasured historical control margin, not observed actual work. Subtract600s from outer GNU-timeout usable allowance within original136h; never include in charged actual wall/CPU.',
         remaining_numerical_steps=3600,remaining_training_fits=1,
         authority=dict(quote=authority,scope='one NEW complete 3600-step attempt, same data/producer/physical tolerances; original total resource caps retained; first scientific failure stops, no retry',new_retry_authority=True),
         scientific_attempts=[dict(run='pf_hybrid_full_20261019_r1',accepted_train_A=1,failed_substep=2),
@@ -71,7 +73,7 @@ def build(code,retained,out):
     dump(code/rel_receipt,receipt)
     card.update(run_id=run,run_root='/mnt/data2/drtao/wennie/'+run,archive_root='/mnt/data2/drtao/pidl_archives/'+run,
         execution_enabled=False,preparation_status='LOCAL_REVIEWABLE_REMOTE_STAGE_BLOCKED_BY_AUTO_APPROVAL',
-        numerical_solver_revision='coupled-recycle-v6',prior_terminal_run='pf_hybrid_complete_20261020_r2')
+        numerical_solver_revision='coupled-recycle-v6',historical_control_reserve_seconds=600,prior_terminal_run='pf_hybrid_complete_20261020_r2')
     card['solver']['wall_seconds']=300.
     card['coupling'].update(mode='projected_anderson_monotone',mechanics_solver='recycled_gmres',max_rejections=3)
     card['method_revision']['mechanics']='current K/rhs GMRES with old-LU preconditioner; bounded exact current-LU fallback; final current-K LU/pivot certificate; same policy in all arms'
@@ -81,8 +83,8 @@ def build(code,retained,out):
     card['stopping_details'].update(substep_solver_deadline_seconds=300,meaning='300s prospective cooperative deadline and Linux pidfd watchdog trigger; original total/phase budgets and cleanup reserves unchanged; no reset of the step clock. Actual elapsed includes cleanup and is reported.')
     card['authority']=copy.deepcopy(receipt['authority'])
     card['authority'].update(new_numerical_execution_authorized=True,remote_action_blocked='auto-review requires user confirmation of exact destination/script/copy before staging; no stage, dispatch or science has occurred')
-    card['budget']['remaining_host_hours_after_all_known_prior_runs']=136-wall/3600
-    card['budget_reconciliation']=dict(complete=False,receipt=rel_receipt,receipt_sha256=digest(code/rel_receipt),active_or_unknown_runs=[],remaining_numerical_steps=3600,remaining_training_fits=1,current_remaining_host_hours=136-wall/3600,current_remaining_gpu_hours=12.,pending='R3 stage actual receipt/cost and final exact execution binding')
+    card['budget']['remaining_host_hours_after_all_known_prior_runs']=136-(wall+600)/3600
+    card['budget_reconciliation']=dict(complete=False,receipt=rel_receipt,receipt_sha256=digest(code/rel_receipt),active_or_unknown_runs=[],remaining_numerical_steps=3600,remaining_training_fits=1,current_remaining_host_hours=136-(wall+600)/3600,current_remaining_gpu_hours=12.,historical_control_reserve_seconds=600,pending='R3 stage actual receipt/cost and final exact execution binding')
     card['prior_costs']=[dict(source=rel_receipt,sha256=digest(code/rel_receipt),lineage=receipt['settled_runs']+['pf_hybrid_r2_dispatch_and_diagnosis_control'],metrics={k:['charged',k] for k in receipt['charged']},cost_only_not_admission=True)]
     dump(code/V6/'execution_card_disabled.json',card)
     prior=json.loads((code/OWNER/'accepted_state_source_manifest_v5.json').read_text())

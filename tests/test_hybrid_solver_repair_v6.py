@@ -132,9 +132,12 @@ def test_v6_card_changes_only_engineering_limit_not_physical_thresholds():
     from test_hybrid_producer import card
     from run_hybrid_producer import validate_card
     c=card();c['numerical_solver_revision']='coupled-recycle-v6';c['solver']['wall_seconds']=300.
+    c['historical_control_reserve_seconds']=600
     c['coupling']=asdict(CouplingSettings(mode='projected_anderson_monotone',mechanics_solver='recycled_gmres',max_rejections=3))
     validate_card(c)
     bad=deepcopy(c);bad['solver']['force_tolerance']=1e-7
+    with pytest.raises(ValueError):validate_card(bad)
+    bad=deepcopy(c);bad.pop('historical_control_reserve_seconds')
     with pytest.raises(ValueError):validate_card(bad)
     bad=deepcopy(c);bad['coupling']['max_proposals']=5
     with pytest.raises(ValueError):validate_card(bad)
@@ -153,3 +156,17 @@ def test300_second_deadline_not_reset_by_iteration_evidence(monkeypatch):
         solve_step(AlgebraicBackend(),old,np.array([0]),np.array([0.]),next_load_id='unit',
             settings=settings(wall_seconds=300.),coupling=CouplingSettings(mode='projected_anderson_monotone',max_rejections=3),iteration_observer=delayed)
     assert old.fingerprint()==identity and old.version==0
+
+
+def test_control_reserve_reduces_outer_deadline_without_fabricating_actual_cost():
+    from copy import deepcopy
+    from launch_hybrid_budgeted import dispatch_timeout_seconds
+    from test_hybrid_producer import card
+    c=card();c['dispatch_accounting']=dict(dispatch_reserve_seconds=45,cleanup_reserve_seconds=45,kill_after_seconds=20)
+    before=deepcopy(c);original=dispatch_timeout_seconds(c,809.8447466738289,1.)
+    c['historical_control_reserve_seconds']=600
+    assert dispatch_timeout_seconds(c,809.8447466738289,1.)==original-600
+    assert c['budget']==before['budget'] and c.get('prior_costs')==before.get('prior_costs')
+    for bad in [-1,float('nan'),float('inf'),True,'600']:
+        c['historical_control_reserve_seconds']=bad
+        with pytest.raises(ValueError):dispatch_timeout_seconds(c,809.8447466738289,1.)
