@@ -29,7 +29,18 @@ No universal 0.75 Dice or 0.05 ranking threshold is proposed. The execution cont
 
 If a centreline-trained model still predicts broad background regions, omits most reference components or fails to improve both development sources, annotation width was not the binding mechanism. Stop further public-mask architecture/UQ sweeps and return to source acquisition or a differently scoped endpoint.
 
-## Authority required
+## Current implementation and authority entry
 
-Before execution, freeze the exact target transform, validation ceiling, model snapshot, comparison artifacts, run budget, resource/host, output contract and first-stop rule, then obtain a new exact execution authorization. This document authorises no training or compute run.
+There is no active D5 execution card or Run ID. This proposal remains design-only and authorises no training, SSH, deployment, probe, transfer, review dispatch or compute run. D4's frozen records and consumed authority are unchanged.
+
+D5 needs one bounded execution authorisation covering the scientific goal, allowed CRACK500/CFD/GAPS384 inputs, target/comparator and decision criteria, producer, total resource budget, scientific stop/retry limits and required result. That authorisation may be conditional on completing implementation, relevant tests, the chosen review channel where warranted, and successful admission; satisfying those mechanical conditions does not require another human approval.
+
+Within that approved envelope, the agent will automatically:
+
+- implement and repair in-scope code, run local tests and obtain any necessary focused re-review through the already chosen channel;
+- discover and record actual compatible versions, verify environment/resource availability, and materialise exact commands, paths, Run ID, hashes and receipts;
+- apply metadata-only or isolated dependency corrections with consistency checks, without restarting Code Ready or asking for repeated administrative approval;
+- reserve a short mechanical recheck allowance inside the approved total budget before the first scientific attempt. A known pre-start resource wait is not a scientific failure or retry.
+
+Human decision is required only if the authority envelope changes: Road420 or another protected/new source, a different producer, a larger total budget, changed target/comparator/scientific criterion, changed numerical or shared-system semantics, or a scientific retry not already allowed. Explicit human attempt/connection caps and scientific stop/no-retry rules remain controlling. Unknown or failed executions keep their receipts and are verified before any relaunch.
 
