@@ -2,7 +2,7 @@
 
 Date: 2026-10-19
 
-Status: `FINAL_EXECUTION_PACKAGE_READY__PARKED_NETWORK_BLOCK__NO_EXECUTION`
+Status: `PRE_ADMISSION_STAGING_STOPPED_NETWORK_TRANSFER__AUTHORITY_CLOSED__NO_EXECUTION`
 
 ## Purpose
 
@@ -133,3 +133,23 @@ recovery. No SSH retry, live preflight, deployment, asset read, runtime build,
 forward, training or holdout access occurred while closing this gate. The sole
 remaining decision is exact one-run authority after independent network
 recovery confirmation.
+
+## 2026-10-20 authorised dispatch stop
+
+HQ supplied a later exact one-run authority. Live read-only checks confirmed
+`GPUServer8`, `drtao`, Linux, the exact GPU5 UUID with 4 MiB used and no compute
+process, 652,974,047,232 free bytes on `/mnt/data2`, fresh task/archive roots,
+and the frozen packet-manifest and checkpoint hashes.
+
+No admission occurred. The exact execution checkout was being staged from a
+verified remote ancestor plus a 3.3 MiB thin bundle when the bundle transfer
+returned `lost connection`. Because the shell used `set -e`, the subsequent
+authority copy, exact checkout, remote archive generation, resolver and runner
+commands did not execute. `admission_attempt.json` was never created. All
+scientific counters remain zero.
+
+The terminal error closed this authority for retry. No reconnect, resume,
+alternate route, remote cleanup or producer action followed. A task-owned
+partial staging tree and copied ancestor checkout may remain under the remote
+RunID root; their post-failure state was not re-read. The exact machine receipt
+is `final_execution_dispatch_stop_receipt_20261020.json`.

@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E017
 planned_run_id: S09-E017-R001-factorised-head-p0
-status: FINAL_EXECUTION_PACKAGE_READY__PARKED_NETWORK_BLOCK__NO_EXECUTION
+status: PRE_ADMISSION_STAGING_STOPPED_NETWORK_TRANSFER__AUTHORITY_CLOSED__NO_EXECUTION
 producer: gpu-taobo / GPUServer8
 forbidden_fallback: any other host or GPU
 ---
@@ -218,8 +218,26 @@ scientific interpretation.
 
 ## Sole remaining decision
 
-After focused control-diff review and immutable archive/manifest generation,
-the package is mechanically ready but parked. The sole remaining decision is
-whether to grant the exact one-run authority after independent evidence that
-the network condition has recovered. Until both conditions exist, perform no
-SSH, live preflight, deployment, asset read or producer computation.
+The prior one-run authority is now closed by the pre-admission network stop.
+The next decision is whether to issue a new explicit authority after the
+connection is independently stable. Any such action must begin with a read-only
+inspection of the preserved remote RunID paths and process state; it must not
+assume a fresh task root, overwrite the partial staging evidence, resume a
+transfer or launch the runner automatically.
+
+## 2026-10-20 authorised dispatch receipt
+
+The later exact authority did establish a real SSH connection and verified the
+frozen host, GPU5, disk floor, fresh RunID roots, packet manifest and B25
+checkpoint identities. Staging then stopped when the thin Git bundle transfer
+returned `lost connection`. The command chain never wrote the remote authority,
+reached the target execution commit, generated the bound remote code archive,
+invoked the resolver/runner or created the exclusive admission token.
+
+The terminal state is
+`PRE_ADMISSION_STAGING_STOPPED__NETWORK_TRANSFER_LOST_CONNECTION__NO_EXECUTION`.
+There were zero scientific forwards, autograd collections, optimizers, steps
+and completed updates. No reconnect, retry, resume, cleanup or alternate route
+was performed after the terminal error. This authority is closed. Any future
+action requires new explicit authority and must first inspect the preserved
+remote RunID staging paths without assuming they are fresh.
