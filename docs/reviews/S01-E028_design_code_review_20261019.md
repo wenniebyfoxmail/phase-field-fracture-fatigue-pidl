@@ -30,3 +30,13 @@ R001在Pillow11.3vs冻结12.3处停止，2.218s/0forward/0源图/0参考，原�
 ## 2026-10-20 R002服务器摘要与预览一致性（非完整Evidence Ready）
 
 独立gpt-6.1-sol / High检查summary/terminal/receipt/metadata预览：一致性通过，主候选1638(.365368,+.145200)+2027(.408914,+.204237)原pair符合冻结规则，24(.265725,−.071626)负向保留；预览标记初步、Dice−gain重建同口径基线正确且可读。实际两次Python合计约1203.085秒<3600，计数25758/338/0fits及RSS/CUDA各<4GiB一致。完整原包/冻结链/参考复现/逐context六基线分层复算/服务器五图README均尚未验收；不作最终科学判定，不连接selector。
+
+
+## 2026-10-20 — full R002 independent evidence acceptance
+
+REVIEW_PASS, gpt-6.1-sol / High. Fixed archive3533768071bytes,375files/381entries; SHA2567bce884594a1ba2a28dcc65e59b0a957c13a1045f1d5c75b154fdeb4f7f2c4ef. GzipCRC,374package/362output/31source/345prediction bindings and9original private inputs verified. CPU-only checkpoint state digest matches the prediction freeze; no model construction or new forward during reception. All338native maps and12238cached contexts are finite and correctly scoped.
+
+Parent replay reproduced all reference/projection/score values exactly. Independent implementation imports neither project scorer nor geometry:97904context Dice/gain and587424baseline values match exactly; image/site aggregation differs by at most2.22e-16. Alternative integral projections differ by at most one float32 ULP without any .5 foreground decisions changing. All12238 reference rasters and old E025 center references match. Five original PNGs and README actually inspected; the six first/last cases were fixed before scoring, and narrow panels preserve source crop aspect rather than missing pixels. Site24 negative and its final empty-reference case remain visible.
+
+
+Frozen primary original1638+2027 pair qualifies;24 stays negative. No selector/OOF/retention/net benefit claim. Full report: /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E028/runs/S01-E028-R002/verification/independent_review/review.md

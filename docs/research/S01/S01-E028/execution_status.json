@@ -3,7 +3,7 @@
   "current_run": {
     "run": "S01-E028-R002",
     "execution": "succeeded",
-    "retrieval": "pending explicit R002-package approval",
+    "retrieval": "verified on Mac; immutable archive archived",
     "producer": "gpu-server/D-26-09",
     "account": "ad\\xw436",
     "reviewed_commit": "a5a8f46510885f585fc1b84f004662e09309413d",
@@ -36,7 +36,7 @@
     "native_sources_identity_verified": 338,
     "wall_cap_seconds": 3590,
     "prior_R001_seconds": 2.2179999998770654,
-    "science": null,
+    "science": "bounded target-domain partial-envelope qualification supported",
     "OOF": null,
     "retention": null,
     "net_GT": null,
@@ -132,8 +132,8 @@
         "status": "pass"
       }
     ],
-    "scientific_verdict": null,
-    "evidence_acceptance": "pending full-package retrieval, image inspection and independent evidence review",
+    "scientific_verdict": "supports",
+    "evidence_acceptance": "PASS: full reception, numerical reconstruction, original figures and independent gpt-6.1-sol High evidence review",
     "generated_figures": 5,
     "combined_R001_R002_python_wall_seconds": 1203.0846342999998,
     "archive_server_integrity": {
@@ -142,7 +142,18 @@
       "entry_count": 381,
       "tar_listing_CRC": "passed"
     },
-    "server_summary_review": "gpt-6.1-sol High consistency passed; not full Evidence Ready"
+    "server_summary_review": "gpt-6.1-sol High consistency passed; not full Evidence Ready",
+    "independent_evidence_review": "REVIEW_PASS",
+    "selector": false,
+    "qualified_original_pair": [
+      "1638",
+      "2027"
+    ],
+    "negative_site": "24",
+    "acceptance_date": "2026-10-20",
+    "acceptance_report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E028/runs/S01-E028-R002/verification/independent_review/review.md",
+    "local_archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E028/runs/S01-E028-R002/S01-E028-R002-fixed-v1.tar.gz",
+    "reception_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E028/runs/S01-E028-R002/verification/reception_receipt.json"
   },
   "R001": {
     "execution": "stopped_before_model",

@@ -1,3 +1,13 @@
+# S01-E028 current execution — 2026-10-20 accepted
+
+**R001 stop package and R002 full package received and archived; R002 numerical, original-figure and independent evidence acceptance PASS. Frozen primary target qualification is supported for original pair1638+2027;24 remains negative.**
+
+Actual combined wall1203.0846343sec <3600; no extra forward or fitting during acceptance. Full archive SHA/CRC/bindings and all references/projections/scores verified; five originals inspected, independent gpt-6.1-sol / High REVIEW_PASS. This supports bounded partial-envelope correspondence only. E003/capacity/abstention/intersection and sealed sites unchanged; selector absent, OOF/retention/netGT null.
+
+The former extra R002-download approval gate was assistant-authored and has been corrected; its historical draft remains. See runs/S01-E028-R002/result.md, receipt.json and the local independent evidence report. D7 complete; next is separately frozen selector/OOF utility design, not automatic execution.
+
+## Historical server state (superseded by accepted result above)
+
 # S01-E028 current execution — 2026-10-20 final server state
 
 **R001 stop package accepted and archived on Mac; R002 completed on GPU0 within all caps. R002 full-package reception and scientific acceptance remain pending.**
