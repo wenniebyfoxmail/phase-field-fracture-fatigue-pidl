@@ -1,0 +1,27 @@
+{
+  "reuse": "fork only bounded control wrapper; mathematical core unchanged",
+  "original_watchdog": {
+    "worktree": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018",
+    "read_HEAD": "4a8d762663202323ae879ec2489901c71da58765",
+    "path": "tools/hybrid_deadline_guard.py",
+    "git_blob": "6769725717c1ada072a890c98ca6a405c8879966"
+  },
+  "original_supervisor": {
+    "path": "tools/run_hybrid_producer.py",
+    "git_blob": "d8f13dae4f4d0565cc010e74cff307f2f0dd3193"
+  },
+  "other_reuse": [
+    "E011 PC16 /proc descendant RSS aggregate pattern",
+    "original E011 tight-coupling execute.py exact GPUServer8/GPU5 identity and28GiB free VRAM admission"
+  ],
+  "deltas": [
+    "authority-specific phase duration tuple/order/completeness",
+    "retain idle terminal deadline and reject late transitions",
+    "two guardians with same science phase events to cover export IO",
+    "one persistent science worker reusing exact preflight-qualified chart",
+    "separate cumulative worker peak telemetry and external resource/foreign-GPU monitor",
+    "family claim before admission; no automated transport/retry/resume",
+    "guarded full output manifest plus four <=1MiB post-exit receipt reads and offline strict verification"
+  ],
+  "other_owner_sources_modified": false
+}

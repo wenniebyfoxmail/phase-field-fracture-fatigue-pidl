@@ -1,0 +1,107 @@
+{
+  "review": "independent exact wrapper delta",
+  "reviewer": "/root/b0_route_inventory",
+  "verdict": "PASS_FOR_LOCAL_CLOSED_PREPARATION_ONLY",
+  "tests": {
+    "command": "python3 -B -m unittest discover -s tools/s04_e011_execution -p test_execution.py -v",
+    "unique_test_methods": 29,
+    "independent_runner": "pytest:29 passed",
+    "artificial_files_mock_children_only": true,
+    "actual_child_processes_launched": 0
+  },
+  "frozen_scientific_source_bindings_verified": 17,
+  "old_artificial_45_tests_unchanged": true,
+  "files": [
+    {
+      "path": "tools/s04_e011_execution/build.py",
+      "bytes": 2890,
+      "sha256": "7099828c8f3424025c7dd2e3dd7745e5f9b86d587c1e93c9104e197e3f197c59",
+      "git_blob": "e747e42154f919b456ee3ca21badbfe5b4174532"
+    },
+    {
+      "path": "tools/s04_e011_execution/control.py",
+      "bytes": 11397,
+      "sha256": "9b0e179a8b6240974288b33aec2c89f908a43ab0338c7b085e7a110b8eb1ed8c",
+      "git_blob": "52fbe02aece165478629d397212844e10030e2f6"
+    },
+    {
+      "path": "tools/s04_e011_execution/deadline_guard.py",
+      "bytes": 7319,
+      "sha256": "bf5f316696fa3be4437f8173e1713257b5bdb74af1da2f40de5e023e3e78e103",
+      "git_blob": "5a503ef8a1e399cab066d2d91114f4eafd4039d5"
+    },
+    {
+      "path": "tools/s04_e011_execution/launch.py",
+      "bytes": 18761,
+      "sha256": "388055262430db337ea9777002c8d422b9b55d84e13c8e0e58903634d038d820",
+      "git_blob": "16203be3dbb5b51a197a60eb9af90c0d85feef75"
+    },
+    {
+      "path": "tools/s04_e011_execution/retrieve.py",
+      "bytes": 1275,
+      "sha256": "3434e3c6a52f4fdd3d58e4e21a995e0844d178fc4b75a384775236ee5345efa6",
+      "git_blob": "43db94ab137dccbed656af67d9621ad20b5782db"
+    },
+    {
+      "path": "tools/s04_e011_execution/science.py",
+      "bytes": 17127,
+      "sha256": "a6a6aaed444f0461822913bd0988b2891ffcfd160d80ecfc0c8c4021d3badead",
+      "git_blob": "b901f263554e7e78a658a5ae65461f59c95bc092"
+    },
+    {
+      "path": "tools/s04_e011_execution/telemetry.py",
+      "bytes": 2895,
+      "sha256": "37f27ae2feb2153dd09bb3940f5eed226cb33697706115faafd3ec266d1b5f72",
+      "git_blob": "cb11268866935affed86ed2c449a5c6dec321516"
+    },
+    {
+      "path": "tools/s04_e011_execution/test_execution.py",
+      "bytes": 14761,
+      "sha256": "4c0c557f00989e3fb05270b12d8e0d88fcad36aad107c0998be7464e47337b44",
+      "git_blob": "ed1756bc81c0524dbce8fa580037defde95b5508"
+    },
+    {
+      "path": "tools/s04_e011_execution/worker.py",
+      "bytes": 2658,
+      "sha256": "db77f24f1a35c76a6b07d2d0bc199d12843012ce3ecbb7d425cb2ceff5703fe4",
+      "git_blob": "bb3e1e7d467caaa386e6eb6c51721392df7e58c6"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_execution_20261020/execution_card.json",
+      "bytes": 4375,
+      "sha256": "5cf7fab93f5ce96bd5ffb234bc7b8d59a413c740003989c8aded3b8812c8fb6c",
+      "git_blob": "949cae497df6c90dc1d6d0008dcb861bf84b24e9"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_execution_20261020/reuse_receipt.json",
+      "bytes": 1329,
+      "sha256": "f3fd1432ba73928de3ecd6b2bba9a7c64cb5f405e9d17894198203a34f786887",
+      "git_blob": "4a410c313813eaeb468f1686050ef47a49f364a4"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_execution_20261020/README.md",
+      "bytes": 4439,
+      "sha256": "0f732bc3f3d7f50a1fe77921119f30f90d0a65a20081267a88a809234bc7c988",
+      "git_blob": "85a3c5b45bc3af1418ac0c33600d8b155c88db0c"
+    }
+  ],
+  "confirmed": [
+    "dual mirrored pidfd guardians and ordered scopes",
+    "prior phase exit ceiling and next-start boundary",
+    "all phase/total reserves inside original caps",
+    "guarded bulk export; four <=1MiB post-exit administrative reads",
+    "exact authority and no new-ID family bypass",
+    "shared peak telemetry, nonfinite rejected before max",
+    "own-child-only stop, no foreign-process signal",
+    "full retrieval coverage plus exact producer manifest SHA",
+    "unchanged scientific card and math"
+  ],
+  "unverified": [
+    "real Linux pidfd/scheduling",
+    "real Torch second-order AD/full-current Phi derivative",
+    "real source stability and resource feasibility"
+  ],
+  "scientific_execution_authorized": false,
+  "execution_enabled": false,
+  "SSH_GPU_or_real_arrays_accessed": false
+}
