@@ -159,3 +159,16 @@ def test_recovery_rejects_changed_schedule(artificial_trajectory, tmp_path):
                                'artificial-contract-test',lambda *args: pytest.fail('no solve'))
     with pytest.raises(RuntimeError, match='schedule'):
         validate_prefix(fresh,trajectory.path,1)
+
+
+def test_v2_continuation_keeps_v1_context_without_relabelling(artificial_trajectory, tmp_path):
+    from hybrid_producer_common import object_sha
+    # The fixture installed a purely artificial backend, with no solve call.
+    old_spec, new_spec = experiment.frozen_spec_v1(), experiment.frozen_spec()
+    t = experiment.Trajectory(new_spec, dict(id='context', cells=2, subdivisions=1),
+                              'low', tmp_path, 'context-only', lambda *a: pytest.fail('no solve'),
+                              state_contract_spec=old_spec)
+    state, metadata = t.store.load()
+    assert metadata['state_contract']['context']['physical']['inputs_sha256'] == object_sha(old_spec)
+    assert metadata['state_contract']['context']['physical']['inputs_sha256'] != object_sha(new_spec)
+    assert t.context(state, 0)['physical']['inputs_sha256'] == object_sha(old_spec)

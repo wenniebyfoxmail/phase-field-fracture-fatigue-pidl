@@ -1,0 +1,38 @@
+{
+  "verdict": "HISTORICAL_REVIEW_SUPERSEDED_BY_CONTROL_FAILURE",
+  "scope": "R002 control-only recovery and cumulative-budget implementation; original science/observation review carries forward. Original-producer strict zero-solver admission remains required.",
+  "code_commit": "bc334c0c5650b3632e7d3eb76848995091113a7e",
+  "spec_id": "bff278a41264db2070745a31b90ff742a19b88b1bbc66ad325073ff08f832f23",
+  "reviewer": "/root/physics_transition_audit",
+  "channel": "independent read-only Codex subagent",
+  "receipt": "review.md",
+  "independent_tests": "36 artificial tests passed in 0.25s; no FEM or SSH",
+  "execution_authorized": false,
+  "original_scientific_review": {
+    "verdict": "REVIEW_PASS",
+    "scope": "preparation/code only; no scientific execution or physical validation",
+    "code_commit": "95709f9ca50edd6da2377d983ab1f2e994a0b31b",
+    "spec_id": "bff278a41264db2070745a31b90ff742a19b88b1bbc66ad325073ff08f832f23",
+    "reviewer": "/root/physics_transition_audit",
+    "channel": "independent read-only Codex subagent",
+    "receipt": "review.md",
+    "independent_tests": "23 targeted artificial tests passed in 0.19s",
+    "execution_authorized": false,
+    "observation_review": {
+      "reviewer": "/root/observation_state_audit",
+      "verdict": "REVIEW_PASS",
+      "scope": "design/observation only; independent source read, no tests or solver executed"
+    }
+  },
+  "evidence_review": "R001 complete253 accepted-state chains incl latest40,293 file hashes independently verified; six-mask/future not yet evaluated",
+  "post_run_review": {
+    "code_commit": "159a63c081ce205cd87c6777b019413d8ccc4075",
+    "verdict": "REVIEW_PASS_CONTROL_ONLY",
+    "execution_authorized": false,
+    "producer_validated": false,
+    "independent_tests": "40 artificial tests passed; 8000 lock+atomic-rename cycles and16054 scans, no errors",
+    "evidence_review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R002/analysis/independent_physics_review.md",
+    "observation_review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R002/analysis/independent_observation_review.md",
+    "scientific_result": "incomplete due controller failure; available origins disprove frozen six-mask equality; future unknown"
+  }
+}

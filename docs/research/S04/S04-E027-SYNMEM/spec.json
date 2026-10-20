@@ -1,8 +1,8 @@
 {
   "experiment_id": "S04-E027-SYNMEM",
-  "protocol": "1.0",
+  "protocol": "2.0",
   "domain": "synthetic",
-  "claim": "whether fixed digital geometry aliases histories with distinct common-load futures",
+  "claim": "within each tested numerical configuration, fixed digital geometry aliases lawful histories with distinct common-load futures",
   "geometry": {
     "domain": [
       -0.5,
@@ -129,7 +129,7 @@
       0.45,
       0.55
     ],
-    "matching": "exact whole mask across 2 arms and 3 variants"
+    "matching": "exact whole mask between 2 arms within each of 3 variants"
   },
   "solver": {
     "force_scale": 1.0,

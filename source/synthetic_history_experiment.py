@@ -20,11 +20,11 @@ from hybrid_work_trace import PersistentWorkTrace
 from synthetic_history_inputs import (structured_q4_mesh, unsettled_zero_state,
                                      build_branch_schedule, make_pair_contract,
                                      verify_pair_contract)
-from synthetic_history_observation import (mask_of, camera_damage, current_match,
+from synthetic_history_observation import (mask_of, camera_damage, paired_current_match as current_match,
                                           robust_difference, numeric_fields_equal)
 
 
-def frozen_spec():
+def frozen_spec_v1():
     return dict(
         experiment_id='S04-E027-SYNMEM', protocol='1.0', domain='synthetic',
         claim='whether fixed digital geometry aliases histories with distinct common-load futures',
@@ -50,9 +50,18 @@ def frozen_spec():
         stop='first scientific/numerical/resource failure; no automatic retry or resume')
 
 
+def frozen_spec():
+    spec = frozen_spec_v1()
+    spec['protocol'] = '2.0'
+    spec['claim'] = ('within each tested numerical configuration, fixed digital geometry '
+                     'aliases lawful histories with distinct common-load futures')
+    spec['observation']['matching'] = 'exact whole mask between 2 arms within each of 3 variants'
+    return spec
+
+
 def validate_spec(spec):
     if spec != frozen_spec():
-        raise ValueError('spec differs from reviewed SYNMEM 1.0; amend and review before execution')
+        raise ValueError('spec differs from reviewed SYNMEM 2.0; amend and review before execution')
     return dict(maximum_steps=1846, trajectories=6, restart_suffixes=2,
                 primary_horizon=20, execution_authorized=False)
 
@@ -75,8 +84,13 @@ def schedule_for(spec, variant, arm):
 
 
 class Trajectory:
-    def __init__(self, spec, variant, arm, root, source_id, marker):
+    def __init__(self, spec, variant, arm, root, source_id, marker, *, state_contract_spec=None):
         self.spec, self.variant, self.arm = spec, variant, arm
+        # v2 changes evaluation only. Preserve the exact v1 physical input
+        # contract along every old/new/replayed state; never relabel old NPZs.
+        if state_contract_spec is not None and (spec != frozen_spec() or state_contract_spec != frozen_spec_v1()):
+            raise RuntimeError('only the exact original dynamics contract may be reused')
+        self.state_contract_spec = spec if state_contract_spec is None else state_contract_spec
         self.path = Path(root)/(variant['id']+'_'+arm)
         self.path.mkdir()
         (self.path/'states').mkdir()
@@ -112,7 +126,7 @@ class Trajectory:
     def context(self, state, index):
         load = self.schedule[index-1] if index else None
         physical = dict(
-            initial_state_id=self.initial_id, inputs_sha256=object_sha(self.spec),
+            initial_state_id=self.initial_id, inputs_sha256=object_sha(self.state_contract_spec),
             mesh_id=state.mesh_id, physics_id=state.physics_id,
             settings_id=object_sha(asdict(self.settings)),
             coupling_policy_id=object_sha(asdict(self.coupling)),
@@ -188,8 +202,20 @@ def run_experiment(spec, root, source_id, marker, *, recovery=None):
     validate_spec(spec)
     root = Path(root)
     trajectories = []
+    constructor_options = {}
+    if recovery is not None:
+        from synthetic_history_recovery import read
+        original_spec = read(Path(recovery['source_root'])/'spec.json')
+        if original_spec != frozen_spec_v1():
+            raise RuntimeError('recovered dynamics spec is not exact frozen v1')
+        constructor_options['state_contract_spec'] = original_spec
+        write_json(root/'state_contract_spec.json', original_spec)
+        write_json(root/'evaluation_protocol.json', dict(
+            protocol=spec['protocol'], evaluation_spec_id=object_sha(spec),
+            physical_state_input_spec_id=object_sha(original_spec),
+            note='v2 evaluation only; all physical state envelopes retain exact v1 inputs'))
     for variant in spec['variants']:
-        pair = [Trajectory(spec, variant, arm, root, source_id, marker)
+        pair = [Trajectory(spec, variant, arm, root, source_id, marker, **constructor_options)
                 for arm in ('low', 'high')]
         verify_pair_contract(pair[0].pair, pair[1].pair)
         trajectories.append(pair)
@@ -206,8 +232,12 @@ def run_experiment(spec, root, source_id, marker, *, recovery=None):
             raise RuntimeError('identical zero-settle yielded different numeric fields')
         for trajectory in pair:
             trajectory.advance(trajectory.origin)
+    settled_masks = np.array([[mask_of(t.mesh, StateStore(t.state_path(1)).load()[0])
+                               for t in pair] for pair in trajectories])
     origin_masks = np.array([[mask_of(t.mesh, t.old) for t in pair] for pair in trajectories])
     match = current_match(origin_masks)
+    np.savez(root/'zero_settle_observations.npz', masks=settled_masks)
+    write_json(root/'zero_settle_match_diagnostic.json', current_match(settled_masks))
     diagnostics = []
     for pair in trajectories:
         diagnostic = compare_states(pair[0].backend, pair[1].old, pair[0].old)
@@ -229,7 +259,7 @@ def run_experiment(spec, root, source_id, marker, *, recovery=None):
     if not match['anchor_valid']:
         raise RuntimeError('fixed precrack anchor missing from sensor')
     if not match['identical']:
-        result = dict(verdict='inconclusive', reason='no fixed current-observation match',
+        result = dict(protocol=spec['protocol'], verdict='inconclusive', reason='at least one fixed within-configuration current-observation pair does not match',
                       future_executed=False, disposition='redesign observation/loading prospectively')
         write_json(root/'result.json', result)
         return result
@@ -256,7 +286,7 @@ def run_experiment(spec, root, source_id, marker, *, recovery=None):
     for trajectory in trajectories[0]:
         trajectory.replay()
     supported = horizons['20']['robust_pixels'] > 0
-    result = dict(verdict='supports' if supported else 'negative',
+    result = dict(protocol=spec['protocol'], verdict='supports' if supported else 'negative',
                   scope=spec['claim'], future_executed=True, horizons=horizons,
                   sensitivity_diagnostic_only=sensitivity, full_state_restart='exact',
                   disposition='test stronger observations' if supported else 'do not expand a library from this design',

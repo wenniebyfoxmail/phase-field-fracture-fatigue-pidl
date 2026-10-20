@@ -40,6 +40,23 @@ def current_match(masks):
                 differing_pixels=int(np.any(a != a[0, 0], axis=(0, 1)).sum()))
 
 
+def paired_current_match(masks):
+    """v2: exact low/high equality separately inside every fixed configuration.
+
+    Preserve the old six-mask comparison as an explicit diagnostic, never as
+    a silently changed historical v1 result. No tolerance or pixel exclusion.
+    """
+    a = np.asarray(masks)
+    cross = current_match(a)  # includes strict shape/type and all anchor checks
+    counts = np.sum(a[:, 0] != a[:, 1], axis=(1, 2))
+    pairs = (counts == 0).tolist()
+    return dict(matching_scope='within_each_variant',
+                anchor_valid=cross['anchor_valid'], identical=all(pairs),
+                pair_identical=pairs, pair_xor_pixels=counts.tolist(),
+                differing_pixels=int(np.any(a[:, 0] != a[:, 1], axis=0).sum()),
+                cross_variant_v1=cross)
+
+
 def robust_difference(masks):
     """Pixels stable within EACH arm across variants, but different across arms.
 

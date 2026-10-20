@@ -39,6 +39,30 @@ def test_matching_uses_whole_mask_not_summary_or_hidden_state():
     assert result['anchor_valid']
 
 
+def test_v2_all_pairs_match_even_when_cross_configuration_masks_differ():
+    from synthetic_history_observation import paired_current_match
+    masks = np.zeros((3, 2, 64, 64), bool)
+    masks[:, :, 31:33, 8:24] = True
+    masks[1, :, 3, 4] = True
+    result = paired_current_match(masks)
+    assert result['identical'] and result['pair_identical'] == [True]*3
+    assert result['pair_xor_pixels'] == [0]*3 and result['differing_pixels'] == 0
+    assert not result['cross_variant_v1']['identical']
+    assert result['cross_variant_v1']['differing_pixels'] == 1
+    masks[2, 1, 5, 6] = True
+    result = paired_current_match(masks)
+    assert not result['identical'] and result['pair_xor_pixels'] == [0, 0, 1]
+
+
+def test_v2_changes_only_explicit_evaluation_declarations():
+    from synthetic_history_experiment import frozen_spec_v1
+    old, new = frozen_spec_v1(), frozen_spec()
+    new['protocol'] = old['protocol']
+    new['claim'] = old['claim']
+    new['observation']['matching'] = old['observation']['matching']
+    assert new == old
+
+
 def test_robust_pixels_require_within_arm_numerical_consistency():
     masks = np.zeros((3, 2, 64, 64), bool)
     masks[:, 1, 4, 5] = True
@@ -152,9 +176,15 @@ def test_no_future_is_executed_without_current_match(tmp_path, monkeypatch):
     monkeypatch.setattr(e, 'verify_pair_contract', lambda *a: True)
     monkeypatch.setattr(e, 'numeric_fields_equal', lambda *a: True)
     monkeypatch.setattr(e, 'compare_states', lambda *a: {})
-    monkeypatch.setattr(e, 'mask_of', lambda *a: np.zeros((64, 64), bool))
+    counter = iter(range(12))
+    def masks(*unused):
+        result = np.zeros((64, 64), bool)
+        result[31:33, 8:24] = True
+        # six settle masks then six origin masks; the last pair differs.
+        if next(counter) == 11: result[5, 6] = True
+        return result
+    monkeypatch.setattr(e, 'mask_of', masks)
     monkeypatch.setattr(e, 'camera_damage', lambda *a: np.zeros((64, 64)))
-    monkeypatch.setattr(e, 'current_match', lambda *a: dict(anchor_valid=True, identical=False))
     result = e.run_experiment(frozen_spec(), tmp_path, 'unit', lambda *a: None)
     assert result['verdict'] == 'inconclusive' and result['future_executed'] is False
     assert len(advanced) == 12
