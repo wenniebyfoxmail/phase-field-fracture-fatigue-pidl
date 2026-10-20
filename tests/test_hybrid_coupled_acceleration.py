@@ -62,6 +62,7 @@ def test_bad_trial_restores_full_baseline_d_u_and_cache(monkeypatch):
         return real(self)
     monkeypatch.setattr(ProjectedAnderson,'propose',bad)
     b=CachedAlgebraic();records=[];p=solve(b,iteration_observer=records.append)
+    records=[x for x in records if x['event']=='iteration_decision']
     reject=next(x for x in records if not x['kept_as_iteration_point']);baseline=records[reject['baseline_outer']-1]
     following=records[reject['outer']]
     assert reject['rejection_reason']=='joint_merit_guard'
@@ -83,7 +84,7 @@ def test_real_trial_numerical_failure_is_not_swallowed(monkeypatch):
             return super().mechanics(d,*args,**kwargs)
     rows=[]
     with pytest.raises(StepFailure,match='original pivot failure'):solve(Broken(),iteration_observer=rows.append)
-    assert len(rows)==2 and not any(x['passed_physical'] for x in rows)
+    assert len([x for x in rows if x['event']=='fresh_evaluation'])==2 and not any(x['passed_physical'] for x in rows)
 
 
 def test_merit_keeps_global_l2_fatigue_and_nonfinite_predicates():
@@ -117,14 +118,31 @@ def test_iteration_evidence_persists_fresh_scalars_and_failure_stays_fatal(tmp_p
     trace=PersistentWorkTrace(tmp_path/'work_trace.jsonl','unit',1)
     p=solve(work_observer=trace.call,iteration_observer=trace.record_iteration)
     rows=[json.loads(x) for x in (tmp_path/'iterations.jsonl').read_text().splitlines()]
-    assert len(rows)==p.certificate['outer'] and rows[-1]['passed_physical']
-    assert all('damage' in x and 'force' in x and 'active_counts' in x for x in rows)
+    assert len(rows)==2*p.certificate['outer'] and rows[-1]['passed_physical']
+    assert all('damage' in x and 'force' in x for x in rows)
+    assert all('active_counts' in x for x in rows if x['event']=='iteration_decision')
     original=t.append_event
     def fail(path,value):
         if str(path).endswith('iterations.jsonl'):raise OSError('iteration disk failure')
         return original(path,value)
     monkeypatch.setattr(t,'append_event',fail)
     with pytest.raises(StepFailure,match='durable joint iteration evidence failed'):solve(iteration_observer=trace.record_iteration)
+
+
+def test_completed_fresh_map_survives_later_proposal_failure(tmp_path,monkeypatch):
+    real=ProjectedAnderson.propose
+    def broken(self):
+        if len(self.history)>=2:raise RuntimeError('proposal algebra failure')
+        return real(self)
+    monkeypatch.setattr(ProjectedAnderson,'propose',broken)
+    trace=PersistentWorkTrace(tmp_path/'work_trace.jsonl','unit',1)
+    with pytest.raises(StepFailure,match='proposal algebra failure') as failed:
+        solve(work_observer=trace.call,iteration_observer=trace.record_iteration)
+    rows=[json.loads(x) for x in (tmp_path/'iterations.jsonl').read_text().splitlines()]
+    fresh=[x for x in rows if x['event']=='fresh_evaluation']
+    assert len(fresh)==sum(w['kind']=='fresh_final_force' and w['status']=='returned' for w in failed.value.work)==2
+    assert fresh[-1]['outer']==2 and all(k in fresh[-1] for k in ('force','damage','fatigue_residual','merit'))
+    assert len([x for x in rows if x['event']=='iteration_decision'])==1
 
 
 def test_iteration_logging_cannot_extend120_seconds(monkeypatch):

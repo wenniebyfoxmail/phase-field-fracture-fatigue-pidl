@@ -1,0 +1,8 @@
+{
+  "tests": 84,
+  "new_contract_tests": 14,
+  "passed": true,
+  "command": "PYTHONPATH=source:tools:.:tests <existing dev venv>/bin/python -m pytest -q tests/test_hybrid_incremental.py tests/test_hybrid_producer.py tests/test_native_q4_damage_qp.py tests/test_damage_conditioned_equilibrium.py tests/test_hybrid_performance.py tests/test_hybrid_coupled_acceleration.py",
+  "seconds": 3.32,
+  "scope": "Artificial algebraic maps/singleQ4 only, no project state solves/profiles/SSH/fit; old actual audit receipts reused"
+}

@@ -293,6 +293,19 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                       and force_audit["boundary_inf"] <= settings.bound_tolerance
                       and fatigue_residual <= settings.fatigue_tolerance)
             merit=joint_merit(damage_audit,force_audit,fatigue_residual,settings)
+            # Persist the completed fresh map before any extrapolation, array
+            # diagnostics or cache bookkeeping can fail. A later decision is
+            # a separate event; absence of that event never implies acceptance.
+            if iteration_observer is not None:
+                evaluation=dict(event='fresh_evaluation',outer=outer,policy_id=policy_id,
+                                previous_id=previous_id,load_id=next_load_id,
+                                evaluation='anderson_trial' if pending is not None else 'plain_map',
+                                baseline_outer=pending['outer'] if pending is not None else None,
+                                damage=dict(damage_audit),
+                                force={k:force_audit[k] for k in ('force_inf','force_l2','force_scaled','boundary_inf')},
+                                fatigue_residual=fatigue_residual,merit=merit,
+                                passed_physical=bool(passed),elapsed_seconds=perf_counter()-start)
+                call('iteration_evaluation_evidence',lambda:iteration_observer(evaluation))
             remaining()
             if old.fingerprint() != previous_id:
                 raise RuntimeError("accepted preimage mutated")
@@ -301,7 +314,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             rejected=bool(was_trial and not passed and merit>coupling.merit_factor*pending['merit'])
             code=active_codes(new_d,lower,settings.bound_tolerance)
             fp=accelerator.norm(new_d-d)
-            record=dict(outer=outer,policy_id=policy_id,previous_id=previous_id,load_id=next_load_id,
+            record=dict(event='iteration_decision',outer=outer,policy_id=policy_id,previous_id=previous_id,load_id=next_load_id,
                         evaluation='anderson_trial' if was_trial else 'plain_map',
                         baseline_outer=pending['outer'] if was_trial else None,
                         input_damage_id=array_hash(d),input_equilibrated_u_id=array_hash(u),
