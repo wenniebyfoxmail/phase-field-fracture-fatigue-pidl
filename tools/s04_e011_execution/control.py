@@ -61,6 +61,8 @@ def validate_authority(authority,authority_sha,authority_path,card,package_sha):
         or not isinstance(authority.get('approval_ref'),str) or not authority['approval_ref'].strip()
         or authority.get('family')!=FAMILY or authority.get('run_id')!=card['run_id']
         or authority.get('package_sha256')!=package_sha):raise RuntimeError('exact human authority absent/mismatched')
+    revision=card.get('admission_revision')
+    if revision and (authority.get('amends_first_stop_package_sha256')!=revision['prior_package_sha256'] or authority.get('amends_first_stop_receipt_sha256')!=revision['prior_stop_receipt_sha256']):raise RuntimeError('explicit first-stop amendment authority absent/mismatched')
     return allowed_phases(authority.get('scope'))
 
 

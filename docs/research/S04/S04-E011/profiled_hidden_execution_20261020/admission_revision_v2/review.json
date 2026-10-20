@@ -1,0 +1,59 @@
+{
+  "verdict": "PASS_FOR_LOCAL_CLOSED_ADMISSION_REVISION_ONLY",
+  "reviewer": "/root/b0_route_inventory",
+  "independent_tests": 37,
+  "tests_scope": "artificial/mock only; no real children/GPU/NN/arrays",
+  "files": [
+    {
+      "path": "tools/s04_e011_execution/launch.py",
+      "sha256": "0b7adddb852cb7ab7a67b7d5f6685c1e762dbe42555fc761f4f7c669e8539f43",
+      "git_blob": "0b99641f1684dba0d75a9e5073ff036d61611fdc"
+    },
+    {
+      "path": "tools/s04_e011_execution/science.py",
+      "sha256": "fb3ae813df8d3faf9809ca6267cbd7e4ad0571edab5dec543915861a268a82ac",
+      "git_blob": "47a5542b8df1ba6346cd7dfe4b631690b340d19b"
+    },
+    {
+      "path": "tools/s04_e011_execution/control.py",
+      "sha256": "e4a4da62363a7e0d029536d68a53a8b00aa91bebc46a0fef8b5a020497d2add8",
+      "git_blob": "d23334af170ad77ee141f5fef2dc2ab8c5c3325a"
+    },
+    {
+      "path": "tools/s04_e011_execution/build.py",
+      "sha256": "7aa0855c9a03fab97857198a2a9dff86da5b7b173471add09e4390c7b8dbe4ba",
+      "git_blob": "43e5f045416c04ee8d26ed85ee912b762820651a"
+    },
+    {
+      "path": "tools/s04_e011_execution/test_execution.py",
+      "sha256": "4ad955d1010dd6bfced76f418ddd7b0bfb9468cf55313cc1487b9a4246a62315",
+      "git_blob": "495eeb295e59b24fb6ae40e85049ceb2a658b09e"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_execution_20261020/admission_revision_v2/execution_card.json",
+      "sha256": "6fcb26ae52110dabf5ffefabf566b06bd7679957b068e1863c8d1cd7193ce380",
+      "git_blob": "7e687d2412166a09cf4a2666bddae96e39740ee5"
+    },
+    {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_execution_20261020/admission_revision_v2/README.md",
+      "sha256": "4d9f78d391f329e0bc35210225b9838c2ad672414160d1fd32f997b3c7a1d9c1",
+      "git_blob": "02aa8487ca13b0839fe630cd4e1024cce3132188"
+    }
+  ],
+  "checked": [
+    "hardware total/free/util finite/range and12GiB initial gate",
+    "new actual preflight>=3GiB free with raw failed readings saved before stop",
+    "new authority binds exact prior package and terminal receipt plus new package",
+    "sameRunID/family; no auto retry/reconnect",
+    "old package/raw scientific inputs/core/Phi/FEMd/UV/1e-10/caps/3000s unchanged",
+    "old12GiB admission and old5.00646GiB peak do not certify new second-order graph"
+  ],
+  "real_preflight_performed": false,
+  "execution_enabled": false,
+  "additional_remote_activity_after_terminal_stop": false,
+  "unverified": [
+    "new actual Phi/AD/profiling behavior",
+    "actual new graph peak resource feasibility",
+    "real Linux guardians/scheduling"
+  ]
+}

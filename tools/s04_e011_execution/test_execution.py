@@ -200,4 +200,48 @@ class ManagedTests(unittest.TestCase):
     def test_foreign_gpu_never_releases(self):self.scenario('admit_fail')
     def test_zero_exit_without_terminal_is_failure(self):self.scenario('missing_terminal')
 
+
+class AdmissionAmendmentTests(unittest.TestCase):
+    def card(self):return dict(producer=dict(gpu_uuid='GPU-x',gpu_index=5),admission_revision=dict(required_initial_free_VRAM_bytes=12*1024**3,minimum_free_after_actual_preflight_bytes=3*1024**3))
+    def snap(self,gpu,apps='',card=None):
+        with patch.object(launch,'command',side_effect=[gpu,apps]):return launch.gpu_snapshot(card or self.card())
+    def test_real_4090_capacity_accepts_revised_admission(self):
+        r=self.snap('5,GPU-x,24077,0,24564');self.assertEqual(r['required_initial_free_bytes'],12*1024**3)
+    def test_original_admission_impossible_on_4090(self):
+        with self.assertRaisesRegex(RuntimeError,'exceeds physical'):self.snap('5,GPU-x,24077,0,24564',card={'producer':self.card()['producer']})
+    def test_revised_insufficient_free_or_unknown_total_stops(self):
+        for gpu in ['5,GPU-x,12287,0,24564','5,GPU-x,24077,0']:
+            with self.subTest(gpu=gpu),self.assertRaises(RuntimeError):self.snap(gpu)
+    def test_revised_does_not_admit_foreign_process(self):
+        with self.assertRaisesRegex(RuntimeError,'foreign'):self.snap('5,GPU-x,24077,0,24564','111,GPU-x,1')
+    def test_actual_preflight_requires_three_GiB_headroom(self):
+        from science import verify_preflight_memory
+        fake=Mock();fake.cuda.mem_get_info.return_value=(3*1024**3,24*1024**3)
+        self.assertTrue(verify_preflight_memory(self.card(),fake)['amended_memory_check'])
+        for free in [3*1024**3-1, -1, float('nan')]:
+            fake.cuda.mem_get_info.return_value=(free,24*1024**3)
+            with self.subTest(free=free),self.assertRaises(RuntimeError):verify_preflight_memory(self.card(),fake)
+
+    def test_revised_authority_requires_explicit_first_stop_amendment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)/'authority';card=self.card();card['run_id']='r';card['admission_revision'].update(prior_package_sha256='oldpkg',prior_stop_receipt_sha256='oldstop')
+            row=dict(approved_by='human',activate_closed_package=True,approval_ref='new explicit approval',family=c.FAMILY,run_id='r',package_sha256='newpkg',scope='conditional_full')
+            c.write_json(p,row)
+            with self.assertRaisesRegex(RuntimeError,'first-stop amendment'):c.validate_authority(row,c.digest(p),p,card,'newpkg')
+            row.update(amends_first_stop_package_sha256='oldpkg',amends_first_stop_receipt_sha256='oldstop');c.write_json(p,row)
+            self.assertEqual(c.validate_authority(row,c.digest(p),p,card,'newpkg'),c.PHASES)
+
+
+    def test_gpu_nonfinite_and_bad_ranges_fail_closed(self):
+        for gpu in ['5,GPU-x,nan,0,24564','5,GPU-x,24077,nan,24564','5,GPU-x,24077,0,nan','5,GPU-x,24077,0,inf','5,GPU-x,-1,0,24564','5,GPU-x,25000,0,24564','5,GPU-x,24077,101,24564','5,GPU-x,0,0,0']:
+            with self.subTest(gpu=gpu),self.assertRaisesRegex(RuntimeError,'telemetry'):self.snap(gpu)
+    def test_failed_postpreflight_memory_is_recorded_before_stop(self):
+        from science import verify_preflight_memory
+        fake=Mock();rows=[];fake.cuda.mem_get_info.return_value=(2*1024**3,24*1024**3)
+        with self.assertRaises(RuntimeError):verify_preflight_memory(self.card(),fake,rows.append)
+        self.assertFalse(rows[-1]['passed']);self.assertEqual(rows[-1]['free_bytes'],2*1024**3)
+        fake.cuda.mem_get_info.return_value=(float('nan'),24*1024**3)
+        with self.assertRaises(RuntimeError):verify_preflight_memory(self.card(),fake,rows.append)
+        self.assertFalse(rows[-1]['capacity_valid']);self.assertEqual(rows[-1]['free_bytes'],'nan')
+
 if __name__=='__main__':unittest.main()

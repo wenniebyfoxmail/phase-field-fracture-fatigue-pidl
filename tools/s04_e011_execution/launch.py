@@ -3,7 +3,7 @@
 No SSH/scp/reconnection/resume/retry implementation exists. --execute requires
 one exact human authority overlay and consumes the family claim before admission.
 """
-import argparse,csv,io,json,os,platform,pwd,signal,socket,subprocess,sys,time
+import argparse,csv,io,json,math,os,platform,pwd,signal,socket,subprocess,sys,time
 from pathlib import Path
 from control import (FAMILY,RESERVE,SECONDS,PHASES,allowed_phases,bytes_under,consume_claim,digest,
     seal_outputs,stop_owned,validate_authority,validate_telemetry,verify_package,wait_guard_ready,write_json)
@@ -13,7 +13,7 @@ def command(args):return subprocess.check_output(args,text=True,timeout=2).strip
 
 
 def gpu_snapshot(card,allowed=()):
-    p=card['producer'];rows=list(csv.reader(io.StringIO(command(['nvidia-smi','--query-gpu=index,uuid,memory.free,utilization.gpu','--format=csv,noheader,nounits']))))
+    p=card['producer'];rows=list(csv.reader(io.StringIO(command(['nvidia-smi','--query-gpu=index,uuid,memory.free,utilization.gpu,memory.total','--format=csv,noheader,nounits']))))
     selected=next((r for r in rows if r[1].strip()==p['gpu_uuid']),None)
     if selected is None or int(selected[0])!=p['gpu_index']:raise RuntimeError('bound GPU index/UUID changed')
     apps=list(csv.reader(io.StringIO(command(['nvidia-smi','--query-compute-apps=pid,gpu_uuid,used_memory','--format=csv,noheader,nounits']))))
@@ -22,8 +22,15 @@ def gpu_snapshot(card,allowed=()):
         if len(row)==3 and row[1].strip()==p['gpu_uuid']:
             if int(row[0]) not in allowed:raise RuntimeError('foreign/unknown selected-GPU process; stop only our worker')
             owned.append(dict(pid=int(row[0]),used_mib=float(row[2])))
-    if not allowed and (float(selected[2])*1024**2<28*1024**3 or float(selected[3])>=10):raise RuntimeError('GPU admission capacity/activity failure')
-    return dict(index=int(selected[0]),uuid=p['gpu_uuid'],free_mib=float(selected[2]),utilization=float(selected[3]),owned=owned)
+    admission=card.get('admission_revision',{})
+    required=admission.get('required_initial_free_VRAM_bytes',28*1024**3)
+    if admission and len(selected)!=5:raise RuntimeError('physical GPU capacity unavailable')
+    free_mib=float(selected[2]);util=float(selected[3]);total_mib=float(selected[4]) if len(selected)==5 else None
+    values=[free_mib,util]+([] if total_mib is None else [total_mib])
+    if not all(math.isfinite(v) for v in values) or free_mib<0 or not 0<=util<=100 or (total_mib is not None and (total_mib<=0 or free_mib>total_mib)):raise RuntimeError('nonfinite/invalid GPU capacity telemetry')
+    if total_mib is not None and total_mib*1024**2<required:raise RuntimeError('GPU admission configuration exceeds physical GPU capacity')
+    if not allowed and (free_mib*1024**2<required or util>=10):raise RuntimeError('GPU admission capacity/activity failure')
+    return dict(index=int(selected[0]),uuid=p['gpu_uuid'],free_mib=free_mib,utilization=util,total_mib=total_mib,required_initial_free_bytes=required,owned=owned)
 
 
 def host_check(card,root,archive):

@@ -1,0 +1,85 @@
+{
+  "schema": "E011_PROFILED_HIDDEN_CLOSED_EXECUTION_ADMISSION_v2",
+  "execution_enabled": false,
+  "producer_validated": false,
+  "scientific_run_performed": false,
+  "family": "S04-E011-PROFILED-HIDDEN-C20-v1",
+  "run_id": "pf_s04e011_profiled_hidden_c20_r1_20261020",
+  "science_card": "docs/research/S04/S04-E011/pidl_profiled_hidden_adapter_card_20261020.json",
+  "science_card_sha256": "dfdccbf64fb83f644a439fc229b4dc77059bd441109794d3c9ba9b2e1efab3c9",
+  "science_source_commit": "ae01bfed140df077ba4e47fe438f627998cab891",
+  "producer": {
+    "role": "original Taobo E011 producer only",
+    "hostname": "GPUServer8",
+    "account": "drtao",
+    "ssh_alias": "drtao@172.16.100.2",
+    "gpu_index": 5,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "live_identity_verified_this_round": false
+  },
+  "run_root": "/mnt/data2/drtao/wennie/pf_s04e011_profiled_hidden_c20_r1_20261020",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profiled_hidden_c20_r1_20261020",
+  "family_claim": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/S04-E011-PROFILED-HIDDEN-C20-v1.json",
+  "baseline_compact": "docs/research/S04/S04-E011/runs/pidl_tight_coupling_result_20261019/result.json",
+  "baseline_metrics": "docs/research/S04/S04-E011/runs/pidl_tight_coupling_result_20261019/metrics.csv",
+  "witness_source_nodal_step_l2": 0.002351124438079664,
+  "witness_norm_provenance": {
+    "path": "docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/directions.csv",
+    "sha256": "797fc22669c7ae39c771215a437cdda5c9020e616e1ec6f3ecec4086711b7d43",
+    "selection": "initial actual_hidden, original unweighted nodal step L2; scalar reuse only"
+  },
+  "phase_seconds": {
+    "preflight": 300,
+    "candidate": 1800,
+    "bounded_witness": 600,
+    "readout": 300
+  },
+  "total_seconds": 3000,
+  "phase_engineering_reserve_seconds": {
+    "compute": 20,
+    "outer": 10,
+    "within_original_caps": true
+  },
+  "authority_scopes": {
+    "preflight_only": "At most300s, zero accepted hidden updates; exit even on pass. No later continuation under this authority.",
+    "conditional_full": "One chain:300s preflight then only if passed1800s candidate+600s witness+300s readout; max3000s. Shared work/peak-resource ledger; no resets or retries."
+  },
+  "activation": "Exact immutable package-manifest SHA, runID, family, scope and human approval_ref required in separately hashed overlay. The supplied authority.closed.json cannot execute.",
+  "first_stop": "Consume family claim before admission, keep on every stop; no new-ID bypass, retry, reconnect or fallback. Preflight-only completion consumes this attempt; continuation needs a prospective explicit authority amendment, not a resumed process.",
+  "scientific_conditions_unchanged": [
+    "actual Phi persistence/reuse",
+    "conditional FEM c20s4 outer18 damage",
+    "original UV boundary",
+    "B0 Smooth Boundary and constrained Q4 damage route",
+    "native Q4 2x2 GP",
+    "1e-10 actual head/realization threshold",
+    "ae01bfed work/resource caps and policy"
+  ],
+  "hard_control": "Two reused Linux pidfd guardians, mirrored ordered phase IPC, ready/start gates and parent-death safeguards; outer covers imports, admission, science, rollback, receipts and full output sealing. Prior phase exit ceiling remains active between phases; no borrowing future budget.",
+  "postexit_tail": "Only four fixed administrative reads (three log/guard receipts and export_manifest), each <=1MiB; no recursive raw export scan after guards. Returned manifest SHA and tail hashes required by offline retrieval; late return cannot be success.",
+  "output_contract": [
+    "source/branch/package/input hashes and launch command/PIDs/GPU/log/root",
+    "cumulative peak RSS/CUDA allocated/reserved/task bytes",
+    "phase receipts and guard exits",
+    "last actual closed accepted checkpoint and persisted Phi/T",
+    "energy/Ru/head/raw-hidden/UV/H1/GP active metrics with A and common-initial controls",
+    "single bounded local tangent witness, not capacity certificate",
+    "manifest and byte/SHA retrieval verification"
+  ],
+  "closed_preparation_boundary": "Prospective admission-only repair after terminal old-package stop. No new remote activity/execution. Requires explicit revised package-hash authority and first-stop amendment; original approval does not activate this revision.",
+  "admission_revision": {
+    "execution_enabled": false,
+    "prior_package_source": "5a01757e23f52e806ac653df419af3ab728b6325",
+    "prior_package_sha256": "ec63104508dd741623ce337cf3a45094b12e43bcf23680bff940aa76d8eccbe9",
+    "prior_attempt_status": "STOPPED_NO_RETRY_GPU_ADMISSION_CONFIGURATION_ERROR",
+    "supersedes_only": "science_card.future_admission_only.required_initial_free_VRAM_bytes and launcher hardcoded28GiB; original card kept as historical proposal",
+    "old_required_initial_free_VRAM_bytes": 30064771072,
+    "required_initial_free_VRAM_bytes": 12884901888,
+    "minimum_free_after_actual_preflight_bytes": 3221225472,
+    "physical_total_capacity_required": true,
+    "real_new_graph_peak_unknown": true,
+    "old_user_approval_does_not_activate_this_revision": true,
+    "same_run_id_only_after_explicit_first_stop_amendment": true,
+    "prior_stop_receipt_sha256": "5ba65e8276196faa41569fda8e684e38be6703de013dc75c403c99930e29145a"
+  }
+}

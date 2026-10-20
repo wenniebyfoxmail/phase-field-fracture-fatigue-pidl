@@ -1,0 +1,50 @@
+{
+  "schema": "E011_PROSPECTIVE_ADMISSION_CORRECTION_ONLY",
+  "execution_enabled": false,
+  "retry_authorized": false,
+  "base_source_commit": "5a01757e23f52e806ac653df419af3ab728b6325",
+  "base_package_sha256": "ec63104508dd741623ce337cf3a45094b12e43bcf23680bff940aa76d8eccbe9",
+  "old_attempt_status": "STOPPED_NO_RETRY_GPU_ADMISSION_CONFIGURATION_ERROR",
+  "same_run_id_candidate_only": "pf_s04e011_profiled_hidden_c20_r1_20261020",
+  "do_not_create_new_ID_to_bypass_stop": true,
+  "problem": {
+    "required_free_bytes": 30064771072,
+    "physical_total_bytes": 25757220864,
+    "free_observed_bytes": 25246564352,
+    "exact_original_producer_old_threshold_MiB": 12288,
+    "old_launcher_sha256": "aee7d8403573de2177fe0d36ec36a5c1c705a00468d34920e3cdbe1d33ee1cc0",
+    "old_launcher": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_tight_coupling_preparation_20261019_v1/execute.py"
+  },
+  "proposed_correction": {
+    "initial_free_VRAM_bytes": 12884901888,
+    "minimum_free_after_actual_preflight_bytes": 3221225472,
+    "selected_GPU_must_have_no_foreign_compute": true,
+    "hardware_total_must_exceed_initial_requirement": true,
+    "derive_capacity_from_real_zero_update_preflight": true
+  },
+  "rationale": "Restore original E01112GiB admission instead of unexecutable28GiB. Old5.006459GiB allocated peak and14.962586GiB free-after-probe support initial trial feasibility only; new JVP/VJP/second-order actual peak remains unknown. Do not use old peak to certify new graph.",
+  "old_probe": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_probe/retrieved/archive/output/probe_pass.json",
+    "sha256": "802e2bfedb9d7282a3b9cb8a815e68f182f0283770f838e8e79f3f31c5ffe79a",
+    "peak_allocated_bytes": 5375645696,
+    "free_VRAM_bytes": 16065953792,
+    "total_VRAM_bytes": 25250627584
+  },
+  "unchanged": [
+    "actual Phi and initial checkpoint bytes",
+    "conditional FEM damage",
+    "original UV boundary",
+    "1e-10",
+    "B0/constrained Q4 damage",
+    "math/core/comparators/work caps",
+    "300/1800/600/300 and shared3000seconds",
+    "same GPUServer8/drtao/GPU5/UUID",
+    "old results and stopped exact package"
+  ],
+  "needed_before_any_execution": [
+    "implement prospective admission-only correction with tests for impossible hardware capacity",
+    "independent exact-delta review and rebuild/hash distinct revised package",
+    "explicit amendment of this terminal first-stop authority; no self-retry"
+  ],
+  "no_remote_activity_after_first_stop": true
+}

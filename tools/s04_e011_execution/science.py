@@ -8,6 +8,20 @@ import hashlib,json,os,time
 from control import write_json,digest
 
 
+def verify_preflight_memory(card,torch,record=None):
+    """Admission telemetry only; never relax numerical/work/budget conditions."""
+    revision=card.get('admission_revision')
+    if revision is None:return {'amended_memory_check':False}
+    free,total=torch.cuda.mem_get_info(0)
+    required=revision['minimum_free_after_actual_preflight_bytes']
+    valid=all(isinstance(v,int) and not isinstance(v,bool) for v in [free,total]) and 0<=free<=total and total>0
+    row=dict(amended_memory_check=True,free_bytes=free if isinstance(free,int) else repr(free),total_bytes=total if isinstance(total,int) else repr(total),required_free_bytes=required,capacity_valid=valid,passed=valid and free>=required)
+    if record is not None:record(row)  # Failed raw readings survive before stop.
+    if not valid:raise RuntimeError('invalid actual preflight CUDA capacity')
+    if not row['passed']:raise RuntimeError('actual preflight free VRAM headroom miss')
+    return row
+
+
 class Context:
     def __init__(self,card,science,root,archive,reporter,started):
         self.card=card;self.science=science;self.root=Path(root);self.archive=Path(archive)
@@ -72,9 +86,10 @@ class Context:
         self.source_qualification=self._token(self.runtime)
         write_json(self.archive/'preflight_qualification.json',self.source_qualification)
         write_json(self.archive/'runtime_versions.json',dict(python=sys.version,torch=torch.__version__,numpy=np.__version__,scipy=__import__('scipy').__version__))
+        memory_admission=verify_preflight_memory(self.card,torch,lambda row:write_json(self.archive/'preflight_memory_admission.json',row))
         self.guard.check()
         return dict(completed=True,admitted=True,accepted_hidden_updates=0,root_state_restored=True,
-            qualification_sha256=digest(self.archive/'preflight_qualification.json'),counts=dict(self.guard.counts),
+            qualification_sha256=digest(self.archive/'preflight_qualification.json'),memory_admission=memory_admission,counts=dict(self.guard.counts),
             scientific_success=False)
     def _qualify(self,runtime):
         self.algebra=runtime.form_chart()
