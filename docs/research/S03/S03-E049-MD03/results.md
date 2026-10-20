@@ -484,3 +484,26 @@ openvpn进程。目标client日志（哈希552d8d48…）在英国时间15:31:28
 不假定可续传：旧命令未启用partial，本地openrsync也未列append-verify；不猜远端
 版本或盲加参数。科学代码、预算和旧识别／半深度／评分不变。未改VPN／route、
 未清包／杀进程／第二次SSH／重传／解包或科学运行。
+
+## 2026-10-20 VPN恢复后只读核包：代码完整，输入仅2.54%前缀
+
+用户明确新授权只读核查，不重传、不启动。目标路由现为utun4；一次SSH成功，
+15:26:47UTC实测GPUServer8。code_snapshot.tar.gz=44603字节，SHA
+f6fabf39e12355e87d4711b734217b0bbac3d491ea4c86ee653f68d4443e81e3，
+与批准包一致。完整input_assets.tar.gz缺失，临时.input_assets.tar.gz.r9dotp
+仅2883584字节，SHA b90de2e5da2646bd4dccd7e670deffe05565660b0ed039ec0239676cb5d184bd；
+与本地完整输入的等长前缀相同，占2.54029%，余110630602字节。两包本地全SHA
+本轮复核不变；仅字节读取，无图像解码。完整代码不再是未知或待重传项。
+
+control为空，四控制文件／解出的code和inputs／launch.claim／driver日志及科学
+输出均无。两个原rsync服务器进程2730703和2730763仍指向R001，均sleeping/
+do_select；不是科学计算进程。单次大小／mtime稳定不证明进程永久失效，未检查
+其父连接，未杀进程。远端rsync3.2.7/protocol31、data2余596G；本地客户端仍是
+openrsync/protocol29，不因远端支持就盲用append-verify。
+
+[逐文件核验与恢复方案](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E049-MD03/D3_controlled_opening_20261020/readonly_inventory_after_vpn_20261020/README_inventory.md)。
+建议一次性准备另批的新执行身份／目录，保留R001首停和残包；复用经SHA验证的
+代码包，仅重传完整113514186字节输入并补齐新身份绑定的控制文件，再校验后按
+原CPU600秒预算执行。旧残包只占2.54%且有进程，省下的传输量不值得并发续写。
+若需终止旧传输，先核准PID/cmdline/elapsed/cwd/父连接再另取精确权限，不广杀。
+本轮无重传、解包、终止、清理、新RunID或科学启动；旧识别／半深度／评分不变。

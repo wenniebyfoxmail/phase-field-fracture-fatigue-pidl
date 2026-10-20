@@ -579,3 +579,18 @@ probe,stderr,route/processextract,vpn_events/diagnosis_receiptandREADME_diagnosi
 RestorecorrectTaoboclient/tunnelroutefirst,thenconfirmedreadonlyinventory;
 onlyafteractualpackagehashesproposefile-specificrecovery.NoVPNchange/second
 SSH/cleanup/retransfer/extraction/science. OldR001stopandscientificscopeintact.
+
+### R001 post-VPN read-only inventory resolved — 2026-10-20
+
+Newhumanreadonlyauthorityonly;oneSSHsuccessat15:26:47UTC,GPUServer8,
+targetrouteutun4.Codearchive44603bytes/fullSHAf6fabf39…matchesapproved.
+Completeinputarchiveabsent;hidden.input_assets.tar.gz.r9dotp2883584bytes,
+SHAb90de2e5…matcheslocalinputprefix:2.54029%,110630602bytesremaining.
+Controlfourfiles/extractedcode/inputs/launchclaim/log/outputabsent.Twoexact-root
+rsyncPIDs2730703/2730763remainS/do_select;noscientificworkerobserved;
+snapshotnotproofpermanentstall,nokill.Remote3.2.7protocol31/localopenrsync29.
+Parentreadonly_inventory_after_vpn_20261020holdsrawhashinventory/SSHreceipt/
+README_inventory.Proposeonefresh-identityrecoverycard,retainR001,reuseverified
+codearchiveandtransferfull113514186-byteinputplusnewboundcontrolsafterapproval.
+NoautomaticreuseofR001authority.NopeerPIDtermination/cleanup/retransfer/
+extraction/newRunID/sciencethisturn;originalstopandolddefinitions/scoreskept.

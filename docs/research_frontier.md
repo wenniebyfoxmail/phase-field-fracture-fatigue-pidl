@@ -109,15 +109,17 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   datafactsunknownatpreparation. NowexacthumanapprovalreceivedandfirstSSH
   admissionpassed(actualGPUServer8/Python/NumPy/OpenCV/resources);freshroot
   created,firstinputrsyncendedSSHreadtimeout/brokenpipe(exit255).
-  R001STOPPED_NO_RETRY,0scientificlaunch/observations/figures;payloadstatus
-  unknown,no reconnect/fallback/cleanup.9localinputhashesunchanged;notamethod
+  R001STOPPED_NO_RETRY,0scientificlaunch/observations/figures;9localinput
+  hashesunchanged;notamethod
   verdict.Furtherremoteactionneedsnewauthority.Maildaily09:00Europe/London
   read-onlyprofessor-taylor-md03active;authorreplynotresearchdependency.
-  Newhuman-authorisedreadonlydiagnosis:oneSSHconnecttimeoutbeforeauth,
-  residualinventoryunavailable.Localen0route/noopenvpnprocessplusclientlog
-  restart/network-unreachable/exitduringuploadsupportsVPN-pathdisruption.
-  Lower-levelcauseunknown;restoreTaobotunnelthenconfirmedreadonlypackage
-  hashesbeforeanyrecoveryproposal.Noretransfer/launch/networkchange.
+  EarlierreadonlySSHfailedbeforeauth;VPN-pathdisruptionsupported,lower-level
+  causeunknown.NowuserrestoredVPN/newreadonlyauthority:utun4/oneSSHsuccess,
+  GPUServer8at15:26:47UTC.Codearchive44603bytes/fullSHAmatches;inputonly
+  2883584-bytehiddenprefix(2.54029%,prefixSHAmatches),fullinputabsent.
+  Control/extraction/launch/outputabsent;twoexact-rootrsyncprocessesremain,
+  nokill.Proposefresh-identityrecoverycard/reuseverifiedcode/fullinputtransfer,
+  approvalbeforeanywrite/compute.R001preserved,noretransfer/launch/cleanup.
   D3decisionallowsconditionalphoto-ID/imagegeometry
   explorationwithoutwaiting;parkonlylocalopeningreference,notprogramme.
   Inventedendpointsnottruth;affinetimerelabellingdoesnotchangeoldforecast,
