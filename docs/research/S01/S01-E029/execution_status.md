@@ -1,3 +1,15 @@
+# S01-E029 Taobo GPU5 Linux：代码复审通过，待本版迁移及执行批准
+
+2026-10-20。用户要求的Linux最小适配和必要平台修复已完成；独立 gpt-6.1-sol / High 精确代码复审 REVIEW_PASS。最终source-only `2dd8487f604112e061032e7a006367f344e74454`，owner实现 `3d6113fb498e9ee00a5e45818e0254f3aed05046`，Linux manifest `3cbde12cc84b8b8b677b04b5b182a1c7255f0cd41b1c30ada3fa7deff9645a4e`；268绑定、269源码包成员与Git逐字节一致，77项手工/mock/字节测试通过，fresh解包复跑一致。审查意见及原v1/v3档案保留。
+
+取消3600秒限制，wall_seconds=null，没有替代总时限；原科学范围/次数、CPU1、RSS/CUDA各4GiB、容量1/image与3/组、弃权及固定正面积交集不变。目标仍是同信息四臂比较中有益修正进入前三，九主地点形成实际OOF保旧净收益，并在全部十二旧地点保旧。新确认/封存地点不访问；没有新地点泛化声明。
+
+已准备[完整迁移与一次R001执行审批版](taobo_execution_approval.md)，包含精确源码/私有508文件及catalogue、Windows只读导出→Mac→Taobo GPU5、专属Linux运行库、指定公开分支、唯一R001与固定结果取回验收。当前没有源码或私有输入传送、公开推送、runtime安装、SSH占卡、真实前向/fit/GT/RGB/maps/OOF；GPU5准入仅旧快照，批准后重新检查。代码通过不是净收益结果，科学读数仍null。
+
+[独立复审记录](taobo_code_review_20261020.md)。旧Windows准入及科学负结果保留，下面均为历史记录。
+
+---
+
 # 当前：已复查全部可用GPU，Taobo GPU5空闲但需Linux适配
 
 # S01-E029：GPU选择复查与Taobo迁移边界（未执行）
