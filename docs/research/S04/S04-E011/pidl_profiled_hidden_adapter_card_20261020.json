@@ -1,0 +1,284 @@
+{
+  "schema": "E011_PROFILED_HIDDEN_ADAPTER_PREPARATION_v2",
+  "execution_enabled": false,
+  "producer_validated": false,
+  "local_adapter_implemented": true,
+  "run_id": null,
+  "launcher": null,
+  "preparation_base_commit": "d1edbeedfa88d371724c9659703158f6173764d7",
+  "branch": "codex/hard5-q4-t3-2x2-20261005",
+  "source_contract_sha256": "8361980c8571d8f4f3abacf5057fa954c346f960db523f704d2dfa7e86b0bb27",
+  "input_bindings": [
+    {
+      "role": "input",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/inputs/c20_peak.npz",
+      "bytes": 15502614,
+      "sha256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3"
+    },
+    {
+      "role": "original_model",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_99.pt",
+      "bytes": 4510197,
+      "sha256": "55de7e6c5ed7b3dd80cee19139b7e33a22b92c0b5384a8af9a019ff3e465004f"
+    },
+    {
+      "role": "initial_model",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/output/c20_s4/accepted_network.pt",
+      "bytes": 9011061,
+      "sha256": "8ea35dc4d1147ed49b26e0e3c440034d3fde7c971343519c394526c41d12180e"
+    },
+    {
+      "role": "source_fields",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/output/c20_s4/fields.npz",
+      "bytes": 1361291,
+      "sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57"
+    },
+    {
+      "role": "source_phi",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/output/c20_s4/bases/source/phi.npy",
+      "bytes": 267902656,
+      "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+    },
+    {
+      "role": "source_transform",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/output/c20_s4/bases/source/transform.npy",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+    }
+  ],
+  "source_bindings": [
+    {
+      "path": "tools/s04_e011_analysis/profiled_hidden_kernel.py",
+      "bytes": 10069,
+      "sha256": "8362e958400cad9a721309f242ed04819a19e106fc9ef72904f099ea417b082d"
+    },
+    {
+      "path": "tools/s04_e011_analysis/profiled_hidden_adapter.py",
+      "bytes": 16921,
+      "sha256": "17cfe4fc4b0fb1323bf11d4b3405b15492bb5c57352dffc6a7522cd936b15db2"
+    },
+    {
+      "path": "tools/s04_e011_analysis/profiled_hidden_e011_runtime.py",
+      "bytes": 17569,
+      "sha256": "226ef56620d82be051041070a984fd6db0084b70a771468a7253a328b976d8fe"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_persisted_phi_hidden_newton.py",
+      "bytes": 26489,
+      "sha256": "95a0f9180fa79542eadf0c3e65a1961df176c5080a0a7ae81e3d57d4b010b903"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_energy_head.py",
+      "bytes": 17946,
+      "sha256": "bee1f5dbec4b8a1579e8005371fa99841be0b83fc27c8b977c4026041569821f"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_head_newton.py",
+      "bytes": 22565,
+      "sha256": "eb0b6f6fc28cf134c942d9e3c4dc5358b8f1355982c1cf0cbe314789d9f8f7f1"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_hidden_newton.py",
+      "bytes": 28343,
+      "sha256": "f5580898a265820493c6ef235f4570adc1a15e696ca3bde051b9d6ba7e60eb54"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_head_readout_audit.py",
+      "bytes": 16119,
+      "sha256": "7c5b9eb831c77dc27667451236e9381c7c974123b02c16ae3d00dc1ce7d71647"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_learned_head_newton.py",
+      "bytes": 14626,
+      "sha256": "8e8686ad8516c6dfd1fc5ac442e0d97a6442feefc312d13a628a7fbd380a265b"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_block_diagnosis.py",
+      "bytes": 21269,
+      "sha256": "a5535d128bf8cb3cb4824ff61dbec2467d9481381699fa094494d049f1094fb9"
+    },
+    {
+      "path": "SENS_tensile/field_computation.py",
+      "bytes": 21584,
+      "sha256": "b3d04b39c7d8869b3e949ea141133d2d8103529d98010f3fcd12c7d0dcf8eea8"
+    },
+    {
+      "path": "SENS_tensile/run_native_q4_smooth_b0_picard.py",
+      "bytes": 61388,
+      "sha256": "c8c1c56f828f43b3ff1932353d131b189a8780f721c1c9da3dcf76e218f3b7be"
+    },
+    {
+      "path": "source/network.py",
+      "bytes": 25661,
+      "sha256": "85cec459cb6ac99e959e3eba5072ee448560890a4b6b0a592ea136cea5d2bded"
+    },
+    {
+      "path": "source/q4_quadrature.py",
+      "bytes": 2876,
+      "sha256": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb"
+    },
+    {
+      "path": "source/compute_energy.py",
+      "bytes": 28966,
+      "sha256": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60"
+    },
+    {
+      "path": "source/material_properties.py",
+      "bytes": 919,
+      "sha256": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c"
+    },
+    {
+      "path": "source/pff_model.py",
+      "bytes": 5749,
+      "sha256": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a"
+    }
+  ],
+  "fixed_state": {
+    "cycle": 20,
+    "substep": 4,
+    "rawstep": 99,
+    "U": 0.11999988,
+    "FEM_outer": 18,
+    "FEM_damage": "input d_fem",
+    "mesh_operator": "native Q4 2x2 GP",
+    "eta": 0,
+    "history_commits": 0,
+    "rollout_steps": 0,
+    "boundary": "original UV, all enrichment/exact/symmetry/patch options off",
+    "B0": "make_smooth(original_model) anchor preserved then load initial_model",
+    "head_gradient_inf_max": 1e-10,
+    "finite_NN_realization_maxabs": 1e-10,
+    "source_UVD_maxabs": 1e-12,
+    "source_E_maxabs": 1e-10
+  },
+  "comparator_A": {
+    "run": "pf_s04e011_tightcouple_137cb03_20261019T122720Z_production",
+    "commit": "137cb031bad7c5f656d08c642e65627bcdd6076c",
+    "terminal": "head_8",
+    "rerun": false,
+    "cost_equal_claim": false,
+    "terminal_reference": "docs/research/S04/S04-E011/runs/pidl_tight_coupling_result_20261019/result.json"
+  },
+  "candidate_B": {
+    "initial": "same common e2dc61d5 + a698ec7b actual Phi, not A head8",
+    "policy": "profiled hidden ZtKZ metric plus free-residual/energy common descent; real full-current reprofile acceptance",
+    "max_accepted_macrosteps": 4,
+    "max_alpha_trials_per_step": 4,
+    "alpha": [
+      1,
+      0.5,
+      0.25,
+      0.125
+    ],
+    "head_newton_per_trial_max": 10,
+    "hidden_parameter_ball": 0.01,
+    "frozen_scale": "max(initial layer RMS,0.001)*sqrt(n_layer), reused across steps",
+    "physical_ball": "0.01 times common-initial free-q mass norm; constrain Qp",
+    "damping": "0.001 max of two seeded Rademacher ZtKZ Rayleigh probes, seed1, no scan",
+    "CG_per_rhs_max": 64,
+    "CG_true_relative_residual": 0.0001
+  },
+  "primary_readout": {
+    "name": "Ru_B_over_Ru_A",
+    "definition": "free displacement residual L2 at last chronological accepted CLOSED B endpoint divided by same operator A head8",
+    "stage": "exploratory, no new formal success threshold; old outcomes unchanged",
+    "no_result_if": "real source/profile/head/field evidence invalid, no verified terminal, or zero accepted hidden macrosteps"
+  },
+  "secondary": [
+    "E and original >1e-10 directional margin against original two-block comparator",
+    "saved-Phi head gradient",
+    "raw hidden gradient",
+    "UV mass relL2",
+    "H1",
+    "active GP weighted relL2/correlation/integral",
+    "actual work/time/peak RAM/VRAM/storage",
+    "bounded local tangent primal-dual witness (not NN capacity)"
+  ],
+  "preflight": {
+    "phase_seconds": 300,
+    "source_repetitions": 3,
+    "initial_Phi_reconstruction": false,
+    "initial_SVD": false,
+    "profile_FD": "two seed173 unit directions, +/-1e-6 and +/-0.5e-6, each full-current SVD and head-closed actual NN with rollback",
+    "profile_FD_abs": 1e-10,
+    "profile_FD_rel": 0.0001,
+    "local_adjoint_abs": 1e-10,
+    "local_adjoint_rel": 1e-06,
+    "rank_change": "first stop, do not force old rank",
+    "Amor_zero_trace": "first stop rather than mixing AD and selected generalized tangent",
+    "missing_or_unsupported_JVP_VJP_second_order": "first stop; no detach or zero-fill fallback"
+  },
+  "phase_seconds": {
+    "preflight": 300,
+    "candidate": 1800,
+    "bounded_witness": 600,
+    "readout": 300
+  },
+  "total_seconds": 3000,
+  "aggregate_work_caps": {
+    "energy_force_field": 316,
+    "hidden_jvp": 768,
+    "hidden_vjp": 768,
+    "C": 256,
+    "CT": 256,
+    "native_tangent": 2048,
+    "head_assembly": 50,
+    "head_factor": 50,
+    "head_triangular_solve": 4096,
+    "raw_feature_forward": 4096,
+    "explicit_head_products": 1000,
+    "svd": 50
+  },
+  "resource_limits_bytes": {
+    "host_RSS": 25769803776,
+    "GPU_allocated": 25769803776,
+    "GPU_reserved": 27917287424,
+    "fresh_root_outputs": 25769803776
+  },
+  "future_admission_only": {
+    "producer": "Taobo only, no fallback",
+    "require_no_conflicting_training": true,
+    "required_initial_free_VRAM_bytes": 30064771072,
+    "fresh_attributable_roots": "/mnt/data2/drtao/wennie and /mnt/data2/drtao/pidl_archives",
+    "environment": [
+      "CUDA_VISIBLE_DEVICES",
+      "PIDL_ARCHIVE_DIR",
+      "TMPDIR",
+      "XDG_CACHE_HOME"
+    ],
+    "external_hard_watchdog_required": true,
+    "phase_guard_is_not_hard_watchdog": true,
+    "current_GPU_query_performed": false
+  },
+  "first_stop": [
+    "input/source hash mismatch",
+    "same actual-Phi source readout miss",
+    "nonfinite field/gradient/norm or RAM/VRAM/storage/time/work limit",
+    "full-current rank change",
+    "Cholesky failure or original relative solve residual>1e-6; no ridge/pseudoinverse/repair",
+    "local adjoint or native BtKB mismatch",
+    "actual full-reprofile FD mismatch",
+    "head gradient or actual realization miss",
+    "frozen damage/history/B0/UV/dhead change",
+    "candidate identity/replay or rollback failure",
+    "no verified common descent/CG unresolved/no accepted alpha"
+  ],
+  "witness": {
+    "iterations_max": 96,
+    "relative_gap": 0.001,
+    "actual_realization_trials_max": 1,
+    "primary_candidate_endpoint": false,
+    "target": "source nodal -R at old hidden1 nodal L2 size, never FEM field training target"
+  },
+  "no_automatic_retry": true,
+  "new_training_or_FEM_currently_authorized": false,
+  "minimum_real_activity_deferred": "one 300s zero-update/hash/source/full-current reprofile-derivative and memory preflight, 0 accepted hidden updates; only if separately authorized and passing may remaining bounded comparison start",
+  "unverified": [
+    "real Linux Torch functional/double-backward support",
+    "actual saved Phi versus moving/current-SVD chart derivative and finite NN realization stability",
+    "real source repeatability and resource costs",
+    "external producer launcher/watchdog integration and exact final execution package"
+  ],
+  "resource_telemetry": "Guard memory callback must use PEAK RSS/peak CUDA allocated/peak CUDA reserved and cumulative task output bytes, normalized to declared separate limits; instantaneous-only readings are insufficient.",
+  "simple_zero_update_control": "Reuse the common initial endpoint as well as A head8. Report Ru_B/Ru_initial and E_B/E_A beside the primary: common initial already has smaller Ru than A, so Ru_B/Ru_A<1 alone cannot establish a new meaningful gain."
+}
