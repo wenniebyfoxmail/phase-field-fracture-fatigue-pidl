@@ -1,3 +1,19 @@
+# 当前冻结包：2026-10-20，含缺测费用控制预留
+
+独立最终结论 **PREPARATION_ONLY**；以下旧1181记录保留作沿革，当前准确身份为：
+
+- 源提交 `4ca8d56df129b11c7a4e3c03534cfab3af05a4dd`，98个文件均与提交逐字节一致。
+- artifact `605443be64260f0fdcf6d9f454f605551dd73075b698702190191b30d9eae55b`。
+- card SHA `321f36ba8a17da667ab35f01f69932ef1b4e75d0c5c59a19a372a9a055ba85d8`。
+- manifest SHA `d4945ad6690858f369a67a843f927be7f4ca63e7f07a13ac8ed4e18760ec47d8`。
+- budget receipt SHA `e8515061fa412363609666730de7a2ed6c044b4d3353f3aa95c513a964f7dcb4`。
+
+旧缺测控制预算条件已闭合：card与receipt都绑定600秒预留；外层GNU timeout确实再扣600秒，legacy默认0；拒绝负值/NaN/inf/bool/字符串。实际费用仍809.8447466738289秒，预留没有伪装成actual；可用保守余额135.60837645925727hosth。独立预算差量3项定向测试通过0.57秒；最终主执行者143项人工回归通过3.62秒。数值/历史核心沿用已通过复核。
+
+独立审核者最终只读复核98文件snapshot/hash/git show与卡/receipt/预算一致性；card false、receipt complete=false，disabled guard实际拒绝spawn。最终外层期限488100.1552533262秒，再扣launcher实际耗时；后续真实stage耗时仍需加入。没有远端、数组读取或科学重跑。剩余：具体stage动作人方确认、实际stage/cost、最终启用卡/审核/提交bundle绑定。不能把此结论改写为REVIEW_PASS启动。
+
+---
+
 # v6准确本地准备包独立复核
 
 结论：**PREPARATION_REVIEW_PASS_ONLY**，不是启动通过。独立审核者 `/root/hybrid_readiness_review`，2026-10-20；只读核验，没有SSH、数组解码或文件修改。

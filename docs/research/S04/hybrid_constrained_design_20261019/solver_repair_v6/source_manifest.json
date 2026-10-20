@@ -1,6 +1,6 @@
 {
   "schema": "hybrid-solver-source-v6",
-  "source_commit": "807696565612e69ebd65381718c1fd7253874dbc",
+  "source_commit": "4ca8d56df129b11c7a4e3c03534cfab3af05a4dd",
   "base_owner_commit": "edbba209",
   "files": {
     "docs/experiments/s04_fem_pidl_field_alignment_track.md": "83c07f18ea7201a9c188ef94d7c9538d5a467932b6ebf7be37507ffa07a2093c",

@@ -1,46 +1,24 @@
 {
-  "artifact_id": "67cced2c9611e309b20f084f3fcda046ed6c93fb48b89661811d22dcdfa5d2d0",
-  "source_commit": "1181c979dcf8a4035a643e2d6aa803e9b58f734a",
-  "source_file_count": 98,
-  "card_validation": true,
-  "all_source_hashes_verified": true,
-  "disabled_rejected_before_spawn": true,
-  "unchanged_physical_thresholds": true,
-  "unchanged_data_network_training_criteria_state_contract": true,
-  "actual_charged": {
-    "wall_seconds": 809.8447466738289,
-    "cpu_seconds": 833.5476140000001,
-    "gpu_seconds": 0.0,
-    "numerical_seconds": 497.477721337229,
-    "facts": [
-      {
-        "source": "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/budget_reconciliation.json",
-        "sha256": "74dd605299567a12e9aeda3b65cd765595f18a15be2b6b9168f8462ac32051d2",
-        "lineage": [
-          "pf_hybrid_full_20261019_r1",
-          "pf_hybrid_validate_20261020_01",
-          "pf_hybrid_validate_20261020_02",
-          "pf_hybrid_complete_20261020_r2",
-          "pf_hybrid_r2_dispatch_and_diagnosis_control"
-        ],
-        "wall_seconds": 809.8447466738289,
-        "cpu_seconds": 833.5476140000001,
-        "gpu_seconds": 0.0,
-        "numerical_seconds": 497.477721337229
-      }
-    ],
-    "cost_only_not_admission": true
-  },
-  "final_stage_execution_review_pending": true,
+  "source_commit": "4ca8d56df129b11c7a4e3c03534cfab3af05a4dd",
+  "artifact_id": "605443be64260f0fdcf6d9f454f605551dd73075b698702190191b30d9eae55b",
+  "card_sha256": "321f36ba8a17da667ab35f01f69932ef1b4e75d0c5c59a19a372a9a055ba85d8",
+  "all98_source_hashes_equal_commit": true,
+  "card_valid": true,
+  "disabled_rejected": true,
+  "observed_prior_wall_seconds": 809.8447466738289,
+  "unmeasured_control_reserve_seconds": 600,
+  "reserve_subtracted_from_outer_timeout": true,
+  "known_conservative_host_hours": 135.60837645925727,
   "ssh_calls": 0,
-  "project_arrays_loaded": false,
-  "independent_verdict": "PREPARATION_REVIEW_PASS_ONLY",
+  "scientific_arrays_decoded": false,
+  "execution_enabled": false,
+  "independent_verdict": "PREPARATION_ONLY",
   "reviewer": "/root/hybrid_readiness_review",
-  "missing_cost_execution_condition": "Before enabling, apply an explicit conservative control reserve within original136h or obtain verifiable missing actual readings; never silently assign zero or label reserve as actual.",
+  "all98_source_hashes_independently_verified": true,
+  "control_reserve_review": "3 targeted tests passed0.57s; final143 artificial regressions passed3.62s",
   "remaining_blockers": [
-    "exact remote stage action approval",
-    "actual successful stage and costs",
-    "missing control cost conservative budget enforcement",
-    "final enabled exact-card/artifact independent execution review"
+    "exact stage action user confirmation demanded by auto-review",
+    "real successful stage and actual costs",
+    "final enabled card/source/review/bundle binding"
   ]
 }
