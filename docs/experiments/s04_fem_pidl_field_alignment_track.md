@@ -68,3 +68,11 @@ Actual result review: [scoped independent receipt](../research/S04/S04-E011/runs
 复用全部8份已核验日志、38fresh与完整work trace；机械再平衡中位数7.784→2.884秒、step2新LU0、82返回GMRES调用，前三次Anderson全有效。但全步3提议耗尽后，普通map仍接受恶化点；m于134.064秒最低1.78275仍未过门，末6.53011。最初反弹18–20轮未见active/trace/loading切换，f始终1；无失败残差向量或谱，不能证明特定不稳定模态。
 
 建议共同外层以统一m_work保护普通/AA/约化VI Newton-Schur，保留实际最终QP、完整m_accept及D13的真实f_solve/f_commit和CAS。方案未实现、无新科学尝试；原R3首停/预算/NN未参与事实保留。[完整诊断与可迁移方法](../research/S04/hybrid_constrained_design_20261019/solver_repair_v6/r3_coupling_diagnosis.md)。
+
+
+<!-- HYBRID_R4_D16_TERMINAL -->
+### 2026-10-21 D16：外层保护有效，Schur内层失败并定位AA历史误清
+
+沿原目标/D13，后续HQ可核人方托管计算授权前瞻限定一次train_A600步、4h/4CPU/0GPU/32GiB/合计16GiB，首科学失败停；非复用R3许可。冻结bb07b014/33文件及163人工检查、独立准确执行复核后单次R4接受首步30.405秒、1/600，case150.708秒。Newton首方向全步被拒绝、半步改善；次方向48内迭代/53作用真相对残差0.155253>0.001而首停，非300秒超时。29文件/92.014MB及终态源全核、latest version1、4进程全退，未重试/训练/其他case。
+
+源码+事件独立确认AA全步减加后逐位判等导致历史误清，尚无完整持续AA验证；原物理精度/真实最终QP/单CAS未变。第1步与R3场差约1e-15不代表完整轨迹或NN收益；f始终1。下一仅提案：显式全QP操作历史语义＋原残差耦合主动集块Newton/分别固定尺度真残差，fill/成本/收敛未知，无新实现/运行。[完整诊断](../research/S04/hybrid_constrained_design_20261019/solver_repair_v7/result.md)／[elapsed](../research/S04/hybrid_constrained_design_20261019/solver_repair_v7/case_elapsed_times.csv)／[保存证据复审](../research/S04/hybrid_constrained_design_20261019/solver_repair_v7/evidence_review.json)。

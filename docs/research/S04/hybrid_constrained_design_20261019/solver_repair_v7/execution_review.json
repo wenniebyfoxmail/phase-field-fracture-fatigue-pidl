@@ -1,0 +1,77 @@
+{
+  "schema": "hybrid-independent-execution-review-v1",
+  "verdict": "REVIEW_PASS",
+  "scope": "EXACT_STATIC_EXECUTION_PACKAGE_REVIEW_ONLY",
+  "reviewer": "independent Codex reviewer /root/hybrid_readiness_review",
+  "reviewed_at_utc": "2026-10-20T22:57:26.364551+00:00",
+  "source_commit": "bb07b014e6474b3038a0b135e2da4d21c2083e31",
+  "artifact_id": "79cf0dccbc5c6f4bebae72c85308e159b1d55382eae2e5e273360f39461333ce",
+  "card_sha256": "8b4cea2603e3a93f343619d3a03671ed4effc80b376e0e0179c9fc4dfdf28fe4",
+  "source_manifest_sha256": "167d9b83ce281958f8614b26febc40d2c5c6c543219e2dad555c791821d31c0f",
+  "source_files_verified": 33,
+  "source_files_match_frozen_commit": true,
+  "checks_receipt_sha256": "8723f86ecb1bdab04c76cd7f952e41c84519f97e7ef2670b7c0bf90a7fd5036a",
+  "authority_sha256": "415650aefbed146d6d0cabd8de36caf5ef47b197b26cadbb575d2d4f5cc1ad63",
+  "authority_scope": "One delegated-HQ original train_A continuous600-substep attempt only; first scientific failure stops; no automatic retry, resume, other case or training.",
+  "authority_provenance": "Bound authority.json matches the exact card; direct-human HQ verification was recorded by the owner. This review grants no additional authority.",
+  "inherited_review_scope": [
+    "Previously reviewed unchanged original FEM operators, physical thresholds, same-old trial history, D13 actual f_solve/f_commit, CAS transaction and pidfd/gated worker controls.",
+    "D15 analysis/proposal review and this reviewers preceding v7 B/C/D, natural VI, fixed-current-A Schur, common m_work and actual-QP m_accept code reviews."
+  ],
+  "independent_checks": {
+    "frozen_source_hash_and_git_show_all_33": true,
+    "card_validate_and_authority_equality": true,
+    "changed_source_checks_receipt_hashes_all_14": true,
+    "local_syntax_compile_all_manifest_python": true,
+    "latest_math_control_artificial_tests": "38 passed in0.79s before final dependency-copy delta; preceding13/32 checks overlap and are not independent experimental samples.",
+    "final_dependency_delta_tests": "3 passed,19 deselected in0.53s: same-host receiver copy, corrupt retained source refuses launch, retained-file closure/bytecode/symlink rejection. Launcher subprocess mocked; artificial files only.",
+    "python_absolute_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "owner_full_regression_record": "checks.json records163 passed in3.75s, measured wrapper wall4.046416791039519s and CPU3.9468s; reviewer verified14 bound file hashes, did not redundantly rerun all163.",
+    "retained_dependency_provenance": "98 files980049bytes; map and source receipt SHA independently match original R3 stage_receipt_attempt1.json. Only verified public OSQP files copy R3-to-R4 on same host; old caches/private inputs not copied. Fresh deps rejects all pyc/cache/extra/symlink files."
+  },
+  "closed_findings": [
+    "Nested mechanics diagnostic aggregate attached to captured mechanics parent work row.",
+    "Loading/threshold one-sided branches, original trace>=0 branch, and real factor/key/domain rejection rollback covered.",
+    "Successful AA is not lifetime-disabled; every fresh candidate/backtrack shares100 cap and300s step clock.",
+    "Final attributed storage scan plus step boundary checks/headroom; no claim of measuring unsampled instantaneous peaks.",
+    "Complete owned timeout/supervisor/worker/guardian RSS and VMS monitoring plus AS partitions; GPU disabled and4-core shared affinity.",
+    "Latest two unaccepted Newton snapshot tags explicitly NOT_LABEL, with scalar trace retained; all accepted NPY member bytes and metadata retained by verified lossless ZIP recompression.",
+    "Retained OSQP import uses fresh isolated exactly-hashed dependency files; old bytecode is not imported or copied."
+  ],
+  "execution_envelope": {
+    "run_id": "pf_hybrid_solver_v7_20261020_r4",
+    "producer": "drtao@172.16.100.2 GPUServer8",
+    "package_start_epoch": 1792534776.0,
+    "absolute_package_end_epoch": 1792549176.0,
+    "total_envelope_seconds": 14400,
+    "post_execution_reserve_seconds": 600,
+    "termination_reserve_seconds": 45,
+    "numerical_stop_epoch_before_bounded_cleanup": 1792548531.0,
+    "cpu_cores": 4,
+    "gpu_count": 0,
+    "aggregate_rss_vms_limit_bytes": 34359738368,
+    "primary_archive_local_retrieval_gib": [
+      1,
+      7,
+      8
+    ],
+    "trajectory": "train_A amplitude0.8; original five loads;120cycles600steps; original state0/material/mesh",
+    "scientific_attempts": 1,
+    "automatic_retry": false,
+    "old_known_research_wall_seconds_preserved": 1232.4626276369672,
+    "historical_unknown_control_reserve_seconds_not_actual": 600
+  },
+  "required_runtime_admission": "The exact producer must still pass fresh-root/attribution, dependency/input hashes, actual dependency imports, CPU/mount/RAM/disk, guardian readiness and resource/deadline checks before and during the sole scientific attempt. Unknown dispatch is reconciled from this run reservations, never retried with a new ID.",
+  "runtime_admission_verified": false,
+  "scientific_execution_performed_by_reviewer": false,
+  "scientific_convergence_verified": false,
+  "neural_comparison_verified": false,
+  "reviewer_remote_actions": 0,
+  "reviewer_project_scientific_array_decodes": 0,
+  "limitations": [
+    "Static and artificial-test clearance is not convergence or physical validation.",
+    "RSS/VMS/storage are monitored samples; unsampled transient peaks are not reported as observed.",
+    "Full successful trajectory would qualify only this synthetic numerical path, not a teacher, unique physical solution, material generalisation or neural benefit."
+  ],
+  "blocking_findings": []
+}

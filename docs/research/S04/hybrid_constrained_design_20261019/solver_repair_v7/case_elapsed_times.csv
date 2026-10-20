@@ -1,0 +1,2 @@
+run_id,case,planned_steps,accepted_steps,case_phase_wall_seconds,step1_including_IO_seconds,step2_last_fresh_seconds,step2_failure_diagnostic_seconds,step2_complete_elapsed_seconds,status,root_error
+pf_hybrid_solver_v7_20261020_r4,train_A,600,1,150.7079714052379,30.40476349182427,101.63546682614833,116.95171316713095,,scientific_failure_stopped,Schur linear solve failed original true-residual target

@@ -44,7 +44,12 @@ def make_card():
 
 def prepare():
     LOCAL.mkdir(parents=True,exist_ok=True)
-    card=make_card();(HERE/'execution_card.json').write_text(json.dumps(card,indent=2,ensure_ascii=False)+'\n')
+    card=make_card()
+    if (HERE/'execution_review.json').exists():
+        frozen=json.loads((HERE/'execution_card.json').read_text())
+        card['source_commit']=frozen['source_commit']
+        if card!=frozen:raise RuntimeError('reviewed card is immutable; no metadata overwrite')
+    else:(HERE/'execution_card.json').write_text(json.dumps(card,indent=2,ensure_ascii=False)+'\n')
     prior=json.loads((HERE.parent/'solver_repair_v6/source_manifest.json').read_text())
     paths=[p for p in prior['files'] if p.startswith('source/')]
     paths+=['source/hybrid_guarded_coupling.py','source/hybrid_reduced_tangent.py',
@@ -55,8 +60,9 @@ def prepare():
     files={p:sha(CODE/p) for p in sorted(set(paths))}
     artifact=hashlib.sha256(json.dumps(files,sort_keys=True,allow_nan=False).encode()).hexdigest()
     package=dict(artifact_id=artifact,source_commit=card['source_commit'],files=files)
-    (HERE/'source_manifest.json').write_text(json.dumps(package,indent=2)+'\n')
     if (HERE/'execution_review.json').exists():
+        if package!=json.loads((HERE/'source_manifest.json').read_text()):
+            raise RuntimeError('reviewed manifest is immutable; no metadata overwrite')
         review=json.loads((HERE/'execution_review.json').read_text())
         if review['card_sha256']!=sha(HERE/'execution_card.json') or review['artifact_id']!=artifact:
             raise RuntimeError('existing exact review differs; do not silently overwrite or deploy')
@@ -70,7 +76,9 @@ def prepare():
         if len(payload)>2*2**20 or sum(map(len,data.values()))>4*2**20:raise RuntimeError('code/control bundle exceeds reviewed cap')
         (LOCAL/'code_control.tar.gz').write_bytes(payload)
         print(json.dumps(dict(artifact_id=artifact,bundle_sha256=hashlib.sha256(payload).hexdigest(),bundle_bytes=len(payload),files=len(files),root=str(LOCAL))))
-    else:print(json.dumps(dict(status='prepared_awaiting_exact_review',artifact_id=artifact,files=len(files),card_sha256=sha(HERE/'execution_card.json'))))
+    else:
+        (HERE/'source_manifest.json').write_text(json.dumps(package,indent=2)+'\n')
+        print(json.dumps(dict(status='prepared_awaiting_exact_review',artifact_id=artifact,files=len(files),card_sha256=sha(HERE/'execution_card.json'))))
 
 
 if __name__=='__main__':prepare()

@@ -1,0 +1,545 @@
+{
+  "run_id": "pf_hybrid_solver_v7_20261020_r4",
+  "status": "scientific_failure_stopped_no_retry",
+  "source_commit": "bb07b014e6474b3038a0b135e2da4d21c2083e31",
+  "verification": {
+    "files": 29,
+    "verified_bytes": 92014104,
+    "terminal_source_files": 33,
+    "all_hashes_match": true,
+    "scientific_reruns": 0,
+    "transport_failures_preserved": [
+      "retrieval_receipt.json",
+      "retrieval_receipt_attempt2.json"
+    ],
+    "recovery": "Every selected file recovered and SHA checked; incomplete transport archives retained, not treated as complete evidence.",
+    "selected_scope": "29 logs/control/state/diagnostic files plus terminal33 source hashes, not a whole remote disk copy"
+  },
+  "accepted_steps": 1,
+  "planned_steps": 600,
+  "step1_elapsed": 30.40476349182427,
+  "step1_solver_seconds": 29.589727054350078,
+  "step2_last_fresh": {
+    "outer": 15,
+    "elapsed": 101.63546682614833,
+    "kind": "ordinary_QP_map",
+    "alpha": 1.0,
+    "m_work": 2.164764554279941,
+    "m_accept": 2.164764554279941,
+    "kept": true,
+    "kkt_inf": 2.1647645542369795e-07,
+    "kkt_l2": 1.5930046827708735e-06,
+    "force_l2": 2.515872844457447e-10,
+    "fatigue_residual": 0.0
+  },
+  "step2_last_schur_elapsed": 116.95171316713095,
+  "case_wall": 150.7079714052379,
+  "actual_CPU_seconds": 228.202542,
+  "actual_GPU_seconds": 0,
+  "peak_observed_RSS_bytes": 4391878656,
+  "conservative_package_charge_at_worker_terminal": 2534.783671866171,
+  "read_only_return_and_analysis_extra": true,
+  "failure_reason": "Schur linear solve failed original true-residual target",
+  "schur": [
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537271.3903387,
+      "monotonic": 5559353.897423256,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 78.8061147723347,
+      "event": "schur_direction",
+      "inactive_nodes": 4753,
+      "linear_iterations": 21,
+      "code": 0,
+      "true_residual": 1.3819614376620346e-09,
+      "target": 1.5458755407094937e-09,
+      "mechanics_matrix_key": "bb01925a0efe0e103aa21b8ab2c2761e2bf9433d0e307ec860ec62a9285d72f5",
+      "preconditioner": "frozen-QP inactive Hessian",
+      "fixed_current_A_inverse": true,
+      "matvecs": 25,
+      "inverse_actions": 25
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537309.5359728,
+      "monotonic": 5559392.04305769,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 116.95171316713095,
+      "event": "schur_direction",
+      "inactive_nodes": 4760,
+      "linear_iterations": 48,
+      "code": 3,
+      "true_residual": 2.4731912839593484e-07,
+      "target": 1.5930046827616466e-09,
+      "mechanics_matrix_key": "a2250f2afc0325d92fbd3f7fcfef4676680947f49b087e40a96a9e93d310173e",
+      "preconditioner": "frozen-QP inactive Hessian",
+      "fixed_current_A_inverse": true,
+      "matvecs": 53,
+      "inverse_actions": 53
+    }
+  ],
+  "all_retained_work_merits_strictly_decrease": true,
+  "rejected_fresh": [
+    {
+      "outer": 12,
+      "elapsed": 83.69064328167588,
+      "kind": "reduced_VI_Newton",
+      "alpha": 1.0,
+      "m_work": 6.647017563032875,
+      "m_accept": null,
+      "kept": false,
+      "kkt_inf": 6.647017562753422e-07,
+      "kkt_l2": 4.408471658770116e-06,
+      "force_l2": 2.6076939548911403e-10,
+      "fatigue_residual": null
+    }
+  ],
+  "rollback": [
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537276.2948854,
+      "monotonic": 5559358.801970294,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 83.71099998336285,
+      "event": "work_point_rollback",
+      "outer": 12,
+      "restored_outer": 11,
+      "restored_d_id": "1de0f14e0674050ebed8072d7f16831bc4cd69bc4d148e8c51beb6392d8e0f9a",
+      "restored_u_id": "a01c48907a777ef30d07c33e3c5f471b12de86e28109dec09765217a6c677d68",
+      "restored_m_work": 2.7239810663306803
+    }
+  ],
+  "anderson": [
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537202.158224,
+      "monotonic": 5559284.665308854,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 9.574349083006382,
+      "event": "anderson_proposal",
+      "outer": 2,
+      "reason": "insufficient_history"
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537208.786833,
+      "monotonic": 5559291.293917967,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 16.202953106723726,
+      "event": "anderson_proposal",
+      "outer": 3,
+      "reason": "insufficient_history"
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537215.9413111,
+      "monotonic": 5559298.448395999,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 23.357414977625012,
+      "event": "anderson_proposal",
+      "outer": 4,
+      "reason": "insufficient_history"
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537222.6166797,
+      "monotonic": 5559305.123764543,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 30.032790292054415,
+      "event": "anderson_proposal",
+      "outer": 5,
+      "reason": "insufficient_history"
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537229.1910036,
+      "monotonic": 5559311.698088356,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 36.607116336002946,
+      "event": "anderson_proposal",
+      "outer": 6,
+      "reason": "proposed",
+      "depth": 1,
+      "stable_free_nodes": 4747,
+      "coefficient_l1": 3.866004839615342,
+      "correction_rms": 0.0001670034778227667,
+      "fixed_point_rms": 0.00011654102214105916,
+      "regularization": 1.2283836406184803e-13,
+      "regularized_rank": 1,
+      "regularized_condition": 1.0
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537239.7820156,
+      "monotonic": 5559322.289100251,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 47.19811746943742,
+      "event": "anderson_proposal",
+      "outer": 8,
+      "reason": "coefficient_guard",
+      "coefficient_l1": 9.884359241168518
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537246.706272,
+      "monotonic": 5559329.213356903,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 54.12238321173936,
+      "event": "anderson_proposal",
+      "outer": 9,
+      "reason": "coefficient_guard",
+      "coefficient_l1": 45.568428976032266
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537253.642941,
+      "monotonic": 5559336.150025854,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 61.05904500372708,
+      "event": "anderson_proposal",
+      "outer": 10,
+      "reason": "coefficient_guard",
+      "coefficient_l1": 46.77571828835955
+    },
+    {
+      "phase": "train_A",
+      "step": 2,
+      "epoch": 1792537288.0040436,
+      "monotonic": 5559370.51112842,
+      "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "load_id": "train_A:c1:s2:0.047999904000000003",
+      "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+      "elapsed_seconds": 95.42015451844782,
+      "event": "anderson_proposal",
+      "outer": 14,
+      "reason": "insufficient_history"
+    }
+  ],
+  "roundoff_demo": {
+    "base": [
+      1e-08,
+      0.7,
+      0.9
+    ],
+    "target": [
+      1e-20,
+      0.2,
+      0.3
+    ],
+    "roundtrip": [
+      1.0000613605766105e-20,
+      0.2,
+      0.29999999999999993
+    ],
+    "bitwise_equal": false,
+    "max_diff": 5.551115123125783e-17
+  },
+  "AA_history_reset_proof": {
+    "outer5_reason": "insufficient_history",
+    "outer6_depth": 1,
+    "deduction": "outer5 and6 each add one history entry; outer6 depth1 means two entries, hence zero beforeouter5. Outer4 fullalpha1 took exact-array inequality clear. At least one further clear occurred inouter2/3; subtraction/readdition plusprojection is the sole source path changing the already feasible exact QP target. Unsaved vectors prevent node/magnitude/counterfactual measurement."
+  },
+  "last_frozen_QP": {
+    "phase": "train_A",
+    "step": 2,
+    "epoch": 1792537290.9092205,
+    "monotonic": 5559373.416305082,
+    "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+    "load_id": "train_A:c1:s2:0.047999904000000003",
+    "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+    "elapsed_seconds": 98.32526958081871,
+    "event": "frozen_QP_return",
+    "next_outer": 15,
+    "qp": {
+      "status": "solved",
+      "iterations": 100,
+      "roundoff_projection_inf": 3.3307122875491883e-22
+    },
+    "damage": {
+      "operator_id": "499fd94b526af28b462a145d8e9431fb1c0d996fd99a838b7f22f8e954163aa5",
+      "primal_inf": 0.0,
+      "kkt_scaled_inf": 8.131516293641283e-20,
+      "kkt_l2": 7.833522579898896e-19,
+      "projected_inf": 2.1681109637181754e-20
+    },
+    "actual_f_solve_id": "eb26aa920d8828af94d7372b8bf3811fd0b3daa5e879ad38d8f836af66d1fbb6"
+  },
+  "last_work_point": {
+    "phase": "train_A",
+    "step": 2,
+    "epoch": 1792537294.237931,
+    "monotonic": 5559376.745015855,
+    "previous_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+    "load_id": "train_A:c1:s2:0.047999904000000003",
+    "policy_id": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8",
+    "elapsed_seconds": 101.65366219170392,
+    "event": "work_point_diagnostics",
+    "outer": 15,
+    "worst_projected_node": 44519,
+    "gradient_at_worst": -2.1647645542369795e-07,
+    "lower_gap_at_worst": 0.07765916408190332,
+    "active_at_worst": 0,
+    "active_gp_loading": 345631,
+    "fatigue_below_one_gp": 0,
+    "d_id": "bf9b142b8a5d52c4d7260348448b3e30c19135c24108586e6e3ab6f715be1422",
+    "A_id": "e6d1df529e1d16bba765f856c9ee5f11573e2da6060901fc8c564f4911c7942b",
+    "r_id": "29b8fb90e130af5497fef4013e412d58dd6de58ce16a86f9696c295510781c81",
+    "f_id": "eb26aa920d8828af94d7372b8bf3811fd0b3daa5e879ad38d8f836af66d1fbb6"
+  },
+  "worst_node_xy": [
+    -0.2958438722624679,
+    -0.002015364256448273
+  ],
+  "top_level_seconds": {
+    "common_mechanics_predictor": 1.0831919685006142,
+    "final_trial_history": 0.5906150862574577,
+    "fresh_final_damage_assembly": 6.687519257888198,
+    "fresh_final_kkt": 0.050462150014936924,
+    "fresh_final_force": 9.787430746480823,
+    "iteration_evidence": 0.04712781589478254,
+    "damage_qp": 31.928125099278986,
+    "frozen_QP_KKT": 0.03198041766881943,
+    "mechanics_re_equilibration": 39.642089613713324,
+    "coupling_proposal": 0.01221230998635292,
+    "unaccepted_before_schur": 0.9980334853753448,
+    "schur_current_mechanics_factor": 13.586199063807726,
+    "coupled_residual_tangent": 1.270428747870028,
+    "schur_damage_preconditioner": 0.01929561421275139,
+    "schur_krylov": 9.67502892576158,
+    "unaccepted_after_schur": 0.48925880528986454
+  },
+  "top_level_total_seconds": 115.89899910800159,
+  "block_stats": {
+    "mechanical.assembly": {
+      "count": 29,
+      "seconds": 7.173029872588813,
+      "median": 0.18860913161188364
+    },
+    "mechanical.linear_solve": {
+      "count": 1,
+      "seconds": 0.12380805425345898,
+      "median": 0.12380805425345898
+    },
+    "mechanical.fresh_assembly": {
+      "count": 15,
+      "seconds": 9.764249979518354,
+      "median": 0.6080181617289782
+    },
+    "common_mechanics_predictor": {
+      "count": 1,
+      "seconds": 1.0831919685006142,
+      "median": 1.0831919685006142
+    },
+    "final_trial_history": {
+      "count": 15,
+      "seconds": 0.5906150862574577,
+      "median": 0.03874364588409662
+    },
+    "fresh_final_damage_assembly": {
+      "count": 15,
+      "seconds": 6.687519257888198,
+      "median": 0.4364131689071655
+    },
+    "fresh_final_kkt": {
+      "count": 15,
+      "seconds": 0.050462150014936924,
+      "median": 0.00282317865639925
+    },
+    "fresh_final_force": {
+      "count": 15,
+      "seconds": 9.787430746480823,
+      "median": 0.6172762708738446
+    },
+    "iteration_evidence": {
+      "count": 95,
+      "seconds": 0.07069705799221992,
+      "median": 0.0007809652015566826
+    },
+    "damage_qp": {
+      "count": 11,
+      "seconds": 31.928125099278986,
+      "median": 2.86726310569793
+    },
+    "frozen_QP_KKT": {
+      "count": 11,
+      "seconds": 0.03198041766881943,
+      "median": 0.0027742674574255943
+    },
+    "mechanical.recycled_gmres": {
+      "count": 28,
+      "seconds": 19.480047520250082,
+      "median": 0.5269895391538739
+    },
+    "mechanics_re_equilibration": {
+      "count": 14,
+      "seconds": 39.642089613713324,
+      "median": 2.8644275842234492
+    },
+    "coupling_proposal": {
+      "count": 9,
+      "seconds": 0.01221230998635292,
+      "median": 0.0003875531256198883
+    },
+    "unaccepted_before_schur": {
+      "count": 2,
+      "seconds": 0.9980334853753448,
+      "median": 0.4990167426876724
+    },
+    "mechanical.acceptance_assembly": {
+      "count": 2,
+      "seconds": 0.3548263553529978,
+      "median": 0.1774131776764989
+    },
+    "mechanical.acceptance_factorization": {
+      "count": 2,
+      "seconds": 11.773523541167378,
+      "median": 5.886761770583689
+    },
+    "schur_current_mechanics_factor": {
+      "count": 2,
+      "seconds": 13.586199063807726,
+      "median": 6.793099531903863
+    },
+    "coupled_residual_tangent": {
+      "count": 2,
+      "seconds": 1.270428747870028,
+      "median": 0.635214373935014
+    },
+    "schur_damage_preconditioner": {
+      "count": 2,
+      "seconds": 0.01929561421275139,
+      "median": 0.009647807106375694
+    },
+    "schur_krylov": {
+      "count": 2,
+      "seconds": 9.67502892576158,
+      "median": 4.83751446288079
+    },
+    "unaccepted_after_schur": {
+      "count": 1,
+      "seconds": 0.48925880528986454,
+      "median": 0.48925880528986454
+    }
+  },
+  "accepted_state_context_differences": {
+    "coupling_policy_id": {
+      "R3": "f882e2c22de396f1f526b755ecc07056324790240201de359ee46e6884f441c2",
+      "R4": "88f6498d4ed570e204c887c5c18d8c357b1ffbc86a56993019cd9e19606c75b8"
+    }
+  },
+  "solver_control_differences": {},
+  "accepted_step1_field_differences": {
+    "displacement": {
+      "diff_inf": 4.701100619897147e-16,
+      "diff_rms": 6.376969996613472e-17,
+      "R3_rms": 0.006421962482461343,
+      "relative_rms": 9.92993966257083e-15
+    },
+    "damage": {
+      "diff_inf": 6.661338147750939e-16,
+      "diff_rms": 2.7461772758784854e-17,
+      "R3_rms": 0.11017249865323733,
+      "relative_rms": 2.4926159517557523e-16
+    },
+    "accumulated": {
+      "diff_inf": 1.6341095143701523e-15,
+      "diff_rms": 2.4528885041049633e-17,
+      "R3_rms": 0.000783687611058355,
+      "relative_rms": 3.129931454182853e-14
+    },
+    "driver": {
+      "diff_inf": 1.6341095143701523e-15,
+      "diff_rms": 2.4528885041049633e-17,
+      "R3_rms": 0.000783687611058355,
+      "relative_rms": 3.129931454182853e-14
+    },
+    "fatigue": {
+      "diff_inf": 0.0,
+      "diff_rms": 0.0,
+      "R3_rms": 1.0,
+      "relative_rms": 0.0
+    },
+    "opaque": {
+      "diff_inf": 0.0,
+      "diff_rms": 0.0,
+      "R3_rms": 0.0,
+      "relative_rms": null
+    },
+    "u_GP_weighted": {
+      "diff_inf": 1.3964523981613297e-16,
+      "diff_rms": 5.139610472536293e-17,
+      "R3_rms": 0.0021223398201172107,
+      "relative_rms": 2.4216717906430495e-14
+    },
+    "v_GP_weighted": {
+      "diff_inf": 4.701100619897147e-16,
+      "diff_rms": 6.878839125474453e-17,
+      "R3_rms": 0.014206799266674492,
+      "relative_rms": 4.8419344824632286e-15
+    },
+    "damage_GP_weighted": {
+      "diff_inf": 6.661338147750939e-16,
+      "diff_rms": 1.57020002521278e-17,
+      "R3_rms": 0.06388618739118707,
+      "relative_rms": 2.4578083140227976e-16
+    },
+    "reaction": {
+      "diff_inf": 1.734723475976807e-17,
+      "diff_rms": 2.3564146899670686e-18,
+      "R3_rms": 0.00023120603320913195,
+      "relative_rms": 1.0191839102380297e-14
+    }
+  },
+  "latest_version": 1,
+  "unaccepted_best": {
+    "classification": "UNACCEPTED_SOLVER_WORK_POINT_NOT_LABEL",
+    "tag": "best_before_schur",
+    "outer": 15,
+    "m_work": 2.164764554279941,
+    "m_accept": 2.164764554279941,
+    "parent_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+    "load_id": "train_A:c1:s2:0.047999904000000003",
+    "f_solve_operation": "actual_QP"
+  },
+  "limits": [
+    "Single train_A failure; no complete trajectory or NN comparison.",
+    "R3 and R4 coupling policies and timing windows differ; no controlled speedup attribution.",
+    "AA history reset proven at outer4 and at least one of outer2/3 from source and event sequence; missing target arrays prevent error-node/amplitude measurement or convergence counterfactual.",
+    "No eigenvalues/condition numbers measured; bounded Schur failure is not proof of singularity or no solution.",
+    "f=1 at all saved completed fresh points; no real f<1 feedback covered.",
+    "m_work<=1 alone cannot accept no-QP points; original finalQP plus full m_accept and one commit remain mandatory."
+  ]
+}

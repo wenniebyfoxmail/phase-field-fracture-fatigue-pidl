@@ -1,0 +1,83 @@
+{
+  "snapshot_utc": "2026-10-20T23:21:05.497952+00:00",
+  "authority_start_utc": "2026-10-20T22:19:36Z",
+  "hard_end_utc": "2026-10-21T02:19:36Z",
+  "budget_total_wall_seconds": 14400,
+  "conservative_package_wall_charge_at_this_snapshot": 3689.4979519844055,
+  "within_total_wall_budget": true,
+  "includes": "Elapsed calendar bound from conservative package start through this final accounting snapshot: preparation, review, mechanical controls, sole scientific run, failed/successful retrieval, saved-only analysis and archive. Not measured CPU or sum of commands.",
+  "producer_wall_seconds": 150.70945318508893,
+  "case_phase_wall_seconds": 150.7079714052379,
+  "worker_and_guardian_actual_CPU_seconds": 228.202542,
+  "whole_package_CPU_seconds": null,
+  "whole_package_CPU_missing_not_zero": true,
+  "actual_GPU_seconds": 0,
+  "charge_at_worker_terminal": 2534.783671866171,
+  "charge_after_worker_terminal_including_padding": 1154.7142801182345,
+  "prior_known_research_wall_seconds": 1232.4626276369672,
+  "historical_unknown_control_reserve_seconds": 600,
+  "historical_reserve_is_not_actual": true,
+  "known_old_plus_new_conservative_charge_seconds": 4921.960579633713,
+  "all_own_processes_absent": {
+    "3850243": false,
+    "3850244": false,
+    "3850251": false,
+    "3850252": false
+  },
+  "final_remote_storage": {
+    "epoch": 1792538365.7160513,
+    "primary": {
+      "files": 147,
+      "logical_bytes": 1314584,
+      "allocated_bytes": 1671168
+    },
+    "archive": {
+      "files": 9,
+      "logical_bytes": 59987978,
+      "allocated_bytes": 60018688
+    },
+    "pids": {
+      "3850243": false,
+      "3850244": false,
+      "3850251": false,
+      "3850252": false
+    },
+    "scientific_solves": 0,
+    "decoded_arrays": 0
+  },
+  "local_return_and_analysis_size": {
+    "files": 69,
+    "logical_bytes": 141528905,
+    "allocated_bytes": 142643200
+  },
+  "whole_existing_worktree_size_used_only_as_upper_bound": {
+    "files": 1098,
+    "logical_bytes": 22909757,
+    "allocated_bytes": 25243648
+  },
+  "vault_figure_copies": {
+    "files": 6,
+    "logical_bytes": 494924,
+    "allocated_bytes": 512000
+  },
+  "conservative_combined_storage_upper_bytes": 227284724,
+  "remaining_unattributed_small_metadata_allowance_bytes": 1048576,
+  "within_combined_16GiB": true,
+  "scientific_attempts": 1,
+  "scientific_retry_count": 0,
+  "read_only_final_storage_query_wall_seconds": 11.064399875001982,
+  "verified_return": {
+    "files": 29,
+    "verified_bytes": 92014104,
+    "terminal_source_files": 33,
+    "all_hashes_match": true,
+    "scientific_reruns": 0,
+    "transport_failures_preserved": [
+      "retrieval_receipt.json",
+      "retrieval_receipt_attempt2.json"
+    ],
+    "recovery": "Every selected file recovered and SHA checked; incomplete transport archives retained, not treated as complete evidence.",
+    "selected_scope": "29 logs/control/state/diagnostic files plus terminal33 source hashes, not a whole remote disk copy"
+  },
+  "scope": "No further science. Snapshot does not claim future housekeeping seconds already measured; final commit/report overhead remains within more than2h available."
+}

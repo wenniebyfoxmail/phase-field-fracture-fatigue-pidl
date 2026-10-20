@@ -1,0 +1,163 @@
+{
+  "schema": "independent-r4-saved-evidence-review-v1",
+  "verdict": "SAVED_EVIDENCE_AND_PROPOSAL_REVIEW_PASS_ONLY",
+  "scope": "Read-only R4 terminal evidence, frozen-source AA bookkeeping diagnosis, saved-only analysis/figures, accounting boundaries and next numerical design proposal. No new implementation or execution authority.",
+  "reviewer": "independent Codex reviewer /root/hybrid_readiness_review",
+  "reviewed_at_utc": "2026-10-20T23:23:31.825302+00:00",
+  "executed_source_commit": "bb07b014e6474b3038a0b135e2da4d21c2083e31",
+  "artifact_id": "79cf0dccbc5c6f4bebae72c85308e159b1d55382eae2e5e273360f39461333ce",
+  "card_sha256": "8b4cea2603e3a93f343619d3a03671ed4effc80b376e0e0179c9fc4dfdf28fe4",
+  "bindings": {
+    "report": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v7/result.md",
+      "sha256": "1d51d2c7c6c6dc66f8c531ac2874101edef00ce3278d53e5e02b5789a54437cb"
+    },
+    "result_summary": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v7/result_summary.json",
+      "sha256": "3382bed646421ee11efae71f5dd18c113dd550f5c9589e226d1c3ec3f0b9117b"
+    },
+    "completion_cost": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v7/completion_cost.json",
+      "sha256": "502e648aab3c15914198da1c9360ffbaad31b35dadca76b7d402d3d98a05c0e5"
+    },
+    "case_elapsed_csv": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v7/case_elapsed_times.csv",
+      "sha256": "d8d0df5186487b95a862fde82b3339210c09d49a8f1f42ba58f2efe1af7e0e4e"
+    },
+    "analysis_manifest": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v7/analysis_manifest.json",
+      "sha256": "4d64a0408a5104ccc5709383e8295ad63803e65e8055038f378fe1a696ed4a7a"
+    },
+    "analysis_script": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v7_20261020/analysis/analyse_saved.py",
+      "sha256": "84da60e53cfcd9183bb9583029845c1c78f477add608f42fa836dfd86e2c79f1"
+    },
+    "analysis_summary": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v7_20261020/analysis/analysis_summary.json",
+      "sha256": "3382bed646421ee11efae71f5dd18c113dd550f5c9589e226d1c3ec3f0b9117b"
+    },
+    "remote_inventory": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v7_20261020/verified_remote_inventory.json",
+      "sha256": "e030d97d7e7cd42fe0f32a9c19e3de65fb0d78ab707bbd8724befaa49b48b26c"
+    },
+    "final_storage_receipt": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v7_20261020/final_storage_receipt.json",
+      "sha256": "4364eedf9125bfcba423d82ed6a3b4c32b914a4f3f968b28f74f6b30359e060e"
+    },
+    "preparation_helper": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v7/prepare_packet.py",
+      "sha256": "fa55f5342fdec0ec9c229b1fcc8a5f6917fb1d53f51f20d584ef51d261b67d7e"
+    }
+  },
+  "independent_verification": {
+    "returned_inventory_files": 29,
+    "returned_inventory_bytes": 92014104,
+    "all_returned_file_sizes_and_sha256_match": true,
+    "terminal_33_source_hashes_match_deployed_manifest_and_local_frozen_sources": true,
+    "execution_card_manifest_and_original_execution_review_equal_returned_bytes": true,
+    "analysis_manifest_files": 15,
+    "all_analysis_manifest_sizes_and_sha256_match": true,
+    "report_summary_equals_analysis_summary": true,
+    "raw_NPY_state_fingerprints": "Independently stream-hashed original float64 NPY payloads in AcceptedState order, including shapes and identity, for state0000/state0001/latest. All match their stored state IDs; latest and state0001 share version1 and fingerprint b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973. Only NPY headers/Unicode metadata parsed; no scientific field values decoded.",
+    "step2_trace": "All nested frames close correctly. Independently recomputed completed root-only wall sum115.89899910800159s, avoiding nested mechanical/LU/GMRES double counting.",
+    "figures_visually_inspected": [
+      "r4_coupling_outcome.png",
+      "r4_schur_and_work.png",
+      "r4_r3_accepted_step1_fields.png"
+    ],
+    "figure_review": "Readable labels, explicit retained working versus full fresh merit, failed Schur point, original-cell averaged step1 display and difference scales. PNG/PDF/sidecar hashes bound by analysis_manifest; PDF pixels not separately rendered.",
+    "accepted_field_difference_metrics": "Reviewed saved-only interpolation/difference and contract-check code and visually inspected the field figure; did not independently rerun all decoded-field metrics.",
+    "scientific_runs_or_tests_started_by_this_evidence_review": 0,
+    "SSH_actions_by_reviewer": 0,
+    "scientific_field_decodes_by_reviewer": 0
+  },
+  "terminal_facts": {
+    "status": "scientific_failure_stopped",
+    "accepted_steps": 1,
+    "planned_steps": 600,
+    "first_step_including_IO_seconds": 30.40476349182427,
+    "case_phase_wall_seconds": 150.7079714052379,
+    "producer_wall_seconds": 150.70945318508893,
+    "step2_complete_step_wall_seconds": null,
+    "step2_last_fresh_elapsed_seconds": 101.63546682614833,
+    "step2_failure_diagnostic_elapsed_seconds": 116.95171316713095,
+    "failure": "Schur linear solve failed original true-residual target",
+    "second_schur": {
+      "code": 3,
+      "inner_iterations": 48,
+      "operator_actions": 53,
+      "true_residual": 2.4731912839593484e-07,
+      "target": 1.5930046827616466e-09
+    },
+    "not_the_root_cause": [
+      "300-second step deadline",
+      "100-fresh cap",
+      "OOM",
+      "guardian unfinished-step classification after worker failure"
+    ],
+    "one_scientific_attempt_no_retry_verified_within_saved_records": true,
+    "final_recorded_owned_pids_absent": [
+      3850243,
+      3850244,
+      3850251,
+      3850252
+    ],
+    "no_second_step_commit": true,
+    "all_logged_completed_fresh_fatigue_factors_equal_one": true,
+    "full_trajectory_success": false,
+    "neural_comparison_performed": false
+  },
+  "observed_mechanism": {
+    "first_schur_passed": {
+      "inner_iterations": 21,
+      "operator_actions": 25,
+      "true_residual": 1.3819614376620346e-09,
+      "target": 1.5458755407094937e-09
+    },
+    "globalization": "Full Newton candidate outer12 worsened m_work2.7239810663306803 to6.647017563032875 and was rejected; logged d/u rollback IDs match outer11. Half step outer13 decreased to2.5308272466606496. Every retained step2 working merit strictly decreases; no step2 point passed full acceptance.",
+    "linear_interpretation": "The chosen frozen-QP-Hessian-preconditioned bounded Schur configuration failed at its second point. This does not prove singularity, a measured condition number/spectrum, no solution, or that the omitted coupling correction is the sole cause.",
+    "unaccepted_snapshots": "best_before_schur is outer15 before second Schur; candidate_after_schur is outer13 after first successful Schur. Raw d/u payload IDs independently match corresponding log points. They are not one before/after pair and are not labels."
+  },
+  "AA_bookkeeping_finding": {
+    "status": "PROVEN_CONTROL_FLOW_DEFECT_IN_EXECUTED_SOURCE",
+    "source_locations": [
+      "source/hybrid_guarded_coupling.py:136",
+      "source/hybrid_guarded_coupling.py:162",
+      "source/hybrid_coupled_acceleration.py:90",
+      "source/hybrid_coupled_acceleration.py:104"
+    ],
+    "proof": "ordinary outer2..6 all used alpha1 and were retained. outer5 reports insufficient_history; outer6 proposes depth1, meaning exactly two entries. No other intervening reset exists, so outer5 and6 each added one entry and history was empty beforeouter5: outer4 necessarily took the bitwise-inequality reset. At least one additional reset occurred atouter2/3. The already feasible QP target is reconstructed by base+(target-base) and clipped before exact array equality is used as operation identity; floating-point subtraction/readdition can alter its bytes.",
+    "not_proven": "Original full target vectors were not saved. Error-node count, magnitude and the counterfactual trajectory with corrected bookkeeping cannot be measured without new computation. No claim that fixing AA would make R4 converge.",
+    "other_AA_guards": "outer8/9/10 coefficient_l1 values9.884359241168518/45.568428976032266/46.77571828835955 exceed original cap5; these are separate actual safeguards, not evidence of history resets.",
+    "historical_review_boundary": "Original static REVIEW_PASS remains an accurate record of its scope and checks, not proof of defect-free implementation. The intended persistent-AA behavior was incompletely exercised by those tests and R4 cannot validate its corrected version."
+  },
+  "next_proposal_review": {
+    "assessment": "Mathematically acceptable design candidate only; not implemented, benchmarked or authorized here.",
+    "AA_fix": "Explicit true full-QP-map/alpha operation flags and target.copy at full step, with adversarial non-reversible floating-point, bounds, backtracked/rejected/Newton history and cache-rollback regressions. Do not replace operation semantics with a loose equality tolerance.",
+    "coupled_block": "Use original residual blocks on free/inactive subspaces, delta_a=-F_a, and [A B_I; C_I D_II] right-hand side[-Ru-B_a delta_a; -Rd_I-D_Ia delta_a]. Preserve nonzero Ru, current history-chain derivatives, projection release, and separate fixed-original-scale true residual checks for both block rows (or a prospectively equivalent weighted criterion).",
+    "preserved_acceptance": "Same-old trial histories, monotone working globalization/finite backtracking, complete cache rollback, actual final QP f_solve, full m_accept/currentK pivot and exactly one CAS commit remain required.",
+    "conditional_map_derivative": "Report correctly limits G-prime structure to f1, a fixed smooth/active branch, invertible A/H on corresponding subspaces near a consistent coupled point. It is a conditional derivation, not a measured spectrum or an exact off-solution/lagged-fatigue global map Jacobian.",
+    "limitations": "Sparse block-LU fill/RAM/time and nonlinear convergence are unknown; no guaranteed fit in32GiB/300s, no iteration/time loosening and no automatic alternate configuration after failure."
+  },
+  "accounting_review": {
+    "as_of": "2026-10-20T23:21:05.497952+00:00",
+    "conservative_package_wall_charge_seconds": 3689.4979519844055,
+    "budget_total_wall_seconds": 14400,
+    "old_known_research_wall_seconds": 1232.4626276369672,
+    "actual_observed_worker_guardian_CPU_seconds": 228.202542,
+    "whole_package_CPU_seconds": null,
+    "actual_GPU_seconds": 0,
+    "historical_unknown_control_reserve_seconds": 600,
+    "reserve_is_actual": false,
+    "conservative_combined_logical_storage_upper_bytes": 227284724,
+    "combined_logical_storage_limit_bytes": 17179869184,
+    "scope": "Verified displayed arithmetic, terminal/final-storage receipt consistency, explicit unknown CPU and logical-size upper-bound construction. Did not independently rescan every local/vault directory. Calendar charge already contains preparation/producer/return/analysis and must not be added again to producer/case time. Future small archiving/review seconds are not claimed as already measured.",
+    "transport_failure_boundary": "Preserved incomplete transfer receipts and verified missing-file recovery are read-only evidence retrieval, not scientific retries."
+  },
+  "local_preparation_helper": {
+    "scope": "Unexecuted local metadata-only helper patch, outside deployed33-file artifact.",
+    "review": "Card preserves frozen source_commit; with an existing review, both candidate card and source manifest are compared in memory and refused before either signed file is rewritten. Syntax compiled only; prepare/deploy was not executed. Does not modify scientific code, actual card or R4 results."
+  },
+  "claim_boundary": "Verified failed numerical prefix and an implementation defect; not a complete teacher, neural benefit, unique solution, physical validation or generalization. No new execution authority.",
+  "blocking_findings_for_this_saved_evidence_report": []
+}

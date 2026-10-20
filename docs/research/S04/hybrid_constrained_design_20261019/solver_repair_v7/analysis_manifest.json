@@ -1,0 +1,66 @@
+{
+  "evidence_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v7_20261020",
+  "files": {
+    "r4_step2_root_work.csv": {
+      "bytes": 677,
+      "sha256": "6a99ed1df8e2975669b840a919b116ae227816518c3927bc7d023bc64e2e6a74"
+    },
+    "r4_coupling_outcome.md": {
+      "bytes": 1101,
+      "sha256": "d15e89c2a1da65bc217b2946d707991a5660ccd89c102285df57be245ba93ce2"
+    },
+    "r4_schur_and_work.md": {
+      "bytes": 1067,
+      "sha256": "bfb378444d666e0ddbe0c3b972ad0d3b554ea13cccb0dca62ba3777a5f6e1d80"
+    },
+    "r4_coupling_outcome.png": {
+      "bytes": 120943,
+      "sha256": "b5b4e24f3902ae412660a9a8011eff3394249d34163c834102d55897f3c25e09"
+    },
+    "analyse_saved.py": {
+      "bytes": 17498,
+      "sha256": "84da60e53cfcd9183bb9583029845c1c78f477add608f42fa836dfd86e2c79f1"
+    },
+    "r4_step2_blocks.csv": {
+      "bytes": 24172,
+      "sha256": "a7cd7edfd6c9980c1446d1a7515ab67de9d9adedacb0494153ca46656641e132"
+    },
+    "r4_coupling_outcome.pdf": {
+      "bytes": 18831,
+      "sha256": "27dffc1ff05f9bee544cbd30eb2313781c0da4b11f7a40bbbf5e58674c5ffbcb"
+    },
+    "r4_schur_and_work.png": {
+      "bytes": 90162,
+      "sha256": "d629dd83b60dd0db399c257b354b6b9c5a3277b85b66f74608b661ff8db405d1"
+    },
+    "r4_schur_and_work.pdf": {
+      "bytes": 19562,
+      "sha256": "ef749665b54fb5be373e2e122535c3d36e2f55ce399c1e24f2737dcf771c3aa4"
+    },
+    "analysis_stdout.json": {
+      "bytes": 3003,
+      "sha256": "6486571ad720a2a76693ac70f0f7863ad25840fe595b11f9591eef9843a487ed"
+    },
+    "r4_r3_accepted_step1_fields.png": {
+      "bytes": 280429,
+      "sha256": "bc848af98115e9f3290838475b8d67a9e9d3e4bcfbf678dddf4f3763ee9066f1"
+    },
+    "r4_r3_accepted_step1_fields.pdf": {
+      "bytes": 143145,
+      "sha256": "0835ba836e0341bf5cb301b62cf8d825641b4b01575b7b0edeba6240be5a2aeb"
+    },
+    "r4_r3_accepted_step1_fields.md": {
+      "bytes": 1222,
+      "sha256": "6438cd0db968e36826007662f139a2590fd1cc2ef82ae349b5a9e36e66cf83b1"
+    },
+    "r4_step2_fresh.csv": {
+      "bytes": 2331,
+      "sha256": "7283de59f86ad1ad9d131a138c142217c8e722ebbf5466ff5b35333b30b3fb3e"
+    },
+    "analysis_summary.json": {
+      "bytes": 19115,
+      "sha256": "3382bed646421ee11efae71f5dd18c113dd550f5c9589e226d1c3ec3f0b9117b"
+    }
+  },
+  "verification_sha256": "73b4ee6a723b1ae04c45ccd0315e631798cc3bf4d77be30b2fa8576edca3e5d4"
+}
