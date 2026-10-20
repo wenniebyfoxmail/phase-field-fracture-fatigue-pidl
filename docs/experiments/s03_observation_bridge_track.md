@@ -566,3 +566,16 @@ No reconnect/retransfer/cleanup/fallback/newRunID. Parentdeployment_20261020/
 README_execution.md,first_stop_receipt.json,transfer_failure.stderrholdreceipt.
 Furtherremotediagnosis/status/restartrequiresnewauthority;mailheartbeatremains
 activeunderseparateread-onlyscope. Notamethod/datafailureorlicenseforMacrun.
+
+### R001 new read-only diagnosis, remote unavailable — 2026-10-20
+
+Humanauthorisedconnection/residualinspectiononly. OneboundedSSHattemptfailed
+TCPconnectbeforeauth(exit255);remoteprobe0bytes/0executions,residualsizes/
+hashes/processesstillunknown. Localroute=en0,noopenvpnprocess,UIonly;
+clientlog15:31BSTrestart/15:34Networkisunreachable/15:44process-exitfalls
+insideearlieruploadinterval. SupportsVPN-pathdisruption,notpreciseWi-Fi/
+route/endpoint/operatorcause. Parentreadonly_diagnosis_20261020holdsbounded
+probe,stderr,route/processextract,vpn_events/diagnosis_receiptandREADME_diagnosis.
+RestorecorrectTaoboclient/tunnelroutefirst,thenconfirmedreadonlyinventory;
+onlyafteractualpackagehashesproposefile-specificrecovery.NoVPNchange/second
+SSH/cleanup/retransfer/extraction/science. OldR001stopandscientificscopeintact.

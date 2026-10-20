@@ -464,3 +464,23 @@ CPU load1=4.309／64可用逻辑CPU，MemAvailable383169764KiB，data2剩596G。
 父归档deployment_20261020/[README_execution.md](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E049-MD03/D3_controlled_opening_20261020/deployment_20261020/README_execution.md)、
 first_stop_receipt.json及transfer_failure.stderr保存证据。后续远端状态／传输
 排查或重启均需新的明确授权；本轮止于此，邮件只读定时任务独立继续。
+
+## 2026-10-20 R001后续只读诊断：VPN路径异常，远端残包仍未取得
+
+用户新授权只读连接／残包核查，不重传、不启动。仅一次有时限的SSH连接，
+15:14:48UTC开始，TCP连接172.16.100.2:22即超时exit255，未到认证／远端shell，
+probe输出0字节。因此本轮没有远端目录、文件大小／SHA或遗留进程证据；
+不能声称包完整、某文件存在或精确传到哪个字节。先前R001首检成功事实保留。
+
+安全本地替代检查取得：目标路由当前经en0而非隧道；仅Tunnelblick UI，未见
+openvpn进程。目标client日志（哈希552d8d48…）在英国时间15:31:28记录断连
+重启、15:32:06重连、15:34:19起Network is unreachable(code51)、15:41再重启，
+15:44:06 SIGTERM退出。事件落在前次传输区间，与后续SSH断流吻合，支持VPN
+路径中断解释；不能进一步归因Wi-Fi／路由／VPN服务端或谁终止进程。
+
+[只读诊断、时间线与恢复方案](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E049-MD03/D3_controlled_opening_20261020/readonly_diagnosis_20261020/README_diagnosis.md)。
+下一先由用户恢复Taobo Tunnelblick client及目标隧道路由，再确认只读继续；
+检查原R001完整包／临时文件哈希及control/launch标记后，仅对缺失项另提恢复卡。
+不假定可续传：旧命令未启用partial，本地openrsync也未列append-verify；不猜远端
+版本或盲加参数。科学代码、预算和旧识别／半深度／评分不变。未改VPN／route、
+未清包／杀进程／第二次SSH／重传／解包或科学运行。
