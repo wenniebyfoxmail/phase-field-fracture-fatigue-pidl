@@ -1,0 +1,12 @@
+{
+  "run_id": "HQ-ROAD-TARGET-COMPAT-001-R001",
+  "authorized_by": "user",
+  "authorization_date": "2026-10-20",
+  "authorization_evidence": "The user annotated the recommendation to execute D4 with 'go'.",
+  "authorized_scope": "one local read-only CPU target-compatibility audit on locked CRACK500, CFD and GAPS384",
+  "training_authorized": false,
+  "gpu_authorized": false,
+  "remote_compute_authorized": false,
+  "road420_authorized": false,
+  "retry_authorized": false
+}

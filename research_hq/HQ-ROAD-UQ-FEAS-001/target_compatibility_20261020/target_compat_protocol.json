@@ -1,0 +1,41 @@
+{
+  "run_id": "HQ-ROAD-TARGET-COMPAT-001-R001",
+  "date": "2026-10-20",
+  "seed": 20261020,
+  "execution": "LOCAL_CPU_READ_ONLY_ONE_RUN_NO_RETRY",
+  "normalization_short_side_px": 512,
+  "radius_grid_px": [0, 1, 2, 3, 4, 6, 8, 12, 16],
+  "fit_eval_rule": "sha256('20261020|source|group') low bit: 0=fit, 1=eval",
+  "aggregation": "mean of per-group means; global fit gives each source equal weight",
+  "decision": {
+    "oracle_mean_dice_floor": 0.75,
+    "source_renderer_oracle_retention": 0.9,
+    "global_renderer_source_retention": 0.95,
+    "visual_can_only_downgrade": true
+  },
+  "crack500_excluded_train_parents": [
+    "20160328_154452",
+    "20160328_154454",
+    "20160329_103609",
+    "20160329_103800",
+    "20160329_111111"
+  ],
+  "crack500_excluded_val_parents": ["20160329_103807"],
+  "expected": {
+    "CRACK500": 2401,
+    "CFD": 118,
+    "GAPS384": 384,
+    "GAPS384_empty": 2
+  },
+  "visual_items_per_source": 8,
+  "wall_clock_cap_hours": 2,
+  "road420_access": false,
+  "claims_excluded": [
+    "physical crack truth",
+    "field safety",
+    "independent-site generalisation",
+    "human-review utility",
+    "image-to-mask model performance"
+  ]
+}
+

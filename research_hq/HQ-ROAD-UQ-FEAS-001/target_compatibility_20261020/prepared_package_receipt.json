@@ -1,0 +1,28 @@
+{
+  "run_id": "HQ-ROAD-TARGET-COMPAT-001-R001",
+  "status": "FROZEN_AFTER_LOCAL_READ_ONLY_PREFLIGHT",
+  "date": "2026-10-20",
+  "files": {
+    "D4_TARGET_COMPATIBILITY_CONTRACT_2026-10-20.md": "cdcdebc345ca0af032350accff3275b82574e81a75e5a8b901e14ee97deebf4e",
+    "target_compat_protocol.json": "05a21d9ab11f3f4d5d36e73037c994f0d053198f5e92679272ba3a66a8663a15",
+    "target_compat_data_lock.json": "caf086a2facde6a8dbf7c8b7871d76194145496f8a40d40eb98ebf7091526835",
+    "target_compat_audit.py": "71a78dea3429a43983eaa51b77ba7957baf5c9962e07c437a2c60b3b2a736b55"
+  },
+  "preflight": {
+    "syntax": "PASS",
+    "inventory": {"CRACK500": 2401, "CFD": 118, "GAPS384": 384},
+    "crack500_subsets": {"train": 1860, "val": 341, "test": 200},
+    "one_decoded_and_analysed_per_source": "PASS",
+    "output_created": false,
+    "road420_accessed": false
+  },
+  "runtime": {
+    "python": "3.12",
+    "numpy": "2.5.4",
+    "pillow": "13.0.0",
+    "scipy": "1.16.3",
+    "scikit_image": "0.25.2",
+    "matplotlib": "3.10.7",
+    "temporary_dependency_directory_is_not_a_result": true
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "rows": 2903,
+  "global_radius_px": 1,
+  "sources": {
+    "CRACK500": {
+      "source_radius_px": 8,
+      "oracle_eval_mean_dice": 0.7980218263987212,
+      "source_eval_mean_dice": 0.6389862057497887,
+      "global_eval_mean_dice": 0.37384812315905475,
+      "source_oracle_retention": 0.8007126930768026,
+      "global_source_retention": 0.5850644658602293,
+      "source_renderer_adequate": false,
+      "global_renderer_adequate": false
+    },
+    "CFD": {
+      "source_radius_px": 1,
+      "oracle_eval_mean_dice": 0.7432826171136857,
+      "source_eval_mean_dice": 0.7432826171136857,
+      "global_eval_mean_dice": 0.7432826171136857,
+      "source_oracle_retention": 1.0,
+      "global_source_retention": 1.0,
+      "source_renderer_adequate": false,
+      "global_renderer_adequate": true
+    },
+    "GAPS384": {
+      "source_radius_px": 1,
+      "oracle_eval_mean_dice": 0.8096613851050178,
+      "source_eval_mean_dice": 0.7716085487858868,
+      "global_eval_mean_dice": 0.7716085487858868,
+      "source_oracle_retention": 0.9530015423494658,
+      "global_source_retention": 1.0,
+      "source_renderer_adequate": true,
+      "global_renderer_adequate": true
+    }
+  },
+  "decision": "STOP_CENTRELINE_WIDTH_RENDERER_NOT_ADEQUATE"
+}
