@@ -35,13 +35,18 @@ def main():
     common=sorted(f_by.keys() & p_by.keys())
     metrics=[]
     native_fields={}
+    native_u={}
     candidate_fields={}
+    candidate_u={}
     for step in sorted(f_by):
         s=loadmat(a.fem/f'state_{step:03d}.mat')
         assert int(s['step'].item())==step
         assert abs(float(s['U'].item())-f_by[step]['U'])<1e-7
         assert ''.join(s['timing'].ravel().astype(str))=='post_solve_pre_history_update'
         native_fields[step]=s['p_field'].ravel()[quad].mean(axis=1)
+        disp=s['displ'].ravel(); assert len(disp)==2*len(nodes)
+        native_u[step]=np.column_stack([disp[:len(nodes)],disp[len(nodes):]])[quad].mean(axis=1)
+        np.testing.assert_allclose(s['p_field'].ravel()[mesh['crack'].ravel().astype(int)-1],1.,atol=0,rtol=0)
     if common:
         pm=np.load(a.pidl/'mesh.npz')
         np.testing.assert_allclose(pm['nodes'],nodes,atol=1e-12,rtol=0)
@@ -55,9 +60,14 @@ def main():
             assert str(s['timing'])=='post_solve_pre_history_update'
             v=s['alpha'][pm['triangles']].mean(axis=1).reshape(-1,2)
             candidate_fields[step]=(v*child_area).sum(axis=1)/child_area.sum(axis=1)
+            uv=np.column_stack([s['u'],s['v']])[pm['triangles']].mean(axis=1).reshape(-1,2,2)
+            candidate_u[step]=(uv*child_area[:,:,None]).sum(axis=1)/child_area.sum(axis=1)[:,None]
             delta=candidate_fields[step]-native_fields[step]
+            du=candidate_u[step]-native_u[step]
             metrics.append(dict(step=step,U=f_by[step]['U'],damage_MAE=float(np.average(abs(delta),weights=area)),
                 damage_RMSE=float(np.sqrt(np.average(delta**2,weights=area))),
+                displacement_vector_MAE=float(np.average(np.linalg.norm(du,axis=1),weights=area)),
+                E_el_FEM=f_by[step]['E_el'],E_el_PIDL=p_by[step]['E_el'],E_d_FEM=f_by[step]['E_d'],E_d_PIDL=p_by[step]['E_d'],
                 Rx_FEM=f_by[step]['Rx_top'],Rx_PIDL=p_by[step]['Rx_top'],
                 NN_residual=p_by[step]['res_u'],NN_max_healing=p_by[step]['max_healing'],
                 NN_alpha_min=p_by[step]['alpha_min'],NN_alpha_max=p_by[step]['alpha_max']))
@@ -101,7 +111,38 @@ def main():
                 fig.colorbar(artist,ax=ax,label='Damage difference' if j==2 else 'Damage alpha',shrink=.8,extend='both')
         for ext in ['png','pdf']: fig.savefig(a.out/f'figures/shear_damage.{ext}',dpi=180)
         plt.close(fig)
+        # Native/paired energies are always shown; no hidden 2E/U reaction.
+        fig,axs=plt.subplots(1,2,figsize=(9,3.5),constrained_layout=True)
+        for ax,key in zip(axs,['E_el','E_d']):
+            ax.plot([r['U'] for r in fr],[r[key] for r in fr],label='FEM Q4',color='#0072B2')
+            if pr: ax.plot([r['U'] for r in pr],[r[key] for r in pr],label='PIDL T3',color='#D55E00',ls='--')
+            ax.set(xlabel='U',ylabel=key);ax.grid(alpha=.15);ax.legend(frameon=False)
+        for ext in ['png','pdf']:fig.savefig(a.out/f'figures/shear_energies.{ext}',dpi=180)
+        plt.close(fig)
+        # Common Q4-cell reduction for vector displacement, same selected states.
+        fig,axs=plt.subplots(len(selected),columns*2,squeeze=False,figsize=(3.1*columns*2,2.8*len(selected)),constrained_layout=True)
+        for component,label in enumerate(['u_x','u_y']):
+            bound=max(float(abs(native_u[k][:,component]).max()) for k in selected)
+            if common:bound=max(bound,max(float(abs(candidate_u[k][:,component]).max()) for k in selected))
+            bound=max(bound,1e-8)
+            err=max([float(abs(candidate_u[k][:,component]-native_u[k][:,component]).max()) for k in selected],default=bound) if common else bound
+            err=max(err,1e-8)
+            for i,step in enumerate(selected):
+                values=[native_u[step][:,component]]
+                titles=[f'FEM {label}, U={f_by[step]["U"]:.3f}']
+                if common:
+                    values += [candidate_u[step][:,component],candidate_u[step][:,component]-native_u[step][:,component]]
+                    titles += [f'PIDL {label}',f'PIDL - FEM {label}']
+                for j,(v,title) in enumerate(zip(values,titles)):
+                    ax=axs[i,component*columns+j];b=err if j==2 else bound
+                    art=PolyCollection(poly,array=v,cmap='RdBu_r',edgecolors='none',rasterized=True);art.set_clim(-b,b);ax.add_collection(art)
+                    ax.set(xlim=(-.5,.5),ylim=(-.5,.5),aspect='equal',xlabel='x',ylabel='y',title=title)
+                    fig.colorbar(art,ax=ax,shrink=.75,extend='both',label=label)
+        for ext in ['png','pdf']:fig.savefig(a.out/f'figures/shear_displacement.{ext}',dpi=180)
+        plt.close(fig)
         for stem,description in {
+            'shear_energies':'Native and available PIDL elastic/fracture energies at every exported U; distinct quadrature/recovery implementations retained.',
+            'shear_displacement':'Signed displacement components at the same predetermined selected states; native Q4 nodal means and area-weighted child-T3 means on common Q4 parents.',
             'shear_response':'Direct boundary reaction versus U; paired damage MAE when PIDL exists, otherwise native elastic/fracture energies.',
             'shear_damage':'Damage maps at up to four evenly spaced indices of the sorted common states, or native-only states when PIDL is unavailable.'
         }.items():
@@ -115,7 +156,7 @@ Coverage: FEM {len(fr)}/30; PIDL {len(pr)}/30; joint {len(common)}/30.
 Selection: all common states enter the descriptive error; at most four states
 at evenly spaced sorted indices are shown. No outcome-based snapshot selection.
 Axes: centered physical x/y on [-.5,.5], or prescribed horizontal U.
-Colors: common damage range [0,1]; one shared symmetric PIDL-FEM range; no
+Colors: damage range [0,1]; displacement uses per-component common symmetric range across selected states and a symmetric residual range; no
 smoothing/clipping. Out-of-scale damage indicated by colorbar extensions.
 Interpretation: {'Matched-state numerical differences only; use the generated table/summary for magnitudes.' if common else 'Native FEM response only; no PIDL agreement has been measured.'}
 Limitations: one trajectory/seed, Q4/T3 quadrature and recovery differences;
@@ -131,7 +172,7 @@ partial coverage cannot establish full-trajectory agreement or physical validity
 Question: compare native FEM and independently optimized PIDL under matched U.
 Source FEM: {a.fem}; source PIDL: {a.pidl}.
 Coverage: native {len(fr)}/30, PIDL {len(pr)}/30, joint {len(common)}/30.
-{'Read response curves first, then matched damage maps.' if fr else 'No accepted loaded states: no response/field figures were generated.'} Without PIDL, these
+{'Read reaction and energy curves first, then damage and displacement maps.' if fr else 'No accepted loaded states: no response/field figures were generated.'} Without PIDL, these
 figures describe native FEM only and provide no agreement evidence.
 
 Damage reduction: native Q4 nodal mean versus area-weighted two child-T3 nodal
