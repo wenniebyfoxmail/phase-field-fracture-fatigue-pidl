@@ -1,7 +1,7 @@
 """New four-arm algebra/control fixtures only; no project model or physics."""
 import unittest
 import numpy as np
-from profiled_residual_branch_measurement import residual_target,comparison,inverse_bound,Meter
+from profiled_residual_branch_measurement import residual_target,comparison,inverse_bound,Meter,persist_arm_result
 
 
 class FourArmFixtures(unittest.TestCase):
@@ -37,6 +37,18 @@ class FourArmFixtures(unittest.TestCase):
         row=inverse_bound(np.eye(2),np.zeros((2,2)));self.assertFalse(row['matrix_bound_available']);self.assertIsNone(row['stored_matrix_inverse_norm2_upper'])
     def test_fd_gate_unchanged(self):
         Q=np.array([1.,2.]);h=1e-6;row,_,_=comparison(Q,h*Q,-h*Q,h);self.assertTrue(row['passed']);self.assertAlmostEqual(row['tolerance'],1e-10+1e-4*np.linalg.norm(Q))
+    def test_two_arm_immutable_recording_and_duplicate_protection(self):
+        import tempfile,json
+        from pathlib import Path
+        from profiled_hidden_receipts import atomic_json
+        with tempfile.TemporaryDirectory() as folder:
+            persist_arm_result(folder,'native_constant',{'arm':1},atomic_json)
+            persist_arm_result(folder,'native_zero',{'arm':2},atomic_json)
+            self.assertEqual(json.loads((Path(folder)/'native_constant_result.json').read_text()),{'arm':1})
+            self.assertEqual(json.loads((Path(folder)/'native_zero_result.json').read_text()),{'arm':2})
+            with self.assertRaises(FileExistsError):persist_arm_result(folder,'native_constant',{'arm':99},atomic_json)
+            self.assertEqual(json.loads((Path(folder)/'native_constant_result.json').read_text()),{'arm':1})
+            self.assertFalse((Path(folder)/'partial_results.json').exists())
     def test_combined_K_and_field_cap(self):
         class Guard:
             counts={'energy_force_field':499,'native_tangent':1}

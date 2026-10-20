@@ -1,0 +1,22 @@
+{
+  "visually_inspected": true,
+  "sidecars_present_and_provenance_checked": true,
+  "not_run_panels_explicit": true,
+  "common_color_scale": true,
+  "files": {
+    "FD_four_arm.png": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021/analysis/FD_four_arm.png",
+      "bytes": 59503,
+      "sha256": "004d57e294e71d86975bc9430a13f502fdbcadfc2cb28ddee2b28e7fe4d31bc0"
+    },
+    "FD_four_arm_fields.png": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021/analysis/FD_four_arm_fields.png",
+      "bytes": 286199,
+      "sha256": "7daa1bda836216dd6d4b95d14456801dbad485e210857d1dd54304f99b7ff39a"
+    }
+  },
+  "Obsidian_verified_copies": [
+    "/Users/wenxiaofang/obsidian/attachments/S04-E011/2026-10-21/pidl_residual_branch_r1_FD_four_arm.png",
+    "/Users/wenxiaofang/obsidian/attachments/S04-E011/2026-10-21/pidl_residual_branch_r1_FD_four_arm_fields.png"
+  ]
+}

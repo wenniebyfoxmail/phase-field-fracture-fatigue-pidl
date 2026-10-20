@@ -1,0 +1,153 @@
+{
+  "run_id": "pf_s04e011_residual_branch_c20_r1_hq_20261021",
+  "result": {
+    "status": "PARTIAL_STOPPED_NO_RETRY",
+    "failure": {
+      "type": "FileExistsError",
+      "message": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/partial_results.json",
+      "retry_allowed": false
+    },
+    "terminal": {
+      "completed": false,
+      "source_network_B0_physics_unchanged": true,
+      "state_error": null,
+      "primary_error": {
+        "type": "FileExistsError",
+        "message": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/partial_results.json"
+      },
+      "counts": {
+        "energy_force_field": 44,
+        "hidden_jvp": 4,
+        "hidden_vjp": 0,
+        "C": 0,
+        "CT": 0,
+        "native_tangent": 2,
+        "head_assembly": 15,
+        "head_factor": 15,
+        "head_triangular_solve": 38,
+        "raw_feature_forward": 9,
+        "explicit_head_products": 4,
+        "Qv": 2,
+        "svd": 0
+      },
+      "elapsed_seconds": 27.862861789762974,
+      "optimization_updates": 0,
+      "history_commits": 0,
+      "rollout": 0
+    },
+    "arms": [
+      {
+        "arm": "native_constant",
+        "source_z_L2": 0.0,
+        "source_defect_inf": 2.7125383102871714e-16,
+        "source_physical_gradient_inf": 3.3665648827702066e-11,
+        "recovered_after_recording_failure": true
+      },
+      {
+        "arm": "native_zero",
+        "source_z_L2": 2.79599466846604e-14,
+        "source_defect_inf": 1.4663834382866447e-15,
+        "source_physical_gradient_inf": 1.4663834382866447e-15,
+        "recovered_after_recording_failure": true
+      }
+    ],
+    "counts": {
+      "energy_force_field": 44,
+      "hidden_jvp": 4,
+      "hidden_vjp": 0,
+      "C": 0,
+      "CT": 0,
+      "native_tangent": 2,
+      "head_assembly": 15,
+      "head_factor": 15,
+      "head_triangular_solve": 38,
+      "raw_feature_forward": 9,
+      "explicit_head_products": 4,
+      "Qv": 2,
+      "svd": 0
+    },
+    "scientific_elapsed_seconds": 27.862861789762974,
+    "not_run": [
+      "frozen_constant",
+      "frozen_zero"
+    ]
+  },
+  "FD": [
+    {
+      "arm": "native_constant",
+      "source_z_L2": 0.0,
+      "source_defect_inf": 2.7125383102871714e-16,
+      "source_physical_gradient_inf": 3.3665648827702066e-11,
+      "recovered_after_recording_failure": true,
+      "Qnorm": 13.057395248189941,
+      "FDnorm": 13.05673761281628,
+      "recomputed_error": 0.00944473326282036,
+      "recomputed_ratio": 7.233243966330284,
+      "FD_passed": false,
+      "original_tolerance": 0.0013057396248189943,
+      "conditional_linear_FD_upper": 6.031521944124408,
+      "conditional_linear_FD_upper_over_gate": 4619.237885930372,
+      "full_forward_bound_trusted": false
+    },
+    {
+      "arm": "native_zero",
+      "source_z_L2": 2.79599466846604e-14,
+      "source_defect_inf": 1.4663834382866447e-15,
+      "source_physical_gradient_inf": 1.4663834382866447e-15,
+      "recovered_after_recording_failure": true,
+      "Qnorm": 13.057395237119996,
+      "FDnorm": 13.056737601625699,
+      "recomputed_error": 0.009444733342351403,
+      "recomputed_ratio": 7.2332440333713715,
+      "FD_passed": false,
+      "original_tolerance": 0.0013057396237119998,
+      "conditional_linear_FD_upper": 6.031514927522565,
+      "conditional_linear_FD_upper_over_gate": 4619.232516185712,
+      "full_forward_bound_trusted": false
+    }
+  ],
+  "spatial": [
+    {
+      "arm": "native_constant",
+      "changed_GP": 5,
+      "changed_cells": 5,
+      "source_zero_GP": 0,
+      "max_error_node": [
+        0.3509875609912582,
+        -0.0392707278653778
+      ],
+      "max_error_node_value": 0.004448768821549589,
+      "top1percent_error_squared_share": 0.7817469701642019,
+      "cross_adjacent_error_squared_share": 0.00041531088171703056
+    },
+    {
+      "arm": "native_zero",
+      "changed_GP": 5,
+      "changed_cells": 5,
+      "source_zero_GP": 0,
+      "max_error_node": [
+        0.3509875609912582,
+        -0.0392707278653778
+      ],
+      "max_error_node_value": 0.004448768829631552,
+      "top1percent_error_squared_share": 0.7817469480567789,
+      "cross_adjacent_error_squared_share": 0.00041531082434269107
+    }
+  ],
+  "pair_differences": [
+    {
+      "comparison": "native_target",
+      "x": "native_constant",
+      "y": "native_zero",
+      "Q_difference": 1.7922498655432623e-07,
+      "FD_difference": 1.7937810448277015e-07,
+      "error_vector_difference": 1.819313829622663e-09,
+      "source_field_difference": 7.463618041959091e-12
+    }
+  ],
+  "geometry_SHA256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3",
+  "full_forward_bound_trusted": false,
+  "verdict": "Partial native pair only; full2x2 incomplete, frozen branches unavailable, unique mechanism unresolved without complete forward bound",
+  "new_field_or_energy_evaluations": 0,
+  "new_NN_AD_SVD_solve": 0
+}

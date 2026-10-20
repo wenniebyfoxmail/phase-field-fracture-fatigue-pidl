@@ -1,0 +1,164 @@
+{
+  "status": "STOPPED_NO_RETRY_RETRIEVED_PARTIAL",
+  "run_id": "pf_s04e011_residual_branch_c20_r1_hq_20261021",
+  "source_branch": "codex/hard5-q4-t3-2x2-20261005",
+  "whole_task_started_UTC": "2026-10-20T23:08:58Z",
+  "absolute_deadline_epoch": 1792540138.0,
+  "mechanical_checks": 2,
+  "producer_started": true,
+  "package": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_residual_branch_package_20261021",
+  "case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021",
+  "authority_note": "Prospective HQ residual-equation x elastic-branch four-arm authorization under verified direct human nighttime delegation01a15b4c-2e3a-7772-b74b-46f4ab752766; source thread01a14bb9-6cd1-7ee2-9647-5190d786f7ba; new2400whole/600science measurement; no optimization",
+  "source_commit": "fa9ce259de9c5a0938b68255ee1a98b647bb137b",
+  "package_sha256": "f2038e42521864581634fc70160dcf0216f35522dc33e362d909e5c57d87bfc3",
+  "mechanical1": {
+    "started": 5560646.926866584,
+    "UTC": 1792538564.419809,
+    "host": "GPUServer8",
+    "user": "drtao",
+    "mount": true,
+    "root_exists": false,
+    "archive_exists": false,
+    "claim_exists": false,
+    "old_return_exists": false,
+    "free_disk": 617661018112,
+    "matching_live": [],
+    "GPU": "5, GPU-5622bd47-1050-3003-246d-3cabe2b4791b, 24564, 24077, 0",
+    "apps": [],
+    "MemAvailable_kb": 384949796,
+    "old_R2_manifest_sha256": "6b5b2bf65640c02eac6b3a67834e2a3baf53d517748eff128341a4e761870d3b",
+    "inputs": [
+      {
+        "role": "input",
+        "bytes": 15502614,
+        "sha256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3"
+      },
+      {
+        "role": "original_model",
+        "bytes": 4510197,
+        "sha256": "55de7e6c5ed7b3dd80cee19139b7e33a22b92c0b5384a8af9a019ff3e465004f"
+      },
+      {
+        "role": "initial_model",
+        "bytes": 9011061,
+        "sha256": "8ea35dc4d1147ed49b26e0e3c440034d3fde7c971343519c394526c41d12180e"
+      },
+      {
+        "role": "source_fields",
+        "bytes": 1361291,
+        "sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57"
+      },
+      {
+        "role": "source_phi",
+        "bytes": 267902656,
+        "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+      },
+      {
+        "role": "source_transform",
+        "bytes": 1238416,
+        "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+      }
+    ],
+    "finished": 5560647.44382253
+  },
+  "authority_sha256": "99fe5a566a735089ccdc11e1ea6526c85163d5564ee57c724f6f98a98b495247",
+  "delta_files": [
+    "code/tools/s04_e011_analysis/profiled_residual_branch_measurement.py",
+    "code/tools/s04_e011_analysis/test_residual_branch_measurement.py",
+    "code/tools/s04_e011_execution/branch_measure_launch.py",
+    "execution_card.json",
+    "package_manifest.json"
+  ],
+  "delta_bytes": 36267,
+  "stage_returncode": 0,
+  "launch": {
+    "bootstrap_pid": 3900950,
+    "root": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021",
+    "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021",
+    "command": [
+      "/usr/bin/python3",
+      "-B",
+      "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_execution/branch_measure_launch.py",
+      "--package",
+      "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021",
+      "--authority",
+      "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/authority.approved.json",
+      "--authority-sha256",
+      "99fe5a566a735089ccdc11e1ea6526c85163d5564ee57c724f6f98a98b495247",
+      "--envelope-deadline",
+      "1792540138.0"
+    ],
+    "log": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/worker.log",
+    "stdout": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/pf_s04e011_residual_branch_c20_r1_hq_20261021.bootstrap.stdout",
+    "stderr": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/pf_s04e011_residual_branch_c20_r1_hq_20261021.bootstrap.stderr",
+    "mechanical_seconds": 13.629840013571084
+  },
+  "worker_pid": 3901007,
+  "guardian_pid": 3901008,
+  "outer_return": {
+    "run_id": "pf_s04e011_residual_branch_c20_r1_hq_20261021",
+    "status": "STOPPED_NO_RETRY",
+    "outer_error": null,
+    "controller_pid": 3900963,
+    "reason": "RuntimeError: measurement worker/guard failed or incomplete; inspect primary worker_failure",
+    "gate_opened": true,
+    "usage": {
+      "peak_tree_rss": 1691426816,
+      "latest": {
+        "peak_tree_rss": 1631227904,
+        "task_bytes": 961588708,
+        "telemetry": {
+          "monotonic": 5560689.493379341,
+          "cuda_state": "active",
+          "peak_rss_bytes": 1621172224,
+          "peak_task_bytes": 961587118,
+          "peak_cuda_allocated": 11299426816,
+          "peak_cuda_reserved": 12108955648,
+          "error": null
+        },
+        "outer_tree_rss": 66772992,
+        "owned_external_bytes": 230
+      },
+      "gpu": {
+        "index": 5,
+        "uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+        "free_mib": 24077.0,
+        "utilization": 29.0,
+        "total_mib": 24564.0,
+        "required_initial_free_bytes": 21474836480,
+        "owned": []
+      }
+    },
+    "worker_exit": 1,
+    "guardian_exit": 0,
+    "export_manifest_sha256": "8b7c6895d6a1ffe9c3899703ceaa5a268a13835a923ee54a51d4b95a88f1684e",
+    "postexit_files": [
+      {
+        "root": "run",
+        "path": "outer_guard.json",
+        "bytes": 348,
+        "sha256": "c63eb717fa85c0d3188cfe1468e59806c094a057038a7b175cc4da1b5e46e7a4"
+      },
+      {
+        "root": "run",
+        "path": "outer_guard.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "root": "run",
+        "path": "outer_controller.log",
+        "bytes": 769,
+        "sha256": "20877e670853b1f17ea1cbf727925d5d7f3e64159c239ffd72d88edb21658ff3"
+      }
+    ]
+  },
+  "retrieval": {
+    "remote_verified_entries": 475,
+    "remote_bytes": 961590117,
+    "selected_bytes": 153465299,
+    "network_bytes": 120058359,
+    "hashes_verified": true,
+    "full_local_mirror": false
+  }
+}

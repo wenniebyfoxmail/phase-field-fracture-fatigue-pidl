@@ -1,0 +1,17 @@
+[
+  {
+    "error_L2": 0.009444733262820358,
+    "scale": 13.05739524818993,
+    "tolerance": 0.0013057396248189932,
+    "ratio": 7.233243966330289,
+    "passed": false,
+    "arm": "native_constant",
+    "internal_head_tol": 1e-13,
+    "source_z_L2": 0.0,
+    "source_defect_inf": 2.7125383102871714e-16,
+    "source_physical_gradient_inf": 3.3665648827702066e-11,
+    "side_linear_defect_FD_triangle": 2.0622709971026788e-09,
+    "full_forward_bound_trusted": false,
+    "causal_verdict": "numerically_unresolved_even_if_FD_passes"
+  }
+]

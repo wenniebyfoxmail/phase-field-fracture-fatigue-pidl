@@ -36,6 +36,12 @@ def inverse_bound(H,X):
         finite_root_bound=False,native_force_roundoff_bound=False)
 
 
+def persist_arm_result(archive,label,row,writer):
+    """Each arm gets one immutable receipt; the final aggregate is written once."""
+    if label not in ['native_constant','native_zero','frozen_constant','frozen_zero']:raise ValueError('unknown_arm')
+    writer(Path(archive)/(label+'_result.json'),row)
+
+
 class Meter:
     def __init__(self,guard):self.guard=guard
     def action(self,kind):
@@ -283,7 +289,7 @@ def _run(card,root,archive,reporter,started,context):
             row.update(arm=label,internal_head_tol=internal,source_z_L2=float(torch.linalg.vector_norm(data['source']['z'])),
                 source_defect_inf=float(data['source']['defect'].abs().max()),source_physical_gradient_inf=float((data['source']['defect']+data['target']).abs().max()),
                 side_linear_defect_FD_triangle=local,full_forward_bound_trusted=False,causal_verdict='numerically_unresolved_even_if_FD_passes')
-            save(label+'/FD',fd);save(label+'/difference',diff);results.append(row);atomic_json(archive/'partial_results.json',results)
+            save(label+'/FD',fd);save(label+'/difference',diff);results.append(row);persist_arm_result(archive,label,row,atomic_json)
             del data['H'],data['L'];gc.collect();torch.cuda.empty_cache()
     bridge.verify_frozen()
     if tensor_identity(field.net.state_dict())!=source_id:raise RuntimeError('source_weights_changed')

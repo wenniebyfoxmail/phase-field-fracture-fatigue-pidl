@@ -1,0 +1,92 @@
+{
+  "status": "passed_bounded_result_and_prepared_recording_repair_review",
+  "scientific_status": "Partial native-only result; four-arm attempt failed at immutable aggregate recording; frozen pair absent",
+  "scope": "Read specified existing CSV/terminal/retrieval metadata and static recording delta only; no new arrays, operators, NN, AD, solver, SVD, SSH, run or tests",
+  "result_bindings": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021/analysis/FD_metrics.csv",
+      "sha256": "174614c7acaffb8c61061fc4e774c4824a2990b56e846d504444ee376ca5645f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021/analysis/pair_differences.csv",
+      "sha256": "56f7be5129e82d02b0e22d5edd8d00466a32906e87272f04360f8c0790f8d5dd"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021/analysis/forward_estimates.csv",
+      "sha256": "6aa95d8c95e78586e42ed8761a43520eec3fbded51ae564040d43ff94c368353"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021/retrieved_partial/archive/measurement_terminal.json",
+      "sha256": "e7d497f15fddf2715e1f1eeec39968be2e1240fbe4dff710df3810cbc1670ace"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021/retrieval_verification.json",
+      "sha256": "53cd23217d4c6a4b692904d17ba50dd87cc68e1d3b4bf79f2f684b8768462c1d"
+    }
+  ],
+  "prepared_repair_bindings": {
+    "tools/s04_e011_analysis/profiled_residual_branch_measurement.py": {
+      "path": "tools/s04_e011_analysis/profiled_residual_branch_measurement.py",
+      "sha256": "ac9f829aec0de200b138c6b5300cb1b8ea04c08bfe881e6e782879df7545e9f3",
+      "git_blob": "d628bbdfec5751e578e8d9dd411d8e16811f6a40"
+    },
+    "tools/s04_e011_analysis/test_residual_branch_measurement.py": {
+      "path": "tools/s04_e011_analysis/test_residual_branch_measurement.py",
+      "sha256": "05aced6b9a0f26b6f84c5c450e02d21f5a51a86c8fc452ec37942147c7c22f58",
+      "git_blob": "f42ea7da9189dea23074fce1a940f251096adea0"
+    }
+  },
+  "observed": {
+    "primary_error": {
+      "type": "FileExistsError",
+      "message": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/partial_results.json"
+    },
+    "scientific_elapsed_seconds": 27.862861789762974,
+    "completed": false,
+    "immutable_source_state": true,
+    "counts": {
+      "energy_force_field": 44,
+      "hidden_jvp": 4,
+      "hidden_vjp": 0,
+      "C": 0,
+      "CT": 0,
+      "native_tangent": 2,
+      "head_assembly": 15,
+      "head_factor": 15,
+      "head_triangular_solve": 38,
+      "raw_feature_forward": 9,
+      "explicit_head_products": 4,
+      "Qv": 2,
+      "svd": 0
+    },
+    "native_constant_error": 0.00944473326282036,
+    "native_zero_error": 0.009444733342351403,
+    "native_error_vector_difference": 1.819313829622663e-09,
+    "zero_source_physical_gradient_inf": 1.4663834382866447e-15,
+    "source_field_difference_L2": 7.463618041959091e-12,
+    "conditional_FD_upper_approx": 6.03,
+    "conditional_upper_over_gate_approx": 4619,
+    "full_forward_bound_trusted": false,
+    "frozen_arms_executed": false,
+    "remote_verified_entries": 475,
+    "remote_verified_bytes": 961590117,
+    "local_selected_entries": 126,
+    "local_selected_bytes": 153465299,
+    "local_full_mirror": false
+  },
+  "interpretation_checks": [
+    "Both native source/side fields,Q,FD and differences survived before the aggregate write exception; reporting these partial observations is legitimate but not four-arm completion.",
+    "For this direction/h, changing the residual target and reanchoring made little observed change to the native mismatch. This is empirical bounded evidence, not exclusion of all approximate stationarity/roundoff sensitivity.",
+    "Matrix/Gram conditional triangle upper is about6.03 or4619times gate and is not full forward bound; it cannot validate an exact profile or assign unique root cause.",
+    "No native-versus-frozen mechanism comparison can be drawn: frozen arms were never reached, not zero-valued or scientifically failed measurements.",
+    "Remote SHA/coverage verification and selected local subset are distinguished; no full-local-mirror claim or new independent large-array verification by this reviewer.",
+    "No PIDL/FEM field improvement, new accepted endpoint, optimizer ranking, physical certificate or capacity conclusion."
+  ],
+  "repair_checks": [
+    "persist_arm_result whitelists four labels and writes immutable per-arm unique<label>_result.json, preventing the repeated partial_results.json collision.",
+    "Final measurement_result.json remains once-only after all four arms; existing outputs and failed R1 archive are not overwritten.",
+    "New lifecycle fixture statically covers two distinct arm writes plus duplicate same-arm rejection using the actual exclusive writer. Parent reports only this new fixture1/1passed; reviewer did not rerun it or prior8/35tests.",
+    "Prepared repair changes recording only, not targets, energy, Q, tolerances, matrices, budgets or launch authority; not uploaded/packaged/executed and does not authorize retry."
+  ],
+  "blockers": []
+}

@@ -290,3 +290,8 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 ### 2026-10-21 Prospective residual-target × elastic-branch mechanism panel
 
 HQ authorized one fresh fixed-c20s4 chart-control four-arm measurement within2400whole/600science seconds. SamePhi/T0, seed173/h1e-6/FEMdamage/sourcePIDLhistory/B0/UV. No NN optimization/history/rollout/SVD; internal1e-13 and originalhead1e-10/FDabs1e-10+rel1e-4 separate. Readiness and actual execution remain distinct; full forward bound may remain numerical-unresolved. See[residual_branch_measurement_20261021](residual_branch_measurement_20261021/README.md).
+
+
+### 2026-10-21 residual/branch R1 stopped: partial native pair only
+
+Run pf_s04e011_residual_branch_c20_r1_hq_20261021/sourcefa9ce259 stopped27.8629s at duplicate immutable partial_results.json; native two arms saved, frozen not run, live[]/source unchanged. Bothnative FD ratios7.233244; zero-root did not visibly remove mismatch, no complete forward bound or unique cause. Remote475 hashes verified/local126 partial mirror. Recording repair prepared locally only; no retry/newRunID/optimization. See[runs/pidl_residual_branch_r1_result_20261021.md](runs/pidl_residual_branch_r1_result_20261021.md).

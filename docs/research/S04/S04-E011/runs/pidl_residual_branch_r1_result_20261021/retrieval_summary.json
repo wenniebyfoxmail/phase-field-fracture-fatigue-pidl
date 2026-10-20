@@ -1,0 +1,20 @@
+{
+  "verified": {
+    "verified_entries": 475,
+    "run_id": "pf_s04e011_residual_branch_c20_r1_hq_20261021",
+    "transfer_complete": true,
+    "scientific_success_inferred": false
+  },
+  "remote_entries": 475,
+  "remote_bytes": 961590117,
+  "hash_seconds": 0.808021666482091,
+  "selected_entries": 126,
+  "selected_bytes": 153465299,
+  "local_full_mirror": false,
+  "outer_return_sha256": "7ea92a03c99667fcd215b7a773be10cca696c5f089000837be4eda39e9e3b420",
+  "manifest_sha256": "8b7c6895d6a1ffe9c3899703ceaa5a268a13835a923ee54a51d4b95a88f1684e",
+  "local_selected_hashes_verified": true,
+  "compressed_network_bytes": 120058359,
+  "transport_wall_seconds": 119.42176666599698,
+  "partial_local_policy": "All remote hashes/coverage verified; Three large shared Phi maps remain remote; all selected matrices, factors, vectors/fields verified locally, no full-local mirror claim"
+}
