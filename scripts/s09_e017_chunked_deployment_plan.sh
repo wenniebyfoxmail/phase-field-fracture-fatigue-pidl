@@ -145,8 +145,8 @@ remaining_seconds >/dev/null
 import hashlib, pathlib, sys
 root = pathlib.Path(sys.argv[1])
 expected = {
-    "source/s09_e017_chunked_deployment.py": "bff7d7e83a344d89a6db69aada4fbaf03f6577b7d9c37a72638d659628cb1871",
-    "scripts/s09_e017_chunked_archive.py": "eca419279395ab396e3d3eb0bb8624a615d6bc7b1b538781981668435612b13d",
+    "source/s09_e017_chunked_deployment.py": "a218f252c144bf7a19d3c0cb62b5de6f66dd0317fb159cb7c3b5f9a77c33e0cd",
+    "scripts/s09_e017_chunked_archive.py": "11b7b1f8d409366480844a511603fe5b6b1349ff17b2e3e924691cdccd7dc473",
     "docs/research/S09/S09-E017/chunked_archive_manifest_20261020.json": "a88a23859c2edd2ac2ddc09d9140029d128fbcbb21b689c46274918d6f1318ae",
 }
 for relative, digest in expected.items():
@@ -250,30 +250,12 @@ REMAINING="$(remaining_seconds)"
   --receipt "$REMOTE_ATTEMPT/assembly-receipt.json" \
   --max-wall-seconds "$REMAINING"
 
-"${MUX_SSH[@]}" python3 - "$EXPECTED_ARCHIVE" <<'PY'
-import hashlib, pathlib, subprocess, sys
-path = pathlib.Path(sys.argv[1])
-if path.stat().st_size != 14359316:
-    raise SystemExit("archive size mismatch")
-if hashlib.sha256(path.read_bytes()).hexdigest() != "4ece34be786fc85bb9655c076c13c45d276d08dfde405a8fb1367e4b49ffdd22":
-    raise SystemExit("archive SHA-256 mismatch")
-gzip = subprocess.Popen(["gzip", "-dc", str(path)], stdout=subprocess.PIPE)
-assert gzip.stdout is not None
-commit_process = subprocess.run(
-    ["git", "get-tar-commit-id"],
-    stdin=gzip.stdout,
-    check=True,
-    capture_output=True,
-    text=True,
-)
-gzip.stdout.close()
-if gzip.wait() != 0:
-    raise SystemExit("gzip failed")
-commit = commit_process.stdout.strip()
-if commit != "2002538d9a30c8d4006ccaff5959cd214958fc82":
-    raise SystemExit("archive commit id mismatch")
-print("DEPLOYMENT_ARCHIVE_VERIFIED")
-PY
+"${MUX_SSH[@]}" env PYTHONPATH="$REMOTE_PYTHONPATH" python3 "$REMOTE_CLI" \
+  verify-archive \
+  --archive "$EXPECTED_ARCHIVE" \
+  --expected-bytes "$ARCHIVE_BYTES" \
+  --expected-sha256 "$ARCHIVE_SHA" \
+  --expected-commit 2002538d9a30c8d4006ccaff5959cd214958fc82
 
 if ((connection_attempts != 1 || metadata_transfers != 1 || chunk_transfers > 1)); then
   echo "final invocation count drift" >&2

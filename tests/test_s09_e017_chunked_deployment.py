@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import gzip
 import json
 from pathlib import Path
 import subprocess
@@ -20,6 +21,7 @@ from s09_e017_chunked_deployment import (
     inspect_chunk_store,
     load_manifest,
     manifest_sha256,
+    verify_git_archive_identity,
 )
 
 
@@ -181,6 +183,35 @@ def test_wall_clock_starts_before_verification_and_stops_before_publish(
     assert not list(tmp_path.glob(".*.assembly-*.tmp"))
 
 
+def test_prepared_journal_cannot_publish_after_wall_cap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, _, chunk_dir, manifest, _ = _fixture(tmp_path)
+    output = tmp_path / "published.tar.gz"
+    receipt = tmp_path / "receipt.json"
+    clock = {"value": 0.0}
+    real_publish = deployment._publish_bytes_no_replace
+
+    def delayed_prepared(path: Path, data: bytes) -> None:
+        real_publish(path, data)
+        if path == receipt.with_name(f"{receipt.name}.prepared"):
+            clock["value"] = 5.0
+
+    monkeypatch.setattr(deployment, "_publish_bytes_no_replace", delayed_prepared)
+    result = assemble_with_receipt(
+        manifest,
+        chunk_dir,
+        output,
+        receipt,
+        max_wall_seconds=1.0,
+        monotonic=lambda: clock["value"],
+    )
+    assert result["first_reason"] == "DEPLOYMENT_WALL_CAP_EXCEEDED"
+    assert result["published"] is False
+    assert receipt.with_name(f"{receipt.name}.prepared").exists()
+    assert not output.exists()
+
+
 def test_complete_store_publishes_original_bytes_atomically(tmp_path: Path) -> None:
     payload, _, chunk_dir, manifest, _ = _fixture(tmp_path)
     output = tmp_path / "published.tar.gz"
@@ -312,6 +343,37 @@ def test_cli_inspect_success_without_terminal_state_returns_zero(
     )
     assert completed.returncode == 0, completed.stderr
     assert json.loads(completed.stdout)["complete"] is True
+
+
+def test_git_archive_identity_verification_consumes_full_gzip_stream(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "fixture@example.invalid"],
+        cwd=repo,
+        check=True,
+    )
+    subprocess.run(["git", "config", "user.name", "Fixture"], cwd=repo, check=True)
+    (repo / "value.txt").write_text("archive identity\n", encoding="utf-8")
+    subprocess.run(["git", "add", "value.txt"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-qm", "fixture"], cwd=repo, check=True)
+    commit = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True
+    ).strip()
+    tar_payload = subprocess.check_output(["git", "archive", commit], cwd=repo)
+    archive = tmp_path / "archive.tar.gz"
+    archive.write_bytes(gzip.compress(tar_payload, mtime=0))
+    result = verify_git_archive_identity(
+        archive,
+        expected_bytes=archive.stat().st_size,
+        expected_sha256=hashlib.sha256(archive.read_bytes()).hexdigest(),
+        expected_commit=commit,
+    )
+    assert result["terminal_state"] == "DEPLOYMENT_ARCHIVE_VERIFIED"
+    assert result["reviewed_control_commit"] == commit
 
 
 def test_import_report_conflict_is_checked_before_chunk_mutation(

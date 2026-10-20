@@ -38,6 +38,9 @@ def _controls(tmp_path: Path, plan_body: str = "exit 0\n"):
         "plan_sha256": plan_sha,
         "allowed_actions": [guard.ACTION],
         "deployment_attempt_id": "fixture-001",
+        "consumption_receipt_path": str(
+            tmp_path / "consumed" / "fixture-001" / "guard-consumption.json"
+        ),
         "maximum_connection_attempts": 1,
         "maximum_metadata_transfers": 1,
         "maximum_chunk_transfers": 1,
@@ -125,6 +128,37 @@ def test_guard_nonzero_plan_is_a_nonretrying_stop(tmp_path: Path) -> None:
     assert receipt["reconnect"] is False
 
 
+def test_guard_consumes_authority_before_plan_and_blocks_replay(
+    tmp_path: Path,
+) -> None:
+    counter = tmp_path / "plan-calls.txt"
+    candidate, candidate_sha, authority, plan, plan_sha = _controls(
+        tmp_path, f'echo called >> "{counter}"\n'
+    )
+    first = guard.run_guarded_plan(
+        candidate_path=candidate,
+        candidate_sha256=candidate_sha,
+        authority_path=authority,
+        plan_path=plan,
+        plan_sha256=plan_sha,
+        receipt_path=tmp_path / "receipt-1.json",
+        execute_authorised_deployment=True,
+    )
+    assert first["terminal_state"] == "DEPLOYMENT_PLAN_COMPLETED"
+    with pytest.raises(DeploymentStop) as caught:
+        guard.run_guarded_plan(
+            candidate_path=candidate,
+            candidate_sha256=candidate_sha,
+            authority_path=authority,
+            plan_path=plan,
+            plan_sha256=plan_sha,
+            receipt_path=tmp_path / "receipt-2.json",
+            execute_authorised_deployment=True,
+        )
+    assert caught.value.first_reason == "PATH_CONFLICT"
+    assert counter.read_text().splitlines() == ["called"]
+
+
 def test_guard_timeout_kills_process_group_and_records_wall_first_reason(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -172,6 +206,8 @@ def test_exact_plan_has_one_connection_and_two_bounded_transfer_sites() -> None:
     assert text.count("rsync -a --ignore-existing --files-from") == 1
     assert text.count("ProxyCommand=/usr/bin/false") >= 2
     assert "SOURCE_BYTE_CAP=14500000" in text
+    assert "verify-archive" in text
+    assert "gzip.wait()" not in text
     for relative in (
         "source/s09_e017_chunked_deployment.py",
         "scripts/s09_e017_chunked_archive.py",

@@ -21,6 +21,7 @@ from s09_e017_chunked_deployment import (  # noqa: E402
     load_manifest,
     manifest_sha256,
     require_new_path,
+    verify_git_archive_identity,
     _publish_bytes_no_replace,
 )
 
@@ -70,6 +71,12 @@ def main() -> None:
     assemble.add_argument("--receipt", type=Path, required=True)
     assemble.add_argument("--max-wall-seconds", type=float, required=True)
 
+    verify_archive = subparsers.add_parser("verify-archive")
+    verify_archive.add_argument("--archive", type=Path, required=True)
+    verify_archive.add_argument("--expected-bytes", type=int, required=True)
+    verify_archive.add_argument("--expected-sha256", required=True)
+    verify_archive.add_argument("--expected-commit", required=True)
+
     args = parser.parse_args()
     if args.command == "build":
         require_new_path(args.manifest, reason="MANIFEST_PATH_CONFLICT")
@@ -88,6 +95,13 @@ def main() -> None:
             "chunk_count": len(manifest["chunks"]),
             "archive_bytes": manifest["source"]["bytes"],
         }
+    elif args.command == "verify-archive":
+        output = verify_git_archive_identity(
+            args.archive,
+            expected_bytes=args.expected_bytes,
+            expected_sha256=args.expected_sha256,
+            expected_commit=args.expected_commit,
+        )
     else:
         if getattr(args, "report", None) is not None:
             require_new_path(args.report, reason="REPORT_PATH_CONFLICT")

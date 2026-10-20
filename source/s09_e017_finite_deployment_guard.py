@@ -64,6 +64,7 @@ def validate_deployment_authority(
         "plan_sha256",
         "allowed_actions",
         "deployment_attempt_id",
+        "consumption_receipt_path",
         "maximum_connection_attempts",
         "maximum_metadata_transfers",
         "maximum_chunk_transfers",
@@ -101,6 +102,15 @@ def validate_deployment_authority(
         )
         is not None,
     ]
+    consumption_path = Path(str(authority["consumption_receipt_path"]))
+    checks.extend(
+        [
+            isinstance(authority["consumption_receipt_path"], str),
+            consumption_path.is_absolute(),
+            consumption_path.name == "guard-consumption.json",
+            consumption_path.parent.name == authority["deployment_attempt_id"],
+        ]
+    )
     if not all(checks):
         raise DeploymentStop(
             "DEPLOYMENT_AUTHORITY_INVALID", "authority value drift or disabled"
@@ -137,6 +147,17 @@ def run_guarded_plan(
         plan_sha256=plan_sha256,
         run_id=candidate["frozen_science"]["run_id"],
     )
+    consumption_path = Path(authority["consumption_receipt_path"])
+    consumption = {
+        "schema_version": "s09-e017-deployment-authority-consumption-v1",
+        "terminal_state": "DEPLOYMENT_AUTHORITY_CONSUMED_NO_RETRY",
+        "deployment_attempt_id": authority["deployment_attempt_id"],
+        "candidate_sha256": candidate_sha256,
+        "plan_sha256": plan_sha256,
+        "retry": False,
+        "reconnect": False,
+    }
+    _publish_bytes_no_replace(consumption_path, canonical_json(consumption))
     start = monotonic()
     deadline_epoch = int(time.time()) + authority["wall_seconds"]
     environment = os.environ.copy()

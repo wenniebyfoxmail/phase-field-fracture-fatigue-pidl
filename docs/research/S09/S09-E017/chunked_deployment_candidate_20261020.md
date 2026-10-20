@@ -44,7 +44,9 @@ The outer Python guard accepts only canonical candidate, plan and authority
 files with exact SHA256 values. Its authority schema permits deployment only;
 `execution_authorized` must be false. It launches the exact plan in a new
 process group, stops that group at 1,800 seconds, writes a terminal receipt and
-never retries.
+never retries. Before `Popen`, it atomically creates the authority-bound fixed
+consumption path; replaying the same attempt with another receipt stops locally
+before any connection.
 
 The shell plan enforces:
 
@@ -65,6 +67,8 @@ before archive publication. A post-link durability failure reports that the
 archive is already visible. A terminal receipt failure leaves the attempt,
 prepared and fallback failure records. Report-path conflicts are rejected
 before legacy chunks are imported. Stopped assembly exits non-zero.
+The final archive check fully consumes the gzip stream before asking Git for
+the embedded commit, avoiding the valid early-reader `SIGPIPE` case.
 
 ## Disabled authority template
 
@@ -78,8 +82,8 @@ does not create that grant.
 ## Parked exact invocation
 
 This command is documentation only and must remain disabled unless a new exact
-deployment authority exists. The candidate binds implementation commit `00b402dfe732a88d5055ddac65863c46886ee3d2`
-and the exact candidate and plan hashes below are ready for independent rereview.
+deployment authority exists. The next implementation-binding commit will replace
+the candidate SHA placeholder before independent rereview.
 
 ```bash
 cd /Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012
@@ -87,10 +91,10 @@ cd /Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-f
 PYTHONPATH=source /Users/wenxiaofang/miniconda3/bin/python3 \
   scripts/s09_e017_finite_deployment_guard.py \
   --candidate docs/research/S09/S09-E017/chunked_deployment_candidate_20261020.json \
-  --candidate-sha256 e1f5d660b3b7a39c7247df2d77a22fbce8d0bbae2c1ff4bf4bf03662cf5c054e \
+  --candidate-sha256 <FINAL_CANDIDATE_SHA256> \
   --authority <NEW_CANONICAL_DEPLOYMENT_AUTHORITY.json> \
   --plan scripts/s09_e017_chunked_deployment_plan.sh \
-  --plan-sha256 8bdcfb8b58a5eba7ae5222e02af13a4c408df5564f089aba2f18d952764d1381 \
+  --plan-sha256 0f5179cbbcc0e52f1923b4132d1e05694a3eccea2e8ffbfb9df1ac1562c0093a \
   --receipt <NEW_WRITE_ONCE_GUARD_RECEIPT.json> \
   --execute-authorised-deployment
 ```
@@ -101,7 +105,7 @@ separate later gate.
 
 ## Local validation and review state
 
-Twenty-four focused tests pass. They cover manifest canonicalisation, missing
+Twenty-seven focused tests pass. They cover manifest canonicalisation, missing
 and corrupt chunks, legacy-range revalidation, output/report conflicts, wall
 expiry, non-zero stops, post-publication I/O failure, terminal receipt failure,
 guard rejection, non-zero plan exit, process-group timeout, exact invocation

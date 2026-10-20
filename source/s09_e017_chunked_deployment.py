@@ -7,11 +7,13 @@ archive bytes only after every chunk and the assembled archive pass SHA-256.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import gzip
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import time
 from typing import Any, Callable, Mapping
 
@@ -74,6 +76,63 @@ def _regular_file(path: Path, *, reason: str) -> None:
     _require(path.exists(), reason, f"missing file: {path}")
     _require(path.is_file(), reason, f"not a regular file: {path}")
     _require(not path.is_symlink(), reason, f"symlink is forbidden: {path}")
+
+
+def verify_git_archive_identity(
+    archive: Path,
+    *,
+    expected_bytes: int,
+    expected_sha256: str,
+    expected_commit: str,
+) -> dict[str, Any]:
+    """Verify exact gzip bytes and the commit embedded by ``git archive``."""
+    _regular_file(archive, reason="SOURCE_ARCHIVE_MISSING")
+    _require(
+        archive.stat().st_size == expected_bytes,
+        "SOURCE_ARCHIVE_SIZE_MISMATCH",
+        "source archive size mismatch",
+    )
+    _require(
+        sha256_path(archive) == expected_sha256,
+        "SOURCE_ARCHIVE_HASH_MISMATCH",
+        "source archive SHA-256 mismatch",
+    )
+    try:
+        with gzip.open(archive, "rb") as stream:
+            tar_payload = stream.read()
+    except (OSError, EOFError) as error:
+        raise DeploymentStop(
+            "SOURCE_ARCHIVE_GZIP_INVALID", "source archive is not valid gzip"
+        ) from error
+    completed = subprocess.run(
+        ["git", "get-tar-commit-id"],
+        input=tar_payload,
+        check=False,
+        capture_output=True,
+    )
+    _require(
+        completed.returncode == 0,
+        "SOURCE_ARCHIVE_COMMIT_READ_FAILED",
+        "git get-tar-commit-id failed",
+    )
+    try:
+        commit = completed.stdout.decode("ascii").strip()
+    except UnicodeDecodeError as error:
+        raise DeploymentStop(
+            "SOURCE_ARCHIVE_COMMIT_READ_FAILED", "archive commit is not ASCII"
+        ) from error
+    _require(
+        commit == expected_commit,
+        "SOURCE_ARCHIVE_COMMIT_MISMATCH",
+        "source archive commit mismatch",
+    )
+    return {
+        "schema_version": "s09-e017-git-archive-verification-v1",
+        "terminal_state": "DEPLOYMENT_ARCHIVE_VERIFIED",
+        "archive_bytes": expected_bytes,
+        "archive_sha256": expected_sha256,
+        "reviewed_control_commit": commit,
+    }
 
 
 def _directory(path: Path, *, create: bool = False) -> None:
@@ -545,6 +604,11 @@ def assemble_archive(
                     "verified_chunks": verified_chunks,
                 }
             )
+        _require(
+            monotonic() - start <= max_wall_seconds,
+            "DEPLOYMENT_WALL_CAP_EXCEEDED",
+            "wall cap expired after prepared journal and before publish",
+        )
         try:
             os.link(temp, output)
         except FileExistsError as error:
