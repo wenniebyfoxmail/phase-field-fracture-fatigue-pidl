@@ -57,7 +57,7 @@ def guard_loop(worker,supervisor,fd,phase_deadline,step_seconds,report,ready_fd=
                 drain()
                 if reason:break
                 now=time.monotonic()
-                if active and now>=active['deadline']:reason='physical-substep120s deadline';break
+                if active and now>=active['deadline']:reason=f'physical-substep{step_seconds:g}s deadline';break
             if wf in ready:
                 # Final deadline audit after exit; a worker cannot hide a late
                 # success behind a resource monitor blocked in os.walk/fsync.

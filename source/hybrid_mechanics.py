@@ -91,7 +91,7 @@ class MechanicsWorkspace:
                   linear_strategy=strategy,krylov_attempts=0,krylov_iterations=0,
                   krylov_successes=0,krylov_fallbacks=0,krylov_matvecs=0,
                   preconditioner_applications=0,current_matrix_pivot_qualified=False)
-        stable=False;smallest=1.;relative=np.inf
+        stable=False;smallest=None;relative=np.inf
         for iteration in range(1,settings.max_mechanics+1):
             prev=u.copy();matrix=call('assembly',lambda:self.assemble(d,u));info['stiffness_assemblies']+=1
             if not np.isfinite(matrix.data).all():raise RuntimeError('nonfinite mechanics matrix')
@@ -138,7 +138,7 @@ class MechanicsWorkspace:
                         info['factorizations']+=1
                     else:info['factor_reuses']+=1
                     ratio=self.pivot_ratio(self.factor)
-                    smallest=min(smallest,ratio)
+                    smallest=ratio if smallest is None else min(smallest,ratio)
                     u[free]=call('linear_solve',lambda:self.factor.solve(np.asarray(rhs).ravel()))
                     info['current_matrix_pivot_qualified']=True
                 else:
@@ -157,7 +157,7 @@ class MechanicsWorkspace:
             factor=call('fresh_factorization',lambda:splu(final[free][:,free].tocsc()));info['factorizations']+=1
             piv=abs(factor.U.diagonal());ratio=float(piv.min()/max(float(piv.max()),np.finfo(float).eps))
             if not np.isfinite(ratio) or ratio<1e-14:raise RuntimeError('fresh mechanics near-singular')
-            smallest=min(smallest,ratio)
+            smallest=ratio if smallest is None else min(smallest,ratio)
         residual=np.asarray(final@u);norm=float(np.linalg.norm(residual[free]))
         scale=max(float(np.linalg.norm(final[free][:,free]@u[free])+np.linalg.norm(final[free][:,dofs]@values)),np.finfo(float).eps) if len(free) else 1.
         if not np.isfinite(norm) or norm/scale>settings.force_tolerance:raise RuntimeError('fresh mechanics residual failed')

@@ -51,6 +51,7 @@ def test_recycled_current_residual_matches_direct_without_false_exact_key():
     direct,_=MechanicsWorkspace(w.kin,w.material).solve(d,bc,v,s,initial_u=u)
     assert np.max(abs(recycled-direct))<1e-10
     assert info['krylov_successes']>=1 and info['factorizations']==0
+    assert info['minimum_pivot_ratio'] is None
     assert info['krylov_matvecs']>0 and info['preconditioner_applications']>0
     assert info['krylov_last_true_residual']<=info['krylov_last_target']
     assert w.factor_key==old_key and w.factor is old_factor

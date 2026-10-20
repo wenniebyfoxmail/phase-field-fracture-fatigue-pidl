@@ -43,14 +43,16 @@ class CachedAlgebraic(NativeQ4Backend,AlgebraicBackend):
     def __init__(self):
         from native_q4_damage_qp import gauss_interpolation_matrix
         self.kin=one_element();self.gp=gauss_interpolation_matrix(self.kin);self.crack=np.zeros(4,bool)
-        self.mechanics_workspace=SimpleNamespace(factor_key=None,factor=None);self.cache_calls=[]
+        self.mechanics_workspace=SimpleNamespace(factor_key=None,factor=None,factor_domain=None);self.cache_calls=[]
     validate_state=AlgebraicBackend.validate_state
     trial=AlgebraicBackend.trial
     damage_problem=AlgebraicBackend.damage_problem
     force_audit=AlgebraicBackend.force_audit
     def mechanics(self,d,dofs,values,settings,initial_u=None):
-        self.cache_calls.append((float(d[0]),self.mechanics_workspace.factor_key))
+        self.cache_calls.append((float(d[0]),self.mechanics_workspace.factor_key,
+                                 self.mechanics_workspace.factor_domain,self.mechanics_workspace.factor))
         self.mechanics_workspace.factor_key=float(d[0]);self.mechanics_workspace.factor=object()
+        self.mechanics_workspace.factor_domain=('artificial-domain',float(d[0]))
         return np.repeat(d,2),dict(iterations=1)
 
 
@@ -69,7 +71,9 @@ def test_bad_trial_restores_full_baseline_d_u_and_cache(monkeypatch):
     assert reject['restored_baseline_damage_id']==baseline['output_damage_id']==following['input_damage_id']
     assert reject['restored_baseline_u_id']==baseline['output_equilibrated_u_id']==following['mechanical_warm_start_u_id']
     assert p.certificate['coupling_work']['rejections']==1 and p.certificate['coupling_work']['proposals']==1
-    assert any(abs(d-.35)<1e-9 and abs(cache-.3)<1e-9 for d,cache in b.cache_calls if cache is not None)
+    restored=next(row for row in b.cache_calls if abs(row[0]-.35)<1e-9 and row[1] is not None and abs(row[1]-.3)<1e-9)
+    assert restored[2]==('artificial-domain',restored[1])
+    assert restored[3] is not None
     assert np.allclose(p.state.accumulated,(1-p.state.damage[0])**2*p.state.damage[0])
 
 
