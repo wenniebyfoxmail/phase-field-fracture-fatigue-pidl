@@ -17,6 +17,7 @@ from damage_conditioned_equilibrium import (
 from hybrid_damage import assemble_nodal_qp, kkt_audit, solve_nodal_qp
 from hybrid_history import AcceptedState, frozen_array, trial_history
 from native_q4_damage_qp import gauss_interpolation_matrix
+from hybrid_coupled_acceleration import CouplingSettings, ProjectedAnderson, active_codes, joint_merit
 
 
 def digest_config(value):
@@ -150,7 +151,8 @@ class NativeQ4Backend:
 
 
 def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id,
-               settings, predictor=None, classical_initial=None, return_prediction_context=False, work_observer=None):
+               settings, predictor=None, classical_initial=None, return_prediction_context=False, work_observer=None,
+               coupling=None, iteration_observer=None):
     """One complete coupled physical substep; no retry, commit or training.
 
     ``predictor.predict(old, u_pred, psi_pred, next_load_id, dofs, values)``
@@ -181,6 +183,8 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             # producer watchdog is required for a hard process wall budget.
 
     try:
+        coupling = CouplingSettings() if coupling is None else coupling
+        if not isinstance(coupling,CouplingSettings):raise ValueError('explicit coupling policy required')
         if isinstance(backend,NativeQ4Backend):backend.mechanics_observer=work_observer
         def mechanics(d,initial):
             if isinstance(backend,NativeQ4Backend):
@@ -234,11 +238,26 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                 work.append(dict(work_id=len(work), kind="initial_guess_fallback",
                                  reason=str(exc), wall_seconds=0., status="baseline_initial"))
         initial_damage=d.copy()
+        policy_id=digest_config(asdict(coupling))
+        weights=(np.asarray(backend.gp.T@backend.kin.det_jacobians.reshape(-1))
+                 if isinstance(backend,NativeQ4Backend) else np.ones(len(lower)))
+        accelerator=ProjectedAnderson(lower,backend.crack,weights,settings.bound_tolerance,coupling)
+        pending=None;last_kept=None;last_signs=None;iteration_records=[]
+        def array_hash(a):return hashlib.sha256(np.ascontiguousarray(a).tobytes()).hexdigest()
+        def cache_snapshot():
+            if not isinstance(backend,NativeQ4Backend):return None
+            w=backend.mechanics_workspace;return w.factor_key,w.factor
+        def cache_restore(snapshot):
+            if snapshot is not None:
+                backend.mechanics_workspace.factor_key,backend.mechanics_workspace.factor=snapshot
         # The common mechanics result is reusable only if d is identical.
         u_cache = u_pred if np.array_equal(d, lower) else None
+        u_guess=u_pred
         for outer in range(1, settings.max_outer + 1):
+            warm_vector=u_guess if u_cache is None else u_cache
+            warm_u_id=array_hash(warm_vector)
             if u_cache is None:
-                u, info = call("mechanics", lambda: mechanics(d,u_pred))
+                u, info = call("mechanics", lambda: mechanics(d,u_guess))
                 work[-1]["solver"] = info
             else:
                 u = u_cache
@@ -273,9 +292,82 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                       and force_audit["force_l2"] + damage_audit["kkt_l2"] <= settings.joint_residual_sum_tolerance
                       and force_audit["boundary_inf"] <= settings.bound_tolerance
                       and fatigue_residual <= settings.fatigue_tolerance)
+            merit=joint_merit(damage_audit,force_audit,fatigue_residual,settings)
             remaining()
             if old.fingerprint() != previous_id:
                 raise RuntimeError("accepted preimage mutated")
+            diagnostics_started=perf_counter()
+            was_trial=pending is not None
+            rejected=bool(was_trial and not passed and merit>coupling.merit_factor*pending['merit'])
+            code=active_codes(new_d,lower,settings.bound_tolerance)
+            fp=accelerator.norm(new_d-d)
+            record=dict(outer=outer,policy_id=policy_id,previous_id=previous_id,load_id=next_load_id,
+                        evaluation='anderson_trial' if was_trial else 'plain_map',
+                        baseline_outer=pending['outer'] if was_trial else None,
+                        input_damage_id=array_hash(d),input_equilibrated_u_id=array_hash(u),
+                        mechanical_warm_start_u_id=warm_u_id,
+                        output_damage_id=array_hash(new_d),output_equilibrated_u_id=array_hash(final_u),
+                        final_trial_A_id=array_hash(final_q.accumulated),final_trial_r_id=array_hash(final_q.driver),
+                        final_trial_f_id=array_hash(final_q.fatigue),
+                        damage=dict(damage_audit),force={k:force_audit[k] for k in ('force_inf','force_l2','force_scaled','boundary_inf')},
+                        fatigue_residual=fatigue_residual,merit=merit,passed_physical=bool(passed),
+                        fixed_point_rms=fp,observed_fp_ratio_to_last_kept=(fp/last_kept['fp'] if last_kept is not None and last_kept['fp']>0 else None),
+                        observed_merit_ratio_to_last_kept=(merit/last_kept['merit'] if last_kept is not None and last_kept['merit']>0 else None),
+                        active_counts={str(i):int(np.sum(code==i)) for i in range(4)},
+                        active_changes_from_last_kept=int(np.sum(code!=last_kept['active'])) if last_kept is not None else None,
+                        kept_as_iteration_point=not rejected,rejection_reason='joint_merit_guard' if rejected else None,
+                        qp=dict(qp_info),elapsed_seconds=perf_counter()-start)
+            loading=final_q.driver>old.driver
+            record['history_loading']=dict(active_gp=int(loading.sum()),id=array_hash(loading),
+                                           changes_from_last_kept=int(np.sum(loading!=last_kept['loading'])) if last_kept is not None else None,
+                                           fatigue_below_one_gp=int(np.sum(final_q.fatigue<1.)))
+            signs=None
+            if isinstance(backend,NativeQ4Backend):
+                from damage_conditioned_equilibrium import _trace_signs
+                signs=_trace_signs(final_u,backend.kin)
+                record['trace']=dict(positive=int(signs.sum()),nonpositive=int(signs.size-signs.sum()),
+                                     input_equilibrated_id=array_hash(_trace_signs(u,backend.kin)),warm_start_id=array_hash(_trace_signs(warm_vector,backend.kin)),
+                                     id=array_hash(signs),changes_from_last_kept=int(np.sum(signs!=last_signs)) if last_signs is not None else None)
+            next_guess=None
+            proposal_seconds=0.
+            if rejected:
+                accelerator.reject();cache_restore(pending['cache'])
+                d,u_cache=pending['d'],pending['u']
+                record['restored_baseline_damage_id']=array_hash(d)
+                record['restored_baseline_u_id']=array_hash(u_cache)
+                record['restored_baseline_audit']=pending['audit']
+                record['next_guess']=dict(reason='restored_baseline_and_disabled' if accelerator.rejections>=coupling.max_rejections else 'restored_baseline')
+                pending=None
+            elif not passed:
+                if was_trial:accelerator.kept_trials+=1
+                accelerator.add(d,new_d)
+                last_kept=dict(fp=fp,merit=merit,active=code.copy(),loading=loading.copy())
+                last_signs=signs.copy() if signs is not None else None
+                if outer<settings.max_outer:
+                    next_guess,proposal_info=call('coupling_proposal',accelerator.propose)
+                    proposal_seconds=work[-1]['wall_seconds']
+                else:proposal_info=dict(reason='outer_map_budget_exhausted')
+                record['next_guess']=proposal_info
+                if next_guess is not None:
+                    record['next_guess']['candidate_damage_id']=array_hash(next_guess)
+                    record['next_guess']['planned_next_outer']=outer+1
+                    pending=dict(outer=outer,merit=merit,d=new_d.copy(),u=final_u.copy(),cache=cache_snapshot(),
+                                 audit=dict(damage=dict(damage_audit),force=dict(record['force']),fatigue_residual=fatigue_residual,merit=merit))
+                    # This is only an initial guess. The next loop MUST run
+                    # the complete original map and fresh physical predicates.
+                    d,u_cache,u_guess=next_guess,None,final_u
+                else:
+                    pending=None;d,u_cache=new_d,final_u
+            else:
+                if was_trial:accelerator.kept_trials+=1
+                record['next_guess']=dict(reason='physical_acceptance_no_acceleration_needed')
+            iteration_records.append(record)
+            record['diagnostic_wall_seconds']=perf_counter()-diagnostics_started-proposal_seconds
+            if iteration_observer is not None:
+                import copy
+                call('iteration_evidence',lambda:iteration_observer(copy.deepcopy(record)))
+            remaining()
+            if old.fingerprint()!=previous_id:raise RuntimeError('accepted preimage mutated after evidence')
             if passed:
                 state = AcceptedState(final_u, new_d, final_q.accumulated, final_q.driver,
                                       final_q.fatigue, old.opaque, old.version + 1,
@@ -289,10 +381,12 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                                    model_id=attempted_model_id if neural_used else "NN_OFF",
                                    attempted_model_id=attempted_model_id,
                                    initialization_source=initialization_source,
+                                   coupling_policy_id=policy_id,coupling_policy=asdict(coupling),
+                                   coupling_work=dict(proposals=accelerator.proposals,kept_accelerated_maps=accelerator.kept_trials,rejections=accelerator.rejections),
+                                   iterations=iteration_records,
                                    initial_to_final_damage_rms=float(np.sqrt(np.mean((new_d-initial_damage)**2))),
                                    initial_to_final_damage_inf=float(np.max(abs(new_d-initial_damage))))
                 return StepProposal(previous_id, state, certificate, tuple(work), prediction_context)
-            d, u_cache = new_d, final_u
         raise RuntimeError("joint iteration cap reached; no accepted proposal")
     except Exception as exc:
         if isinstance(exc, StepFailure):

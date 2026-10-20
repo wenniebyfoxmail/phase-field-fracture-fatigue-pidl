@@ -27,6 +27,9 @@ from hybrid_producer_common import verify_package, write_json, append_event
 
 
 def validate_card(card):
+    from hybrid_coupled_acceleration import CouplingSettings
+    CouplingSettings(**card.get('coupling',{}))
+    if any('coupling' in p for p in card['phases']):raise ValueError('one shared coupling policy required')
     if card.get("schema") != "hybrid-execution-card-v1":
         raise ValueError("unsupported execution card")
     phases=card["phases"]
@@ -55,8 +58,38 @@ def validate_card(card):
         raise ValueError("unidentified producer")
 
 
-def initial_totals(card, job_started):
+def initial_totals(card, job_started, code_root=None):
     """Charge actual admission work to the same study envelope before launch."""
+    if card.get('prior_costs'):
+        if card.get('pre_execution_cost') is not None:raise RuntimeError('duplicate prior cost mechanisms')
+        charges=dict(wall_seconds=0.,cpu_seconds=0.,gpu_seconds=0.,numerical_seconds=0.)
+        lineages=set();facts=[]
+        for entry in card['prior_costs']:
+            relative=Path(entry['source'])
+            if code_root is None or relative.is_absolute() or '..' in relative.parts:raise RuntimeError('nonlocal prior cost source')
+            path=Path(code_root)/relative
+            if sha256(path)!=entry['sha256']:raise RuntimeError('frozen prior cost source differs')
+            if entry.get('cost_only_not_admission') is not True:raise RuntimeError('past costs cannot admit execution')
+            ids=entry['lineage']
+            if not isinstance(ids,list) or not ids or any(not isinstance(i,str) or not i for i in ids):raise RuntimeError('invalid prior cost lineage')
+            if len(set(ids))!=len(ids) or lineages.intersection(ids):raise RuntimeError('overlapping prior cost lineage')
+            lineages.update(ids);source=read_manifest(path);one={}
+            for key in charges:
+                value=source
+                for part in entry['metrics'][key]:value=value[part]
+                if isinstance(value,bool) or not isinstance(value,(int,float)):raise RuntimeError('nonnumeric frozen prior cost')
+                value=float(value)
+                if not __import__('math').isfinite(value) or value<0:raise RuntimeError('invalid frozen prior cost')
+                charges[key]+=value;one[key]=value
+            if one['numerical_seconds']>one['wall_seconds']:raise RuntimeError('prior numerical cost exceeds wall')
+            facts.append(dict(source=str(relative),sha256=entry['sha256'],lineage=ids,**one))
+        if charges['wall_seconds']>=card['budget']['cpu_wall_hours']*3600-card['budget']['termination_reserve_seconds']:
+            raise RuntimeError('prior work exhausted host allowance')
+        if charges['gpu_seconds']>=card['budget']['gpu_hours']*3600-card['budget']['termination_reserve_seconds']:
+            raise RuntimeError('prior work exhausted GPU allowance')
+        return dict(**charges,phases={},start_monotonic=job_started-charges['wall_seconds'],
+                    shared_analysis_seconds=charges['wall_seconds']-charges['numerical_seconds'],
+                    pre_execution_cost=dict(**charges,facts=facts,cost_only_not_admission=True))
     pre=card.get('pre_execution_cost')
     if pre is None:
         return dict(wall_seconds=0.,gpu_seconds=0.,numerical_seconds=0.,cpu_seconds=0.,phases={},
@@ -310,9 +343,9 @@ def main():
     host=host_admission(card,runroot,archive)
     runtime={name:getattr(importlib.import_module(name),'__version__','unknown') for name in card['runtime_expected']}
     if runtime!=card['runtime_expected']:raise RuntimeError(f'producer runtime differs: {runtime}')
+    totals=initial_totals(card,job_started,code)
     archive.mkdir(parents=True)
     for d in ['tmp','jitcache','cache','logs']:(runroot/d).mkdir(exist_ok=True)
-    totals=initial_totals(card,job_started)
     write_json(runroot/'launch_receipt.json',dict(pid=os.getpid(),hostname=socket.gethostname(),
                                                 command=sys.argv,card_sha256=sha256(args.card),
                                                 artifact_id=package['artifact_id'],host_admission=host,

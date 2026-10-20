@@ -36,6 +36,15 @@ from hybrid_producer_common import write_json, append_event, classical_guess, co
 from hybrid_transaction import StateStore
 from hybrid_work_trace import PersistentWorkTrace
 from hybrid_guard_client import notify
+from hybrid_coupled_acceleration import CouplingSettings
+
+
+def coupling_identity(card):return object_sha(asdict(CouplingSettings(**card.get('coupling',{}))))
+
+
+def verify_label_coupling(row,expected):
+    if row.get('coupling_policy_id')!=expected or row['certificate'].get('coupling_policy_id')!=expected:
+        raise RuntimeError('label coupling policy differs from complete comparison')
 
 
 def marker(out, **values):
@@ -46,6 +55,7 @@ def marker(out, **values):
 def trajectory(card, spec, inputs, out, archive):
     backend, old, dofs, bc = load_backend(inputs, read_manifest(Path(inputs)/"inputs.json"))
     settings = SolverSettings(**card["solver"])
+    coupling=CouplingSettings(**card.get('coupling',{}));coupling_id=coupling_identity(card)
     phase = archive / spec["id"]
     phase.mkdir()
     (phase/"states").mkdir()
@@ -61,6 +71,8 @@ def trajectory(card, spec, inputs, out, archive):
         receipt = read_manifest(model_dir/"receipt.json")
         if receipt.get("completed") is not True:
             raise RuntimeError("training did not complete; cannot evaluate NN")
+        if receipt.get('coupling_policy_id')!=coupling_id or receipt['model_manifest'].get('coupling_policy_id')!=coupling_id:
+            raise RuntimeError('frozen network coupling provenance differs')
         checkpoint = torch.load(model_dir/"best.pt", map_location="cpu", weights_only=True)
         if sha256(model_dir/"best.pt") != receipt["checkpoint_sha256"]:
             raise RuntimeError("frozen checkpoint changed")
@@ -85,7 +97,8 @@ def trajectory(card, spec, inputs, out, archive):
             proposal = solve_step(backend, old, dofs, bc*target,
                                   next_load_id=f'{spec["id"]}:c{cycle+1}:s{substep+1}:{target:.17g}',
                                   settings=settings, predictor=predictor, classical_initial=initial,
-                                  return_prediction_context=spec["role"]=="labels",work_observer=trace.call)
+                                  return_prediction_context=spec["role"]=="labels",work_observer=trace.call,
+                                  coupling=coupling,iteration_observer=trace.record_iteration)
         except StepFailure as exc:
             write_json(phase/"failure.json", dict(step=index+1, reason=str(exc), work=exc.work,
                                                  accepted_id=old.fingerprint(), version=old.version))
@@ -112,6 +125,7 @@ def trajectory(card, spec, inputs, out, archive):
                           state_id=proposal.state.fingerprint(), mesh_id=backend.mesh_id,
                           physics_id=backend.physics_id, role="numerically_accepted_new_contract_label",
                           settings_id=proposal.certificate['settings_id'],domain='nodal-K-v1',
+                          coupling_policy_id=coupling_id,
                           input_accepted_verified=True,output_joint_verified=True,trial_map_verified=True,
                           array_hashes_verified=True,features_origin_verified=True,original_operator_verified=True,
                           trajectory_id=spec['id'],certificate_sha256=object_sha(proposal.certificate),
@@ -129,6 +143,7 @@ def trajectory(card, spec, inputs, out, archive):
                    f_min=min(r["f_min"] for r in records), initial_state_id=records[0]["certificate"]["previous_id"],
                    final_state_id=old.fingerprint(), physical_acceptance=True,
                    backend_setup_seconds=backend.setup_seconds,
+                   coupling_policy_id=coupling_id,
                    network_setup_seconds=getattr(predictor,"setup_seconds",0.))
     write_json(phase/"summary.json", summary)
     return summary
@@ -201,6 +216,7 @@ def fit(card, inputs, out, archive):
                         or sha256(archive/row["state_file"])!=row["state_sha256"]
                         or sha256(archive/row['input_state_file'])!=row['input_state_sha256']):
                     raise RuntimeError("label identity/acceptance mismatch")
+                verify_label_coupling(row,coupling_identity(card))
                 qualification=qualify_transition(row,physics_id=backend.physics_id,mesh_id=backend.mesh_id,
                                                   settings_id=digest_config(asdict(SolverSettings(**card['solver']))))
                 if not qualification['metadata_eligible']:raise RuntimeError('label metadata contract not qualified')
@@ -268,15 +284,18 @@ def fit(card, inputs, out, archive):
     frozen=DamageGraphPredictor(len(FEATURES));frozen.load_state_dict(checkpoint["state_dict"])
     # Attestation is separate from the model manifest to avoid a self hash.
     training_record=dict(completed=True,config=config,updates=updates,end_reason=end_reason,
+                         coupling_policy_id=coupling_identity(card),
                          train_transitions=len(train_rows),validation_transitions=len(validation_rows),
                          input_rows_sha256=__import__('hybrid_producer_common').object_sha(train_rows+validation_rows),
                          validation_best=best,history=history,wall_seconds=perf_counter()-begin,
                          weights_id=weights_id(frozen),test_opened=False)
     write_json(phase/"training_record.json",training_record)
     summary=dict(completed=True,updates=updates,wall_seconds=perf_counter()-begin,
+                 coupling_policy_id=coupling_identity(card),
                  checkpoint_sha256=sha256(phase/"best.pt"),
                  model_manifest=dict(trained=True,training_receipt_sha256=sha256(phase/"training_record.json"),
                                      feature_names=list(FEATURES),physics_id=backend.physics_id,
+                                     coupling_policy_id=coupling_identity(card),
                                      weights_id=weights_id(frozen)))
     write_json(phase/"receipt.json",summary)
     return summary

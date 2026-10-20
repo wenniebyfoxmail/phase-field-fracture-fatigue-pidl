@@ -45,6 +45,17 @@ def inspect(root):
             except OSError as exc:trace_errors.append(dict(error=str(exc)))
         row.update(unfinished_work_blocks=list(active.values()),work_trace_errors=trace_errors,
                    work_evidence_incomplete=bool(active or trace_errors))
+        iteration_file=path.parent/'iterations.jsonl';last_iteration=None;iteration_errors=[]
+        if iteration_file.exists():
+            try:
+                for n,line in enumerate(iteration_file.read_text().splitlines(),1):
+                    try:
+                        item=json.loads(line)
+                        if not isinstance(item,dict) or 'outer' not in item or 'step' not in item:raise ValueError('invalid iteration record')
+                        last_iteration=item
+                    except (ValueError,TypeError) as exc:iteration_errors.append(dict(line=n,error=str(exc)));break
+            except OSError as exc:iteration_errors.append(dict(error=str(exc)))
+        row.update(last_outer_iteration=last_iteration,iteration_evidence_errors=iteration_errors)
         rows.append(row)
     return rows
 
