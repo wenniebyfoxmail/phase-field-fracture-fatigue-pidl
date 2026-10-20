@@ -2,7 +2,7 @@
   "enabled": false,
   "experiment_id": "S04-E027-SYNMEM",
   "spec_id": "bff278a41264db2070745a31b90ff742a19b88b1bbc66ad325073ff08f832f23",
-  "code_commit": null,
+  "code_commit": "95709f9ca50edd6da2377d983ab1f2e994a0b31b",
   "producer": {
     "alias": "gpu-server",
     "hostname": "GPUServer8",
