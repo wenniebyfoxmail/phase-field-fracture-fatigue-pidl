@@ -114,8 +114,8 @@ class SensitivityTape:
     """Pure in-memory derivative transaction; never writes/advances FEM state.
 
     Stable-step propagation is atomic: any exception leaves state, tangent and
-    receipts unchanged. Exactly unloaded/weakly active states stop until the
-    directional strategy has separately reviewed numerical support.
+    receipts unchanged. Stable states use advance_given; switch states use
+    advance_switch_given with a fresh globally uniqueness-checked solve.
     """
     def __init__(self, initial_state: AcceptedState, variation: Variation, *,
                  initial_binding_id, initialization_policy, parameter_direction):
@@ -144,6 +144,21 @@ class SensitivityTape:
             raise ValueError("material parameter direction differs from this tape's fixed direction")
         if not isinstance(step, ImplicitStep):
             raise TypeError("only reviewed stable ImplicitStep may advance; switches stop")
+        self._validate_transition(step,new_state,expected_load_id,transition_tolerance)
+        old=self.state
+        variation, _ = step.propagate(self.variation, parameters=self.parameter_direction, **solver_kwargs)
+        variation = freeze_variation(variation, step.r.n, step.r.e)
+        receipt = dict(previous_id=old.fingerprint(), state_id=new_state.fingerprint(),
+            old_version=old.version, new_version=new_state.version,
+            load_id=expected_load_id, parameters=self.parameter_direction,
+            derivative_commits=1, primal_commits=0, source="given_states_only")
+        receipts = self.receipts+(receipt,)
+        # Sole state change after every check and sensitivity solve succeeded.
+        self.state, self.variation, self.receipts = new_state, variation, receipts
+        return receipt
+
+
+    def _validate_transition(self,step,new_state,expected_load_id,transition_tolerance):
         if not np.isfinite(transition_tolerance) or transition_tolerance <= 0:
             raise ValueError("positive transition tolerance required")
         old = self.state
@@ -161,13 +176,32 @@ class SensitivityTape:
             if not np.allclose(getattr(new_state, name), getattr(point, name),
                                atol=transition_tolerance, rtol=0):
                 raise ValueError("given committed history differs from fresh trial")
-        variation, _ = step.propagate(self.variation, parameters=self.parameter_direction, **solver_kwargs)
-        variation = freeze_variation(variation, step.r.n, step.r.e)
-        receipt = dict(previous_id=old.fingerprint(), state_id=new_state.fingerprint(),
-            old_version=old.version, new_version=new_state.version,
-            load_id=expected_load_id, parameters=self.parameter_direction,
-            derivative_commits=1, primal_commits=0, source="given_states_only")
-        receipts = self.receipts+(receipt,)
-        # Sole state change after every check and sensitivity solve succeeded.
-        self.state, self.variation, self.receipts = new_state, variation, receipts
+
+    def advance_switch_given(self,solver,new_state,*,expected_load_id,transition_tolerance,
+                             residual_tolerance,solution_tolerance,boundary_variation=None):
+        """Commit a freshly solved, globally uniqueness-checked given switch.
+
+        No caller-supplied verdict/solution can bypass the solver and complete
+        directional residual check. Any exception leaves this tape unchanged.
+        """
+        from q4_inverse_switch import DirectionalSolver
+        if not isinstance(solver,DirectionalSolver):
+            raise TypeError('reviewed DirectionalSolver required')
+        self._validate_transition(solver.problem,new_state,expected_load_id,transition_tolerance)
+        old=self.state
+        result=solver.solve(self.variation,parameters=self.parameter_direction,
+            boundary_variation=boundary_variation,residual_tolerance=residual_tolerance,
+            solution_tolerance=solution_tolerance)
+        variation=freeze_variation(result.variation,solver.problem.r.n,solver.problem.r.e)
+        # Repeat full equations independently of Newton's natural residual.
+        check,_=solver.problem.check(variation,self.variation,parameters=self.parameter_direction,
+                                    boundary_variation=boundary_variation,tolerance=residual_tolerance)
+        if not check.satisfies_directional_equations or result.record['derivative_unique'] is not True:
+            raise RuntimeError('directional result failed transaction audit')
+        receipt=dict(previous_id=old.fingerprint(),state_id=new_state.fingerprint(),
+            old_version=old.version,new_version=new_state.version,load_id=expected_load_id,
+            parameters=self.parameter_direction,derivative_commits=1,primal_commits=0,
+            source='given_states_only',directional=dict(result.record))
+        receipts=self.receipts+(receipt,)
+        self.state,self.variation,self.receipts=new_state,variation,receipts
         return receipt
