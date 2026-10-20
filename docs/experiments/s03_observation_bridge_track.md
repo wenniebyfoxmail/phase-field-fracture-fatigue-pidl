@@ -459,3 +459,18 @@ halfdepth/scoresunchanged. Inventorycomplete. ActiveD3nextproposaljointFig.7+
 bendingZIPfilelist/readme/headerschecktorecoveridentity/state/coordinatechain;
 requiresseparatescopedattachmentaccess,notexecuted. Retaincandidatecomponent,
 nofurtherunchangedsame-imageselfvalidation,D01independentrouteunblocked.
+
+### D3 authorised two-ZIP/Fig.7 inspection — 2026-10-20
+
+[Attachment review](../research/S03/S03-E049-MD03/attachment_review_20261020.md):
+bothZIPsize/SHA/CRCverified,22effectivefiles. BendingMATcontainsPLA3/PLA5
+7extensometer×3componentrecords(222/248rows),machinehistoryandphoto/time
+bookkeeping;authorcodeusesExt1–3formidspandeflection. Synchronisationevidence
+nowacquired,notabsent. Ext4–7endpoints/purposeunlocated;X/Yareelongation
+projections,notpixelcoordinates/fullfield. Fig.7actuallyviewed:multiple
+strainbands,butnoIMG/nativecoordinatekeys. All203/243present-timepairs
+follow5*(index-firstPhoto+1);candidate89/132/175timekeys430/645/860,notyet
+certifiedfilename/unit/loadjoin. Catalogueoverlap157/173and97/100prevents
+forcedrowzip. NextD3proposalsource/index/time/loadqualificationandendpoint
+gaplist,noexecutedjoin/rescore/contact. Parentarchive reference_attachment_check_20261020;
+oldobserver/halfdepth/scoresunchanged,nonewTIFF,D01independentowneruntouched.

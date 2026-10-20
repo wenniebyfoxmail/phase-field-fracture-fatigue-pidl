@@ -87,11 +87,12 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   D3localcheckcompleted:prior-field-selectedx2782plus3fixedcomparisons,
   12rawcrops/8matchsets. Candidate175pairJ1.576px,Q−.457gray,minNCC.965;
   texturejumpreproduciblebutsourcecoherentgapnotconfirmed.481hashesunchanged.
-  Existing-referenceinventorycompleted2026-10-20(cachedmetadata/textonly):
-  273TIFF+2unopenedZIP,3localoriginals;papertextconfirmsOpteCAL/Fig.7DIC,
-  butnoIMG→DICstate/grid→pixeljoinorlocatedopeningreferenceinhand.
-  ActiveD3proposaljointFig.7+bendingZIPfilelist/readme/headerscheckawaits
-  scopedattachmentaccess;nonewdownload/opening,ZIPinteriorsunknown.
+  BothZIPs/Fig.7nowauthorisedandinspected2026-10-20:hash/CRCverified;
+  PLA3/PLA5each7DICextensometers(222/248records)andphoto/timebookkeeping
+  acquired. ProjectedX/Ynotpixelcoordinates;noendpoints/fullfieldexport.
+  Candidate89/132/175timekeys430/645/860,notcertifiedIMG/unit/loadjoin;
+  Fig.7qualitativestrainbandsnotlocalwidthtruth. ActiveD3nextproposal
+  index/time/loadprovenanceaudit+endpointgaplist,noexecutedloadjoin/rescore.
   Old5.81%/observer/halfdepthkept,D01independentrouteunblocked.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
