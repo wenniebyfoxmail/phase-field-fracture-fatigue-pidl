@@ -944,3 +944,11 @@
   S03-E019/font_svg_v002_l01_evidence_review.md. V1/original structure/S01 gains
   retained; fullframe/colourbar/JQ/window/zoom unverified. No frozen edits,
   redraw/recompute/SVDQR/B003numeric/real/held/C-D. D3 stopped pending direction.
+
+- **2026-10-20 — HQ prospectively authorises one remaining visual/V3 attempt.**
+  Verified direct human overnight HQ grant (message01a15b4c-2e3a...) and
+  its narrow delegation, not a governance-only revival. See
+  S03-E019/font_svg_v002_l01_remaining_visual_r002.md. Reuse passed V1, same
+  independent reviewer; SHA-only initial admission, documented native controls,
+  actual two-SVG view and original V3, one new60s/0SVDQR/firststop/no third attempt.
+  Old UI failure/timing and frozen artifacts unchanged; not yet executed at entry.
