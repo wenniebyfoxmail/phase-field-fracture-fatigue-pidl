@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "experiment_id": "S04-E027-SYNMEM",
   "protocol": "2.0",
   "spec_id": "9f9c31bffac74d2a3418436e10247af024aef1f0ba5f20c64693d743db63a758",
@@ -52,6 +52,6 @@
     "maximum_attempts": 2,
     "cumulative_seconds": 60
   },
-  "status": "Enabled exactly once: v2 R003; strict original-producer357-state zero-solver admission must pass in reviewed dispatcher before scientific launch",
+  "status": "R003 completed; independent physics and observation result reviews confirm fixed-H20 negative. All1846 cumulative attempts consumed; full200-state replay exact. Closed; no further scientific execution authorized.",
   "transport_template_sha256": "7c17ad390cf8f8ae4f12c3a9acb6bcfcd841b1f12a61d10af23c9131d8caf27c"
 }

@@ -1,0 +1,59 @@
+{
+  "run_id": "S04-E027-SYNMEM-R003",
+  "protocol": "2.0",
+  "result": "completed_negative_fixed_H20",
+  "reviewed_source": "7ae9001b79e02dc6848b2727514bef062d3d7f4d",
+  "deployed_source": "53ba2e1d2a7ed2366186ffb640b03419c0ec29d5",
+  "current_pair_xor": [
+    0,
+    0,
+    0
+  ],
+  "H20_pair_xor": [
+    0,
+    0,
+    0
+  ],
+  "H20_robust_pixels": 0,
+  "accepted_transitions_checked": 1846,
+  "byte_exact_reused_steps": 357,
+  "replay_steps_exact": 200,
+  "reviews": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R003/analysis/independent_result_review.md",
+      "sha256": "e9346dac435151696e8714c4b9b1e85c37dcd9d0daa9df5c8542a8e89fde60ef"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R003/analysis/independent_completed_run_audit.json",
+      "sha256": "4c30e4013849eee4ee50d660024e7a5617e63e42b4509641200010c9db58fc2e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R003/analysis/review_v2_result_observation.md",
+      "sha256": "53cd332a109717395fbd3f94881b96b35917fcadae2fc81fe4b6de8e94769e42"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R003/analysis/independent_observation_metrics.json",
+      "sha256": "c4b36de5e10d3e5a6bd53c48924cda07a93d3deb6eac86057cdf292d2c982694"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R003/analysis/README_analysis.md",
+      "sha256": "baece5e3999aaf0398a420e55e1a95c898b25f9dad10f29d93c72ab9d5a5a55f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R003/analysis/summary.json",
+      "sha256": "113b467698f822ec5aa5afecf8a19e41363a76715dd0f91b34cf6864158e505e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R003/analysis/figure_qa.md",
+      "sha256": "8ced38106819408138e60d8a449c1eff00678ecb6bfe9cd2b5c131c6d89e9283"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027-SYNMEM/runs/S04-E027-SYNMEM-R003/deployment/retrieval_verification.json",
+      "sha256": "b8074095b50697bcd61e7cd67342a581eeb456e237e11141abf594dcc3c28a08"
+    }
+  ],
+  "archive_sha256": "3b7f2331b2c9b2e33d3ceee33a4fce5ebceba818a5597ef93d37a4c17945ddb8",
+  "v1_record_preserved": true,
+  "execution_authorized": false,
+  "disposition": "Do not expand this design into a library or history-model training. Any new observation/history/loading/horizon is a new prospective experiment."
+}
