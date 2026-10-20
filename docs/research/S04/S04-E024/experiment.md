@@ -138,3 +138,10 @@ Same own E023 c20/c60/c83/D/BC/window/fullmass/seven actual protections/original
 **本轮：** 科学源码18d0e7cb1153dc969c1ee0c21c77ada1297b2d89／树14f6ba5…813c23不变，单独封装clean浅Git快照，最终科学Code Ready／累计检查置于源码外。88文件238,110,147 bytes的配对字节身份核验完成，真实三态数值准入尚未运行。c20s4/c60s4/c83s4各自原E023 joint10000 seed7、producerD/BC/window/features/damage/history/fatigue冻结；每态strict η.1/.3/1＋中央旧7消融，13实际保护／永久原E023累计Q／零分母／最多3模型×9有限步均按原契约。
 **包装检查：** 新启动器18项人工检查及独审PACKAGE_READY_PASS。初审L1预检尾部记账／L2合并存储监督已修复，原件保留。启动器持续监督仅本次新进程组，预检和保守5秒交接均入原300秒；包／旧D013检查／控制／科学输出合计1GiB。记录检查66.937549秒，最终绑定保守另预记5秒，当前预算记账71.937549秒，非实测全耗时。数值1800／重放900／绘图120／检查300总3120秒、CPU2/0GPU、每进程RSS3GiB和原loader2GiB不改。
 **当前结论／下一步：** 最终包已冻结、待用户准确版本批准。无科学新头求解／真实model或FEM前向／训练／远端操作；authorization模板false，真实授权／控制／结果根都不存在。审批后才一次执行本地CPU固定模型离线分析（不授权Mac神经训练），统一字节预检后每态新进程数值准入，失败停余下任务不自动重试；三态完整重放后才比较实际场与成本。损伤／裂纹／疲劳应用仍需后续history耦合验证。完整最终命令／哈希／禁止项：[待审批方案](physical_field_budget_execution_approval.md)；[冻结包收据](physical_field_budget_package_receipt.json)；[启动器复审](offline_package/launcher_review.md)。
+
+
+## 2026-10-20 — D013机器角色静态纠正：Mac v1暂停，Taobo CPU2路由明确
+
+核查发现v1确切写的是Mac＋Conda，不是已闭合生产机许可；Mac“非训练analysis”条文不能自动当本次12profile科学批次的生产例外。现有部署／回收记录已确定拟生产机为drtao@172.16.100.2／GPUServer8，历史解释器/usr/bin/python3；CPU2是线程上限，不是资源已预留或当前可用证明。
+原v1 zip/manifest/source/审批卡与初始状态原样保留，当前收据标记ON_HOLD_MACHINE_ROLE_ALIGNMENT。科学18d0e7cb、三态E023／12比较／13保护／累计中心／预算／首停均未改，无需重做科学审查。单张r2静态卡集中列出Linux部署包装、环境证据、88输入/D012生产来源及最终payload/hash/动作审批四项缺口；没有可执行v2，不向人方单独索要机器名确认。仅本地静态文字/JSON与哈希核验；无SSH／资源探针／真实Torch／预检／solve／train，本委派不构成执行批准。
+[完整机器角色及缺项卡](physical_field_budget_execution_approval_r2.md) · [来源/保留收据](machine_role_alignment/static_role_review.json)。下一步本地补齐部署差异后，向人方一次展示准确Taobo包＋预检＋条件单次运行方案；不能拿原Mac v1 manifest去启动Taobo或Mac。

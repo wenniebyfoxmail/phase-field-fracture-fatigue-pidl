@@ -190,3 +190,8 @@ Same own E023 c20/c60/c83/D/BC/window/fullmass/seven actual protections/original
 ## 2026-10-20 — D013 offline package prepared, not executed
 
 Exact scientific18d0e7cb retained; clean source tar/final review receipts/88 input byte locks/one-shot bounded local CPU supervisor assembled. Launcher18 synthetic checks and focused packaging review pass after accounting/storage repairs;13 actual protections and immutable E023 Q centre unchanged. Final v1 awaits explicit human approval,0 real preflight/head solve/training/remote actions. CPU2/0GPU and shared3120s/1GiB caps retained; .001 historical, coupled damage/fatigue application unknown. [Approval](S04-E024/physical_field_budget_execution_approval.md), [Package receipt](S04-E024/physical_field_budget_package_receipt.json).
+
+
+## 2026-10-20 — D013 production-role clarification (static only)
+
+Mac v1 held: existing code binds Mac, not producer-role authority. Historical E024 records identify Taobo GPUServer8/drtao and /usr/bin/python3; CPU2 is thread limit, live capacity unverified. Unchanged science18d0e7cb reused; r2 card lists deployment/environment/input/hash-and-approval gaps in one place, no deployable v2 or execution. [Owner/card](S04-E024/physical_field_budget_execution_approval_r2.md).

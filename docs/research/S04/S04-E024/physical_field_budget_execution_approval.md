@@ -1,3 +1,5 @@
+> **2026-10-20 当前状态：Mac v1因生产机角色未闭合而暂停。以下v1原文仅作历史保留，不要执行。当前以[生产机角色修订卡r2](physical_field_budget_execution_approval_r2.md)为准；原字节副本在machine_role_alignment/v1_original_physical_field_budget_execution_approval.md，v1 zip/manifest不变。**
+
 # D013-offline-20261020-v1 最终执行审批
 
 2026-10-20。**待批准；未运行。** 此次审批只涵盖下述本地CPU固定模型离线校正，不授权神经训练、SSH、传输、push、依赖安装、重试或新实验。Mac依旧不训练。

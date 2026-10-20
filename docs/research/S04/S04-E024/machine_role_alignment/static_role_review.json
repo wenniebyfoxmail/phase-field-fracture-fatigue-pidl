@@ -1,0 +1,46 @@
+{
+  "stage": "STATIC_PRODUCER_ROUTE_SPECIFIED_NOT_RUN_READY",
+  "date": "2026-10-20",
+  "scope": "local static records/documents only; delegation is not execution approval",
+  "original_v1_commit": "4a56afd16b8c300e2d6a75cda2c7e56495527b1d",
+  "original_approval_and_receipt_sha256": {
+    "physical_field_budget_execution_approval.md": "d355e229175ffe3e70643f7de3c904ab841b3fab93fdda0aa262920e4ea4bebc",
+    "physical_field_budget_package_receipt.json": "ba3d9c9a3c1ba9d699e4d2dfa8e481389ab5f2978955e76ddc1e784aec3727e9"
+  },
+  "preserved_v1": {
+    "manifest_sha256": "7c77c4db5448d64d8d9e3f647ce7210615df9506d276a7b86740d46ef866f91a",
+    "zip_sha256": "e6e11df3ef2e86676dcafa06a648a7d3a19e1253a07ee21781a7dffdcbdd91d1",
+    "source_tar_sha256": "4682bf96f178c4ca6dc9faf56a9f591cb687077e554240d77a997b818681d7b1"
+  },
+  "science_commit": "18d0e7cb1153dc969c1ee0c21c77ada1297b2d89",
+  "science_tree_sha256": "14f6ba5d4b0107e0655f711622ef51268222221e18666f65426bc11e42813c23",
+  "scientific_scheme_changed": false,
+  "proposal": {
+    "host": "GPUServer8",
+    "account": "drtao",
+    "address": "172.16.100.2",
+    "python": "/usr/bin/python3",
+    "python_evidence_date": "2026-10-17",
+    "cpu_threads": 2,
+    "GPU_count": 0,
+    "remote_root": "/mnt/data2/drtao/wennie/S04-E024-D013-CPU2-18d0e7cb-20261020-v2"
+  },
+  "missing": [
+    "producer-specific deployment wrapper and exact payload hash",
+    "current interpreter/dependency admission evidence or explicitly bounded future check",
+    "88-file producer address/source manifest including saved D012 comparisons",
+    "final exact transfer/preflight/one-shot action card and explicit user approval"
+  ],
+  "v1_permission_expanded": false,
+  "user_approved": false,
+  "SSH_actions": 0,
+  "resource_probes": 0,
+  "real_Torch_operations": 0,
+  "real_numerical_preflights": 0,
+  "real_head_solves": 0,
+  "NN_training": 0,
+  "next_action": "Complete local deployment-only missing items in one final approval packet; do not launch or ask a separate machine-name approval",
+  "card": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/physical_field_budget_execution_approval_r2.md",
+  "active_v1_card_has_hold_banner": true,
+  "original_v1_approval_bytes_preserved": true
+}
