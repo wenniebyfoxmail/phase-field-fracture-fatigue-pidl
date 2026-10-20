@@ -1,0 +1,64 @@
+{
+  "run_id": "IU-OUTPUT-CALIBRATION-C27A25-20261020-R003",
+  "status": "STOPPED_NO_RETRY",
+  "source_commit": "a98fa6afd4634ff88a5315bf5a1e2201b8b056e6",
+  "package_sha256": "979b6fd5a5e1b1f5ae26e9372c0eba1738a28041629e7d3ac9e2ab9568334e89",
+  "host": "GPUServer8",
+  "started_UTC": "2026-10-20T10:12:41.676190+00:00",
+  "started_Europe_London": "2026-10-20T11:12:41.676190+01:00",
+  "trigger_elapsed_seconds": 4.747525302693248,
+  "cleanup_wall_seconds": 4.950678346678615,
+  "peak_combined_sampled_HWM_bytes": 482099200,
+  "first_trigger": "worker.stderr_nonempty",
+  "cause": "Python3.10 SyntaxError in figures.py:54: same-quote f-string expression requires PEP701/Python3.12+; local artificial tests used newer Python",
+  "stage": "imports after dependency admission, before Audit/old-prefix/native-loader",
+  "actual_source_scientific_input_reads": 0,
+  "actual_solves": 0,
+  "actual_scores": 0,
+  "native_schema_admission_performed": false,
+  "old_prefix_verified_on_remote_in_this_run": false,
+  "new_outputs_created": false,
+  "planned_new_solves": 456,
+  "planned_new_outer_scores": 3696,
+  "full19_primary_available": false,
+  "all_three_recorded_PIDs_verified_absent": true,
+  "recorded_PIDs": [
+    2285688,
+    2285690,
+    2285691
+  ],
+  "cleanup": {
+    "controller_exit_code": 1,
+    "known_descendants_verified": true,
+    "remaining_active_members": [],
+    "verified_identity_count": 1
+  },
+  "retrieval": {
+    "elapsed_seconds": 8.010823958087713,
+    "file_count": 1046,
+    "inventory_sha256": "e1e35e1b1bd8d950def10f92c89d03fa3673190156e4ed96c191130268d98e3c",
+    "recorded_pids_verified_absent_or_zombie": [
+      2285688,
+      2285690,
+      2285691
+    ],
+    "snapshot_bytes": 5664872,
+    "snapshot_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/remote_snapshot.tar.gz",
+    "snapshot_sha256": "ca127fc98ea20661d2fa0fb76a22ea539aece61a7035517dceb7a44430786086",
+    "status": "COMPLETE_SNAPSHOT_ALL_HASHES_VERIFIED"
+  },
+  "old_R001_R002_unchanged": true,
+  "local_repair_only": {
+    "figures_sha256": "cbb1d512660870b2d854eaa6afde39fa2f54668e04a3bc694db0df2fefac87c1",
+    "patch": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/admission_repair/figures_python310.patch",
+    "actual_python310_compile": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/admission_repair/actual_python310_compile.json",
+    "artificial_tests": "40 PASS 12.366s actualPython3.10.19 numpy1.26.4 matplotlib3.10.7; not production dependencies",
+    "local_newer_ast_feature_version_310_did_not_enforce_PEP701": true,
+    "new_run_id_or_deployment_created": false,
+    "new_attempt_authorized": false,
+    "independent_review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003/admission_repair/independent_repair_review.md",
+    "independent_review_status": "LOCAL_SYNTAX_REPAIR_REVIEW_PASS_NOT_EXECUTION_AUTHORITY",
+    "independent_actual_python310_artificial_tests": "40 PASS10.795s; Python3.10.19 numpy1.26.4 matplotlib3.10.7"
+  },
+  "next_action": "independent local repair review; explicit new one-attempt authority required before fresh-root execution; reuse original15 unchanged"
+}
