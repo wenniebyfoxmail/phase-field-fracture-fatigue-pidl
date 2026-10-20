@@ -4,6 +4,18 @@
 
 用户已明确取消3600秒预算限制。本次配置和授权对象的wall_seconds均为null，没有另加替代总时限；按精确497图/19880forward、18solve等原工作量结束并记录各阶段elapsed。CPU1、单GPU、RSS/CUDA allocated/reserved各4GiB、研究输出/结果包各2GiB仍限制；Linux任务起始/监督空闲磁盘>=32GiB。不得用取消墙时增加数据、fit、随机种子或阈值扫描。
 
+## 2026-10-20 前瞻管理修订：一次整包授权，机械检查自动完成
+
+当前规则采用安装版 [research-decision-core：一次授权，机械检查自动完成](/Users/wenxiaofang/.codex/skills/research-decision-core/SKILL.md)、[agent_bootstrap 的2026-10-20更新](/Users/wenxiaofang/.codex/skills/research-decision-core/references/agent_bootstrap.md)及[research-review-channels](/Users/wenxiaofang/.codex/skills/research-review-channels/SKILL.md)。本节是原active卡的前瞻管理说明，不改已签名源码、历史准入/失败、已消费authority或科学合同；尚未批准的迁移/执行仍未批准。
+
+**本次只需一次整包授权。** 它覆盖本文限定的目标、数据清单、Windows字节导出与Mac中转、Taobo GPU5专属环境、指定公开分支、一次R001及固定结果接收验收。整包获批后，Agent自动完成授权范围内的实现和同范围修复、相关测试、既选6.1 sol-High通道的必要聚焦复审、部署准备、版本/环境/资源核验，以及命令、RunID、路径、哈希、收据和卡字段补齐；不再分别请人批准“检查环境”“确认版本”“补齐卡片”“必要修复后的再审”或“取回同一固定结果”。满足本包已列前提后继续执行，不因机械字段从待定变为实测再开一道批准。
+
+元数据补齐/纯一致性修订自动核对，不重启Code Ready；未变结论复用。涉及科学行为、数值语义、数据解释或执行安全的实质改变，才对相应风险做聚焦复核；科学范围、保护数据、producer/卡授权、预算或科学重试越出本包时，合并为一次人方决定。此治理修订不自行放宽当前冻结版本或安装共享/系统依赖，不把模型前向/新数据读取称为环境检查。
+
+**仍需人方决定的当前唯一边界：是否批准本文限定的一次完整迁移/发布/R001/结果验收。** 私有输入外传、公开推送、runtime安装和真实计算在这次整包批准前均不执行；封存地点不因本包或本治理修订开放。获批后若确需越界，再统一说明实际变化，不把每个机械步骤变成人方决定。
+
+用户明确的边界继续有效：3600秒墙时已取消（null），科学次数与资源上限未取消；仅GPU5/该producer、一次R001，既有首停/未知状态先核验、不隐含科学重试及不自动换卡/主机不变。本卡不追溯增加SSH/重查/重启次数；已知未启动的资源等待记录为准入等待，不记科学失败，仍按现有可用authority决定是否能再次检查。未来确需新卡时，须预先给出总预算内短的机械重查次数/时限，不能在失败后补造RunID或刷新authority。本轮仅本地条款迁移，不触发任何检查或运行。
+
 ## 本次具体账号、对象与文件
 
 Mac `wenxiaofang`向自己的Windows `gpu-server / D-26-09 / ad\xw436`传送精确源码包、私有catalogue及六字段授权对象，位置全新 `C:\Users\xw436\pavetrack_stage\S01-E029-Taobo-GPU5-export-v1`。Windows仅做原始输入字节校验/导出，不运行模型、解码GT/源图或修改共享环境。固定导出 `C:\Users\xw436\pavetrack_stage\S01-E029-Taobo-GPU5-private-v1.tar.gz` 与 `.receipt.json`，未知状态先查证、不覆盖重发。
