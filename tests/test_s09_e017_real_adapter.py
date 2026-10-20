@@ -22,11 +22,14 @@ from s09_e017_factorised_pilot import (  # noqa: E402
     ARM_ORDER,
     capacity_supported_seed,
 )
+import s09_e017_real_adapter as real_adapter_module  # noqa: E402
 from s09_e017_real_adapter import (  # noqa: E402
     E017DamageAdapter,
     E017OptimisationEngine,
+    OperationCounters,
     SplitNodeDecoder,
     TransactionalEvidenceStore,
+    aggregate_endpoint_errors,
     assert_cross_arm_isolation,
     build_arm_from_pristine,
     build_anchor_bank,
@@ -34,6 +37,7 @@ from s09_e017_real_adapter import (  # noqa: E402
     convert_pristine_checkpoint,
     evaluate_real_arm,
     render_evidence_figures,
+    run_reviewed_producer,
     state_sha256,
     write_minimal_failure_receipt,
 )
@@ -399,6 +403,11 @@ def toy_judgement(output, target, scales):
     return (output["d_peak"] - target["d_peak"]).square().mean()
 
 
+def toy_hard_constraints(runtime, d_pre, history_pre, output):
+    assert torch.isfinite(output["d_peak"]).all()
+    return {"damage_irreversibility": 0, "damage_upper_bound": 0}
+
+
 def test_concrete_synthetic_batch_builds_real_asrp_losses_and_metric_rows(tmp_path):
     runtime = ToyRuntime()
 
@@ -409,6 +418,7 @@ def test_concrete_synthetic_batch_builds_real_asrp_losses_and_metric_rows(tmp_pa
         factory, toy_stage_checkpoint(), ARM_AMPLITUDE_SHAPE
     )
     anchors = build_anchor_bank(model, runtime, toy_example)
+    counters = OperationCounters()
     losses = build_real_group_losses(
         model,
         runtime,
@@ -416,10 +426,12 @@ def test_concrete_synthetic_batch_builds_real_asrp_losses_and_metric_rows(tmp_pa
         toy_example,
         toy_equilibrium,
         toy_boundary,
+        counters=counters,
+        hard_constraint_report=toy_hard_constraints,
     )
     assert tuple(losses) == ("A", "S", "R", "P")
     assert all(value.ndim == 0 and torch.isfinite(value) for value in losses.values())
-    rows, fields = evaluate_real_arm(
+    rows, fields, diagnostics = evaluate_real_arm(
         model,
         runtime,
         anchors,
@@ -428,6 +440,8 @@ def test_concrete_synthetic_batch_builds_real_asrp_losses_and_metric_rows(tmp_pa
         toy_equilibrium,
         toy_boundary,
         toy_judgement,
+        counters=counters,
+        hard_constraint_report=toy_hard_constraints,
     )
     assert len(rows) == 16 and len(fields) == 16
     assert all(row["fixed_endpoint"] and row["terminal_vote_eligible"] for row in rows)
@@ -440,6 +454,39 @@ def test_concrete_synthetic_batch_builds_real_asrp_losses_and_metric_rows(tmp_pa
         "latent_shape",
         "effective_shape",
     }
+    assert diagnostics["amplitude_weight_norm"] == 0.0
+    assert diagnostics["amplitude_feature_variance_across_cycles"] == 0.0
+    assert diagnostics["shape_weight_norm"] == 0.0
+    assert diagnostics["nonconstant_shape_cycle_count"] == 0
+    assert diagnostics["hard_constraint_counts"] == {
+        "damage_irreversibility": 0,
+        "damage_upper_bound": 0,
+    }
+    assert counters.model_forwards == 32
+    assert counters.evaluations == 1
+    history = OrderedDict(
+        (
+            arm,
+            {
+                0: [
+                    {
+                        **row,
+                        "arm": arm,
+                        "update": 0,
+                        "fixed_endpoint": False,
+                        "terminal_vote_eligible": False,
+                    }
+                    for row in rows
+                ],
+                64: [{**row, "arm": arm} for row in rows],
+            },
+        )
+        for arm in ARM_ORDER
+    )
+    endpoints = aggregate_endpoint_errors(history)
+    assert tuple(endpoints) == ARM_ORDER
+    assert tuple(endpoints[ARM_DIRECT]) == (0, 64)
+    assert endpoints[ARM_DIRECT][64]["A"][1] == rows[0]["decision_vectors"]["A"][1]
     store = TransactionalEvidenceStore(tmp_path / "figures")
     render_evidence_figures(
         store,
@@ -450,3 +497,23 @@ def test_concrete_synthetic_batch_builds_real_asrp_losses_and_metric_rows(tmp_pa
     assert (store.root / "figures/F_AMP_SHAPE_all_cycles.png").is_file()
     assert (store.root / "figures/amplitude_shape_trajectories.png").is_file()
     assert (store.root / "figures/README_analysis.md").is_file()
+
+
+def test_public_producer_preflight_failure_writes_zero_operation_receipt(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(real_adapter_module.sys, "platform", "darwin")
+    output = tmp_path / "run"
+    with pytest.raises(PermissionError, match="Linux"):
+        run_reviewed_producer(
+            config={"producer": {"output_root": str(output)}},
+            packet_dir=tmp_path / "packet",
+            base_runtime_config=tmp_path / "config.json",
+            initial_checkpoint=tmp_path / "checkpoint.pt",
+            output_dir=output,
+            bindings={},
+        )
+    receipt = json.loads((output / "failure_receipt.json").read_text())
+    assert receipt["arm"] is None
+    assert receipt["counters"]["model_forwards"] == 0
+    assert receipt["counters"]["optimizer_step_returned"] == 0

@@ -33,7 +33,7 @@ cycles, 64 updates per arm, no-retry rule or holdout boundary.
 
 ## Local verification
 
-The focused suite completed with `121 passed in 2.36s`. It uses only hand-made
+The focused suite completed with `122 passed in 2.29s`. It uses only hand-made
 float64 tensors, synthetic checkpoint state and temporary output directories.
 It exercises the actual adapter, autograd, PCGrad, AdamW, transactional writer,
 metric evaluator and figure path. It does not instantiate the real Stage0A
@@ -43,6 +43,19 @@ Ruff, `py_compile`, canonical disabled-config resolution and
 `git diff --check` pass. The disabled resolver reports zero scientific reads,
 binding resolutions, model forwards, autograd collections, optimiser
 constructions and optimiser steps.
+
+## Pre-review self-audit correction
+
+Before external submission, a counterexample audit found that the first
+candidate counted a 16-cycle forward batch only after the batch returned and
+did not persist the readout diagnostics required by the reviewed amendment.
+The corrected candidate now counts every model-forward entry before the call,
+including anchor and evaluation forwards; preserves pre-arm failures through
+the independent writer; binds optimiser groups by parameter-object identity;
+and persists readout norms/feature variance, hard-constraint audit, endpoint
+profiles, per-arm wall/peak-memory/counters, exact resolved config and complete
+metric/gradient JSONL streams. These are evidence-closure corrections, not
+scientific results.
 
 ## Claim boundary
 

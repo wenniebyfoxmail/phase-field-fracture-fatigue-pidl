@@ -65,10 +65,16 @@ scientific assets.
 The disabled candidate now contains the real checkpoint converter, isolated
 three-arm heads, concrete A/S/R/P-to-PCGrad-to-AdamW path, transactional
 evidence boundaries, fixed evaluator and field/figure outputs. The focused
-synthetic suite reports `121 passed`; Ruff, syntax, canonical-config and
+synthetic suite reports `122 passed`; Ruff, syntax, canonical-config and
 whitespace checks pass. This closes implementation work locally but does not
 close Code Ready: the exact dependency-closed commit still requires the
 requested independent package review.
+
+A pre-review counterexample audit then repaired two evidence gaps before
+submission: batch-level forward counting was replaced by operation-entry
+counting with pre-arm failure preservation, and the frozen readout-diagnostic
+obligation is now materialised together with hard-constraint/profile/runtime
+audit and full JSONL streams. The candidate remains disabled and unexecuted.
 
 ## Prohibited and not performed
 

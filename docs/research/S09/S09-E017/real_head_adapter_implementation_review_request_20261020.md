@@ -25,6 +25,12 @@ Check specifically:
    no retry/resume/transfer and complete internal dependency closure;
 6. field/evaluator/figure output and the bounded interpretation of positive or
    negative results.
+7. the pre-review self-audit repair: counters advance at each actual forward
+   entry rather than after a whole batch; pre-arm failures retain setup
+   counters; optimiser groups bind the exact ordered trainable objects; and
+   `||v_A||`, across-cycle `v_A^T h_bar` variance, spatial shape-logit
+   variance, hard constraints, endpoint profiles, runtime counters and JSONL
+   evidence are all durably recoverable.
 
 This review may establish implementation Code Ready only. It cannot authorise
 execution or establish a scientific result.

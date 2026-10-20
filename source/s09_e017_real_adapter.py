@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import shutil
 import socket
+import statistics
 import sys
 import time
 from typing import Any, Callable, Mapping, Sequence
@@ -32,9 +33,12 @@ from s09_e017_factorised_pilot import (
     ARM_DIRECT,
     ARM_ORDER,
     GROUP_WEIGHTS,
+    DISCRETE_COMPONENTS,
+    GROUP_ORDER,
     amplitude_objective,
     amplitude_from_residual,
     capacity_supported_seed,
+    classify_profiles,
     decode_factorised_increment,
     effective_factorisation,
     freeze_gradient_scales,
@@ -552,6 +556,21 @@ class E017OptimisationEngine:
             weight_decay=0.0,
         )
         _require(len(self.optimizer.state) == 0, "optimizer state is not empty")
+        optimiser_parameters = [
+            parameter
+            for group in self.optimizer.param_groups
+            for parameter in group["params"]
+        ]
+        _require(
+            len(optimiser_parameters) == len(self.parameters)
+            and all(
+                observed is expected
+                for observed, expected in zip(
+                    optimiser_parameters, self.parameters, strict=True
+                )
+            ),
+            "optimizer parameter binding drift",
+        )
         self.seed = seed
         self.scales: OrderedDict[str, float] | None = None
         self.zero_scale: dict[str, bool] | None = None
@@ -757,9 +776,17 @@ def _model_call(
     index: int,
     anchor: CycleAnchor,
     example_builder: Callable[..., Any],
-) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], torch.Tensor]:
+    counters: OperationCounters | None = None,
+) -> tuple[
+    dict[str, torch.Tensor],
+    dict[str, torch.Tensor],
+    torch.Tensor,
+    torch.Tensor,
+]:
     inputs, target = example_builder(runtime, index)
     d_pre, history_pre, path = inputs
+    if counters is not None:
+        counters.model_forwards += 1
     output = model(
         d_pre,
         history_pre,
@@ -772,13 +799,14 @@ def _model_call(
         baseline_shape=anchor.baseline_shape,
         seed_shape=anchor.seed_shape if model.arm == ARM_AMPLITUDE_SHAPE else None,
     )
-    return output, target, d_pre
+    return output, target, d_pre, history_pre
 
 
 def build_anchor_bank(
     pristine: E017DamageAdapter,
     runtime: Any,
     example_builder: Callable[..., Any],
+    counters: OperationCounters | None = None,
 ) -> tuple[CycleAnchor, ...]:
     """Freeze B25 and teacher factorisations before any arm update."""
     anchors: list[CycleAnchor] = []
@@ -787,6 +815,8 @@ def build_anchor_bank(
         for index in range(len(EXPECTED_CYCLES)):
             inputs, target = example_builder(runtime, index)
             d_pre, history_pre, path = inputs
+            if counters is not None:
+                counters.model_forwards += 1
             output = pristine.transition(
                 d_pre,
                 history_pre,
@@ -856,6 +886,8 @@ def build_real_group_losses(
     example_builder: Callable[..., Any],
     equilibrium: Callable[..., Any],
     free_dof_boundary: Callable[..., Any],
+    counters: OperationCounters | None = None,
+    hard_constraint_report: Callable[..., Mapping[str, int]] | None = None,
 ) -> OrderedDict[str, torch.Tensor]:
     """Compute A/S/R/P from decoded fields over the fixed 16 cycles."""
     predicted_amplitudes: list[torch.Tensor] = []
@@ -864,9 +896,11 @@ def build_real_group_losses(
     physics_terms: list[torch.Tensor] = []
     target_amplitudes = torch.stack([anchor.target_amplitude for anchor in anchors])
     for index, anchor in enumerate(anchors):
-        output, _target, d_pre = _model_call(
-            model, runtime, index, anchor, example_builder
+        output, _target, d_pre, history_pre = _model_call(
+            model, runtime, index, anchor, example_builder, counters
         )
+        if hard_constraint_report is not None:
+            hard_constraint_report(runtime, d_pre, history_pre, output)
         increment = output["d_peak"] - d_pre
         amplitude, shape, valid = effective_factorisation(
             d_pre, increment, output["nodal_weight"]
@@ -947,21 +981,42 @@ def evaluate_real_arm(
     equilibrium: Callable[..., Any],
     free_dof_boundary: Callable[..., Any],
     judgement: Callable[..., torch.Tensor],
-) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    counters: OperationCounters | None = None,
+    hard_constraint_report: Callable[..., Mapping[str, int]] | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     """Return validated A2/S6/R2/P4 rows and field evidence."""
     _require(update in EVALUATION_UPDATES, "unscheduled evaluation")
     before = state_sha256(model)
     records: list[dict[str, Any]] = []
     fields: dict[str, Any] = {}
     provisional: list[dict[str, Any]] = []
+    amplitude_features: list[float] = []
+    shape_logit_variances: dict[str, float] = {}
+    hard_constraint_totals: dict[str, int] = {}
+    if counters is not None:
+        counters.evaluations += 1
     model.eval()
     with torch.no_grad():
         for index, (cycle, anchor) in enumerate(
             zip(EXPECTED_CYCLES, anchors, strict=True)
         ):
-            output, target, d_pre = _model_call(
-                model, runtime, index, anchor, example_builder
+            output, target, d_pre, history_pre = _model_call(
+                model, runtime, index, anchor, example_builder, counters
             )
+            if hard_constraint_report is not None:
+                counts = hard_constraint_report(runtime, d_pre, history_pre, output)
+                for name, count in counts.items():
+                    hard_constraint_totals[name] = hard_constraint_totals.get(
+                        name, 0
+                    ) + int(count)
+            if model.arm != ARM_DIRECT:
+                amplitude_features.append(float(output["amplitude_feature"].cpu()))
+            if model.arm == ARM_AMPLITUDE_SHAPE:
+                variance = torch.var(output["head_shape_logits"], unbiased=False)
+                _require(
+                    torch.isfinite(variance).item(), "nonfinite shape-logit variance"
+                )
+                shape_logit_variances[str(cycle)] = float(variance.cpu())
             increment = output["d_peak"] - d_pre
             amplitude, shape, valid = effective_factorisation(
                 d_pre, increment, output["nodal_weight"]
@@ -1059,7 +1114,55 @@ def evaluate_real_arm(
         validate_metric_row(row)
         records.append(row)
     _require(state_sha256(model) == before, "evaluation mutated model state")
-    return records, fields
+    if model.arm == ARM_DIRECT:
+        diagnostics = {
+            "arm": model.arm,
+            "update": update,
+            "amplitude_weight_norm": None,
+            "amplitude_bias": None,
+            "amplitude_feature_by_cycle": None,
+            "amplitude_feature_variance_across_cycles": None,
+            "shape_weight_norm": None,
+            "shape_logit_variance_by_cycle": None,
+            "nonconstant_shape_cycle_count": None,
+            "hard_constraint_counts": hard_constraint_totals,
+        }
+    else:
+        feature_variance = statistics.pvariance(amplitude_features)
+        diagnostics = {
+            "arm": model.arm,
+            "update": update,
+            "amplitude_weight_norm": float(
+                torch.linalg.vector_norm(model.amplitude_weight).detach().cpu()
+            ),
+            "amplitude_bias": float(model.amplitude_bias.detach().cpu()),
+            "amplitude_feature_by_cycle": {
+                str(cycle): value
+                for cycle, value in zip(
+                    EXPECTED_CYCLES, amplitude_features, strict=True
+                )
+            },
+            "amplitude_feature_variance_across_cycles": feature_variance,
+            "shape_weight_norm": (
+                None
+                if model.arm == ARM_AMPLITUDE
+                else float(torch.linalg.vector_norm(model.shape_weight).detach().cpu())
+            ),
+            "shape_logit_variance_by_cycle": (
+                None if model.arm == ARM_AMPLITUDE else shape_logit_variances
+            ),
+            "nonconstant_shape_cycle_count": (
+                None
+                if model.arm == ARM_AMPLITUDE
+                else sum(value > 0.0 for value in shape_logit_variances.values())
+            ),
+            "hard_constraint_counts": hard_constraint_totals,
+        }
+    _require(
+        all(count == 0 for count in hard_constraint_totals.values()),
+        "hard-constraint audit is nonzero",
+    )
+    return records, fields, diagnostics
 
 
 def _checkpoint_bytes(
@@ -1076,6 +1179,45 @@ def _checkpoint_bytes(
         stream,
     )
     return stream.getvalue()
+
+
+def aggregate_endpoint_errors(
+    metric_history: Mapping[str, Mapping[int, Sequence[Mapping[str, Any]]]],
+) -> OrderedDict[str, OrderedDict[int, OrderedDict[str, list[float]]]]:
+    """Create the frozen update-0/update-64 vectors used by the classifier."""
+    result: OrderedDict[
+        str, OrderedDict[int, OrderedDict[str, list[float]]]
+    ] = OrderedDict()
+    for arm in ARM_ORDER:
+        _require(arm in metric_history, f"missing metric history: {arm}")
+        endpoints: OrderedDict[int, OrderedDict[str, list[float]]] = OrderedDict()
+        for update in (0, 64):
+            rows = list(metric_history[arm].get(update, ()))
+            _require(
+                [row["cycle"] for row in rows] == list(EXPECTED_CYCLES),
+                f"endpoint cycle coverage drift: {arm}/{update}",
+            )
+            groups: OrderedDict[str, list[float]] = OrderedDict()
+            for group in GROUP_ORDER:
+                width = len(rows[0]["decision_vectors"][group])
+                values: list[float] = []
+                for component in range(width):
+                    column = [
+                        float(row["decision_vectors"][group][component]) for row in rows
+                    ]
+                    if component in DISCRETE_COMPONENTS[group]:
+                        _require(
+                            len(set(column)) == 1,
+                            "discrete endpoint component drift: "
+                            f"{arm}/{update}/{group}",
+                        )
+                        values.append(column[0])
+                    else:
+                        values.append(float(statistics.median(column)))
+                groups[group] = values
+            endpoints[update] = groups
+        result[arm] = endpoints
+    return result
 
 
 def render_evidence_figures(
@@ -1196,7 +1338,7 @@ def render_evidence_figures(
     store.write_bytes_verified("figures/README_analysis.md", readme.encode("utf-8"))
 
 
-def run_reviewed_producer(
+def _run_reviewed_producer_inner(
     *,
     config: Mapping[str, Any],
     packet_dir: Path,
@@ -1204,6 +1346,7 @@ def run_reviewed_producer(
     initial_checkpoint: Path,
     output_dir: Path,
     bindings: Mapping[str, Any],
+    failure_context: dict[str, Any],
 ) -> dict[str, Any]:
     """Concrete three-arm producer path; caller must pass the gated bindings."""
     _require(
@@ -1231,6 +1374,7 @@ def run_reviewed_producer(
         "B25 checkpoint identity drift",
     )
     _require(output_dir == Path(config["producer"]["output_root"]), "output root drift")
+    failure_context["output_path_valid"] = True
     _require(not output_dir.exists(), "output root already exists")
     _require(output_dir.parent.is_dir(), "output parent missing")
     _require(
@@ -1287,10 +1431,16 @@ def run_reviewed_producer(
     assert_cross_arm_isolation(arms)
     shared_states = {arm: state_sha256(model) for arm, model in arms.items()}
     _require(len(set(shared_states.values())) == 1, "arm pristine state drift")
+    setup_counters = OperationCounters()
+    failure_context["counters"] = setup_counters
     anchors = build_anchor_bank(
-        arms[ARM_DIRECT], runtime, bindings["base_example_builder"]
+        arms[ARM_DIRECT],
+        runtime,
+        bindings["base_example_builder"],
+        counters=setup_counters,
     )
     store = TransactionalEvidenceStore(output_dir)
+    failure_context["root_owned"] = True
     store.write_verified(
         "prelaunch_receipt.json",
         {
@@ -1301,19 +1451,29 @@ def run_reviewed_producer(
             },
             "checkpoint_conversion_manifests": conversion_manifests,
             "shared_pristine_state_sha256": shared_states,
+            "setup_counters": asdict(setup_counters),
             "optimizer_or_update_performed": False,
         },
     )
+    store.write_verified("resolved_config.json", config)
     engines: dict[str, E017OptimisationEngine] = {}
     terminal_fields: dict[str, Mapping[str, Any]] = {}
     metric_history: dict[str, dict[int, Sequence[Mapping[str, Any]]]] = {
         arm: {} for arm in ARM_ORDER
     }
+    readout_history: dict[str, dict[int, Mapping[str, Any]]] = {
+        arm: {} for arm in ARM_ORDER
+    }
+    arm_runtime: dict[str, Mapping[str, Any]] = {}
     try:
         for arm, model in arms.items():
+            arm_started = time.monotonic()
+            torch.cuda.reset_peak_memory_stats()
             engine = E017OptimisationEngine(model)
             engines[arm] = engine
-            metric_rows, _ = evaluate_real_arm(
+            failure_context["arm"] = arm
+            failure_context["counters"] = engine.counters
+            metric_rows, _, readout = evaluate_real_arm(
                 model,
                 runtime,
                 anchors,
@@ -1322,11 +1482,13 @@ def run_reviewed_producer(
                 bindings["mechanical_equilibrium"],
                 bindings["free_dof_boundary"],
                 bindings["fixed_judgement_loss"],
+                counters=engine.counters,
+                hard_constraint_report=bindings["hard_constraint_report"],
             )
-            engine.counters.evaluations += 1
-            engine.counters.model_forwards += len(EXPECTED_CYCLES)
             metric_history[arm][0] = metric_rows
+            readout_history[arm][0] = readout
             store.write_verified(f"arms/{arm}/metrics/0000.json", metric_rows)
+            store.write_verified(f"arms/{arm}/readout_diagnostics/0000.json", readout)
             for update in range(1, 65):
                 resource_guard()
                 gradient, losses = engine.step(
@@ -1338,14 +1500,15 @@ def run_reviewed_producer(
                         bindings["base_example_builder"],
                         bindings["mechanical_equilibrium"],
                         bindings["free_dof_boundary"],
+                        counters=engine.counters,
+                        hard_constraint_report=bindings["hard_constraint_report"],
                     ),
                 )
-                engine.counters.model_forwards += len(EXPECTED_CYCLES)
                 store.commit_update(arm, update, gradient, losses, engine.counters)
                 engine.mark_committed()
                 resource_guard()
                 if update in EVALUATION_UPDATES[1:]:
-                    metric_rows, fields = evaluate_real_arm(
+                    metric_rows, fields, readout = evaluate_real_arm(
                         model,
                         runtime,
                         anchors,
@@ -1354,27 +1517,76 @@ def run_reviewed_producer(
                         bindings["mechanical_equilibrium"],
                         bindings["free_dof_boundary"],
                         bindings["fixed_judgement_loss"],
+                        counters=engine.counters,
+                        hard_constraint_report=bindings["hard_constraint_report"],
                     )
-                    engine.counters.evaluations += 1
-                    engine.counters.model_forwards += len(EXPECTED_CYCLES)
                     metric_history[arm][update] = metric_rows
+                    readout_history[arm][update] = readout
                     store.write_verified(
                         f"arms/{arm}/metrics/{update:04d}.json", metric_rows
+                    )
+                    store.write_verified(
+                        f"arms/{arm}/readout_diagnostics/{update:04d}.json",
+                        readout,
                     )
                     if update == 64:
                         terminal_fields[arm] = fields
                         store.write_verified(f"arms/{arm}/fields_update64.json", fields)
+                    resource_guard()
             store.write_bytes_verified(
                 f"arms/{arm}/checkpoint_update64.pt",
                 _checkpoint_bytes(model, engine, 64),
             )
+            resource_guard()
+            arm_runtime[arm] = {
+                "wall_seconds": time.monotonic() - arm_started,
+                "peak_reserved_memory_bytes": torch.cuda.max_memory_reserved(),
+                "counters": asdict(engine.counters),
+            }
+            store.write_verified(f"arms/{arm}/runtime.json", arm_runtime[arm])
+        metric_jsonl = b"".join(
+            canonical_json(row)
+            for arm in ARM_ORDER
+            for update in EVALUATION_UPDATES
+            for row in metric_history[arm][update]
+        )
+        gradient_jsonl = b"".join(
+            (store.root / f"arms/{arm}/updates/{update:04d}.json").read_bytes()
+            for arm in ARM_ORDER
+            for update in range(1, 65)
+        )
+        store.write_bytes_verified("metrics_all_cycles.jsonl", metric_jsonl)
+        store.write_bytes_verified("gradients_and_losses.jsonl", gradient_jsonl)
         render_evidence_figures(store, runtime, terminal_fields, metric_history)
+        resource_guard()
+        endpoint_errors = aggregate_endpoint_errors(metric_history)
+        profiles = classify_profiles(endpoint_errors, execution_valid=True)
+        hard_constraint_counts: dict[str, int] = {}
+        for history in readout_history.values():
+            for diagnostics in history.values():
+                for name, count in diagnostics["hard_constraint_counts"].items():
+                    hard_constraint_counts[name] = hard_constraint_counts.get(
+                        name, 0
+                    ) + int(count)
+        audit = {
+            "hard_constraint_counts": hard_constraint_counts,
+            "hard_constraint_violations": sum(hard_constraint_counts.values()),
+            "endpoint_errors": endpoint_errors,
+            "profiles": profiles,
+            "readout_diagnostics": readout_history,
+            "arm_runtime": arm_runtime,
+            "setup_counters": asdict(setup_counters),
+        }
+        _require(audit["hard_constraint_violations"] == 0, "audit violation")
+        store.write_verified("audit.json", audit)
+        resource_guard()
         completion = {
             "terminal_state": "COMPLETED",
-            "scientific_verdict": "PENDING_ANALYSIS",
+            "scientific_verdict": profiles,
             "counters": {
                 arm: asdict(engine.counters) for arm, engine in engines.items()
             },
+            "setup_counters": asdict(setup_counters),
             "retry": False,
         }
         return store.finalise(completion)
@@ -1383,12 +1595,65 @@ def run_reviewed_producer(
         counters = (
             OperationCounters() if active_arm is None else engines[active_arm].counters
         )
-        write_minimal_failure_receipt(
-            output_dir,
-            reason=f"{type(error).__name__}: {error}",
-            arm=active_arm,
-            attempted_update=counters.operation_entered,
-            counters=counters,
-            missing_or_unreadable=[],
+        try:
+            write_minimal_failure_receipt(
+                output_dir,
+                reason=f"{type(error).__name__}: {error}",
+                arm=active_arm,
+                attempted_update=counters.operation_entered,
+                counters=counters,
+                missing_or_unreadable=[],
+            )
+        except Exception:
+            pass
+        raise
+
+
+def run_reviewed_producer(
+    *,
+    config: Mapping[str, Any],
+    packet_dir: Path,
+    base_runtime_config: Path,
+    initial_checkpoint: Path,
+    output_dir: Path,
+    bindings: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Run once and preserve the earliest writable failure boundary."""
+    context: dict[str, Any] = {
+        "arm": None,
+        "counters": OperationCounters(),
+        "output_path_valid": (
+            isinstance(config.get("producer"), Mapping)
+            and output_dir == Path(config["producer"].get("output_root", ""))
+        ),
+        "root_owned": False,
+    }
+    try:
+        return _run_reviewed_producer_inner(
+            config=config,
+            packet_dir=packet_dir,
+            base_runtime_config=base_runtime_config,
+            initial_checkpoint=initial_checkpoint,
+            output_dir=output_dir,
+            bindings=bindings,
+            failure_context=context,
         )
+    except Exception as error:
+        receipt = output_dir / "failure_receipt.json"
+        may_own_root = context["output_path_valid"] and (
+            context["root_owned"] or not output_dir.exists()
+        )
+        if may_own_root and not receipt.exists():
+            counters = context["counters"]
+            try:
+                write_minimal_failure_receipt(
+                    output_dir,
+                    reason=f"{type(error).__name__}: {error}",
+                    arm=context["arm"],
+                    attempted_update=counters.operation_entered,
+                    counters=counters,
+                    missing_or_unreadable=[],
+                )
+            except Exception:
+                pass
         raise
