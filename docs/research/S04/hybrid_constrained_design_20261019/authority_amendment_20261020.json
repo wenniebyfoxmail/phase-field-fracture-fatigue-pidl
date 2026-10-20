@@ -1,0 +1,75 @@
+{
+  "schema": "hybrid-prospective-authority-amendment-v1",
+  "date": "2026-10-20",
+  "status": "DOCUMENT_RULE_MIGRATION_ONLY_NO_ACTIVE_ENABLED_EXECUTION_CARD",
+  "execution_enabled": false,
+  "signed_baseline": {
+    "card": "docs/research/S04/hybrid_constrained_design_20261019/coupled_repair_card_v4.json",
+    "sha256": "1440a0a609f49fafe033e6b727f58c9e6f9b779dee4ba8bda7999146307886fb",
+    "preserve_unchanged": true
+  },
+  "governing_rules": [
+    "/Users/wenxiaofang/.codex/skills/research-decision-core/SKILL.md",
+    "/Users/wenxiaofang/.codex/skills/research-decision-core/references/agent_bootstrap.md",
+    "/Users/wenxiaofang/.codex/skills/research-review-channels/SKILL.md"
+  ],
+  "rule_source": "User-approved governance update: one bounded approval; agent automatically completes mechanical checks. This migration grants no remote or numerical execution authority.",
+  "replaces_prospectively": {
+    "plotting_dependency.future_requirement": "Within a future actually authorized execution envelope, automatically observe and record the real producer Matplotlib version, verify compatibility with the already reviewed Agg/PNG/PDF probe, and materialize its metadata before science. Do not substitute local3.9.2, invent a version, or request separate human approval/Code Ready review merely to record an observed auxiliary-library version. A real compatibility/control/numerical change receives only its necessary focused review through the already chosen channel.",
+    "execution_template.authority.next_decision": "The only present human decision is whether to authorize the repaired complete scientific execution after the preserved120s scientific first-stop, within the original3600step/data/producer/budget/criteria/stop envelope. If authorized, implementation and in-scope repair, needed focused review in the chosen channel, version/environment/resource checks and commands/RunID/paths/hashes are agent work; do not ask again for each field or commit.",
+    "metadata_review_binding": "Carry forward genuine signed science/control reviews unchanged. Record exact observed metadata, hashes and invariant comparisons in an automatic consistency receipt; do not forge a reviewer signature or rewrite old review/card hashes. A metadata-only instantiation does not restart Code Ready. Existing exact-card launcher binding must be mechanically adapted/verified inside the future authorized task if needed; this document does not bypass it or claim current launchability."
+  },
+  "mechanical_recheck_envelope": {
+    "applies_only": "Before first scientific/model/state work in a future authorized new task; not permission now and not a scientific retry",
+    "max_total_wall_seconds": 300,
+    "max_zero_start_rechecks": 2,
+    "accounting": "All checks/waits/cleanup consume the same original136hosth/2176coreh and existing shared admission allowance; no budget increase/reset. Plotting admission120s with45s reserve is unchanged and counts inside this300s mechanical cap.",
+    "gpu_model_execution": false,
+    "scientific_execution": false,
+    "zero_start_resource_wait": "Record known no-start resource unavailability as waiting, not a scientific failure. Recheck only within remaining task authority/cap; exhaustion parks without authorizing a new scientific run.",
+    "explicit_caps": "Any human-imposed connection/attempt/first-stop restriction takes precedence; this cap cannot revive consumed authority, mint an evasive RunID, retry unknown/running work or restart a scientifically stopped run."
+  },
+  "inherited_fixed": {
+    "goal": "Qualified constrained FEM-neural complete trajectories and actual FEM field agreement/cost comparison",
+    "numerical_substeps": 3600,
+    "fits": 1,
+    "producer": "Original Taobo GPUServer8 identity and original data/heldout boundaries unchanged",
+    "physical_tolerances": "Unchanged",
+    "physical_substep_wall_seconds": 120,
+    "scientific_retries": 0,
+    "total_gpu_hours": 12,
+    "total_host_hours": 136,
+    "total_cpu_core_hours": 2176,
+    "known_prior_wall_seconds": 617.3239415297285,
+    "remaining_host_hours_after_known_prior": 135.82852112735284,
+    "preserve": "All old failure receipts, actual controller/operator evidence, signed cards/reviews, consumed authority and first-step31.99% boundary unchanged"
+  },
+  "current_turn_forbidden": [
+    "SSH",
+    "installation",
+    "environment_or_resource_probe",
+    "transfer",
+    "profile",
+    "state_solve",
+    "training",
+    "restart",
+    "new_review",
+    "automation_resume",
+    "new_thread_or_subagent"
+  ],
+  "review_policy": "Review changed scientific/data/control risk; inherit unchanged findings; no new review for this governance/metadata-only migration.",
+  "active_entry": "docs/research/S04/hybrid_constrained_design_20261019/README.md",
+  "restriction_provenance": {
+    "human_imposed_preserved": [
+      "Preparation-only authority in the current task; no remote/numerical/restart/new-review action now",
+      "Original data/producer/3600steps/one-fit/physical criteria/120s and total budget",
+      "Preserved scientific first-stop/no-retry; failed/consumed authority is not restored"
+    ],
+    "agent_added_removed": [
+      "Separate exact-delta review or human reapproval solely for observing Matplotlib version",
+      "Repeated implementation/in-scope repair/focused-review authorizations through the already selected channel",
+      "Human approval for commands, metadata hashes, paths/RunID filling, environment/resource checks inside actual task authority"
+    ],
+    "not_removed": "Review of substantive scientific/data/control risk; genuine human scope/budget/producer/protected-data/scientific-retry boundaries, consolidated if the authority envelope must change."
+  }
+}
