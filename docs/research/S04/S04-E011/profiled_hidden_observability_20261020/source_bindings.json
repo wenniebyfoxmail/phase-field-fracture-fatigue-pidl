@@ -1,0 +1,31 @@
+{
+  "status": "OFFLINE_IMPLEMENTATION_ONLY_NOT_A_LAUNCH_PACKAGE",
+  "producer_contact": false,
+  "files": [
+    {
+      "path": "tools/s04_e011_analysis/profiled_hidden_receipts.py",
+      "sha256": "405c4ccdeaa0e32a993cf287c195cedf85b48aaaa51fc7974028236185ef2358",
+      "bytes": 4754
+    },
+    {
+      "path": "tools/s04_e011_analysis/profiled_hidden_adapter.py",
+      "sha256": "f111674abe9b3e4050bb3c93931ad6f5c3afe397f7eb3a26649aaeb26872e100",
+      "bytes": 18707
+    },
+    {
+      "path": "tools/s04_e011_analysis/profiled_hidden_e011_runtime.py",
+      "sha256": "5b2c4bcacccf5cc4940817b5d022829f5187ea516089be9dd816b6ce0ccd05f5",
+      "bytes": 22123
+    },
+    {
+      "path": "tools/s04_e011_analysis/test_profiled_hidden_receipts.py",
+      "sha256": "5d323000b9ffeaed4fb35e86a71b135153e74465fba8cfb68b18a10e3b990302",
+      "bytes": 13733
+    },
+    {
+      "path": "tools/s04_e011_execution/control.py",
+      "sha256": "a9f37375acdaebc68fefe1624824b22b7dddffa4a4aa98deb4b27e178a98f47b",
+      "bytes": 13100
+    }
+  ]
+}

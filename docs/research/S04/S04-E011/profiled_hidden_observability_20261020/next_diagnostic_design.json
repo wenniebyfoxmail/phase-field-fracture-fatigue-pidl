@@ -1,0 +1,67 @@
+{
+  "status": "DESIGN_ONLY_NO_EXECUTION_AUTHORITY",
+  "execution_enabled": false,
+  "source": "HQ offline follow-up after R2, no R2 retry",
+  "question": "different actual/profiled family versus finite-step/numerical/finite-head sensitivity",
+  "frozen": {
+    "state": "same c20s4",
+    "Phi": "same actual source Phi, preserve actual current rebuild in A",
+    "damage": "same frozen FEM damage",
+    "UV": "original",
+    "B0": true,
+    "head_gradient_inf_tolerance": 1e-10,
+    "FD_absolute": 1e-10,
+    "FD_relative": 0.0001,
+    "FD_steps": [
+      1e-06,
+      5e-07
+    ],
+    "rank_rule": "unchanged"
+  },
+  "arms": {
+    "A": "original actual fresh-current retained-basis NN profile",
+    "B": "explicit anchored-chart field control, never an actual NN candidate"
+  },
+  "requested_new_panel": {
+    "A_fresh_zero": 1,
+    "A_signed_steps": 4,
+    "A_repeated_signed_h": 2,
+    "B_signed_steps": 4,
+    "total_head_closed_maps": 11,
+    "fresh_SVD": 7,
+    "accepted_optimization_updates": 0,
+    "history_commits": 0
+  },
+  "proposed_not_approved_budget": {
+    "total_wall_seconds": 600,
+    "expected_wall_seconds": [
+      200,
+      500
+    ],
+    "energy_force_field": 500,
+    "dense_head_assemblies": 50,
+    "SVD": 7,
+    "old_energy_cap": 316,
+    "old_cap_not_reused": true,
+    "expected_GPU_occupancy_hours": [
+      0.05555555555555555,
+      0.1388888888888889
+    ],
+    "expected_task_GB": [
+      2.5,
+      3.5
+    ],
+    "monetary_rate": null
+  },
+  "rules": [
+    "No execution/SSH/new model work in this offline task",
+    "Derivative mismatch recorded as observable only in prospectively approved new measurement protocol; old R2 stays failed",
+    "Nonfinite/rank/state/rollback/resource first stops unchanged",
+    "No cutoff, tolerance or finite-step sweep; no optimization/rollout",
+    "Any incomplete panel stays incomplete, no implicit extension or retry",
+    "Fresh hardware admission required; GPU5 not occupied by this task"
+  ],
+  "additional_observables_not_new_field_evaluations": [
+    "trace branch labels at already-required native field/tangent evaluations"
+  ]
+}

@@ -36,9 +36,13 @@ def bytes_under(path):
             except FileNotFoundError:
                 # write_json replaces its own *.json.<pid>.tmp atomically.
                 # A walk snapshot can still name that vanished metadata file.
-                # Missing payloads, other temp kinds and permission errors fail.
+                # The new observation writer also publishes serialized NPYs
+                # through the exact .profile_audit_npy.<pid>.tmp namespace.
+                # Present temps count; payload/other-temp/permission errors fail.
                 pieces=name.rsplit('.',2)
-                if not (len(pieces)==3 and pieces[0].endswith('.json') and pieces[1].isdecimal() and pieces[2]=='tmp'):raise
+                owned=(len(pieces)==3 and pieces[1].isdecimal() and pieces[2]=='tmp'
+                    and (pieces[0].endswith('.json') or pieces[0]=='.profile_audit_npy'))
+                if not owned:raise
     return total
 
 

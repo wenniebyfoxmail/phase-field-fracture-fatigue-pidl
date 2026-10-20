@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "scope": "Document-only amendment; static reading and file bindings, no test rerun or numerical evaluation",
+  "original_review": {
+    "path": "docs/research/S04/S04-E011/profiled_hidden_observability_20261020/review.json",
+    "sha256": "205e7ca1b4a7024deb307175bf07679f770348920d536a7727e38a422e6bd472",
+    "git_blob": "00d0de8ced86ec6116374a95d9efe44360f3dc69"
+  },
+  "bindings": {
+    "README.md": {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_observability_20261020/README.md",
+      "sha256": "e85ae950d85ec6c5f4ec06451701a88e435c34cd1962801c45e9784c6a2d92ba",
+      "git_blob": "aa5b252a17e93fc6a7fba5ee1af796c2fdf3ab25"
+    },
+    "next_diagnostic_design.json": {
+      "path": "docs/research/S04/S04-E011/profiled_hidden_observability_20261020/next_diagnostic_design.json",
+      "sha256": "471a891c72051705e58126dce380ca2877ae75bd74e491c6be73db3d8e92c14b",
+      "git_blob": "cf1e6ccddd31b8e8183d065e2a82702e1dce892c"
+    }
+  },
+  "reviewed_delta": [
+    "H2 now explicitly includes deterministic finite-h approximation and possible Amor trace-branch crossings, alongside finite precision and approximate head stationarity.",
+    "Zero trace count at the source does not establish that signed finite steps remain in the same branch.",
+    "Trace labels are to be retained only at already-required native evaluations; no additional field evaluation authorized.",
+    "H1 remains actual retained-family versus anchored-chart correspondence; purely invertible coordinate changes within the same physical retained subspace should cancel under exact profiling.",
+    "Frozen thresholds, original h/h2 values and prospective budget are unchanged; design remains disabled and unapproved for execution.",
+    "Current receipt/sampler changes are not deployed; immutable prior R2 package remains unchanged. source_bindings is offline identity only, and any future authorized action requires a new package from its new exact commit within that action authority."
+  ],
+  "checks_not_repeated": "No 14 receipt tests, historical tests, source mathematical re-review, real arrays/model/SSH/NN/FEM/solver or physical calculation.",
+  "blockers": []
+}

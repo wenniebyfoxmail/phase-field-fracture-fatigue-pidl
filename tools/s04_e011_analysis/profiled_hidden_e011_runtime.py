@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from profiled_hidden_adapter import AdapterStop,E011Bridge,reprofile_check,probe_algebra
 from profiled_hidden_kernel import conjugate_gradient,common_descent,limit_step,finite_trial_decision
+from profiled_hidden_receipts import ProfileCheckRecorder,atomic_json,file_ref,note_record_failure
 
 
 class BudgetProxy:
@@ -108,7 +109,8 @@ class Runtime:
         """
         self.guard.check();self.number+=1;folder=self.folder/f'trial_{self.number:03d}';folder.mkdir()
         before=self.h.snapshot(self.field.net);flags=[p.requires_grad for p in self.field.net.parameters()]
-        result=None
+        result=None;primary_error=None
+        source_before_identity=tensor_identity(before)
         try:
             state=self.bridge.parameter_state(torch.as_tensor(delta,device=self.bridge.zero.device,dtype=torch.float64))
             self.field.net.load_state_dict({n.removeprefix('net.'):p.detach() for n,p in state.items()})
@@ -148,14 +150,33 @@ class Runtime:
                 actual_weights=binding(folder/'actual_candidate_network.pt'))
             self.h.dump(folder/'adapter_observables.json',{k:v for k,v in result.items() if k not in ['q','candidate_state','candidate_space']})
         except Exception as err:
-            self.h.dump(folder/'adapter_failure.json',dict(type=type(err).__name__,message=str(err),trial=self.number))
+            primary_error=err
+            try:self.h.dump(folder/'adapter_failure.json',dict(type=type(err).__name__,message=str(err),trial=self.number))
+            except Exception as recording_error:note_record_failure(err,recording_error)
             self.guard.stopped=True;raise
         finally:
-            self.field.net.load_state_dict(before)
-            for p,flag in zip(self.field.net.parameters(),flags):p.requires_grad_(flag)
-            same=all(torch.equal(p,before[n]) for n,p in self.field.net.state_dict().items())
-            if not same:self.guard.stop('trial_rollback_failed')
-            self.bridge.verify_frozen()
+            rollback_error=None;same=False;frozen=False
+            try:
+                self.field.net.load_state_dict(before)
+                for p,flag in zip(self.field.net.parameters(),flags):p.requires_grad_(flag)
+                same=all(torch.equal(p,before[n]) for n,p in self.field.net.state_dict().items())
+                if not same:self.guard.stop('trial_rollback_failed')
+                self.bridge.verify_frozen();frozen=True
+            except Exception as err:
+                rollback_error=err
+                raise
+            finally:
+                # Independent post-restore receipt also survives callback failure.
+                # No second model/field evaluation or alternate rollback is used.
+                try:atomic_json(folder/'profile_rollback_audit.json',dict(trial=self.number,
+                    source_before_identity=source_before_identity,identity_codec='tensor_identity sorted name/dtype/shape/raw bytes',
+                    source_network_unchanged=same,frozen_state=frozen,rolled_back=bool(same and frozen),
+                    primary_error=None if primary_error is None else dict(type=type(primary_error).__name__,message=str(primary_error)),
+                    rollback_error=None if rollback_error is None else dict(type=type(rollback_error).__name__,message=str(rollback_error))))
+                except Exception as recording_error:
+                    primary=rollback_error if rollback_error is not None else primary_error
+                    if primary is not None:note_record_failure(primary,recording_error)
+                    else:raise
         if result is None:raise AdapterStop('trial_no_actual_result')
         result['rolled_back']=True
         # Persist rollback proof only after checking source state; no false
@@ -163,8 +184,42 @@ class Runtime:
         self.h.dump(folder/'rollback.json',dict(rolled_back=True,source_network_unchanged=True))
         self.guard.check();self.eligible_candidates[id(result)]=candidate_identity(result);return result
     def verify_profile(self,algebra,directions):
-        try:rows=reprofile_check(algebra,self.trial,directions,rank=self.root_rank)
-        except Exception as err:self.guard.stop('profile_'+str(err))
+        try:
+            report=self.space.get('report',{})
+            context=dict(kind='actual_full_profile_pre_stop_audit',rank=self.root_rank,
+                hidden_coordinate='theta0 + fixed parameter_scales * xi; named slices below',
+                hidden_slices={name:[sl.start,sl.stop] for name,sl in self.bridge.slices.items()},
+                raw_head_at_source='captured E011Bridge.head; source actual installed UV weights',
+                source_hidden_sha256=report.get('bound_hidden_sha256'),
+                basis_originating_weights_sha256=report.get('originating_weights_sha256'),
+                current_source_network_identity=tensor_identity(self.field.net.state_dict()),
+                current_source_identity_codec='tensor_identity sorted name/dtype/shape/raw bytes',
+                source_identity_codec='existing persisted basis report, not tensor_identity encoding',
+                source_phi_sha256=report.get('phi_sha256'),source_transform_sha256=report.get('transform_sha256'),
+                source_point=file_ref(self.folder/'local_physical_point.npz'),
+                source_assets=file_ref(self.folder.parent/'source_assets.json'),
+                basis_ref=self.space.get('basis_ref'),
+                state_order='fixed physical c20s4 state; raw hidden trial -> fresh basis -> closed head -> actual NN field -> verified rollback -> gate',
+                physical_quantity='unweighted Euclidean L2 of free-DOF concatenated u,v; original free index order',
+                actual_profile_changed=False,criteria_changed=False)
+            recorder=ProfileCheckRecorder(self.folder/'actual_full_profile_audit',context)
+            recorder('source_order',{},dict(free_dofs=self.problem.fu.detach().cpu().numpy(),q0=self.point_q,
+                captured_raw_head=self.bridge.head.detach().cpu().numpy()))
+            rows=reprofile_check(algebra,self.trial,directions,rank=self.root_rank,recorder=recorder)
+        except Exception as err:
+            try:
+                number=getattr(self,'number',0);last=self.folder/f'trial_{number:03d}'
+                atomic_json(self.folder/'actual_full_profile_failure.json',dict(
+                    primary_type=type(err).__name__,primary_message=str(err),latest_trial_number=number,
+                    latest_trial_files={name:file_ref(last/name) for name in
+                        ['adapter_failure.json','adapter_observables.json','profile_rollback_audit.json','rollback.json',
+                         'basis/metadata.json','head/solver.json','head/conditioned_candidate.npz',
+                         'hidden_trial_network.pt','actual_candidate_network.pt']},
+                    latest_readout_files={suffix:file_ref(Path(self.budget.folder)/'readouts'/('trial_'+str(number)+suffix))
+                        for suffix in ['.npz','_actual.json','_actual_projected_gradient.npy']} if hasattr(self,'budget') else {},
+                    audit_folder=str(self.folder/'actual_full_profile_audit'),profile_verified=False))
+            except Exception as recording_error:note_record_failure(err,recording_error)
+            self.guard.stop('profile_'+str(err))
         self.profile_verified=True;return rows
     def promote(self,accepted):
         # Caller must have used finite_trial_decision, after profile preflight.

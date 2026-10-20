@@ -9,6 +9,7 @@ import time
 import numpy as np
 import torch
 from profiled_hidden_kernel import Profiled, strict_spd_solver
+from profiled_hidden_receipts import trial_metadata, note_record_failure
 
 
 class AdapterStop(RuntimeError):
@@ -211,36 +212,60 @@ class E011Bridge:
             point.close();raise
 
 
-def reprofile_check(algebra,reprofile,directions,*,rank,eps=1e-6,relative=1e-4,absolute=1e-10):
-    """Mandatory independently head-closed CURRENT-full-basis finite check.
+def reprofile_check(algebra,reprofile,directions,*,rank,eps=1e-6,relative=1e-4,absolute=1e-10,recorder=None):
+    """Same actual-profile gate; observe raw sides and comparison BEFORE stops.
 
-    reprofile(delta) must persist new full-current Phi and actual installed
-    fields then rollback. A local anchored-field callback is forbidden by
-    receipt contract, which still needs independent real-runtime validation.
+    Recording performs no additional model, AD, basis or solver evaluations.
+    The recorder is mandatory in Runtime; optional for legacy artificial callers.
     """
-    if reprofile is None:raise AdapterStop('missing_real_full_reprofile_hook')
-    if not np.isfinite([eps,relative,absolute]).all() or min(eps,relative,absolute)<=0:raise AdapterStop('invalid_reprofile_tolerances')
-    rows=[]
-    def checked(delta):
-        out=reprofile(delta)
-        for key in ['actual_nn','full_current_basis','persisted_actual_phi','frozen_state','rolled_back']:
-            if out.get(key) is not True:raise AdapterStop('unverified_reprofile_'+key)
-        if out.get('rank')!=rank:raise AdapterStop('reprofile_rank_changed')
-        for key in ['head_gradient_inf','realization_maxabs']:
-            value=out.get(key)
-            if value is None or not np.isfinite(value) or value<0 or value>1e-10:raise AdapterStop('reprofile_'+key)
-        q=np.asarray(out['q'],dtype=float)
-        if q.shape!=(algebra.fields,) or not np.isfinite(q).all():raise AdapterStop('invalid_actual_reprofile_fields')
-        return q
-    for direction in directions:
-        v=np.asarray(direction,dtype=float);predicted=algebra.q(v)
-        for h in [eps,eps/2]:
-            fd=(checked(h*v)-checked(-h*v))/(2*h)
-            error=float(np.linalg.norm(predicted-fd));scale=max(float(np.linalg.norm(predicted)),float(np.linalg.norm(fd)))
-            rows.append(dict(h=h,error=error,scale=scale))
-            if error>absolute+relative*scale:raise AdapterStop('actual_full_profile_derivative_mismatch')
-    if not rows:raise AdapterStop('missing_reprofile_directions')
-    return rows
+    def emit(event,data=None,arrays=None):
+        if recorder is not None:recorder(event,data,arrays)
+    rows=[];position={}
+    try:
+        emit('check_start',dict(rank=rank,eps=eps,relative=relative,absolute=absolute,
+            fields=algebra.fields,parameters=algebra.parameters,norm='unweighted Euclidean L2 of free DOFs; original free index order'))
+        if reprofile is None:raise AdapterStop('missing_real_full_reprofile_hook')
+        if not np.isfinite([eps,relative,absolute]).all() or min(eps,relative,absolute)<=0:raise AdapterStop('invalid_reprofile_tolerances')
+        def checked(delta,side):
+            position['side']=side
+            emit('side_start',dict(position),{'delta':delta})
+            out=reprofile(delta)
+            # Raw callback arrays and all saved solver/rollback references precede
+            # contract validation. No coercion changes the old validation order.
+            emit('side_returned',{**position,**trial_metadata(out)},{'q_raw':out.get('q')})
+            for key in ['actual_nn','full_current_basis','persisted_actual_phi','frozen_state','rolled_back']:
+                if out.get(key) is not True:raise AdapterStop('unverified_reprofile_'+key)
+            if out.get('rank')!=rank:raise AdapterStop('reprofile_rank_changed')
+            for key in ['head_gradient_inf','realization_maxabs']:
+                value=out.get(key)
+                if value is None or not np.isfinite(value) or value<0 or value>1e-10:raise AdapterStop('reprofile_'+key)
+            q=np.asarray(out['q'],dtype=float)
+            if q.shape!=(algebra.fields,) or not np.isfinite(q).all():raise AdapterStop('invalid_actual_reprofile_fields')
+            emit('side_validated',dict(position))
+            return q
+        for index,direction in enumerate(directions):
+            position={'direction':index};v=np.asarray(direction,dtype=float)
+            emit('direction',dict(position),{'v':v})
+            predicted=algebra.q(v)
+            emit('prediction',dict(position),{'Qv':predicted})
+            for h in [eps,eps/2]:
+                position={'direction':index,'h':h}
+                plus=checked(h*v,'plus');minus=checked(-h*v,'minus')
+                fd=(plus-minus)/(2*h)
+                error=float(np.linalg.norm(predicted-fd));scale=max(float(np.linalg.norm(predicted)),float(np.linalg.norm(fd)))
+                rows.append(dict(h=h,error=error,scale=scale))
+                emit('comparison',dict(direction=index,h=h,error=error,scale=scale,
+                    tolerance=absolute+relative*scale,predicted_norm=float(np.linalg.norm(predicted)),FD_norm=float(np.linalg.norm(fd)),
+                    norm='unweighted Euclidean L2 of free DOFs; original free index order'),
+                    {'FD':fd,'difference':predicted-fd})
+                if error>absolute+relative*scale:raise AdapterStop('actual_full_profile_derivative_mismatch')
+        if not rows:raise AdapterStop('missing_reprofile_directions')
+        emit('check_passed',dict(rows=rows))
+        return rows
+    except Exception as err:
+        try:emit('check_failed',dict(position=position,type=type(err).__name__,message=str(err)))
+        except Exception as recording_error:note_record_failure(err,recording_error)
+        raise
 
 
 def probe_algebra(algebra,H,guard,*,seed=173):

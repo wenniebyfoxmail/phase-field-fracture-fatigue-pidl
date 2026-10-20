@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "scope": "14 NEW artificial receipt/error-injection fixtures only; no old42 tests/full mathematical re-review",
+  "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tools/s04_e011_analysis /Users/wenxiaofang/miniconda3/bin/python3 -B -m pytest -q tools/s04_e011_analysis/test_profiled_hidden_receipts.py",
+  "final_result": "14 passed in 0.47s",
+  "real_source_array_reads": false,
+  "NN": false,
+  "AD_JVP_VJP": false,
+  "SVD": false,
+  "FEM_or_numeric_solve": false,
+  "SSH": false,
+  "producer_launch": false,
+  "unchanged_science": [
+    "actual profile mapping",
+    "FD h/h2 and order",
+    "rank rule",
+    "head 1e-10",
+    "FD abs1e-10 rel1e-4",
+    "unweighted free DOF L2",
+    "B0/FEM damage/history/UV"
+  ]
+}
