@@ -183,5 +183,12 @@
     "strict output inventory and original figures",
     "runtime/admission/first-stop wrapper"
   ],
-  "frozen_inputs": "existing E017 candidate/supervision/context; E018 saved policy; E028 native projections; no new GT or sites"
+  "frozen_inputs": "existing E017 candidate/supervision/context; E018 saved policy; E028 native projections; no new GT or sites",
+  "GT_access_contract": {
+    "unit": "fold and model role, not global never-decoded GT",
+    "FIT": "own FIT8 supervision/targets only; reject same-fold held and other-fold label payloads",
+    "held_inference": "frozen own model/gate plus GT-free numeric candidates/context only; no shared target objects",
+    "evaluation": "separate role after all six models/gates/full held predictions/B1 reproduction freeze",
+    "global_FIT_union": "all twelve sites; a site can be FIT in another fold; not independent end-to-end OOF"
+  }
 }

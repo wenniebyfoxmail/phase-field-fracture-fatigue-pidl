@@ -43,7 +43,9 @@ E019–E022已有OOF均全弃权/旧684/684/净0，作为历史对照保留，�
 - held1=[95,728,1638,4494]，FIT为其它8；
 - held2=[151,1400,2027,5508]，FIT为其它8。
 
-E017每FIT自己的监督和cached U仅供该FIT拟合、gate校准/正支持描述；不可合并别fold的U用于本fold训练。held预测scope不含GT；必须先冻结S/M全部六模型、各自gate、全部held预测/追加及B1复现，再解码held框GT作新效用比较。先保存空间场投影/descriptor及hash，再加载FIT监督；空间场不能因GT变化。用于评价的GT不能回流选择gate/臂/特征。
+E017每FIT自己的监督和cached U仅供该FIT拟合、gate校准/正支持描述；不可合并别fold的U用于本fold训练。**访问隔离按fold/model角色定义，不是“全局从未读取held身份GT”**：三套FIT8的并集覆盖全12地点，同一地点合法地在另fold充当FIT；不得声称所有六模型冻结前其GT从未物理解码。
+
+未来loader/runner必须落实三角色：①每fold FIT worker只能拿本FIT8的监督/框GT用于该模型拟合与gate校准，拒绝本fold held目标或其它fold标签payload；②每fold held推理worker只接该已冻结模型/gate和该held组GT-free数值特征、候选/context对象，不接targets/annotations/U/GT identity，不共享其它fold FIT目标对象；③S/M全部六模型、gate、完整held预测/追加及B1复现统一冻结后，独立evaluation角色才按九/十二地点scope读取评分所需GT，不能反馈主模型/gate/臂/特征。先保存空间场投影/descriptor及hash，再加载任何FIT监督；空间场不能因GT变化。这是逐fold信息集与对象/进程访问合同，完整实现需针对越界payload/共享对象和冻结后篡改作人工拒绝测试，当前纯adapter未声称实现GT loader隔离。
 
 E028资格使用过24/1638/2027的包络GT。因此预先将**另外九地点**[95,151,514,728,1400,1577,3662,4494,5508]设为本次主效用读数范围；这是新E029方案的前瞻边界，不改写E028或删掉24。全部12地点仍生成原政策OOF选择、原group竞争及保旧检查；资格三地点含24单独描述，并给完整12报告，不扫描或替换地点。
 
