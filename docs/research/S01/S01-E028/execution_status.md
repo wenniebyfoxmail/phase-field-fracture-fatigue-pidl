@@ -1,3 +1,17 @@
+# S01-E028 current execution — 2026-10-20
+
+**R001 stop package retrieved, verified and independently accepted; authorised R002 is running on GPU0.**
+
+The exact approved source a5a8f465 and public branch b675c51b were deployed/read back;31sourcebindings/32members/private9/native338identity checks passed. The isolated Pillow12.3.0 overlay121files and full software/native-origin/GPUUUID plus synthetic raster fixture passed on the producer. No shared runtime changed.
+
+R002 wrapper47056 / launcher45616 / actual Python49484 started11:03:42.352BST on D-26-09 / ad\xw436 / physicalGPU0 UUID GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7 /logicalcuda0. It has entered actual cached-context inference; no scientific scores yet. Cap3590seconds/CPU1/RSS and CUDAallocated/reserved4GiB each; R0012.218 + R002cap remains below3600seconds. All predictions precede reference decode; no fits or selector, E003/capacity/abstention/intersection/sealed sites unchanged.
+
+R001's fixed stop archive was received on Mac and all11filebindings/12files/gzipCRC verified. Independent gpt-6.1-sol High reception review passed; it stopped before model at2.218seconds with0forwards/sourceRGB/reference/fits. No figure acceptance items or scientific results exist. Zero unsampled resource peaks are not a zero-memory claim. Both run receipts live in runs/; current execution JSON is the live record.
+
+Remote R002 run C:\Users\xw436\pavetrack_runs\S01-E028-R002, same-stem-wrapper-logs; metadata/operations under owner local_archive/experiments/S01-E028/execution_R002/. Execution is not localisation qualification or detection gain. At first stop preserve output; no automatic retry/fallback.
+
+## Historical state before current execution
+
 # S01-E028 execution status — 2026-10-19 13:50 BST
 
 **R001 stopped before any model forward; no scientific qualification result.**
