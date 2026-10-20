@@ -1,0 +1,14 @@
+{
+  "status": "STOPPED_NO_RETRY_MECHANICAL1",
+  "run_id": "pf_s04e011_frozen_completion_r1_hq_20261021",
+  "source_branch": "codex/hard5-q4-t3-2x2-20261005",
+  "whole_task_started_UTC": "2026-10-20T23:34:26Z",
+  "absolute_deadline_epoch": 1792541066.0,
+  "mechanical_checks": 1,
+  "producer_started": false,
+  "package": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_frozen_completion_package_20261021",
+  "case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r1_hq_20261021",
+  "source_commit": "7401442ff63e243459487f9160be004d92d5cf9b",
+  "package_sha256": "e41bafe9caf2c5abdf940fa9ae0772250c80c80a2c8d839cd02d163f1f988e7a",
+  "returncode": 1
+}

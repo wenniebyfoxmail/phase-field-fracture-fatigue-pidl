@@ -1,0 +1,16 @@
+{
+  "original_probe_single_argument_bytes": 152395,
+  "prepared_probe_single_argument_bytes": 2525,
+  "stdin_JSON_bytes": 149872,
+  "stdin_JSON_sha256": "6e2ff0d062bb57bd133861d4abb66f392f40fe60e6ccf4061186b25788b58683",
+  "payload_values_unchanged": true,
+  "original_case_script_unchanged": true,
+  "new_remote_actions": 0,
+  "run_id_after_stop_created": false,
+  "retry_authorized": false,
+  "mechanical_duration_seconds": "UNKNOWN_not_zero",
+  "science_calls": 0,
+  "producer_started": false,
+  "stderr": "/bin/bash: Argument list too long",
+  "stdout_bytes": 0
+}

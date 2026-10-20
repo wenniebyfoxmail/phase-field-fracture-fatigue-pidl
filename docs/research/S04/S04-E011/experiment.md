@@ -300,3 +300,8 @@ Run pf_s04e011_residual_branch_c20_r1_hq_20261021/sourcefa9ce259 stopped27.8629s
 ### 2026-10-21 Prospective frozen-only completion
 
 HQ-MESH-FROZEN-COMPLETION-20261020 authorizes only missing frozen_constant/frozen_zero,1800whole/300science,250field+K/30dense/2Q/8JVP/VJP/SVD0. Nativefa9ce259 partial remains immutable;3derived finite input groups require exact oldPhi/qraw identity, same source scopes/operator/runtime. Durable per-linear-call logs and finally index; one extended lifecycle fixture only. See[frozen_completion_20261021](frozen_completion_20261021/README.md); readiness is not execution.
+
+
+### 2026-10-21 frozen completion mechanical1 stop, no producer
+
+Run pf_s04e011_frozen_completion_r1_hq_20261021/source7401442f/packagee41bafe9 stopped on first read-only SSH command, stderr Argument list too long/stdout0/return1. Inline card made command argument152395bytes. No staging/bootstrap/producer/science/GPU result or currentGPU/cache admission; no retry. Same-payload stdin repair prepared offline only,2525bytecodeargument. See[runs/pidl_frozen_completion_admission_stop_20261021.md](runs/pidl_frozen_completion_admission_stop_20261021.md). Oldnative and costs unchanged.

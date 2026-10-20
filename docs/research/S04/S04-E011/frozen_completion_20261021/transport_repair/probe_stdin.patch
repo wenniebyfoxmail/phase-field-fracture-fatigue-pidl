@@ -1,0 +1,25 @@
+--- failed_case/deploy_once.py
++++ future_fresh_case/deploy_stdin.py
+@@ -8,8 +8,8 @@
+  if left<=30:raise RuntimeError('whole-task time expired; no action')
+  return min(cap,left-20)
+ ssh=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=8','-o','ConnectionAttempts=1','-o','ControlMaster=no','-o','ControlPath=none','gpu-taobo']
+-probe=r'''import csv,hashlib,io,json,os,pathlib,pwd,shutil,socket,subprocess,time
+-card=json.loads(CARD);started=time.monotonic();root=pathlib.Path(card['run_root']);archive=pathlib.Path(card['archive_root']);claims=root.parent/'.s04_e011_profiled_hidden_claims'
++probe=r'''import csv,hashlib,io,json,os,pathlib,pwd,shutil,socket,subprocess,sys,time
++card=json.load(sys.stdin);started=time.monotonic();root=pathlib.Path(card['run_root']);archive=pathlib.Path(card['archive_root']);claims=root.parent/'.s04_e011_profiled_hidden_claims'
+ z=dict(started=started,UTC=time.time(),host=socket.gethostname(),user=pwd.getpwuid(os.geteuid()).pw_name,mount=pathlib.Path('/mnt/data2').is_mount(),root_exists=root.exists(),archive_exists=archive.exists(),claim_exists=pathlib.Path(card['family_claim']).exists(),old_return_exists=(claims/(root.name+'.outer_return.json')).exists(),free_disk=shutil.disk_usage('/mnt/data2').free,matching_live=[])
+ z['GPU']=subprocess.check_output(['nvidia-smi','-i','5','--query-gpu=index,uuid,memory.total,memory.free,utilization.gpu','--format=csv,noheader,nounits'],text=True,timeout=4).strip()
+ z['apps']=[row for row in csv.reader(io.StringIO(subprocess.check_output(['nvidia-smi','--query-compute-apps=pid,gpu_uuid,used_memory','--format=csv,noheader,nounits'],text=True,timeout=4))) if row[1].strip()==card['producer']['gpu_uuid']]
+@@ -28,9 +28,9 @@
+   for chunk in iter(lambda:stream.read(1048576),b''):h.update(chunk)
+  z['inputs'].append(dict(role=item['role'],bytes=p.stat().st_size,sha256=h.hexdigest()))
+ z['finished']=time.monotonic();print(json.dumps(z))
+-'''.replace('CARD',repr(json.dumps(card)))
++'''
+ r.update(status='MECHANICAL1_REQUESTED',mechanical_checks=1);save();local_started=time.monotonic()
+-p=subprocess.run(ssh+['/usr/bin/python3 -B -c '+shlex.quote(probe)],capture_output=True,text=True,timeout=remaining(25));(case/'logs/probe.stdout').write_text(p.stdout);(case/'logs/probe.stderr').write_text(p.stderr)
++p=subprocess.run(ssh+['/usr/bin/python3 -B -c '+shlex.quote(probe)],input=json.dumps(card),capture_output=True,text=True,timeout=remaining(25));(case/'logs/probe.stdout').write_text(p.stdout);(case/'logs/probe.stderr').write_text(p.stderr)
+ if p.returncode:r.update(status='STOPPED_NO_RETRY_MECHANICAL1',returncode=p.returncode);save();raise SystemExit('first read-only contact failed, no retry')
+ z=json.loads(p.stdout);r['mechanical1']=z;save();gpu=next(csv.reader([z['GPU']]))
+ assert z['host']=='GPUServer8' and z['user']=='drtao' and z['mount'] and z['free_disk']>=24*1024**3 and z['MemAvailable_kb']>=32*1024**2

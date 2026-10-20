@@ -1,0 +1,39 @@
+{
+  "status": "passed_static_prepared_transport_delta",
+  "scope": "Client metadata transport patch only; no SSH/test/array/scientific work",
+  "bindings": {
+    "probe_stdin.patch": {
+      "path": "docs/research/S04/S04-E011/frozen_completion_20261021/transport_repair/probe_stdin.patch",
+      "sha256": "f095f86b585c655267ad127a0d22427fe871861b81f3979d160f59bd8b2ea7ff"
+    },
+    "offline_size_check.json": {
+      "path": "docs/research/S04/S04-E011/frozen_completion_20261021/transport_repair/offline_size_check.json",
+      "sha256": "0181b6b3b21d4af20393476c4ac09dbc21906c71f9ba8428155aa7aa8ded65e2"
+    },
+    "execution_receipt.json": {
+      "path": "docs/research/S04/S04-E011/frozen_completion_20261021/transport_repair/execution_receipt.json",
+      "sha256": "5c1fc048b9c9a3b1db359a32cb010e6e526597328d6857cb9374744709994b7a"
+    },
+    "probe.stderr": {
+      "path": "docs/research/S04/S04-E011/frozen_completion_20261021/transport_repair/probe.stderr",
+      "sha256": "6412ca370a1c594b3f8919b46e2ffc012ee979a9deed38d6db2f994e2ac9b4fe"
+    },
+    "probe.stdout": {
+      "path": "docs/research/S04/S04-E011/frozen_completion_20261021/transport_repair/probe.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "checks": [
+    "Only import sys/card decoding and subprocess stdin transport change: same json.dumps(card) moves from embedded remote -c argument to stdin read with json.load(sys.stdin). Metadata content, identity entries, host/user/GPU target and read-only probe body unchanged.",
+    "The shlex-quoted short Python code remains the remote command; stdin is separate subprocess input, removing the oversized single shell argument without evaluating card data as code.",
+    "Existing capture_output, timeout, one-connection options, return-code first-stop and no-retry flow retained.",
+    "Patch is prepared for a future fresh authorized case; original failed script/package/receipt remain immutable and no new RunID/package activation inferred.",
+    "Admission report appropriately says stdout0/return1/Argument list too long, producer0, no live GPU/host/cache receipt, no frozen results. Static byte/AST checks are preparation only."
+  ],
+  "limits": [
+    "Reviewer did not execute the patched client or confirm remote Python reception, GPU state or dynamic cache equivalence.",
+    "149872JSON bytes/152395-to2525 command-size figures are the supplied offline size record, not a new transport measurement by reviewer.",
+    "A future one-shot action needs explicit new authority and fresh live admission; this review grants neither retry nor connection permission."
+  ],
+  "blockers": []
+}

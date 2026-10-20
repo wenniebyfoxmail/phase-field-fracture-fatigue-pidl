@@ -9,3 +9,7 @@ Residual target g0 is computed in each frozen arm's own fixedPhi/sourceoperator 
 Unique immutable arm_result and finalonce. Each linear call begins with durable unique start, saves H/factor/RHS before solve and x/residual/end afterwards. Inverse-column calls also logged. Finally writes complete/incomplete index and preserves primary failure; indexIO failure prevents success. One existing exclusive-writer fixture extended to normal two-call and interrupted-second-call finally-index paths;1pass0.015s, old8notrepeated. Same reviewer new delta only.
 
 Current H/Gram/conditional forward estimates remain incomplete if force/assembly/root arithmetic cannot be bounded well; no added precision/h/Gram sweep or false causal certificate. FD mismatch observation; other state/IO/resource/nonfinite errors first-stop. If panel remains unresolved, close with missing quantitative error control, no automatic nextRun or optimization.
+
+## Actual attempt outcome
+
+First read-only contact returned1 with `Argument list too long`, stdout0. Staging/bootstrap never requested, scientificproducer0, actualGPU/cache admissionunknown. No second contact. Failed source7401442f/packagee41bafe9 and receipt retained. Only an offline same-payload stdin transport patch prepared; see[admission stop report](../runs/pidl_frozen_completion_admission_stop_20261021.md). New execution is not authorized by this readiness document.
