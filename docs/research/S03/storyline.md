@@ -870,3 +870,14 @@
   No independent reviewer/validator/SVG view or acceptance continuation;
   only text written, not accepted. D3 pending separately approved mapped
   remaining review, original structure progress and B003 status preserved.
+
+- **2026-10-20 — Remaining independent acceptance under S01 mapping prepared.**
+  See S03-E019/font_svg_s01_remaining_acceptance_plan.md. Preserve successful
+  original structure checks via identical original SHA; do not rerun XML/
+  point/ledger tests or oldexact7 command. Proposed readonly ten-asset identity,
+  exact companion byte derivation and mapping receipt check, new explanation
+  semantic review, two originalSVG Safari views, final tenSHA/cleanHEAD.
+  SingleCPU/soft60s/zeroSVDQR; scope only display/description, not B003/physical
+  acceptance. No new commands/import/tests, derived content/hash or diagram
+  opened this turn, no reviewer dispatched/frozen edits/real/held/C/D.
+  D3 awaits explicit approval of this remaining-review package.
