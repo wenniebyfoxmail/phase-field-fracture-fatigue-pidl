@@ -85,6 +85,10 @@ def test_failure_retains_sampled_peak(tmp_path,monkeypatch):
     archive=tmp_path/'archive';archive.mkdir();usage={}
     def broken(*args):raise OSError('injected monitor IO')
     monkeypatch.setattr(r,'write_json',broken)
+    # This test concerns retention of an observed sample. Supply a deterministic
+    # sample rather than assuming the OS/sandbox permits process RSS inspection.
+    from types import SimpleNamespace
+    monkeypatch.setattr(r.psutil,'Process',lambda pid:SimpleNamespace(children=lambda recursive:[],memory_info=lambda:SimpleNamespace(rss=4096)))
     with pytest.raises(OSError):r.supervise(p,dict(id='unit',kind='replay',gpu=False,wall_seconds=100),card(),tmp_path,archive,dict(start_monotonic=r.perf_counter(),gpu_seconds=0.),usage=usage)
     assert p.poll() is not None and usage['peak_rss_bytes']>=0 and 'termination_seconds' in usage and 'storage' in usage
 

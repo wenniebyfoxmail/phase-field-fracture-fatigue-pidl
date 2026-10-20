@@ -123,7 +123,8 @@ class NativeQ4Backend:
     def mechanics(self,d,dofs,values,settings,initial_u=None):
         if self.material!=self.mechanics_workspace.material:raise ValueError('workspace material changed; new identity/backend required')
         return self.mechanics_workspace.solve(d,dofs,values,settings,initial_u=initial_u,
-                                               observe=self.mechanics_observer)
+                                               observe=self.mechanics_observer,
+                                               strategy=getattr(self,'mechanics_strategy','direct'))
 
     def trial(self, old, u, d):
         psi, _ = tensile_energy(self.kin, u, youngs_modulus=self.material["youngs_modulus"],
@@ -187,7 +188,9 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
     try:
         coupling = CouplingSettings() if coupling is None else coupling
         if not isinstance(coupling,CouplingSettings):raise ValueError('explicit coupling policy required')
-        if isinstance(backend,NativeQ4Backend):backend.mechanics_observer=work_observer
+        if isinstance(backend,NativeQ4Backend):
+            backend.mechanics_observer=work_observer
+            backend.mechanics_strategy=coupling.mechanics_solver
         def mechanics(d,initial):
             if isinstance(backend,NativeQ4Backend):
                 return backend.mechanics(d,dofs,values,settings,initial_u=initial)
@@ -248,10 +251,11 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
         def array_hash(a):return hashlib.sha256(np.ascontiguousarray(a).tobytes()).hexdigest()
         def cache_snapshot():
             if not isinstance(backend,NativeQ4Backend):return None
-            w=backend.mechanics_workspace;return w.factor_key,w.factor
+            w=backend.mechanics_workspace;return w.factor_key,w.factor,getattr(w,'factor_domain',None)
         def cache_restore(snapshot):
             if snapshot is not None:
-                backend.mechanics_workspace.factor_key,backend.mechanics_workspace.factor=snapshot
+                w=backend.mechanics_workspace
+                w.factor_key,w.factor,w.factor_domain=snapshot
         # The common mechanics result is reusable only if d is identical.
         u_cache = u_pred if np.array_equal(d, lower) else None
         u_guess=u_pred
@@ -313,7 +317,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                 raise RuntimeError("accepted preimage mutated")
             diagnostics_started=perf_counter()
             was_trial=pending is not None
-            rejected=bool(was_trial and not passed and merit>coupling.merit_factor*pending['merit'])
+            rejected=bool(was_trial and not passed and not coupling.trial_improves(merit,pending['merit']))
             code=active_codes(new_d,lower,settings.bound_tolerance)
             fp=accelerator.norm(new_d-d)
             record=dict(event='iteration_decision',outer=outer,policy_id=policy_id,previous_id=previous_id,load_id=next_load_id,
@@ -384,6 +388,14 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             remaining()
             if old.fingerprint()!=previous_id:raise RuntimeError('accepted preimage mutated after evidence')
             if passed:
+                if isinstance(backend,NativeQ4Backend) and coupling.mechanics_solver=='recycled_gmres':
+                    # Final accepted CURRENT K retains fresh LU/pivot qualification;
+                    # an old preconditioner's pivots do not certify a new matrix.
+                    pivot_certificate=call('accepted_mechanics_factor_certificate',
+                        lambda:backend.mechanics_workspace.certify_factor(
+                            new_d,final_u,dofs,observe=work_observer))
+                    work[-1]['solver']=pivot_certificate
+                    remaining()
                 state = AcceptedState(final_u, new_d, final_q.accumulated, final_q.driver,
                                       final_q.fatigue, old.opaque, old.version + 1,
                                       old.load_index + 1, old.mesh_id, old.physics_id, next_load_id)
@@ -401,6 +413,8 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                                    iterations=iteration_records,
                                    initial_to_final_damage_rms=float(np.sqrt(np.mean((new_d-initial_damage)**2))),
                                    initial_to_final_damage_inf=float(np.max(abs(new_d-initial_damage))))
+                if coupling.mechanics_solver=='recycled_gmres' and isinstance(backend,NativeQ4Backend):
+                    certificate['mechanics_factor_qualification']=pivot_certificate
                 # Keep the actual last solved QP coefficient. Reconstructing it
                 # from the accepted history would silently substitute f_commit.
                 evidence = dict(f_solve_gp=frozen_array(q.fatigue),

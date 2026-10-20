@@ -84,8 +84,22 @@ def validate_card(card):
         raise ValueError("frozen retained load path differs")
     b=card["budget"]
     if (b["gpu_hours"]!=12 or b["cpu_wall_hours"]!=136 or b["cpu_core_hours"]!=2176
-            or b["cpu_cores"]!=16 or card["solver"]["wall_seconds"]!=120):
+            or b["cpu_cores"]!=16):
         raise ValueError("resource card differs from reviewed envelope")
+    revision=card.get('numerical_solver_revision')
+    if revision is None:
+        if card['solver']['wall_seconds']!=120:raise ValueError('legacy step allowance changed')
+    elif revision=='coupled-recycle-v6':
+        expected=dict(force_scale=1.,damage_gradient_scale=1.,force_tolerance=1e-8,
+            joint_residual_sum_tolerance=4e-6,damage_tolerance=1e-7,bound_tolerance=1e-10,
+            fatigue_tolerance=1e-8,qp_precision=1e-10,max_outer=100,max_mechanics=50,
+            max_qp=200000,wall_seconds=300.)
+        if card['solver']!=expected:raise ValueError('v6 physical precision or bounded step allowance differs')
+        cp=CouplingSettings(**card['coupling'])
+        if (cp.mode!='projected_anderson_monotone' or cp.mechanics_solver!='recycled_gmres'
+                or cp.max_proposals!=3 or cp.max_rejections!=3):
+            raise ValueError('v6 shared solver policy differs')
+    else:raise ValueError('unknown numerical solver revision')
     if (card["training"]["max_updates"]!=20000 or card["training"]["wall_seconds"] not in (21600,28800)
             or card["training"]["fits"]!=1):
         raise ValueError("training allowance differs")

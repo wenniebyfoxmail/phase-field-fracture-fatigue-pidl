@@ -19,14 +19,24 @@ class CouplingSettings:
     trust_factor: float = 2.
     ridge_relative: float = 1.e-10
     condition_cap: float = 1.e6
+    mechanics_solver: str = 'direct'
 
     def __post_init__(self):
-        if self.mode not in ('none','projected_anderson'):raise ValueError('unknown coupling policy')
+        if self.mode not in ('none','projected_anderson','projected_anderson_monotone'):raise ValueError('unknown coupling policy')
+        if self.mechanics_solver not in ('direct','recycled_gmres'):raise ValueError('unknown mechanics solver')
         for k in ('depth','max_proposals','max_rejections'):
             if type(getattr(self,k)) is not int or not 1<=getattr(self,k)<=5:raise ValueError('unbounded coupling policy')
         vals=[self.merit_factor,self.coefficient_l1_cap,self.trust_factor,self.ridge_relative,self.condition_cap]
         if (not np.isfinite(vals).all() or not 0<self.merit_factor<1 or self.coefficient_l1_cap<1
                 or not 0<self.trust_factor<=5 or not 0<self.ridge_relative<=1.e-4 or self.condition_cap<1):raise ValueError('invalid coupling safeguard')
+
+
+    def trial_improves(self, trial_merit, baseline_merit):
+        if not np.isfinite([trial_merit, baseline_merit]).all():
+            raise RuntimeError('nonfinite trial merit')
+        if self.mode == 'projected_anderson_monotone':
+            return trial_merit < baseline_merit
+        return trial_merit <= self.merit_factor * baseline_merit
 
 
 def active_codes(d,lower,tol):
