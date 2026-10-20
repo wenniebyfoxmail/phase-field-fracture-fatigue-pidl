@@ -921,3 +921,14 @@
   frozen edits or C/D. Human decision now concerns exact G and optionally
   independent V1-V3; actual right-colourbar/wholeframe and final cross-view
   identity remain incomplete. Artificial success is not visual/scientific QA.
+
+- **2026-10-20 — V002-L01 exact G generated once; no visual/review launch.**
+  Explicit human G-only approval; clean runtime114e9bc4, fixed codea8b10844 and
+  all specified hashes/fresh NEW passed. Chunkad6526 exit0, no warnings/retry,
+  PID61510 on Wennies-MacBook-Pro-14.local. Preprint0.285578583s; finalsoft60
+  checks passed. Exactly seven exclusive outputs, original ten unchanged by
+  generation checks, empty G01 events, actualSVD/QR0; values/bar heights retained.
+  See S03-E019/font_svg_v002_l01_g_results.md. No images opened/rendered,
+  V1-V3/independent review/validator, B003numeric/real/held/C-D or frozen edits.
+  D3: layout generation capability only; actual sidecar/wholeframe/colourbar
+  and cross-view identity remain pending, no science/inversion acceptance.
