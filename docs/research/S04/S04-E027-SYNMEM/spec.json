@@ -1,0 +1,176 @@
+{
+  "experiment_id": "S04-E027-SYNMEM",
+  "protocol": "1.0",
+  "domain": "synthetic",
+  "claim": "whether fixed digital geometry aliases histories with distinct common-load futures",
+  "geometry": {
+    "domain": [
+      -0.5,
+      0.5,
+      -0.5,
+      0.5
+    ],
+    "crack_tip": 0.0
+  },
+  "material": {
+    "youngs_modulus": 1.0,
+    "poisson_ratio": 0.3,
+    "gc": 0.01,
+    "length_scale": 0.125,
+    "alpha_t": 0.005,
+    "power": 2.0,
+    "thickness": 1.0
+  },
+  "variants": [
+    {
+      "id": "base",
+      "cells": 16,
+      "subdivisions": 1
+    },
+    {
+      "id": "space",
+      "cells": 32,
+      "subdivisions": 1
+    },
+    {
+      "id": "load_step",
+      "cells": 16,
+      "subdivisions": 2
+    }
+  ],
+  "cycle_fractions": [
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    0.0
+  ],
+  "histories": {
+    "low": [
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005
+    ],
+    "high": [
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01
+    ]
+  },
+  "probe": [
+    0.005
+  ],
+  "future": [
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03
+  ],
+  "horizons": [
+    5,
+    10,
+    20
+  ],
+  "primary_horizon": 20,
+  "observation": {
+    "pixels": 64,
+    "threshold": 0.5,
+    "sensitivity_thresholds": [
+      0.45,
+      0.55
+    ],
+    "matching": "exact whole mask across 2 arms and 3 variants"
+  },
+  "solver": {
+    "force_scale": 1.0,
+    "damage_gradient_scale": 1.0,
+    "force_tolerance": 1e-08,
+    "joint_residual_sum_tolerance": 4e-06,
+    "damage_tolerance": 1e-07,
+    "bound_tolerance": 1e-10,
+    "fatigue_tolerance": 1e-08,
+    "qp_precision": 1e-10,
+    "max_outer": 100,
+    "max_mechanics": 50,
+    "max_qp": 200000,
+    "wall_seconds": 120.0
+  },
+  "coupling": {
+    "mode": "projected_anderson_monotone",
+    "depth": 3,
+    "max_proposals": 3,
+    "max_rejections": 3,
+    "merit_factor": 0.5,
+    "coefficient_l1_cap": 5.0,
+    "trust_factor": 2.0,
+    "ridge_relative": 1e-10,
+    "condition_cap": 1000000.0,
+    "mechanics_solver": "direct"
+  },
+  "budget": {
+    "wall_seconds": 14400,
+    "cpu_threads": 4,
+    "gpu_count": 0,
+    "ram_bytes": 8589934592,
+    "storage_bytes": 8589934592,
+    "maximum_steps": 1846,
+    "step_hard_seconds": 120.0,
+    "cleanup_seconds": 20
+  },
+  "producer": {
+    "alias": "gpu-server",
+    "hostname": "GPUServer8",
+    "root": "/mnt/data2/drtao/wennie"
+  },
+  "stop": "first scientific/numerical/resource failure; no automatic retry or resume"
+}
