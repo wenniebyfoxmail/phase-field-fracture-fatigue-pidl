@@ -1,0 +1,100 @@
+{
+  "verdict": "REVIEW_PASS",
+  "scope": "EXACT_STATIC_EXECUTION_PACKAGE_REVIEW_ONLY",
+  "reviewer": "Codex /root/hybrid_readiness_review",
+  "reviewed_utc": "2026-10-20T21:22:37.947587+00:00",
+  "reviewed_commit": "9216909dffc90df09d60da8cfb076c2be32c79f5",
+  "artifact_id": "016c3c5dcf2a4f76f3ac3dc548a48ea3967ddfe005e7cb2f8fe4d12142f5daaf",
+  "card_sha256": "c46bdac4a076def860852a8d6329edf980782d0198fdfe384fa8655b695c9430",
+  "source_manifest_sha256": "127776c3641402ccc506fda7f72443ea78fbc9234d1c39d951741a109280186d",
+  "budget_receipt_sha256": "026142fb8c199ba88dc4fc87a4aac93bebc8187cfe53f5dceb0ae656465992d6",
+  "findings": [],
+  "remaining_static_execution_blockers": [],
+  "resolved_findings": [
+    "GMRES-only unobserved pivot now null, not fabricated1.0.",
+    "Guardian deadline reason uses actual step_seconds.",
+    "Cache rollback test explicitly checks factor_domain.",
+    "Missing historical control allowance is a separate enforced600-second reserve, not actual prior cost.",
+    "Final reconciliation accounting text now records actual successful stage and local/remote cost containment correctly."
+  ],
+  "checks": {
+    "source_files_verified": 103,
+    "snapshot_and_git_commit_bytes_match": true,
+    "source_hash_mismatches": [],
+    "canonical_artifact_verified": true,
+    "original_frozen98_source_files_unchanged": true,
+    "enabled_card_matches_tracked_source": true,
+    "validate_card": true,
+    "verify_package": true,
+    "require_enabled_execution": true,
+    "initial_totals": true,
+    "new_receipt_complete": true,
+    "stage_receipt_bound": true,
+    "old_r2_failed_and_attributed_processes_stopped_recorded": true,
+    "one_prior_cost_entry_no_duplicated_old_costs": true,
+    "final_delta_only_receipt_wording_and_bound_card_sha": true
+  },
+  "inherited_review_scope": {
+    "frozen_v6_source_commit": "4ca8d56df129b11c7a4e3c03534cfab3af05a4dd",
+    "scope": "Strict fresh-merit Anderson, maximum3 proposals/rejections; current-K GMRES with stale LU only as preconditioner; no false exact-key promotion; final current-K LU/pivot qualification; unchanged original physical thresholds and D13 true f_solve/f_commit history/CAS rules. Same v6 policy in all three arms. Prospective300-second engineering deadline does not change original phase/global/GPU limits.",
+    "actual_independent_artificial_checks": [
+      {
+        "scope": "v6 and coupled checks after observability/domain fixes",
+        "passed": 26,
+        "seconds": 0.75
+      },
+      {
+        "scope": "600-second reserve, v6 physical validator, legacy exact-card checks",
+        "passed": 3,
+        "seconds": 0.57
+      }
+    ],
+    "python": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "unchanged_regression_reruns_this_binding": 0,
+    "implementer_reported_full_regression": {
+      "passed": 143,
+      "independently_rerun_in_full": false
+    }
+  },
+  "actual_costs_and_reserves": {
+    "charged_wall_seconds": 825.6491945487214,
+    "charged_observed_cpu_seconds": 833.843971,
+    "charged_gpu_seconds": 0.0,
+    "charged_numerical_seconds": 497.477721337229,
+    "training_fits_consumed": 0,
+    "stage_local_wall_seconds": 15.804447874892503,
+    "stage_remote_wall_seconds_contained_in_local": 0.40890517365187407,
+    "remote_stage_wall_added_twice": false,
+    "historical_control_reserve_seconds": 600,
+    "reserve_added_to_actual_costs": false,
+    "usable_host_hours_after_actuals_and_historical_reserve": 135.60398633484758,
+    "outer_timeout_seconds_before_launcher_overhead": 488084.3508054513,
+    "outer_formula": "136*3600 -825.6491945487214 actual prior -600 historical reserve -45 dispatch reserve -45 cleanup reserve -actual launcher elapsed",
+    "outer_kill_after_seconds": 20,
+    "unmeasured_historical_control_cpu_and_monitor_wall": "disclosed as unknown; reserve is conservative allowance, never claimed as actual observation"
+  },
+  "authorization": {
+    "source": "Exact user quote stored in reviewed execution_r3/authority.md and card.authority.exact_remote_action_quote.",
+    "destination": "drtao@172.16.100.2 / original GPUServer8",
+    "run_id": "pf_hybrid_solver_v6_20261020_r3",
+    "scope": "One NEW complete3600-substep/single-fit comparison within original136hosth/12GPUh; fixed data/material/mesh/loading family/network.",
+    "scientific_first_failure_stops": true,
+    "automatic_scientific_retries": 0,
+    "review_creates_human_authority": false
+  },
+  "runtime_admission_established": false,
+  "scientific_result_established": false,
+  "remaining_runtime_requirements": [
+    "Exact final bundle must contain103 reviewed source files plus source_manifest.json/execution_card.json/this execution_review.json, with accurate final SHA; no source or card change admitted.",
+    "Receiver must recheck staged input/dependency bytes, fresh dispatch/launch identity and exact card/review/artifact.",
+    "Producer must run original required package import/version checks, independently guarded Agg render, native replay and host/GPU admissions before relevant scientific phases.",
+    "Record case/phase elapsed and incomplete/failing work; reconcile final actual dispatch/control/termination costs without converting reserves to actual work.",
+    "Unknown spawn/outcome or first scientific failure requires receipt/process inspection; no reupload/rebinding/retry that bypasses the single-attempt rule."
+  ],
+  "limits": [
+    "Static exact-package review only, not evidence of runtime admission, numerical convergence, qualified physical truth/teacher, fatigue trajectory coverage or neural speedup.",
+    "No new SSH, scientific arrays, FEM solve or training was performed by this reviewer; this final binding uses immutable source and JSON/byte checks.",
+    "The earlier candidate62cf packet is superseded by this exact bound_packet; its stale-accounting finding is resolved.",
+    "Outer launcher PID belongs to GNUtimeout; actual supervisor PID must come from launch_receipt. Missing terminal evidence remains unknown/failed, never success inferred from spawn."
+  ]
+}
