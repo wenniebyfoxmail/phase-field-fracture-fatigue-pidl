@@ -197,5 +197,6 @@ parameter recovery or run authority.
 The first delta review of 4c0c78b5 requested two repairs: immutable global
 material direction per tape, and rejection of wrong-sign bound multipliers
 outside the weak band. Both are implemented and covered by the focused suite;
-the corrected exact commit requires independent focused rereview. Original
-review findings are retained in review_v3.md.
+the corrected exact commit fa2e50427c2e48b54d547dd6e4597f5b63628c70 passed
+independent focused rereview, 18 tests in0.17s (review_v4.md). Original review
+findings remain in review_v3.md. No source/tests/tools changed after that review.
