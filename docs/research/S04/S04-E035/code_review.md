@@ -38,4 +38,24 @@ sample does not authorize this task. No device substitution is allowed.
 Local verification: `python scripts/shear/test_shear_contract.py` — two
 no-training tests pass (arbitrary-NN essential BCs, affine shear energy and
 direct reaction with both Q4 orientations). Python compile succeeds.
-Windows MATLAB static-check completion is still pending runtime confirmation.
+Windows MATLAB static-check completion was pending at that review stage.
+
+## Subsequent checks and first attempt
+
+Actual Windows checkcode completed with STATIC_CHECK_DONE and engine exit0
+after file-backed streams/task-local preferences; only two unused-variable
+warnings remained. Windows NumPy3 removed 2D np.cross; explicit determinant
+fix `98c75285` was independently reviewed and both CPU mechanics tests then
+passed on Windows. No PIDL training occurred.
+
+R001 later stopped at the damage-validity assertion; numerical agreement is
+inconclusive, and missing rejected vectors prevent identifying the clause.
+The independent reviewer checked its retained logs/receipts and confirmed the
+outcome record is faithful. No source replay was performed.
+
+The separately prepared diagnostic/control changes at `a5d65d21` passed focused
+review: rejected-field export before unchanged assertion, one-state option,
+distinct prefix completion, cached child handle and a shortened remaining-time
+watchdog. This clears preparation only; fresh execution authority is pending.
+Analysis review fixed stale-output risk and snapshot-state identity checks;
+zero loaded states correctly generate no scientific comparison figures.

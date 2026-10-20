@@ -131,7 +131,7 @@ partial coverage cannot establish full-trajectory agreement or physical validity
 Question: compare native FEM and independently optimized PIDL under matched U.
 Source FEM: {a.fem}; source PIDL: {a.pidl}.
 Coverage: native {len(fr)}/30, PIDL {len(pr)}/30, joint {len(common)}/30.
-Read response curves first, then matched damage maps. Without PIDL, these
+{'Read response curves first, then matched damage maps.' if fr else 'No accepted loaded states: no response/field figures were generated.'} Without PIDL, these
 figures describe native FEM only and provide no agreement evidence.
 
 Damage reduction: native Q4 nodal mean versus area-weighted two child-T3 nodal

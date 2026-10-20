@@ -61,8 +61,11 @@ is kept at AT1/AMOR. No horizontal crack-growth or tensile mirror constraint.
   No fatigue-cycle mapping is imported from the tensile archives.
 
 Primary descriptive observable: trajectory-mean area-weighted damage MAE on
-the common Q4 cells over all jointly available accepted states, with coverage
-reported. FEM nodal Q4 mean and area-weighted child-T3 means are declared
+the common Q4 cells over all states with accepted FEM output and a saved NN
+candidate, with coverage and NN validity violations reported. No NN candidate
+is removed to improve the score; an invalid candidate cannot support an
+agreement claim. This clarification precedes any paired output. FEM nodal Q4
+mean and area-weighted child-T3 means are declared
 reductions. No ex-post binary accuracy threshold or superiority claim.
 Diagnostics: direct top/bottom Rx, free-DOF equilibrium residual, E_el/E_d,
 damage bounds/healing, forward damage morphology and selected matched-U fields.
@@ -88,7 +91,7 @@ conflict. No scientific retry or load/model change is silently allowed. At most
 three short zero-start resource/environment rechecks within the ceiling.
 Use fresh task directories, detached process and watchdog, immutable local
 code snapshot; preserve shared installations/environments and other processes.
-Independent read-only review is in progress before production use.
+Independent read-only implementation review is complete; see code_review.md.
 
 Resource coordination received from original research HQ at 22:25 UTC:
 D-26-09 GPU0 is reserved for D5's authorized 40-epoch comparison. The earlier
