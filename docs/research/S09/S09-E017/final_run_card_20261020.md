@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E017
 planned_run_id: S09-E017-R001-factorised-head-p0
-status: CONTROL_CANDIDATE_AWAITING_FOCUSED_REVIEW__NO_EXECUTION
+status: FINAL_EXECUTION_PACKAGE_READY__PARKED_NETWORK_BLOCK__NO_EXECUTION
 producer: gpu-taobo / GPUServer8
 forbidden_fallback: any other host or GPU
 ---
@@ -45,7 +45,9 @@ full incremental variational inequality.
 | Real-head design | `06bf5fef693be5321ce7daf9d2384b8fa3953fde` |
 | Static integration | `3a5a2020c7b16555e9ecd9ec19377bf87a52d5c5` |
 | Real adapter | `662005f1fde22cb9a6e8069f4e430b7190f21860` |
-| Final execution control | Must equal the focused-review commit recorded in the final package manifest and later one-run authority receipt |
+| Final execution control | `2002538d9a30c8d4006ccaff5959cd214958fc82` |
+| Candidate config SHA256 | `4c1e928274f6fbee134ff540345844260cf16675727d0e996abb0054062ddcf1` |
+| Code archive SHA256 | `4ece34be786fc85bb9655c076c13c45d276d08dfde405a8fb1367e4b49ffdd22` |
 | Packet manifest SHA256 | `1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6` |
 | Frozen package config SHA256 | `46c0cc6b9c5dcc62794845a20502a2eaa98c7ce7dd05b423a6b00a3d1784a2e6` |
 | Base runtime config SHA256 | `0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b` |
@@ -56,6 +58,8 @@ The disabled candidate is
 `NOT_GRANTED`. A later authority receipt must bind the focused-reviewed control
 commit, candidate-config SHA256 and exact code-archive SHA256. Hand-editing
 `execution_authorized`, status or wrapper fields does not satisfy this gate.
+The exact identities and final focused-review verdict are also frozen in
+`final_execution_package_manifest_20261020.json`.
 
 ## Fixed paths
 

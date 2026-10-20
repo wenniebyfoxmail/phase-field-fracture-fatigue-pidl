@@ -2,7 +2,7 @@
 
 Date: 2026-10-19
 
-Status: `CODE_READY_AWAITING_FINAL_EXECUTION_APPROVAL__NO_EXECUTION`
+Status: `FINAL_EXECUTION_PACKAGE_READY__PARKED_NETWORK_BLOCK__NO_EXECUTION`
 
 ## Purpose
 
@@ -109,3 +109,27 @@ focused synthetic tests and returned `E017_REAL_ADAPTER_CODE_READY_PASS`.
 The ChatGPT Pro/Haofan implementation attempt is recorded separately as
 `NOT_REVIEWABLE__MATERIAL_NOT_DELIVERED`; it supplied no source-code verdict.
 No execution authority or scientific conclusion follows from Code Ready.
+
+## 2026-10-20 final execution-control closure
+
+The authoritative current run card is now `final_run_card_20261020.md`; the
+round-1 draft remains historical and is not launchable. The first focused
+control review bound commit `64d293742bf9e57e515fe719cdf875b66c9a5ab5`
+and returned `E017_FINAL_EXECUTION_CONTROL_REVISE`. It exposed an unbound base
+config, re-enterable failed admission, receipt gaps around early control
+failures and incomplete nested candidate/template validation.
+
+All four counterexamples were repaired at exact execution commit
+`2002538d9a30c8d4006ccaff5959cd214958fc82`. The combined local fixture suite
+reported 149 passed. The round-2 read-only reviewer reran 24 focused control
+tests and returned `E017_FINAL_EXECUTION_CONTROL_READY_PASS`. Candidate SHA256
+is `4c1e928274f6fbee134ff540345844260cf16675727d0e996abb0054062ddcf1`;
+the reproducible 14,359,316-byte code archive SHA256 is
+`4ece34be786fc85bb9655c076c13c45d276d08dfde405a8fb1367e4b49ffdd22`.
+
+The package remains disabled. The first owner SSH attempt ended with exit 255,
+no remote shell and no remote action; local routing/VPN evidence has not shown
+recovery. No SSH retry, live preflight, deployment, asset read, runtime build,
+forward, training or holdout access occurred while closing this gate. The sole
+remaining decision is exact one-run authority after independent network
+recovery confirmation.
