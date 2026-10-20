@@ -10,6 +10,8 @@ if ($c.kind -eq 'fem') {
     if (@(Get-CimInstance Win32_Process -Filter "Name='MATLAB.exe'").Count -gt 0) {
         throw 'Another MATLAB process exists; FEM admission blocked'
     }
+    $env:MATLAB_PREFDIR=Join-Path $c.root 'prefs'
+    New-Item -ItemType Directory -Force $env:MATLAB_PREFDIR | Out-Null
 } else {
     # A reservation release must be supplied separately; idle utilization alone
     # never authorizes this launch. This file is created only after coordination.
