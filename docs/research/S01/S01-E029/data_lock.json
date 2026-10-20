@@ -1,0 +1,80 @@
+{
+  "protocol": "S01-E029-v1",
+  "input_files": {
+    "E017_zip": {
+      "bytes": 11668613,
+      "sha256": "189f1cb23688013c3692c8cc3dfb0df1400ac6f01ac6b65316c4cd180314cd6d"
+    },
+    "metadata": {
+      "bytes": null,
+      "sha256": "6fc622943a78063926d96a13e727013ae22d12919a3af3814cfc221bd1a7e5bb"
+    },
+    "contexts": {
+      "bytes": 1967747,
+      "sha256": "eba16f6623e7eaf209f7e40f8ca0368a41fb7b4a9b93021ebcda57eae7c4a325"
+    },
+    "R002_scope": {
+      "bytes": 2666170,
+      "sha256": "a414473eb65a51b242b7799a5653368d40425317650face52444a2523500e160"
+    },
+    "R002_projections": {
+      "bytes": 200508426,
+      "sha256": "898bac8fb30b7dc8ae18d6beddcd8390456ce5062c2d077c3dbc639334ae0be1"
+    },
+    "checkpoint": {
+      "bytes": 123636774,
+      "sha256": "945239375c2b3de45abccc2dbdc374e3259b55d16298b298fb9e0cd13be5ad63"
+    },
+    "network": {
+      "bytes": 4885,
+      "sha256": "92650883b6f6c993bc29635450035e066c968c4f5a9022a6c1966a0b9f0d3360"
+    },
+    "E018_OOF": {
+      "bytes": 15994068,
+      "sha256": "0d883cae8e22a3f00054afb258a6ed65d8e4fea12d924af7a1330ba17c3badf2"
+    },
+    "E018_model_0": {
+      "bytes": 1922831,
+      "sha256": "39f169d49eed1743ede3b2b6d55237063d7eecfc2646edb48481b714a7653dbe"
+    },
+    "E018_model_1": {
+      "bytes": 2159326,
+      "sha256": "ac5ea38f2688ca2d13a80b99ca89bad8ebab1eb758853ed5634a4f57b7537792"
+    },
+    "E018_model_2": {
+      "bytes": 2257079,
+      "sha256": "91a1cc32e0f6a7b9d4c8d42b83fd843d4b662ef35740d1fbe6823f13cc684ab3"
+    }
+  },
+  "source_zip_sha256": "189f1cb23688013c3692c8cc3dfb0df1400ac6f01ac6b65316c4cd180314cd6d",
+  "source_files": {
+    "input_snapshot/qualification.json": "7d9f9532246bdc846ad557e2fae0950a0249eceb71a61119be106d6ecdf446d6",
+    "input_snapshot/candidate_identity.json": "807d48894475b8619e58b057efaa44a80939c2d1868190171605880654c187da",
+    "input_snapshot/scores.json": "fb84e5df4bf006d4df546a2d047cda0850fd055574924c49ed04a24da14d7344",
+    "input_snapshot/fit8_fold_0.json": "edd7251bbe32b0545a614461e863bfcd8ff0a4aa74544e60d20ed9b193324d9d",
+    "input_snapshot/fit8_fold_1.json": "d3e77f451971266fb41cbec901286169a07f9355c2a71855968fbb2a7c6f1c25",
+    "input_snapshot/fit8_fold_2.json": "d2b9082d308182b8241e9d45f6c44e8f2b94f4391e86a4456cc24f3c83ed2a54",
+    "input_snapshot/source_receipt.json": "3c0d080cc369e6a8ced88dde15fff9d9fbef007fe68c5dbdecb5bfe615bda68c",
+    "input_snapshot/scoring_receipt.json": "83240c94d48c91fab187cb1940c1da9f78173792301249a35b9bc6302e6e4b59",
+    "input_snapshot/launch.json": "e42eb6c275ffab36e9400d74f74bdc7e5f27af9dcddccb47eb3768589c303ce1",
+    "input_snapshot/output_receipt.json": "4f5c7f2d8a4b47ad298daf652da9a97054a18585151d47c63121262e4822649c",
+    "supervision_fold_0.json": "aa3fb7e18f387311146f62a94ecfb428e5ef559101cd566b0e936f202f7b94d0",
+    "supervision_fold_1.json": "78b830e7ec712a4da130a6b503bfd7ea44a214e27d30b64571b453cefca77b3c",
+    "supervision_fold_2.json": "c20cae6ca1a66c72521d4be4c9e4e2e32f1aabc2830089673d547df03e90c8a2",
+    "context_fold_0.json": "f474c87ed495d6ac8719125701bfec49929abf0054f9220c7ccfdfdfcbff1cc8",
+    "context_fold_1.json": "6726ffec3c1ae5c65acbc8619caff5027c69e289032b460c925981fb96e554a5",
+    "context_fold_2.json": "f96e6e2b79764c23f09356c2d4382478c5dd0f3dfcefde57aac9589907552982",
+    "input_audit.json": "0406feba9363a3bdfbd9b210fce030e93b66b2cf2b34c9646ba8ec8bfcf55f47",
+    "launch.json": "5e135d2811a04160cc5d819a58ee4fb34cb8a378dd04dea618478d8506cfa988",
+    "output_receipt.json": "1f0129be3915e27a9474dde67c5970213b9fe210116a75421c8fe870c89b859e"
+  },
+  "original_rows_digest": "8770a36c06010cb0200c327c593e47aa29b914757f16eab1ac20edc16c4a2888",
+  "source_image_root": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\images\\train",
+  "contexts_sha256": "eba16f6623e7eaf209f7e40f8ca0368a41fb7b4a9b93021ebcda57eae7c4a325",
+  "state_digest": "569c30d91455a857c786f5e32d26bc4f451279617c1dc8b11ab85cbe67ff2830",
+  "E028_archive_sha256": "7bce884594a1ba2a28dcc65e59b0a957c13a1045f1d5c75b154fdeb4f7f2c4ef",
+  "scope_qual_images": 338,
+  "scope_new_images": 497,
+  "native_forward_cost": 19880,
+  "bundle_identity": "863e2ef7726173801f54fedca98d482a345eb7ad8d28bea0a82fe543afd57405"
+}
