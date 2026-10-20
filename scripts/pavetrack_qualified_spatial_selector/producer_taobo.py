@@ -69,7 +69,7 @@ def invoke(cmd,tag,cfg,logs,env):
     try:
         with (logs/(tag+'.stdout')).open('xb') as out,(logs/(tag+'.stderr')).open('xb') as err:
             parent_birth=psutil.Process(os.getpid()).create_time()
-            watched=['/usr/bin/python3','-I',str(HERE/'e029_parent_watch.py'),'--parent',str(os.getpid()),'--birth',str(parent_birth),'--note',str(logs/(tag+'.parent_stop.json')),'--',*cmd]
+            watched=['/usr/bin/python3','-I','-B',str(HERE/'e029_parent_watch.py'),'--parent',str(os.getpid()),'--birth',str(parent_birth),'--note',str(logs/(tag+'.parent_stop.json')),'--',*cmd]
             child=subprocess.Popen(watched,stdout=out,stderr=err,env=env,cwd=root,start_new_session=True)
             try:records[child.pid]=managed.identity(psutil.Process(child.pid))
             except psutil.NoSuchProcess:pass
@@ -143,20 +143,20 @@ def main():
         for r in rows:
             f=private/r['relative']
             if f.is_symlink() or not f.resolve().is_relative_to(private) or sha(f)!=r['sha256']:raise ValueError('private raw-byte identity')
-        invoke(['/usr/bin/python3','-I',str(HERE/'e029_linux_bootstrap.py')],'bootstrap',cfg,logs,env)
+        invoke(['/usr/bin/python3','-I','-B',str(HERE/'e029_linux_bootstrap.py')],'bootstrap',cfg,logs,env)
         trusted_runtime=sha(lp['runtime_lock']);shutil.copyfile(lp['runtime_lock'],logs/'runtime_lock.json')
-        def sealed(command):return ['/usr/bin/python3','-I',str(HERE/'e029_runtime_exec.py'),'--lock',lp['runtime_lock'],'--expected-sha256',trusted_runtime,'--',*command]
+        def sealed(command):return ['/usr/bin/python3','-I','-B',str(HERE/'e029_runtime_exec.py'),'--lock',lp['runtime_lock'],'--expected-sha256',trusted_runtime,'--',*command]
         py=cfg['producer']['python'];verify_source(source,args.manifest_sha256)
         # Imports verify versions/device; zero model/GT/sample probe.
         preflight="import sys;sys.path.insert(0,"+repr(str(HERE))+");import e029_linux_environment as e,json;cfg=json.load(open("+repr(str(DOC/'taobo_run_config.json'))+"));e.production_environment(cfg);print('Linux exact runtime verified; zero model/GT')"
-        invoke(sealed([py,'-I','-c',preflight]),'preflight',cfg,logs,env)
-        cmd=[py,str(HERE/'run.py'),'--profile','taobo','--run',lp['run'],'--paths',str(DOC/'taobo_private_paths.json'),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',args.manifest_sha256,'--approval-file',str(args.approval),'--runtime-lock-sha256',trusted_runtime]
+        invoke(sealed([py,'-I','-B','-c',preflight]),'preflight',cfg,logs,env)
+        cmd=[py,'-B',str(HERE/'run.py'),'--profile','taobo','--run',lp['run'],'--paths',str(DOC/'taobo_private_paths.json'),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',args.manifest_sha256,'--approval-file',str(args.approval),'--runtime-lock-sha256',trusted_runtime]
         invoke(sealed(cmd),'controller',cfg,logs,env);state='completed'
     except BaseException as e:reason=repr(e)
     finally:
         try:write(logs/'wrapper_status.json',dict(state=state,reason=reason,elapsed_seconds=time.monotonic()-started,wall_seconds=None,no_retry=True,source_commit=args.reviewed_commit,manifest=args.manifest_sha256))
         except BaseException as e:print('status persistence failed '+repr(e),file=sys.stderr)
     # Packaging reuses the exact source reader and no budget extension/second scientific run.
-    invoke(['/usr/bin/python3','-I',str(HERE/'pack.py'),'--run',lp['run'],'--logs',lp['logs'],'--manifest',str(manifest),'--output',lp['archive']],'package',cfg,logs,env)
+    invoke(['/usr/bin/python3','-I','-B',str(HERE/'pack.py'),'--run',lp['run'],'--logs',lp['logs'],'--manifest',str(manifest),'--output',lp['archive']],'package',cfg,logs,env)
     if state!='completed':raise RuntimeError(reason)
 if __name__=='__main__':main()

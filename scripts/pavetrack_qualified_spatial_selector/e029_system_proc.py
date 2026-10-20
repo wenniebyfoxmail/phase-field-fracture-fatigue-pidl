@@ -67,3 +67,10 @@ def cpu_percent(interval=1):
         return sum(v),v[3]+v[4]
     total,idle=sample();time.sleep(interval);n_total,n_idle=sample();delta=n_total-total
     return 0. if delta<=0 else 100.*(delta-(n_idle-idle))/delta
+
+
+def approved_chain(claim,parent_pid,parent_birth,module=None):
+    ps=module if module is not None else __import__(__name__)
+    if os.getppid()!=parent_pid or parent_pid==claim['pid']:raise PermissionError('independent lifeline parent required')
+    parent=ps.Process(parent_pid)
+    if parent.create_time()!=parent_birth or parent.ppid()!=claim['pid'] or ps.Process(claim['pid']).create_time()!=claim['wrapper_birth']:raise PermissionError('approved wrapper/lifeline birth chain')

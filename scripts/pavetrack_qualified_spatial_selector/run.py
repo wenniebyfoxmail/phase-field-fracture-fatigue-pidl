@@ -93,6 +93,11 @@ def persist_then_cleanup(path,payload,cleanup):
 
 
 def worker(args,plan,cfg,lock,paths,manifest_sha):
+    if c.linux(plan):
+        import e029_system_proc as proc
+        claim=c.read(plan['linux_paths']['launch_claim'])
+        proc.approved_chain(claim,int(os.environ['E029_PARENT_PID']),int(os.environ['E029_PARENT_BIRTH']))
+        if claim['commit']!=args.reviewed_commit or claim['manifest']!=manifest_sha or claim['approval_sha256']!=c.sha(args.approval_file):raise PermissionError('controller exact wrapper claim')
     env=c.environment(plan);env.production_environment(plan)
     launch=c.read(args.run/'launch.json');authority(launch['approval_value'],manifest_sha,args.reviewed_commit,plan)
     control=c.read(args.run/'control.json');ident=request(c.read(args.request),args.role,args.fold)
@@ -167,6 +172,11 @@ def terminate_owned(child,run,controller_pid):
 
 
 def controller(args,plan,cfg,lock,paths,manifest_sha):
+    if c.linux(plan):
+        import e029_system_proc as proc
+        claim=c.read(plan['linux_paths']['launch_claim'])
+        proc.approved_chain(claim,int(os.environ['E029_PARENT_PID']),int(os.environ['E029_PARENT_BIRTH']))
+        if claim['commit']!=args.reviewed_commit or claim['manifest']!=manifest_sha or claim['approval_sha256']!=c.sha(args.approval_file):raise PermissionError('controller exact wrapper claim')
     env=c.environment(plan);env.production_environment(plan)
     authority(c.read(args.approval_file),manifest_sha,args.reviewed_commit,plan)
     if paths!=c.read(c.paths_path(plan)):raise ValueError('exact private input placement')
@@ -199,8 +209,8 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
             cmd=[sys.executable,str(Path(__file__).resolve()),'--run',str(args.run),'--paths',str(args.paths),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',manifest_sha,'--role',role,'--request',str(rp),'--profile',args.profile]
             if k is not None:cmd+=['--fold',str(k)]
             if c.linux(plan):
-                cmd+=['--runtime-lock-sha256',args.runtime_lock_sha256]
-                cmd=['/usr/bin/python3','-I',str(Path(__file__).with_name('e029_runtime_exec.py')),'--lock',plan['linux_paths']['runtime_lock'],'--expected-sha256',args.runtime_lock_sha256,'--',*cmd]
+                cmd.insert(1,'-B');cmd+=['--runtime-lock-sha256',args.runtime_lock_sha256]
+                cmd=['/usr/bin/python3','-I','-B',str(Path(__file__).with_name('e029_runtime_exec.py')),'--lock',plan['linux_paths']['runtime_lock'],'--expected-sha256',args.runtime_lock_sha256,'--',*cmd]
             with stdout.open('wb') as so,stderr.open('wb') as se:
                 child=subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=False,env=dict(os.environ,MPLCONFIGDIR=str(args.run/('_mplcache_'+name(role,k))),**(dict(E029_PARENT_PID=str(os.getpid())) if c.linux(plan) else {})));active[0]=child
                 try:

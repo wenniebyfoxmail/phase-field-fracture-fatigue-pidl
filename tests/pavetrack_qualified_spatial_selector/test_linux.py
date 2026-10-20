@@ -164,6 +164,22 @@ class LinuxChecks(unittest.TestCase):
         import e029_system_proc as proc
         with patch.object(Path,'read_text',side_effect=['cpu 10 0 0 90 0 0 0 0 5 0','cpu 30 0 0 170 0 0 0 0 15 0']),patch.object(proc.time,'sleep'):
             self.assertEqual(proc.cpu_percent(),20.)
+    def test_controller_chain_rejects_forged_or_reused_wrapper(self):
+        import e029_system_proc as proc
+        claim=dict(pid=9,wrapper_birth=100);ps=Mock();watch=Mock();watch.create_time.return_value=200;watch.ppid.return_value=9;outer=Mock();outer.create_time.return_value=100;ps.Process.side_effect=lambda pid:{7:watch,9:outer}[pid]
+        with patch.object(os,'getppid',return_value=7):
+            proc.approved_chain(claim,7,200,ps)
+            outer.create_time.return_value=101
+            with self.assertRaises(PermissionError):proc.approved_chain(claim,7,200,ps)
+            outer.create_time.return_value=100;watch.ppid.return_value=8
+            with self.assertRaises(PermissionError):proc.approved_chain(claim,7,200,ps)
+        with patch.object(os,'getppid',return_value=1):
+            with self.assertRaises(PermissionError):proc.approved_chain(claim,7,200,ps)
+    def test_serial_install_and_explicit_no_source_bytecode(self):
+        s=(HERE/'e029_linux_bootstrap.py').read_text()
+        self.assertIn("['make','-j1','COMPILEALL_OPTS=-j1','install']",s)
+        self.assertIn("'-I','-B'",s)
+        self.assertIn('python3 -I -B ',(HERE/'producer_taobo.sh').read_text())
     def test_science_files_not_modified(self):
         # Reviewed read-only mathematical mechanism remains original, including fixed overlap.
         source=json.loads((c.DOC/'source_manifest.json').read_text())['files']
