@@ -80,13 +80,13 @@
   "local_storage_roots": [
     "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R001",
     "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R002",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R003",
     "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R004",
     "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020",
     "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020-R002",
     "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020-R003",
-    "/Users/wenxiaofang/obsidian/attachments/identification-uncertainty-prediction/2026-10-20",
-    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/IU-OUTPUT-CALIBRATION-C27A25-20261020-R004",
-    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020-R004"
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/preparations/OUTPUT-CALIBRATION-20261020-R004",
+    "/Users/wenxiaofang/obsidian/attachments/identification-uncertainty-prediction/2026-10-20"
   ],
   "execution_total_envelope": {
     "execution_package_started_unix": 1792534351.485248,
