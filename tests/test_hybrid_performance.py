@@ -201,3 +201,35 @@ def test_worker_exit_rejects_missing_step_done(tmp_path,monkeypatch,next_step):
     assert result['status']=='deadline_or_control_stop'
     assert result['active']['step']==(2 if next_step else 1)
     os.close(b);os.close(d)
+
+
+def test_validation_contract_rejects_wrong_card_and_root_before_creation(tmp_path):
+    import argparse,hashlib
+    from validate_hybrid_linux import verify_contract,CARD_RELATIVE
+    source=Path(__file__).resolve().parents[1]/CARD_RELATIVE
+    c=json.loads(source.read_text());code=tmp_path/'code';cp=code/CARD_RELATIVE;cp.parent.mkdir(parents=True);cp.write_text(json.dumps(c))
+    manifest=tmp_path/'package.json'
+    def bind():
+        files={CARD_RELATIVE:hashlib.sha256(cp.read_bytes()).hexdigest()}
+        manifest.write_text(json.dumps(dict(files=files,artifact_id=hashlib.sha256(json.dumps(files,sort_keys=True,allow_nan=False).encode()).hexdigest())))
+    bind();a=argparse.Namespace(card=cp,package=manifest,code=code,root=Path(c['validation_contract']['root']))
+    assert verify_contract(a)['execution_enabled'] is False
+    a.root=tmp_path/'wrong'
+    with pytest.raises(RuntimeError,match='root differs'):verify_contract(a)
+    assert not a.root.exists()
+    a.root=Path(c['validation_contract']['root']);c['execution_enabled']=True;cp.write_text(json.dumps(c))
+    with pytest.raises(RuntimeError,match='not bound'):verify_contract(a)
+    bind()
+    with pytest.raises(RuntimeError,match='authority missing'):verify_contract(a)
+
+
+def test_validation_cpu_environment_is_fixed_before_numerical_imports(tmp_path,monkeypatch):
+    import validate_hybrid_linux as v
+    calls=[]
+    monkeypatch.setattr(v.os,'sched_getaffinity',lambda pid:set(range(32)),raising=False)
+    monkeypatch.setattr(v.os,'sched_setaffinity',lambda pid,pool:calls.append(pool),raising=False)
+    for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS','CUDA_VISIBLE_DEVICES','TMPDIR','XDG_CACHE_HOME','TORCH_EXTENSIONS_DIR'):monkeypatch.setenv(k,'old')
+    v.cpu_environment(tmp_path)
+    assert calls==[set(range(16))] and os.environ['CUDA_VISIBLE_DEVICES']==''
+    assert all(os.environ[k]=='16' for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS'))
+    assert all(Path(os.environ[k]).parent==tmp_path for k in ('TMPDIR','XDG_CACHE_HOME','TORCH_EXTENSIONS_DIR'))
