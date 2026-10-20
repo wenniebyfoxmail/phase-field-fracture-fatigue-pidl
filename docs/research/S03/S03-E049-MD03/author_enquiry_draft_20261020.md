@@ -1,36 +1,37 @@
-# MD03 author enquiry — local draft, NOT SENT
+# MD03 author enquiry — Outlook draft saved, NOT SENT
 
 2026-10-20. User requested a combined enquiry, contact verification, complete
 draft, no sending, and an assessment of proceeding under assumptions.
 
 ## Proposed envelope — requires separate approval before sending
 
-- From: Haofan Dong <hd489@cam.ac.uk> (proposed Cambridge address; actual sending session not yet verified)
+- From: Winnie Wen <xw436@cam.ac.uk> (Chrome Outlook actual account verified: Xiaofang Wen / xw436@cam.ac.uk)
 - To: Professor Hayden Taylor <hkt@berkeley.edu>
 - Cc/Bcc: none
 - Subject: Clarification of image numbering and DIC extensometer definitions in your concrete beam dataset
 - Attachments: none
 - Commitments: no collaboration, delivery, data-sharing or other commitments made.
-- Storage: this local Markdown draft only; not created in a mailbox and not sent.
+- Storage: saved in Chrome Outlook Drafts on 2026-10-20, 11:03 Europe/London; visible saved timestamp and “This message hasn't been sent.” User will send personally. No send action performed.
 
 ## Complete proposed body
 
 Dear Professor Taylor,
 
-I am a PhD student at the University of Cambridge working on image-based crack measurement and evolution modelling. I am using the data accompanying your paper, “Polymer lattice-reinforcement for enhancing ductility of concrete” (Materials & Design, 2020; DOI: 10.1016/j.matdes.2020.109184).
+I am a researcher in the Department of Engineering at the University of Cambridge, working on image-based crack measurement and evolution modelling. I am using the data accompanying your paper, ‘Polymer lattice-reinforcement for enhancing ductility of concrete’ (Materials & Design, 2020; DOI: 10.1016/j.matdes.2020.109184).
 
 Thank you for making the images and analysis files available. I have read `analyzeFlexuralBeamData.m` and `beamDispData.mat` from the Mendeley dataset (10.17632/wv7hvgg8c7.1), and would appreciate clarification on two points:
 
-1. **Image numbering and synchronisation.** Do the published 19.2% and 33.7% image folders correspond to PLA3 and PLA5, respectively, and do the numbers in `IMG_*.tif` correspond directly to `testData.present`? For example, this interpretation links IMG_0089, IMG_0132 and IMG_0175 to the PLA3 time values 430, 645 and 860. Could you confirm the time units, the reference image, and how `present`, `missing` and `n` were defined? If available, the image filenames corresponding to the states in Fig. 7 would also be helpful.
+Image numbering and synchronisation. Do the published 19.2% and 33.7% image folders correspond to PLA3 and PLA5, respectively, and do the numbers in the published TIFF filenames correspond directly to testData.present? For example, this interpretation links IMG_0089, IMG_0132 and IMG_0175 to the PLA3 time values 430, 645 and 860. Could you confirm the time units, the reference image, and how present, missing and n were defined? If available, the image filenames corresponding to the states in Fig. 7 would also be helpful.
 
-2. **Extensometer definitions.** Is there an annotated reference image or a coordinate table showing the two endpoints of Ext1–Ext7 for PLA3 and PLA5? I can follow the use of Ext1–Ext3 in the midspan-deflection calculation, but could not locate the gauge definitions, particularly for Ext4–Ext7. It would be helpful to know their reference lengths, units and endpoint/sign conventions, and whether any were intended to measure opening across individual cracks rather than overall deformation.
+Extensometer definitions. Is there an annotated reference image or a coordinate table showing the two endpoints of Ext1–Ext7 for PLA3 and PLA5? I can follow the use of Ext1–Ext3 in the midspan-deflection calculation, but could not locate the gauge definitions, particularly for Ext4–Ext7. It would be helpful to know their reference lengths, units and endpoint/sign conventions, and whether any were intended to measure opening across individual cracks rather than overall deformation.
 
 An existing annotated image, setup file or a brief explanation would be very helpful.
 
 Kind regards,
-Haofan Dong
-PhD student, University of Cambridge
-hd489@cam.ac.uk
+Winnie Wen
+Department of Engineering
+University of Cambridge
+xw436@cam.ac.uk
 
 ## Contact verification — internal, not part of email
 
@@ -46,11 +47,15 @@ hd489@cam.ac.uk
 - Brian Salazar is also the dataset contributor. His paper-listed address is
   historical; current use was not established. Do not default-CC it or guess
   another address. Taylor alone is a verified current institutional route.
-- Proposed sender hd489@cam.ac.uk comes from the user's local vault instructions.
-  The connected Gmail session uses a different address and was NOT used to save
-  or send this draft. No actual Cambridge sending session is verified today.
-  Sender display name is consistent with connected profile; confirm envelope
-  and signature with user before any later send.
+- Identity correction: the earlier local draft wrongly used collaborator Haofan's
+  identity from an erroneous Obsidian AGENTS.md line. User explicitly corrected
+  it to Winnie / XW436; source AGENTS records and a memory correction note are
+  updated. The Chrome Outlook account is actually Xiaofang Wen / xw436@cam.ac.uk.
+  No Gmail profile is used as evidence of Winnie’s identity. No unverified PhD
+  role is retained. This saved draft has no CC/BCC or attachments.
+- Receipt: parent archive reference_attachment_check_20261020/
+  outlook_draft_proof_20261020.jpg shows the selected Draft, saved timestamp,
+  correct mailbox, recipient, signature and explicit unsent status.
 - Writing-style check: a narrow sent-academic-email search returned no suitable
   references. No samples saved, no local writing-folder search, no claimed exact
   personal-style match. Draft uses concise natural academic English.

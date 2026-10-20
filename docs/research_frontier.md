@@ -94,8 +94,12 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   89/132/175→430/645/860→9.6445/12.9306/14.1595kN,3uniquerowsconsistent;
   filenameconventionstillunconfirmed.16othern/timeexceptionsretained.
   Ext1–3globalmidspansemanticsknown,Ext4–7/endpointsunlocated;Fig.7not
-  localwidthtruth. Combinedauthorenquirynowpreparedlocally,ToTaylorofficial
-  emailverified,notsent. D3decisionallowsconditionalphoto-ID/imagegeometry
+  localwidthtruth. AuthorenquirysavedinChromeOutlookDrafts,actualsender
+  xw436@cam.ac.uk/signatureWinnieWen,ToTaylorhkt@berkeley.edu,notsent;
+  priorHaofanidentityerrorcorrectedatvault/projectsource.
+  D3nextcomparisonprepared:existing3rawimages,visibility-definedfissure/
+  texture/uncertainsegmentsandownfixedvirtualgauges;notauthorendpoints.
+  Noannotation/newCV/fit/forecastexecuted. D3decisionallowsconditionalphoto-ID/imagegeometry
   explorationwithoutwaiting;parkonlylocalopeningreference,notprogramme.
   Inventedendpointsnottruth;affinetimerelabellingdoesnotchangeoldforecast,
   realisedfutureloadnotknowninput. NoCV/fit/rescoreexecuted.

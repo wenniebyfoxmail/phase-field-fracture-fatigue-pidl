@@ -100,8 +100,44 @@ does not launch that computation or open further images.
 
 ## Communication and records
 
-[Combined author enquiry](author_enquiry_draft_20261020.md) is prepared locally,
-not sent or saved in a mailbox. Contact verification and complete envelope/body
-are available for human review. No external commitments. Existing Obsidian
+[Combined author enquiry](author_enquiry_draft_20261020.md) was subsequently saved
+in Chrome Outlook as a draft only, from xw436@cam.ac.uk, signed Winnie Wen,
+to hkt@berkeley.edu. The UI explicitly shows saved and not sent; user will send.
+The earlier Haofan sender was an identity error, now corrected at its source.
+Contact verification and complete envelope/body are available for human review.
+No external commitments. Existing Obsidian
 owner note and its single Roadmap entry are updated; raw evidence remains in
 the existing MD03 archives. This analysis changes prioritisation, not old scores.
+
+## 2026-10-20 continuation agreed — next substantive comparison, not executed
+
+User explicitly agrees not to wait for the author. Move the author reply out of
+the critical path. Keep the main question: whether observable image structure
+can support crack evolution, not whether anonymous DIC channels are predictable.
+
+The next useful package is a **small, image-defined reference comparison** on
+the already exposed89/132/175, rather than another threshold sweep or time relabel:
+
+1. Present raw crops without J fields/algorithm boundaries; distinguish visible
+   fissure, painted texture, and indeterminate regions. Select by raw visibility
+   and fixed spatial coverage, never by forecast error or agreement with J.
+   Uncertain regions are retained as uncertain, not counted as negatives.
+2. Freeze any locally defined virtual-gauge endpoints and reference frame before
+   evaluating their measured displacement change; explicitly call these OUR
+   virtual gauges, not reconstructed Ext1–7. Include texture controls and the
+   existing known-gap controls. If no fissure is discernible, retain that as a
+   resolution limitation and do not invent a crack-positive reference.
+3. Compare raw appearance, frozen old dark candidates and two-sided displacement
+   evidence at those same locations. Report usable/uncertain coverage and raw
+   per-location responses; no physical-width accuracy score without a reference.
+   Keep pixel geometry, displacement jump and old half-depth width separate.
+4. Once a usable observation is established, compare persistence and two-point
+   extrapolation for the explicitly defined observable. A new observer gets a
+   separate development score; it never replaces the old5.81% result. No future
+   recorded load is supplied to the predictor. All3images are already exposed,
+   so this cannot be described as independent future validation.
+
+This is a prepared next comparison, not executed CV/annotation/new identification,
+training or a forecast result in this mail-draft turn. It requires no author
+reply and no additional image download. Existing restrictions on new execution
+remain explicit rather than being silently treated as permission from this plan.

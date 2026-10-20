@@ -505,3 +505,16 @@ width. Affinetimerelabellingleavesoldequal-stepextrapolationunchanged;no
 rerunforthat. Realisedfutureloadnotorigin-knowninput. Parkonlylocalphysical
 referencecomparison,notwholeprogramme/D01. NoCV/fit/training/newscoreexecuted;
 oldobserver/halfdepth/evidencepreserved.
+
+### D3 identity correction / Outlook draft saved — 2026-10-20
+
+UsercorrectedresearcheridentitytoWinnie/XW436,notcollaboratorHaofan/HD.
+ErroneousvaultAGENTSsourceandprojectentrycorrected;memoryupdatefileadded.
+ChromeOutlookactualaccountXiaofangWen/xw436@cam.ac.ukverified;Tohkt@berkeley.edu,
+signatureWinnieWen,noCC/attachments. SavedDraft11:03localwithvisibleunsent
+status;usersendspersonally. [Correctedfullbody](../research/S03/S03-E049-MD03/author_enquiry_draft_20261020.md).
+Authorreplynotcriticalpath. [Nextcomparisonprepared](../research/S03/S03-E049-MD03/assumption_continuation_20261020.md):
+existing3rawimages→visibility-definedfissure/texture/uncertainreferences→own
+fixedvirtualgaugesandcontrols→oldcandidate/two-sided-evidencecomparison.
+Noassumedauthorendpoints,forecast-errorselectionorchangedoldscore.
+NoCV/annotation/newidentification/fit/training/newforecastexecutedthisturn.
