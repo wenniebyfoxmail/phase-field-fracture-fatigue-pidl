@@ -197,8 +197,17 @@ def paired_trajectories():
                       meaning='active_gp = GP product g*raw; not product of element means')
         check(topo+' missing c84 peak',84 not in cycles,
               'No retained PIDL c84 diagnostic. Report transition interval (c83,c85], not exact c84 field jump.',comp,'coverage')
-        with np.load(PAIR/f'pidl_selected/pidl_{topo}_reduced.npz',allow_pickle=False) as z:
-            timing=str(z['state_timing'])
+        reduced=PAIR/f'pidl_selected/pidl_{topo}_reduced.npz'
+        with np.load(reduced,allow_pickle=False) as z:
+            timing=str(z['state_timing']);rc=z['cycles'].astype(int);rs=z['steps'].astype(int)
+        check(topo+' reduced raw step mapping',np.array_equal(rs,np.array([raw_step(int(c),4) for c in rc])),
+              dict(cycles=rc.tolist(),steps=rs.tolist()),reduced,'index')
+        for i,c in enumerate(rc):
+            row=state('E011_reduced_'+topo,'E011_ad749c8_'+topo,int(c),4,f'c{c}s4',reduced,
+                      'legacy_reduced_same_cycle','post_fit/post_refresh; historical raw-active comparison invalid',level='indices_and_headers')
+            for n in ['damage_parent','active_driver_parent','hist_fat_parent','f_fatigue_parent']:
+                field(row,n,str(reduced)+f'::{n}[:,{i}]','parent element reduction, not native GP',timing,
+                      meaning='active counterpart must use corrected GP reconstruction, not old FEM reduced raw')
         checks.append(dict(check=topo+' reduced-channel warning',status='documented_semantic_defect',
                            detail='Original FEM reduced active_driver was raw; old -99.98% active comparison withdrawn. Corrected native-GP replay exists. PIDL timing: '+timing,
                            source=str(PAIR/'analysis/decision.md'),evidence_kind='existing_correction'))
@@ -335,6 +344,20 @@ def current_outputs():
             field(row,n,str(p),'native node/GP4',row['timing'],meaning=meaning)
 
 
+def e024_outputs():
+    root=ARCHIVE/'experiments/S04-E024/producer_execution_v1/raw/runs'
+    for p in sorted(root.glob('*/RUN_RECEIPT.json')):
+        r=js(p);label=r['state'];c,q=map(int,label[1:].split('s'))
+        npz=p.parent/'prediction.npz'
+        row=state('S04-E024','E024_fixed_state',c,q,label,npz,
+                  'seen_state_supervised_fit','10000 parameter updates at one physical state; no physical transition',
+                  level='receipt_and_header',paired_reference_sha256=r['paired_e023_control_lock']['reference_sha256'],
+                  teacher_target_used=True)
+        for f in npz_headers(npz):
+            field(row,f['name'],str(npz)+'::'+f['name'],str(f['shape']),row['timing'],
+                  meaning='saved fitted field; coefficient shrink0.2 is not a physical time increment')
+
+
 def self_checks():
     for c in [1,20,83,89,90,120]:
         for q in range(1,6):
@@ -350,7 +373,7 @@ def main():
     if args.out.exists() and any(args.out.iterdir()):
         raise FileExistsError('fresh audit output required')
     args.out.mkdir(parents=True,exist_ok=True)
-    self_checks();manifest_packages();paired_trajectories();mcs_metadata();c20_identity();c1_chain();current_outputs()
+    self_checks();manifest_packages();paired_trajectories();mcs_metadata();c20_identity();c1_chain();current_outputs();e024_outputs()
     keys=[(r['package'],r['trajectory'],r['umax'],r['cycle'],r['substep'],r['export_label']) for r in states]
     check('compound state identity unique',len(keys)==len(set(keys)),dict(rows=len(keys),unique=len(set(keys))),__file__,'index')
     write_csv(args.out/'state_map.csv',states);write_csv(args.out/'field_map.csv',fields)
