@@ -1,4 +1,4 @@
-function run_shear_fem(griph_root, out_root)
+function run_shear_fem(griph_root, out_root, max_steps)
 % One fresh, bounded AT1/AMOR monotonic shear trajectory. Native GRIPHFiTH
 % assembly/Newton/staggering are retained; no edits to the shared installation.
 assert(~isfolder(out_root), 'Fresh output directory required');
@@ -22,6 +22,8 @@ NODE_BOUNDARIES = phase_field.fem.bc.set_boundaries(...
 DOFS = phase_field.init.dofs(MESH,NODE_BOUNDARIES);
 QUADRATURE = phase_field.init.quadrature(MESH.dim);
 schedule = [0.03:0.03:0.21, 0.24:0.01:0.46]';
+if nargin < 3, max_steps=numel(schedule); end
+assert(max_steps>=1 && max_steps<=numel(schedule) && max_steps==floor(max_steps));
 SOL_STEP_PAR = phase_field.fem.solver.step.params(...
     'n_step',numel(schedule),'ux_final',schedule(end));
 SOL_STEP_PAR.ux_increment = diff([0;schedule]);
@@ -43,7 +45,7 @@ save(fullfile(out_root,'state_000.mat'),'nodes','quads','p_field','p_field_old',
 fid=fopen(fullfile(out_root,'trajectory.csv'),'w');
 cleaner=onCleanup(@() fclose(fid));
 fprintf(fid,'step,U,Rx_top,Rx_bottom,E_el,E_d,res_u,res_pf,alpha_min,alpha_max,max_healing,stag_iters,seconds\n');
-for step=1:numel(schedule)
+for step=1:max_steps
     assert(toc(start)<14400,'Four-hour FEM budget reached');
     previous_alpha=p_field_old;
     [displ,res_displ,D_RHS_tract] = phase_field.fem.solver.step.pre_iter_update(step,sys,displ,SOL_STEP_PAR);
@@ -78,7 +80,17 @@ for step=1:numel(schedule)
     res_pf=norm(pf_force(DOFS.active_dof_pf));
     assert(isfinite(res_u+res_pf) && res_u+res_pf<=1e-4,'Accepted-state residual check failed');
     max_healing=max(previous_alpha-p_field);
-    assert(min(p_field)>=-0.005 && max(p_field)<=1.005 && max_healing<=0.005,...
+    alpha_min=min(p_field); alpha_max=max(p_field);
+    fprintf('CANDIDATE step=%d U=%.17g alpha_min=%.17g alpha_max=%.17g max_healing=%.17g res_u=%.17g res_pf=%.17g\n',...
+        step,schedule(step),alpha_min,alpha_max,max_healing,res_u,res_pf);
+    valid_damage=alpha_min>=-0.005 && alpha_max<=1.005 && max_healing<=0.005;
+    if ~valid_damage
+        U=schedule(step); timing='unaccepted_post_solve_pre_history_update';
+        save(fullfile(out_root,sprintf('failed_state_%03d.mat',step)),...
+            'p_field','p_field_old','displ','U','step','timing','driver','forces',...
+            'res_u','res_pf','alpha_min','alpha_max','max_healing','-v7');
+    end
+    assert(valid_damage,...
         'Damage bounds or irreversibility exceeded tolerance');
     U=schedule(step); timing='post_solve_pre_history_update';
     E_el=SOL_STAG_VAR.el_en(it); E_d=SOL_STAG_VAR.fract_en(it);
@@ -93,6 +105,6 @@ for step=1:numel(schedule)
         sys.MAT_CHAR,sys.CC,p_field,p_field_old,driver,sys.stress_state.as_number,history_vars_old);
 end
 fid_done=fopen(fullfile(out_root,'COMPLETED.txt'),'w');
-fprintf(fid_done,'All %d prescribed states accepted. Elapsed %.3f seconds.\n',numel(schedule),toc(start)); fclose(fid_done);
+fprintf(fid_done,'All %d requested states accepted (full trajectory=%d). Elapsed %.3f seconds.\n',max_steps,numel(schedule),toc(start)); fclose(fid_done);
 diary off;
 end

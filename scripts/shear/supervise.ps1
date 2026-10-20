@@ -27,6 +27,7 @@ $claim.Dispose()
 $proc=Start-Process -FilePath $c.executable -ArgumentList $c.arguments -WorkingDirectory $c.root `
     -RedirectStandardOutput (Join-Path $c.root 'stdout.log') `
     -RedirectStandardError (Join-Path $c.root 'stderr.log') -PassThru
+$childHandle=$proc.Handle
 $started=[DateTime]::UtcNow
 @{pid=$proc.Id;started_utc=$started.ToString('o');host=$env:COMPUTERNAME;kind=$c.kind;
   executable=$c.executable;arguments=$c.arguments;root=$c.root;output=$c.output;code_commit=$c.commit;
@@ -40,7 +41,6 @@ while (-not $proc.WaitForExit(30000)) {
         $proc.Kill(); $proc.WaitForExit(); break
     }
 }
-$proc.Refresh()
 @{pid=$proc.Id;finished_utc=[DateTime]::UtcNow.ToString('o');exit_code=$proc.ExitCode;
   reason=$reason;completed_marker=(Test-Path -LiteralPath (Join-Path $c.output 'COMPLETED.txt'))} |
   ConvertTo-Json | Set-Content -LiteralPath (Join-Path $c.root 'exit.json')
