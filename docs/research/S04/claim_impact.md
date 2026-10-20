@@ -294,3 +294,19 @@ New Run has not launched; no SSH, arrays, mock, resource or numeric tests.
 Review does not establish restored connectivity or convergence. Main readback
 section17 and shared Obsidian put the exact new single-attempt card before
 the user; no execution authority inferred and no old attempt restarted.
+
+### 2026-10-20 — Approval handed off, later human read-only-first instruction needs scope resolution
+
+Main transferred the user's exactadbf0b9d/de0a6514/722788c7/FN776-r2-A1
+single-run approval to the sole coupling owner. Code/card/plan stayed fixed.
+Owner's real duplicate check found another direct human instruction12s after
+its direct execute approval: first diagnose SSH read-only and prepare a new
+card for approval. Main read that actual human message in coordinator
+turn01a158c0-e363, rather than treating agent prose as authority. The owner
+asked the user to resolve the execution scope before any control/SSH call.
+Main confirmed no localr2 authorized_execution folder and told that same
+owner not to launch on the earlier handoff. No duplicate diagnostics or solve.
+This is not a consumed/failedr2 attempt or a numerical result. No source
+payload, GPU, fitting, SSH, freezing or scientific retrieval occurred here.
+Main section18 and Obsidian now distinguish approval conflict from run
+failure; exact budget and scientific conclusions remain unchanged.
