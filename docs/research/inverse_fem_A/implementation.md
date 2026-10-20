@@ -170,8 +170,11 @@ solver states as accepted targets for the changed constrained model.
 Initial independent read-only Codex review of `acb505005b7c5f4a8c047b587553ea51b9691aab`
 returned MODIFY_AND_REREVIEW: residual-only acceptance cannot distinguish
 nonunique tangents in eta=0 nullspaces. See `review_v1.md`. The explicit
-regularity contract, regression tests and supplemental E011 audit are prepared
-for exact-commit focused rereview. No initial negative finding is erased.
+regularity contract, regression tests and supplemental E011 audit passed focused
+independent rereview at exact `c525455cfc53f1bf753b4cbb94ad1a8696181b0e`,
+bounded to C0/C1 derivative preparation; see `review_v2.md`. The reviewer
+independently obtained 19 passing focused tests in 0.23s and spot-checked E011
+headers. No initial negative finding is erased.
 
 Review the exact implementation commit, reused source identity, derivative
 equations, branch/constraint handling, sensitivity propagation, tests and audit
