@@ -13,9 +13,9 @@ def render(run,out,plan):
     read=lambda p:json.loads(p.read_text())
     result=read(run/'evaluate/result.json');evaluation=read(run/'evaluate/evaluation.json');bank=read(run/'bank/bank.json')
     arms=plan['arms'];fig,ax=plt.subplots(1,2,figsize=(12,4.5),layout='constrained')
-    ax[0].bar(arms,[result['U'][a] for a in arms]);ax[0].axhline(0,color='black',lw=.7);ax[0].set_ylabel('Net GT at 1 FP/image, nine consumed sites');ax[0].set_title('Primary D='+str(result['D']))
+    bars=ax[0].bar(arms,[result['U'][a] for a in arms]);ax[0].bar_label(bars,padding=3);ax[0].plot(range(4),[result['U'][a] for a in arms],'ko',ms=3);ax[0].axhline(0,color='black',lw=.7);ax[0].set_ylabel('Net GT at 1 FP/image, nine consumed sites');ax[0].set_title('Primary D='+str(result['D']))
     for j,a in enumerate(arms):
-        v=result['comparisons']['pooled12'][a];ax[1].bar(j,v['new_GT'],color='seagreen');ax[1].bar(j,-v['lost_old'],color='firebrick')
+        v=result['comparisons']['pooled12'][a];ax[1].bar(j,v['new_GT'],color='seagreen');ax[1].bar(j,-v['lost_old'],color='firebrick');ax[1].annotate(str(v['new_GT'])+' / '+str(v['lost_old']),(j,v['new_GT']),xytext=(0,5),textcoords='offset points',ha='center',fontsize=8)
     ax[1].set_xticks(range(4),arms);ax[1].set_ylabel('New (+) / lost old (-), pooled12');ax[1].axhline(0,color='black',lw=.7)
     fig.suptitle('S01-E029 saved OOF comparison; old development sites, no fresh-site claim');fig.savefig(out/'F00_utility.png',dpi=160);plt.close(fig)
     fig,ax=plt.subplots(1,2,figsize=(12,4.5),layout='constrained')
@@ -23,7 +23,7 @@ def render(run,out,plan):
         vals=[]
         for k in range(3):
             fit=read(run/f'fit_{k}/{arm}_FIT.json');chosen=next(p for p in fit['policies'] if p['threshold']==fit['model']['threshold']);vals.append(chosen['positive_GT'])
-        ax[j].bar(range(3),vals,label='chosen policy positives in capacity');ax[j].plot(range(3),[3,5,6],'ko--',label='available FIT GT (overlapping)');ax[j].set_xticks(range(3),['FIT0','FIT1','FIT2']);ax[j].set_title(arm+'; FIT evidence only');ax[j].legend(fontsize=8)
+        bars=ax[j].bar(range(3),vals,label='chosen policy positives in capacity');ax[j].bar_label(bars,padding=3);ax[j].plot(range(3),vals,'bo',ms=3);ax[j].plot(range(3),[3,5,6],'ko--',label='available FIT GT (overlapping)');ax[j].set_xticks(range(3),['FIT0','FIT1','FIT2']);ax[j].set_title(arm+'; FIT evidence only');ax[j].legend(fontsize=8)
     fig.savefig(out/'F01_capacity.png',dpi=160);plt.close(fig)
     maps=np.load(run/'spatial/native_max.npy',mmap_mode='r');cases=read(run/'spatial/cases.json')['cases'];fig,axs=plt.subplots(6,2,figsize=(12,13),layout='constrained')
     selected={r['parent_id'] for r in evaluation['added']['aligned']}
