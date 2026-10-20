@@ -78,8 +78,8 @@ does not create that grant.
 ## Parked exact invocation
 
 This command is documentation only and must remain disabled unless a new exact
-deployment authority exists. The implementation-binding commit replaces the
-candidate SHA placeholder before independent rereview.
+deployment authority exists. The candidate binds implementation commit `00b402dfe732a88d5055ddac65863c46886ee3d2`
+and the exact candidate and plan hashes below are ready for independent rereview.
 
 ```bash
 cd /Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012
@@ -87,7 +87,7 @@ cd /Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-f
 PYTHONPATH=source /Users/wenxiaofang/miniconda3/bin/python3 \
   scripts/s09_e017_finite_deployment_guard.py \
   --candidate docs/research/S09/S09-E017/chunked_deployment_candidate_20261020.json \
-  --candidate-sha256 <FINAL_CANDIDATE_SHA256> \
+  --candidate-sha256 e1f5d660b3b7a39c7247df2d77a22fbce8d0bbae2c1ff4bf4bf03662cf5c054e \
   --authority <NEW_CANONICAL_DEPLOYMENT_AUTHORITY.json> \
   --plan scripts/s09_e017_chunked_deployment_plan.sh \
   --plan-sha256 8bdcfb8b58a5eba7ae5222e02af13a4c408df5564f089aba2f18d952764d1381 \
