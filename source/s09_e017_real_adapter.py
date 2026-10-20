@@ -53,6 +53,10 @@ from s09_e017_runner_contract import (
     validate_gradient_row,
     validate_metric_row,
 )
+from s09_e017_execution_control import (
+    process_identity,
+    runtime_resource_guard,
+)
 
 
 TRAINABLE_NAMES = {
@@ -793,10 +797,14 @@ def write_minimal_failure_receipt(
     attempted_update: int,
     counters: OperationCounters,
     missing_or_unreadable: Sequence[str],
+    execution_context: Mapping[str, Any] | None = None,
 ) -> Path:
     """Independent failure writer; it does not use the normal evidence store."""
     root.mkdir(parents=True, exist_ok=True)
+    context = {} if execution_context is None else dict(execution_context)
     receipt = {
+        "schema_version": "s09-e017-first-stop-v1",
+        "run_id": context.get("run_id"),
         "terminal_state": "EXECUTION_FAILED",
         "first_reason": reason,
         "arm": arm,
@@ -804,7 +812,10 @@ def write_minimal_failure_receipt(
         "counters": asdict(counters),
         "last_complete_update": counters.complete_update_committed,
         "missing_or_unreadable": list(missing_or_unreadable),
+        "process_identity": context.get("process_identity"),
+        "resource_snapshot": context.get("resource_snapshot"),
         "retry": False,
+        "alternate_gpu": False,
     }
     payload = canonical_json(receipt)
     path = root / "failure_receipt.json"
@@ -1449,6 +1460,11 @@ def _run_reviewed_producer_inner(
             <= config["producer"]["reserved_memory_cap_bytes"],
             "reserved memory cap exceeded",
         )
+        failure_context["resource_snapshot"] = runtime_resource_guard(
+            config, output_dir
+        )
+
+    resource_guard()
 
     device = torch.device("cuda:0")
     runtime = bindings["runtime_builder"](
@@ -1509,6 +1525,9 @@ def _run_reviewed_producer_inner(
             "checkpoint_conversion_manifests": conversion_manifests,
             "shared_pristine_state_sha256": shared_states,
             "setup_counters": asdict(setup_counters),
+            "process_identity": failure_context["process_identity"],
+            "resource_snapshot": failure_context["resource_snapshot"],
+            "authority_sha256": config["_execution_control"]["authority_sha256"],
             "optimizer_or_update_performed": False,
         },
     )
@@ -1644,7 +1663,11 @@ def _run_reviewed_producer_inner(
                 arm: asdict(engine.counters) for arm, engine in engines.items()
             },
             "setup_counters": asdict(setup_counters),
+            "process_identity": failure_context["process_identity"],
+            "resource_snapshot": failure_context["resource_snapshot"],
+            "authority_sha256": config["_execution_control"]["authority_sha256"],
             "retry": False,
+            "alternate_gpu": False,
         }
         return store.finalise(completion)
     except Exception as error:
@@ -1660,6 +1683,7 @@ def _run_reviewed_producer_inner(
                 attempted_update=counters.operation_entered,
                 counters=counters,
                 missing_or_unreadable=missing_or_unreadable_from_error(error),
+                execution_context=failure_context,
             )
         except Exception:
             pass
@@ -1684,6 +1708,9 @@ def run_reviewed_producer(
             and output_dir == Path(config["producer"].get("output_root", ""))
         ),
         "root_owned": False,
+        "run_id": config.get("run_id"),
+        "process_identity": process_identity(),
+        "resource_snapshot": None,
     }
     try:
         return _run_reviewed_producer_inner(
@@ -1710,6 +1737,7 @@ def run_reviewed_producer(
                     attempted_update=counters.operation_entered,
                     counters=counters,
                     missing_or_unreadable=missing_or_unreadable_from_error(error),
+                    execution_context=context,
                 )
             except Exception:
                 pass

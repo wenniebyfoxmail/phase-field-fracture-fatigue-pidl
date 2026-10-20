@@ -14,6 +14,15 @@ EXECUTION_FILES = (
     "source/s09_operator.py", "source/s09_stage0a_packet.py",
     "source/s09_stage0a_p1_freeze.py", "scripts/export_s09_stage0a_p1_packet.py",
     "scripts/resolve_s09_stage0a_p1_config.py", "scripts/run_s09_stage0a_p1.py",
+    "source/s09_e017_execution_control.py",
+    "source/s09_e017_factorised_pilot.py",
+    "source/s09_e017_producer_package.py",
+    "source/s09_e017_real_adapter.py",
+    "source/s09_e017_runner_contract.py",
+    "scripts/resolve_s09_e017_execution.py",
+    "scripts/run_s09_e017_producer.py",
+    "docs/research/S09/S09-E017/final_run_package_config_20261019.json",
+    "docs/research/S09/S09-E017/final_execution_candidate_20261020.json",
 )
 
 
@@ -31,6 +40,8 @@ def tracked_execution_files_clean(root: Path) -> bool:
 
 def require_approved_code(root: Path, approved_commit: str) -> None:
     if current_commit(root) != approved_commit:
-        raise ValueError("current commit differs from externally approved Code Ready commit")
+        raise ValueError(
+            "current commit differs from externally approved Code Ready commit"
+        )
     if not tracked_execution_files_clean(root):
         raise ValueError("tracked execution files are dirty")

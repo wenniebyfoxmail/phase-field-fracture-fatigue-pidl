@@ -545,9 +545,13 @@ def test_public_producer_preflight_failure_writes_zero_operation_receipt(
             bindings={},
         )
     receipt = json.loads((output / "failure_receipt.json").read_text())
+    assert receipt["schema_version"] == "s09-e017-first-stop-v1"
     assert receipt["arm"] is None
     assert receipt["counters"]["model_forwards"] == 0
     assert receipt["counters"]["optimizer_step_returned"] == 0
+    assert receipt["process_identity"]["pid"] > 0
+    assert receipt["retry"] is False
+    assert receipt["alternate_gpu"] is False
 
 
 def test_public_producer_preserves_failed_artifact_identity(tmp_path, monkeypatch):
