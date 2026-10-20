@@ -894,3 +894,17 @@
   See S03-E019/font_svg_s01_remaining_evidence_review.md. No file edits/redraw/
   recompute/SVDQR, B003numeric/real/held/C/D; no science-failure inference.
   D3 propose separately prepared new-layout derivative, retain V001/S01.
+
+- **2026-10-20 — Concrete V002-L01 layout draft prepared without execution.**
+  Local reuse search found no equivalent draft. See
+  S03-E019/preparation/f01_v002_layout/README.md and layout_draft.py (sha3e566dc3).
+  Static source/SVG text confirms y368 caption vs y377 V-title baselines and
+  saved blueJ_Q rectheight0.029214469610109317 SVG units. Draft moves only V-row
+  group+70, residualcanvas730->820/footer+90; ledgercanvas660->720, unchanged
+  bars/dots plus three verbatim saved-J_Q text labels/footer relocation. No
+  minheight/axis/data/colour changes. Original renderer/twoSVG SHA unchanged.
+  Readonly future layout-comparison/Safari/final-identity commands drafted,
+  not run/imported/compiled/tested, no writer or candidate output produced.
+  Full right colourbar/wholeframe and final identity remain unreviewed; no
+  resumption/QR-SVD/arrays/B003/real/held/C-D or frozen edits. D3 awaiting
+  specific layout choice and later separate generation/review authority.
