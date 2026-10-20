@@ -1,6 +1,6 @@
 {
   "schema": "hybrid-solver-source-v6",
-  "source_commit": "dd0efd6e7fe420edb0d669c50b5a8093b7641b93",
+  "source_commit": "1181c979dcf8a4035a643e2d6aa803e9b58f734a",
   "base_owner_commit": "edbba209",
   "files": {
     "docs/experiments/s04_fem_pidl_field_alignment_track.md": "83c07f18ea7201a9c188ef94d7c9538d5a467932b6ebf7be37507ffa07a2093c",
@@ -41,6 +41,7 @@
     "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v2.md": "8fa98ab0796913fe6db3ecfac7a1c67a4ad507bb46fda442fb428eb1d4688ddc",
     "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v3.md": "649d141b02663f96d1a25acc6d02a21b24ddef1e97f415dca84fe3ad03a1cb6e",
     "docs/research/S04/hybrid_constrained_design_20261019/producer_delivery_v4.json": "7d2c49cb96786ffce6ca5956c12c8090901538e7a31e3d822bf1e1c87446cecf",
+    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/approval_action.md": "1e1dd6a80391471c21e2eb3455afabe8cb54953bbb9901baf009f28e47b8cc31",
     "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/budget_reconciliation.json": "74dd605299567a12e9aeda3b65cd765595f18a15be2b6b9168f8462ac32051d2",
     "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/code_review.json": "057e75c16bb235d380ed292bdbbbe246f3750b67d5273f5f625ada954f13ff9a",
     "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_card_disabled.json": "b7f6dfd198d7a444851e495c86222eab5b3babb4452b0f289b6ce520cade9ce7",
@@ -102,5 +103,5 @@
     "tools/validate_hybrid_linux.py": "73c50be265c7af53bd782228173facd89911ff1b011a4ec77819e15b230d2532"
   },
   "scope": "disabled local packet; no science, staging or execution review admission",
-  "artifact_id": "1c4a3e8a75407b87a9b110bab8d6d0bc62d4fd8faaaf656d5922a4c735a6c74a"
+  "artifact_id": "67cced2c9611e309b20f084f3fcda046ed6c93fb48b89661811d22dcdfa5d2d0"
 }
