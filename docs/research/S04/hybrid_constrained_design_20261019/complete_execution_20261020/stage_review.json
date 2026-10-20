@@ -1,0 +1,21 @@
+{
+  "verdict": "STAGING_ONLY_REVIEW_PASS",
+  "reviewer": "Codex /root/hybrid_readiness_review",
+  "reviewed_commit": "b582a9ee9bacc6059cd8b7e910429653407402ab",
+  "script_sha256": "f54cae03839be70e38f72b010e849989bef6ac85329a6e8204af6a01ff80cb2e",
+  "findings": [],
+  "scope": "one reviewed standard-library staging action only; no runtime/science admission",
+  "exact_ssh_argv": [
+    "ssh",
+    "-F",
+    "/dev/null",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "-o",
+    "ConnectionAttempts=1",
+    "drtao@172.16.100.2",
+    "/usr/bin/timeout --signal=TERM --kill-after=3s 30s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 OMP_NUM_THREADS=1 /usr/bin/python3 -I -B -"
+  ]
+}
