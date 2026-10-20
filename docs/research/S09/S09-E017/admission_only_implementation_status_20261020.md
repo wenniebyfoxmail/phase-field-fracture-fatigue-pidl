@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E017
 run_id: S09-E017-R001-factorised-head-p0
-status: REPAIRED_EXACT_CANDIDATE_UNDER_INDEPENDENT_REREVIEW
+status: E017_ADMISSION_ONLY_CODE_READY_PASS
 candidate_commit: a8bb84f730dccae8b822ca7bd653b428354bf118
 remote_actions: 0
 scientific_operations: 0
@@ -80,13 +80,17 @@ Repair commit `a8bb84f730dccae8b822ca7bd653b428354bf118` replaces the
 remote command with an stdin script, carries the resolver's single archive
 verification plus before/after stat identity into admission, and writes a
 minimal terminal guard receipt after post-consumption failures. The same
-reviewer is performing an exact-commit rereview. This is not yet a PASS.
+reviewer returned `E017_ADMISSION_ONLY_CODE_READY_PASS` for that exact commit.
 
 ## Not performed and next gate
 
 No granted authority was created. No SSH, DNS/network probe, remote file write,
 real packet/checkpoint content read, CUDA, model, optimizer, producer or
-training occurred. The repaired exact candidate is under independent read-only
-Code Ready rereview. A PASS would make it eligible only for a fully instantiated
-Phase R card and a new user approval; it would not itself authorize remote
-action.
+training occurred. The reviewed candidate is eligible only for the separately
+documented Phase R approval card. No Phase R authority has been materialized or
+consumed, and no remote action is authorized by the Code Ready verdict.
+
+Under the 2026-10-20 bounded-task-authority update, the active Phase R card is
+the single remaining management decision for this admission-only task. Once
+approved, mechanical consistency checks, authority instantiation and the one
+guarded attempt proceed inside that envelope without another hash/path approval.

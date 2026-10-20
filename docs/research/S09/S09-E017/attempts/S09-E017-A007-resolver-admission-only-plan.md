@@ -1,6 +1,6 @@
 # Attempt S09-E017-A007-resolver-admission-only-plan
 
-- Status: `repaired-exact-candidate-under-independent-rereview`
+- Status: `code-ready-phase-r-card-prepared-not-granted`
 - Created: 2026-10-20
 - Type: `control-separation-plan`
 - Remote actions: 0
@@ -44,5 +44,16 @@ returned `E017_ADMISSION_ONLY_REVISE` for remote shell argument binding, two
 archive content reads instead of one, and incomplete post-consumption failure
 evidence. Repair commit `a8bb84f730dccae8b822ca7bd653b428354bf118`
 addresses all three and passes 27 focused tests plus 68 adjacent synthetic
-tests. It is under exact-commit rereview. No SSH, remote state read/write,
-scientific content read, CUDA, producer or training occurred.
+tests. The independent reviewer returned
+`E017_ADMISSION_ONLY_CODE_READY_PASS` for that exact commit. A complete Phase R
+approval card is prepared, but no active authority exists. No SSH, remote state
+read/write, scientific content read, CUDA, producer or training occurred.
+
+## 2026-10-20 governance migration
+
+The original two-stage history is preserved. Prospectively, the active
+admission-only card uses one bounded task authority: an approval covers the
+remaining mechanical consistency pass, authority/card instantiation and one
+guarded attempt. Hash/path completion is no longer a separate approval gate.
+The task is still unapproved for remote execution, and its producer/scientific
+boundaries and one-shot no-reconnect rule are unchanged.

@@ -2,7 +2,7 @@
 experiment_id: S09-E017
 run_id: S09-E017-R001-factorised-head-p0
 record_type: resolver_admission_only_approval_plan
-status: PLAN_ONLY_REQUIRES_LOCAL_SEPARATION_IMPLEMENTATION_AND_REVIEW
+status: PHASE_L_CODE_READY_PHASE_R_CARD_PREPARED_NOT_GRANTED
 remote_actions: 0
 scientific_operations: 0
 date: 2026-10-20
@@ -12,12 +12,13 @@ date: 2026-10-20
 
 ## Decision requested
 
-This document is the complete approval design for a bounded
-resolver/admission-only control gate. It is not an execution card and does not
-contain an active authority. The immediate decision requested is only whether
-to implement and independently review the local separation described in Phase
-L. A later exact remote command, with real helper/plan hashes, must return for a
-second explicit approval before any SSH or remote write.
+This document is the design for a bounded resolver/admission-only control gate.
+Phase L is now complete with `E017_ADMISSION_ONLY_CODE_READY_PASS` bound to
+`a8bb84f730dccae8b822ca7bd653b428354bf118`. The exact Phase R command,
+authority payload, paths and budgets are now frozen in
+`admission_only_phase_r_approval_card_20261020.md`. No active authority exists;
+Phase R still requires a separate explicit approval before any SSH or remote
+write.
 
 ## Accepted starting state
 
@@ -320,3 +321,21 @@ follow-up probe is implied.
 3. Any producer, scientific-asset content read, production admission token,
    CUDA initialization, runtime/model/optimizer construction, forward/autograd,
    update, holdout or training remains a separate later decision.
+
+## 2026-10-20 prospective governance amendment
+
+The sequence above records how this task was originally controlled and is not
+rewritten. For the current entry, the user's bounded-task-authority update
+removes repeated administrative approvals inside one declared envelope. Phase
+L implementation, repair and focused review are complete. The remaining card
+is now one consolidated admission-only task decision: approval covers automatic
+mechanical recheck, exact card/authority instantiation and the single guarded
+attempt. It does not add a second approval when only hashes, paths, versions or
+receipts are resolved.
+
+This workflow amendment does not itself approve the currently unapproved
+attempt. It preserves the one connection, no retry/reconnect, zero scientific
+content read, zero CUDA/model/optimizer/producer and zero training limits.
+Scientific-content access, producer authority, a larger budget, a different
+host/GPU, or a retry after authority consumption remains a new human decision.
+The active entry is `admission_only_phase_r_approval_card_20261020.md`.
