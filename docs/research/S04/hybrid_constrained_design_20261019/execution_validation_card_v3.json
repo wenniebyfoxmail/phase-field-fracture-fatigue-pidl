@@ -1,0 +1,231 @@
+{
+  "schema": "hybrid-execution-card-v1",
+  "run_id": "pf_hybrid_full_20261020_r2",
+  "run_root": "/mnt/data2/drtao/wennie/pf_hybrid_full_20261020_r2",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_hybrid_full_20261020_r2",
+  "producer": {
+    "hostname": "GPUServer8",
+    "account": "drtao",
+    "gpu_index": 5,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b"
+  },
+  "authority": {
+    "user_instruction": "继续完成 Linux 实机控制器、全网格一致性和实际成本验证；物理容差不变、不放宽120秒；独立复审无误后按完整方案运行。",
+    "date": "2026-10-20",
+    "validation_permitted": true,
+    "execution_condition": "all actual validation passed, exact enabled production card/package independent review PASS, final live identity/runtime/resource admission; one launch only; no retry/resume",
+    "prior_R1_remains_terminal": true
+  },
+  "inputs_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c",
+  "state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+  "base_load_cycle": [
+    0.02999988,
+    0.05999988,
+    0.08999988,
+    0.11999988,
+    0.0
+  ],
+  "displacement_scale": 0.108,
+  "solver": {
+    "force_scale": 1.0,
+    "damage_gradient_scale": 1.0,
+    "force_tolerance": 1e-08,
+    "joint_residual_sum_tolerance": 4e-06,
+    "damage_tolerance": 1e-07,
+    "bound_tolerance": 1e-10,
+    "fatigue_tolerance": 1e-08,
+    "qp_precision": 1e-10,
+    "max_outer": 100,
+    "max_mechanics": 50,
+    "max_qp": 200000,
+    "wall_seconds": 120.0
+  },
+  "training": {
+    "seed": 20261019,
+    "fits": 1,
+    "max_updates": 20000,
+    "wall_seconds": 21600,
+    "learning_rate": 0.001,
+    "validation_every": 1000,
+    "patience": 3,
+    "loss": "mass mean squared damage plus ell^2 GP gradient squared; full graph one transition per update",
+    "initialization": "head weight zero/bias .05; four64 residual message blocks"
+  },
+  "criteria": {
+    "mean_J_max": 0.001,
+    "max_J_max": 0.01,
+    "speed_fraction_min": 0.1,
+    "role": "prospective synthetic single-family online acceleration claim; all physical acceptance and f<1 coverage necessary",
+    "rationale": "accuracy-first 0.1 percent mean normalized field agreement and1percent worst-step cap;10percent time reduction is a practical margin, not a confidence bound; no old criterion changed",
+    "timing_uncertainty": "single matched whole-trajectory timing; no statistical repeatability claim",
+    "history_relative_max": 0.05,
+    "fatigue_absolute_max": 0.01,
+    "reaction_relative_max": 0.01,
+    "scoring_timing": "all reference comparisons are posthoc analysis; excluded from matched online CF/CC/CH and fully charged as study evaluation work"
+  },
+  "budget": {
+    "gpu_hours": 12,
+    "cpu_wall_hours": 136,
+    "cpu_core_hours": 2176,
+    "cpu_cores": 16,
+    "ram_gib": 64,
+    "gpu_vram_gib": 24,
+    "primary_gib": 128,
+    "archive_gib": 128,
+    "free_storage_gib_required": 256,
+    "producer_retries": 0,
+    "training_fits": 1,
+    "numerical_substeps": 3600,
+    "replay_analysis_hours": 4,
+    "termination_reserve_seconds": 45,
+    "proposed_training_gpu_hours": 6,
+    "proposed_hybrid_gpu_hours": 6
+  },
+  "runtime_expected": {
+    "numpy": "1.24.4",
+    "scipy": "1.15.3",
+    "torch": "2.7.0+cu126",
+    "osqp": "1.0.4",
+    "h5py": "3.13.0",
+    "psutil": "7.0.0"
+  },
+  "phases": [
+    {
+      "id": "native_replay",
+      "kind": "replay",
+      "gpu": false,
+      "wall_seconds": 14400
+    },
+    {
+      "id": "train_A",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.8,
+      "role": "labels",
+      "initializer": "previous"
+    },
+    {
+      "id": "train_B",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 1.2,
+      "role": "labels",
+      "initializer": "previous"
+    },
+    {
+      "id": "validation",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 1.0,
+      "role": "labels",
+      "initializer": "previous"
+    },
+    {
+      "id": "training",
+      "kind": "training",
+      "gpu": true,
+      "wall_seconds": 21600
+    },
+    {
+      "id": "test_reference",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_reference",
+      "initializer": "previous"
+    },
+    {
+      "id": "test_classical",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_candidate",
+      "initializer": "classical"
+    },
+    {
+      "id": "test_hybrid",
+      "kind": "trajectory",
+      "gpu": true,
+      "wall_seconds": 21600,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_candidate",
+      "initializer": "neural"
+    },
+    {
+      "id": "analysis",
+      "kind": "analysis",
+      "gpu": false,
+      "wall_seconds": 14400
+    }
+  ],
+  "stopping": "first unaccepted state/time/RAM/storage/identity failure stops whole pipeline; no partial fit/resume/retry or threshold/eta change",
+  "interpretation": "old c1 fields are replay only; state0 is prescribed; newly accepted same-contract trajectory states alone form labels; test opens only after model frozen",
+  "stopping_details": {
+    "substep_solver_deadline_seconds": 120,
+    "supervisor_poll_seconds": 1,
+    "gpu_query_timeout_seconds": 2,
+    "term_then_kill_grace_seconds": 10,
+    "cleanup_reserve_seconds": 45,
+    "meaning": "120s is cooperative solver deadline and watchdog trigger, not an exact OS kill instant. Phase, shared-analysis, total-host and GPU triggers subtract45s to charge polling and termination within their envelopes. Slow filesystem/OS scheduling can delay supervision; actual elapsed including cleanup is always reported, no absolute realtime guarantee."
+  },
+  "input_identity_revision": "portable fixed-order native Q4 B/det; original scientific state arrays bitwise unchanged, derivation in inputs.json; no threshold change",
+  "execution_enabled": false,
+  "prior_terminal_run": "pf_hybrid_full_20261019_r1",
+  "readiness": "AUTHORIZED_VALIDATION_PENDING_EXACT_EXECUTION_CARD",
+  "method_revision": {
+    "mechanics": "same hybrid-only warm mechanics workspace and exact-key LU policy in reference/classical/NN phases; caches isolated by phase",
+    "active_set": "trace signs reconstructed from BC-projected/scaled previous u; not accepted truth",
+    "reuse": "fixed geometry/material tensors and CSR scatter; numeric LU only exact CSC/free-DOF identity; no separate SuperLU symbolic reuse claim",
+    "audit": "uncached legacy final mechanical assembly plus unchanged fresh joint residual/KKT and immutable accepted-history map",
+    "durable_observability": "start/end fsync per block, separate Linux pidfd controller and gated worker start; report incomplete work after kill",
+    "matched_quality": "classical and hybrid must BOTH satisfy unchanged quality limits before joint matched-quality acceleration claim",
+    "posthoc": "sealed-state raw/active, energies/trace branches, fronts/support, feasibility/healing, correction/fallback and fixed4/304/599/600 field maps, separate evaluation cost"
+  },
+  "cost_basis": {
+    "first_R1_step_wall_seconds": 56.95242438558489,
+    "mechanics_seconds": 46.18026283942163,
+    "nonmechanical_seconds": 10.772161546163261,
+    "six_hour_600_step_average_ceiling_seconds": 36.0,
+    "old_four_hour_average_ceiling_seconds": 24.0,
+    "required_mechanics_reduction_for_36s_first_step_surrogate": 0.4537095091563429,
+    "interpretation": "single accepted-step sensitivity only; not a full-trajectory prediction or measured speedup. Substep2 cost split unknown. Six/six allocation proposed within total12GPUh, not approved execution."
+  },
+  "validation_contract": {
+    "root": "/mnt/data2/drtao/wennie/pf_hybrid_validate_20261020_01",
+    "wall_cap_seconds": 1800,
+    "gpu_seconds": 0,
+    "max_extra_diagnostic_substeps": 5,
+    "complete_study_numerical_substeps": 3600,
+    "extra_diagnostic_not_training": true,
+    "all_costs_deducted_from_total_136_host_hours": true,
+    "controller_cases": [
+      "timely step_done success",
+      "missing done on worker exit must fail",
+      "real120s unmatched step must terminate",
+      "own parent death must stop benign worker and guardian"
+    ],
+    "saved_states": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "matrix_norm": "norm_F(Kcached-Klegacy)/norm_F(Klegacy)",
+    "force_norm": "max_abs(Kcached@u-Klegacy@u)",
+    "operator_tolerance": 1e-10,
+    "path": "canonical state0; one cycle original five loads times .8; own accepted history/cache; same worker/commit/labelsIO; no model or fit",
+    "on_failure": "stop complete package; no retry, tolerance change or deadline extension; expected control negatives pass only exact reason and cleanup"
+  }
+}
