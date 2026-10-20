@@ -76,3 +76,7 @@ Final numerical candidate remains `a5d65d21`; prepared transport is
 is prepare-only. Execution requires a fresh explicit authority timestamp and
 retains the original180-second boundary and90-second maximum native child;
 there is no retry loop. This review creates no new execution authority.
+
+## Revision2 full FEM admission
+
+Independent same-channel reviewer shear_review confirmed FEM Code Ready at e6dcc2b88b347dab51034c2c7f7213788e3d58c9. Differential checks: identical251-node geometric essential-alpha masks; native non_hom_pf excludes those DOFs while retaining alpha1, future path free; unchanged physics/loading/thresholds; failure fields/invariants retained without re-evaluation; exact-child4CPU/16GiB/10GiB controls and absolute science deadline capped at total−600s; compiled installedMEX byte identities plus MATLAB which path checks; exclusive single-admission transport preserving timeout streams and totaldeadline-clamped calls. Local3no-training tests and actualmesh float32/float64 mask check pass. Prior findings carried forward. No reviewer remote operation, solve or training. GPU execution remains uncleared pending explicitHQrelease and GPUcontroller review. This review grants no additional attempt beyond the recorded authority.
