@@ -1,6 +1,6 @@
 """E029 task wiring. Reuses the managed detector, labels, selector and runtime."""
 import hashlib,importlib.util,json,os
-from pathlib import Path
+from pathlib import Path,PureWindowsPath
 ROOT=Path(__file__).resolve().parents[2]
 HERE=Path(__file__).resolve().parent
 DOC=ROOT/'docs/research/S01/S01-E029'
@@ -27,8 +27,9 @@ def sha(path):
 def checked(path,h):
     if sha(path)!=h:raise ValueError('byte identity: '+str(path))
 
-def config():
-    c=read(DOC/'run_config.json');base=read(ROOT/'docs/research/S01/S01-E022/run_config.json')
+def config(profile="windows"):
+    if profile not in ("windows","taobo"):raise ValueError("runtime profile")
+    c=read(DOC/("taobo_run_config.json" if profile=="taobo" else "run_config.json"));base=read(ROOT/'docs/research/S01/S01-E022/run_config.json')
     # Retain all inherited definitions; no monkey-patched legacy producer main.
     base.update(protocol='S01-E029-v1',proposed_run_id='S01-E029-R001')
     base['feature']['thresholds']=c['gates'];base['fit']['ridge']=c['ridge']
@@ -66,3 +67,14 @@ def prediction_rows(model,rows,guard,geometry=False):
 def choose(scope,model,predictions,cfg,threshold):
     scores={r['parent_id']:{k:r[k] for k in ['roles','rank_score']} for r in predictions}
     return roles.select(scope['candidates'],scores,threshold,scope['locations'],cfg,core,locality)
+
+
+def linux(plan):return plan.get('runtime_profile')=='taobo'
+def manifest_path(plan):return DOC/('taobo_source_manifest.json' if linux(plan) else 'source_manifest.json')
+def paths_path(plan):return DOC/('taobo_private_paths.json' if linux(plan) else 'private_paths.template.json')
+def environment(plan):return module('e029_platform_environment',HERE/'e029_linux_environment.py' if linux(plan) else ROOT/'scripts/pavetrack_target_spatial/environment.py')
+def image_path(record,plan):
+    if not linux(plan):return Path(record['prepared_image'])
+    logical=PureWindowsPath(record['prepared_image']);base=PureWindowsPath(plan['logical_source_image_root'])
+    if logical.parent!=base or logical.name!=record['image_id'] or Path(logical.name).name!=logical.name or '\\' in logical.name or logical.name in ('.','..'):raise ValueError('immutable logical image identity')
+    return Path(plan['linux_paths']['images'])/logical.name

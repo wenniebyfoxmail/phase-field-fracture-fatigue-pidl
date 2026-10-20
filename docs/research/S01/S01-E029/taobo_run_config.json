@@ -1,0 +1,233 @@
+{
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "excluded_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "qualification_reused": [
+    "24",
+    "1638",
+    "2027"
+  ],
+  "primary_locations": [
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "arms": [
+    "E003",
+    "saved_E018_geometry",
+    "aligned",
+    "half_shift"
+  ],
+  "main": "aligned",
+  "threshold": 0.5,
+  "foreground_comparison": ">=",
+  "shift": [
+    16,
+    16
+  ],
+  "gates": [
+    0,
+    0.0625,
+    0.125,
+    0.25,
+    "abstain"
+  ],
+  "ridge": 0.01,
+  "heads": {
+    "Q": {
+      "columns": [
+        0,
+        1,
+        4,
+        5
+      ],
+      "target": "corrected_max_IoU"
+    },
+    "N": {
+      "columns": [
+        2,
+        4,
+        5
+      ],
+      "target": "valid_localisation AND novel_reference"
+    },
+    "A": {
+      "columns": [
+        3
+      ],
+      "target": "cached admitted AND lost==0 AND FP==0"
+    }
+  },
+  "policy": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "score": "sqrt(original_proposer_confidence * corrected_E003_probability)",
+    "eligibility": "unchanged E012 base eligible19384, additionally strict positive original/corrected intersection; base indices/eligibility remain immutable",
+    "correction_order": "learned Q*N*A descending, unchanged s0 descending, image/box/key; no detector rescore",
+    "max_per_image": 1,
+    "max_per_source_group": 3,
+    "source_group_unit": "fixed four-site E012 group; apply same cap to each included group during FIT/jackknife/held",
+    "originals": "immutable prefix, all original scores unchanged; retain E003 as deployed comparator"
+  },
+  "locality": {
+    "predicate": "min(old_x2,new_x2)>max(old_x1,new_x1) AND min(old_y2,new_y2)>max(old_y1,new_y1)",
+    "edge_contact": false,
+    "epsilon": false,
+    "threshold_search": false,
+    "trainable_parameters": 0,
+    "field": "positive_intersection",
+    "base_eligibility_unchanged": true
+  },
+  "primary": {
+    "name": "protected_net_GT_advantage_over_strongest_fixed_control",
+    "scope": "nine sites not used for E028 localisation qualification; still previously consumed development data",
+    "formula": "U_aligned - max(0,U_saved_E018_geometry,U_half_shift)",
+    "minimum_integer_GT": 1,
+    "old_retention_guard_scopes": [
+      "pooled9",
+      "pooled12"
+    ],
+    "lost_old_max": 0,
+    "macro": "descriptive only; original FIT gate calibration keeps old macro rule"
+  },
+  "GT_access_contract": {
+    "unit": "fold and model role, not global never-decoded GT",
+    "FIT": "own FIT8 supervision/targets only; reject same-fold held and other-fold label payloads",
+    "held_inference": "frozen own model/gate plus GT-free numeric candidates/context only; no shared target objects",
+    "evaluation": "separate role after all six models/gates/full held predictions/B1 reproduction freeze",
+    "global_FIT_union": "all twelve sites; a site can be FIT in another fold; not independent end-to-end OOF"
+  },
+  "protocol": "S01-E029-v1",
+  "proposed_run_id": "S01-E029-R001",
+  "execution_enabled": false,
+  "run_path": "/mnt/data2/drtao/wennie/S01-E029-R001/run",
+  "producer": {
+    "hostname": "GPUServer8",
+    "ssh_alias": "gpu-taobo",
+    "account": "drtao",
+    "python": "/mnt/data2/drtao/wennie/S01-E029-R001/runtime/bin/python3.12",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "gpu_physical_index": 5,
+    "gpu_logical_index": 0,
+    "CUDA_VISIBLE_DEVICES": "5",
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "gpu_name": "NVIDIA GeForce RTX 4090",
+    "fallback": false,
+    "GPU": true
+  },
+  "checkpoint": {
+    "sha256": "945239375c2b3de45abccc2dbdc374e3259b55d16298b298fb9e0cd13be5ad63",
+    "bytes": 123636774,
+    "parameters": 30905011,
+    "tensors": 74,
+    "upstream_commit": "f3988031dd2adc3d19b32d1c48a2bf90d12871ac"
+  },
+  "tile": {
+    "input": 512,
+    "stride": 256,
+    "halo": 128,
+    "padding": "reflect",
+    "batch": 1
+  },
+  "budget": {
+    "total_task_wall_seconds": null,
+    "wall_seconds": null,
+    "packaging_reserve_seconds": null,
+    "RSS_bytes": 4294967296,
+    "GPU_allocated_bytes": 4294967296,
+    "GPU_reserved_bytes": 4294967296,
+    "output_bytes": 2147483648,
+    "archive_bytes": 2147483648,
+    "minimum_free_disk_bytes": 34359738368
+  },
+  "counts": {
+    "source_image_reads": 497,
+    "source_image_decodes": 497,
+    "native_tiles": 19880,
+    "reused_contexts": 12238,
+    "new_contexts": 18918,
+    "descriptor_rows": 31156,
+    "case_captures": 6,
+    "model_sets": 6,
+    "model_fits": 18,
+    "linear_solves": 18,
+    "training_target_rows": 77536,
+    "prediction_rows": 116304,
+    "B1_replay_rows": 19384,
+    "context_builds": 6,
+    "FIT_baselines": 3,
+    "FIT_policy_comparisons": 30,
+    "evaluation_baselines": 6,
+    "evaluation_comparisons": 24
+  },
+  "runtime_profile": "taobo",
+  "linux_paths": {
+    "root": "/mnt/data2/drtao/wennie/S01-E029-R001",
+    "source": "/mnt/data2/drtao/wennie/S01-E029-R001/source",
+    "private": "/mnt/data2/drtao/wennie/S01-E029-R001/private",
+    "images": "/mnt/data2/drtao/wennie/S01-E029-R001/private/images",
+    "logs": "/mnt/data2/drtao/wennie/S01-E029-R001/wrapper-logs",
+    "runtime": "/mnt/data2/drtao/wennie/S01-E029-R001/runtime",
+    "runtime_lock": "/mnt/data2/drtao/wennie/S01-E029-R001/runtime_lock.json",
+    "approval": "/mnt/data2/drtao/wennie/S01-E029-R001/approval.json",
+    "launch_claim": "/mnt/data2/drtao/wennie/S01-E029-R001/launch_claim.json",
+    "archive": "/mnt/data2/drtao/wennie/S01-E029-R001/S01-E029-R001-fixed-v1.tar.gz",
+    "run": "/mnt/data2/drtao/wennie/S01-E029-R001/run"
+  },
+  "admission": {
+    "unit": "selected GPU plus shared host CPU/RAM/disk",
+    "selected_compute_processes": 0,
+    "selected_utilization_percent": 0,
+    "maximum_CPU_percent": 50,
+    "minimum_free_RAM_bytes": 8589934592,
+    "minimum_free_GPU_MiB": 8192,
+    "other_GPU_jobs": "allowed without access or termination"
+  },
+  "logical_source_image_root": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\images\\train"
+}

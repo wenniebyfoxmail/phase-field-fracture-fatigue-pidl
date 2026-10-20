@@ -1,0 +1,10 @@
+{
+  "catalogue_sha256": "5dc25418f62a6493ad0412d24d6d253b6f23e8b42471308d701bb0f7783adb66",
+  "inputs": 11,
+  "images": 497,
+  "total_payload_files": 508,
+  "archive_members": 509,
+  "source_image_identity_member_sha256": "807d48894475b8619e58b057efaa44a80939c2d1868190171605880654c187da",
+  "private_archive_limit_bytes": 4294967296,
+  "source_code": "source-only; private catalogue not public"
+}
