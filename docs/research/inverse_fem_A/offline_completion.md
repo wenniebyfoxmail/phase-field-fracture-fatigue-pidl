@@ -8,7 +8,7 @@ native-size sparse solve, parameter evaluation, training, SSH or new holdout.
 
 The baseline c525455c review and its 19 focused checks are reused. This update
 does not change those files or repeat their broad review. It adds three
-interfaces and 15 focused small-array checks (15 passed in0.25s). No new producer
+interfaces and 18 focused small-array checks (18 passed in0.18s after review fixes). No new producer
 owner, physical state, scientific result or execution authority is created.
 
 ## 1. Native-shaped sparse interface (native performance unverified)
@@ -65,14 +65,18 @@ fill/product caps reject or stop. Maximum tested reduced dimension is11;
   version+1/load-index+1, exact u/d correspondence and fresh-trial versus
   committed A/q/f before one atomic sensitivity commit. Any exception leaves
   the old state/tangent/receipts unchanged; duplicates and mixed histories fail.
-- `freeze_variation` preserves prior u/d/A/q tangents; candidate parameter
-  directions and prescribed-displacement tangents are explicit. The opaque
+- `freeze_variation` preserves prior u/d/A/q tangents. Each tape requires a
+  finite immutable global (dE,dGc,dAlphaT) direction at construction; omitted
+  per-step parameters reuse it, and a changed direction rejects before any
+  solve/commit. Prescribed-displacement directions can follow the load controls. The opaque
   native channel is preserved, not promoted to a newly identified physical H.
 - `DirectionalTransitionProblem` supplies right-direction force, BC, damage
   and history equations at constitutive/weak-constraint switches. For weak
   lower activity it requires dd-dd_old>=0, dRd>=0 and complementarity; for weak
   upper activity -dd>=0, -dRd>=0. Fischer-Burmeister equations encode these
   nonlinear directional conditions. Strong constraints retain dd=dd_old or0.
+  Wrong-sign bound multipliers beyond the declared weak band reject even if
+  a broader primal residual tolerance would otherwise admit them.
 - `check` audits a SUPPLIED direction, including A/q consistency and fixed
   scaling, and always returns derivative_unique=False. A small directional
   residual is not a uniqueness proof. This problem is never passed to the
@@ -184,8 +188,14 @@ validation, but this offline update does not.
 
 Request only delta review of these new sparse, transmission/directional and
 source/observable interfaces. Reuse c525455c and its19 checked behaviors.
-Allow only the new15 small-array tests and text/header inspection. Keep
+Allow only the new18 small-array tests and text/header inspection. Keep
 native matrices/solves, trajectory replays, primal FEM, inversion and all
 remote/holdout access outside review execution. Record exact commit and
 limitations. Source/array availability or a review PASS is not scientific
 parameter recovery or run authority.
+
+The first delta review of 4c0c78b5 requested two repairs: immutable global
+material direction per tape, and rejection of wrong-sign bound multipliers
+outside the weak band. Both are implemented and covered by the focused suite;
+the corrected exact commit requires independent focused rereview. Original
+review findings are retained in review_v3.md.

@@ -134,7 +134,7 @@ def test_stable_sensitivity_tape_atomic_and_once_only():
     new = replace(r.old, displacement=u, damage=d, accumulated=p.accumulated,
                   driver=p.driver, fatigue=p.fatigue, version=1, load_index=1, load_id='next')
     tape = SensitivityTape(r.old, r.zero_variation(), initial_binding_id='unit-conditioned-state',
-                          initialization_policy='fixed_recovered_profile')
+                          initialization_policy='fixed_recovered_profile', parameter_direction=(.1,0,0))
     provider = SparseSensitivityProvider(step, row_scale=np.ones(11), column_scale=np.ones(11), limits=limits())
     before = (tape.state.fingerprint(), tape.variation, tape.receipts)
     def failed(*a):
@@ -144,8 +144,14 @@ def test_stable_sensitivity_tape_atomic_and_once_only():
             parameters=(.1,0,0), solve=failed, regularity=provider.evidence, linear_tolerance=1.e-12)
     assert (tape.state.fingerprint(), tape.variation, tape.receipts) == before
     receipt = tape.advance_given(step, new, expected_load_id='next', transition_tolerance=1.e-12,
-            parameters=(.1,0,0), solve=provider, regularity=provider.evidence, linear_tolerance=1.e-12)
+            solve=provider, regularity=provider.evidence, linear_tolerance=1.e-12)
     assert receipt['derivative_commits'] == 1 and receipt['primal_commits'] == 0
+    assert receipt['parameters'] == (.1,0,0)
+    committed = (tape.state.fingerprint(), tape.variation, tape.receipts)
+    with pytest.raises(ValueError, match='fixed direction'):
+        tape.advance_given(step, new, expected_load_id='next', transition_tolerance=1.e-12,
+                           parameters=(0,.1,0))
+    assert (tape.state.fingerprint(), tape.variation, tape.receipts) == committed
     with pytest.raises(ValueError, match='stale'):
         tape.advance_given(step, new, expected_load_id='next', transition_tolerance=1.e-12,
             solve=provider, regularity=provider.evidence, linear_tolerance=1.e-12)
@@ -169,9 +175,40 @@ def test_weak_lower_switch_direction_and_history_equations(gc_direction):
     check, _ = problem.check(bad, z, parameters=(0,gc_direction,0), tolerance=1.e-12)
     assert not check.satisfies_directional_equations and check.weak_primal_violation > 0
     assert problem.stop_record()['history_commits'] == 0
-    tape = SensitivityTape(r.old, z, initial_binding_id='unit', initialization_policy='fixed_recovered_profile')
+    tape = SensitivityTape(r.old, z, initial_binding_id='unit', initialization_policy='fixed_recovered_profile',
+                           parameter_direction=(0,gc_direction,0))
     with pytest.raises(TypeError, match='switches stop'):
         tape.advance_given(problem, r.old, expected_load_id='next', transition_tolerance=1.e-12)
+
+
+def test_tape_material_direction_is_required_finite_and_read_only():
+    r, _, _, _ = patch()
+    kwargs = dict(initial_binding_id='unit', initialization_policy='fixed_recovered_profile')
+    with pytest.raises(TypeError, match='parameter_direction'):
+        SensitivityTape(r.old, r.zero_variation(), **kwargs)
+    with pytest.raises(ValueError):
+        SensitivityTape(r.old, r.zero_variation(), parameter_direction=(np.nan,0,0), **kwargs)
+    supplied = np.array([.1,0,0])
+    tape = SensitivityTape(r.old, r.zero_variation(), parameter_direction=supplied, **kwargs)
+    supplied[:] = 0
+    assert tape.parameter_direction == (.1,0,0)
+    with pytest.raises(AttributeError):
+        tape.parameter_direction = (0,.1,0)
+
+
+@pytest.mark.parametrize('bound', ['lower', 'upper'])
+def test_directional_problem_rejects_wrong_sign_even_inside_primal_tolerance(bound):
+    r, u, d, bc = patch(weak=True)
+    if bound == 'lower':
+        r = Q4Residual(r.kin, replace(r.material, gc=r.material.gc-1.e-7), r.old)
+    else:
+        d = np.ones_like(d)
+    q = r.evaluate(u,d).damage_residual
+    assert np.all(q < -Margins().multiplier) if bound == 'lower' else np.all(q > Margins().multiplier)
+    assert np.max(abs(q)) < 1.
+    with pytest.raises(ValueError, match='wrong-sign bound multiplier'):
+        DirectionalTransitionProblem(r,u,d,bc,force_tolerance=1.e-12, damage_tolerance=1.,
+                                     force_scale=1.,damage_scale=1.,history_scale=1.)
 
 
 def test_matlab_axis_dof_and_history_conversions_are_explicit():

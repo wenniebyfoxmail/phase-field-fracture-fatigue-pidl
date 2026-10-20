@@ -63,8 +63,10 @@ class DirectionalTransitionProblem:
             raise ValueError("given primal point fails declared equilibrium/KKT")
         self.weak_lower = lower & (abs(q) <= margins.multiplier)
         self.weak_upper = upper & (abs(q) <= margins.multiplier)
-        self.strong_lower = lower & ~self.weak_lower
-        self.strong_upper = upper & ~self.weak_upper
+        if np.any(q[lower] < -margins.multiplier) or np.any(q[upper] > margins.multiplier):
+            raise ValueError("wrong-sign bound multiplier outside declared weak band")
+        self.strong_lower = lower & (q > margins.multiplier)
+        self.strong_upper = upper & (q < -margins.multiplier)
         for name in ("free_u", "fixed", "interior", "weak_lower", "weak_upper", "strong_lower", "strong_upper"):
             a = np.ascontiguousarray(getattr(self, name))
             setattr(self, name, np.frombuffer(a.tobytes(), dtype=a.dtype).reshape(a.shape))
@@ -116,7 +118,7 @@ class SensitivityTape:
     directional strategy has separately reviewed numerical support.
     """
     def __init__(self, initial_state: AcceptedState, variation: Variation, *,
-                 initial_binding_id, initialization_policy):
+                 initial_binding_id, initialization_policy, parameter_direction):
         if not initial_binding_id or initialization_policy not in (
                 "fixed_recovered_profile", "externally_verified_recovery_tangent"):
             raise ValueError("explicit initial binding and derivative policy required")
@@ -126,10 +128,20 @@ class SensitivityTape:
         if initialization_policy == "fixed_recovered_profile" and any(np.any(x != 0) for x in vars(self.variation).values()):
             raise ValueError("fixed-profile convention requires zero initial tangents")
         self.initial_binding_id, self.initialization_policy = initial_binding_id, initialization_policy
+        self._parameter_direction = tuple(float(x) for x in
+            _array(parameter_direction, (3,), "global material parameter direction"))
         self.receipts = ()
 
+    @property
+    def parameter_direction(self):
+        """One fixed global (dE, dGc, dAlphaT) direction for this whole tape."""
+        return self._parameter_direction
+
     def advance_given(self, step, new_state, *, expected_load_id, transition_tolerance,
-                      parameters=(0., 0., 0.), **solver_kwargs):
+                      parameters=None, **solver_kwargs):
+        if parameters is not None and tuple(float(x) for x in
+                _array(parameters, (3,), "material parameter direction")) != self.parameter_direction:
+            raise ValueError("material parameter direction differs from this tape's fixed direction")
         if not isinstance(step, ImplicitStep):
             raise TypeError("only reviewed stable ImplicitStep may advance; switches stop")
         if not np.isfinite(transition_tolerance) or transition_tolerance <= 0:
@@ -149,11 +161,11 @@ class SensitivityTape:
             if not np.allclose(getattr(new_state, name), getattr(point, name),
                                atol=transition_tolerance, rtol=0):
                 raise ValueError("given committed history differs from fresh trial")
-        variation, _ = step.propagate(self.variation, parameters=parameters, **solver_kwargs)
+        variation, _ = step.propagate(self.variation, parameters=self.parameter_direction, **solver_kwargs)
         variation = freeze_variation(variation, step.r.n, step.r.e)
         receipt = dict(previous_id=old.fingerprint(), state_id=new_state.fingerprint(),
             old_version=old.version, new_version=new_state.version,
-            load_id=expected_load_id, parameters=tuple(float(x) for x in parameters),
+            load_id=expected_load_id, parameters=self.parameter_direction,
             derivative_commits=1, primal_commits=0, source="given_states_only")
         receipts = self.receipts+(receipt,)
         # Sole state change after every check and sensitivity solve succeeded.
