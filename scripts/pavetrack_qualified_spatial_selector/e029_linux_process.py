@@ -8,7 +8,7 @@ def matches(process,saved):
     return process.create_time()==saved['birth'] and process.uids().real==saved['uid'] and process.cmdline()==saved['cmd'] and process.cwd()==saved['cwd']
 def capture(process,run,controller_pid):
     if controller_pid not in [p.pid for p in process.parents()] or str(run) not in ' '.join(process.cmdline()) or process.uids().real!=os.getuid():raise PermissionError('unowned Linux child')
-    if os.getpgid(process.pid)!=process.pid or os.getsid(process.pid)!=process.pid:raise PermissionError('not own child session')
+    if os.getpgid(process.pid)!=os.getpgid(controller_pid) or os.getsid(process.pid)!=os.getsid(controller_pid):raise PermissionError('worker outside controller owned session')
     children=process.children(recursive=True);records=[]
     for p in [process,*children]:
         rec=identity(p)

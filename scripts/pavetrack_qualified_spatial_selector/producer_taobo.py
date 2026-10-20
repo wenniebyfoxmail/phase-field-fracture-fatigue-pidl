@@ -24,8 +24,8 @@ def verify_source(root,manifest_sha):
     return mp
 
 def invoke(cmd,tag,cfg,logs,env):
-    import psutil
-    root=Path(cfg['linux_paths']['root']);records={};child=None;failure=None;clean_errors=[];peak=0
+    import e029_system_proc as psutil
+    root=Path(cfg['linux_paths']['root']);records={};child=None;failure=None;clean_errors=[];peak=0;started=time.monotonic()
     def stop():
         nonlocal records
         if child is None:return
@@ -68,17 +68,19 @@ def invoke(cmd,tag,cfg,logs,env):
             except psutil.NoSuchProcess:pass
     try:
         with (logs/(tag+'.stdout')).open('xb') as out,(logs/(tag+'.stderr')).open('xb') as err:
-            child=subprocess.Popen(cmd,stdout=out,stderr=err,env=env,cwd=root,start_new_session=True)
+            parent_birth=psutil.Process(os.getpid()).create_time()
+            watched=['/usr/bin/python3','-I',str(HERE/'e029_parent_watch.py'),'--parent',str(os.getpid()),'--birth',str(parent_birth),'--note',str(logs/(tag+'.parent_stop.json')),'--',*cmd]
+            child=subprocess.Popen(watched,stdout=out,stderr=err,env=env,cwd=root,start_new_session=True)
             try:records[child.pid]=managed.identity(psutil.Process(child.pid))
             except psutil.NoSuchProcess:pass
-            write(logs/(tag+'.launch.json'),dict(pid=child.pid,command=cmd,started=time.time(),session=child.pid))
+            write(logs/(tag+'.launch.json'),dict(pid=child.pid,command=cmd,lifeline_command=watched,started=time.time(),session=child.pid))
             while child.poll() is None:
                 try:
                     p=psutil.Process(child.pid);family=[p,*p.children(recursive=True)]
                 except psutil.NoSuchProcess:
                     if child.poll() is not None:break
                     time.sleep(.05);continue
-                rss=0
+                rss=psutil.Process(os.getpid()).memory_info().rss
                 for q in family:
                     try:
                         rec=managed.identity(q);records[q.pid]=rec;rss+=q.memory_info().rss
@@ -100,11 +102,18 @@ def invoke(cmd,tag,cfg,logs,env):
         # Log writes, signal exceptions and normal exits all pass through owned-session cleanup.
         try:stop()
         except BaseException as e:clean_errors.append(repr(e))
-        try:write(logs/(tag+'.resource.json'),dict(peak_RSS_bytes=peak,failure=repr(failure) if failure else None,cleanup_uncertain=clean_errors,owned=list(records.values())))
+        try:write(logs/(tag+'.resource.json'),dict(elapsed_seconds=time.monotonic()-started,peak_RSS_bytes=peak,failure=repr(failure) if failure else None,cleanup_uncertain=clean_errors,owned=list(records.values())))
         except BaseException as e:
             if failure is None:failure=e
     if clean_errors:raise RuntimeError('cleanup_uncertain; original='+repr(failure)+'; '+repr(clean_errors))
     if failure:raise failure
+
+def execution_environment(root):
+    tmp=root/'tmp';cache=root/'cache'
+    env={'PATH':'/usr/bin:/bin','LANG':'C.UTF-8','LC_ALL':'C.UTF-8','PIP_CONFIG_FILE':'/dev/null','CONFIG_SITE':'/dev/null','CC':'/usr/bin/gcc','CXX':'/usr/bin/g++','AR':'/usr/bin/ar','RANLIB':'/usr/bin/ranlib','CFLAGS':'-O2','CPPFLAGS':'','LDFLAGS':'','GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null'}
+    env.update(CUDA_VISIBLE_DEVICES='5',OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',PYTHONNOUSERSITE='1',PYTHONDONTWRITEBYTECODE='1',MPLBACKEND='Agg',MPLCONFIGDIR=str(root/'mplconfig'),TMPDIR=str(tmp),XDG_CACHE_HOME=str(cache),XDG_CONFIG_HOME=str(root/'config'),CUDA_CACHE_PATH=str(cache/'cuda'),TORCH_HOME=str(cache/'torch'),TRITON_CACHE_DIR=str(cache/'triton'))
+    return env
+
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--reviewed-commit',required=True);p.add_argument('--manifest-sha256',required=True);p.add_argument('--approval',type=Path,required=True);args=p.parse_args()
@@ -113,19 +122,18 @@ def main():
     if sys.platform!='linux' or socket.gethostname()!='GPUServer8' or pwd.getpwuid(os.getuid()).pw_name!='drtao' or HERE.parents[1]!=source:raise PermissionError('exact Linux task host/source')
     if args.approval!=Path(lp['approval']):raise PermissionError('exact approval file')
     authorization(read(args.approval),cfg,args.reviewed_commit,args.manifest_sha256)
+    import e029_system_proc as proc
     for key in ['run','logs','runtime','runtime_lock','archive','launch_claim']:
         if Path(lp[key]).exists():raise FileExistsError('fresh once-only '+key)
-    with Path(lp['launch_claim']).open('x') as f:json.dump(dict(commit=args.reviewed_commit,manifest=args.manifest_sha256,approval_sha256=sha(args.approval),time=time.time(),pid=os.getpid()),f)
-    logs=Path(lp['logs']);logs.mkdir();tmp=root/'tmp';tmp.mkdir();cache=root/'cache';cache.mkdir();env=dict(os.environ)
-    for key in ['PYTHONPATH','PYTHONHOME','LD_LIBRARY_PATH']:env.pop(key,None)
-    env.update(CUDA_VISIBLE_DEVICES='5',OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',PYTHONNOUSERSITE='1',PYTHONDONTWRITEBYTECODE='1',MPLBACKEND='Agg',MPLCONFIGDIR=str(root/'mplconfig'),TMPDIR=str(tmp),XDG_CACHE_HOME=str(cache))
+    with Path(lp['launch_claim']).open('x') as f:json.dump(dict(commit=args.reviewed_commit,manifest=args.manifest_sha256,approval_sha256=sha(args.approval),time=time.time(),pid=os.getpid(),wrapper_birth=proc.Process().create_time(),birth_clock='Linux starttime ticks'),f)
+    logs=Path(lp['logs']);logs.mkdir();tmp=root/'tmp';tmp.mkdir();cache=root/'cache';cache.mkdir();env=execution_environment(root)
     started=time.monotonic();state='stopped';reason=None
     def interrupted(signum,frame):raise RuntimeError('wrapper signal '+str(signum))
     for sig in [signal.SIGTERM,signal.SIGINT,signal.SIGHUP]:signal.signal(sig,interrupted)
     try:
         # Shared-system metadata only, no torch/model/GT access before the isolated runtime exists.
         import e029_linux_environment as environment
-        environment.admission(cfg)
+        environment.admission(cfg,proc)
         catalogue=read(DOC/'taobo_transfer_lock.json')
         private=Path(lp['private']);cat=private/'private_catalogue.json'
         if sha(cat)!=catalogue['catalogue_sha256']:raise ValueError('private catalogue identity')
@@ -136,13 +144,14 @@ def main():
             f=private/r['relative']
             if f.is_symlink() or not f.resolve().is_relative_to(private) or sha(f)!=r['sha256']:raise ValueError('private raw-byte identity')
         invoke(['/usr/bin/python3','-I',str(HERE/'e029_linux_bootstrap.py')],'bootstrap',cfg,logs,env)
-        shutil.copyfile(lp['runtime_lock'],logs/'runtime_lock.json')
+        trusted_runtime=sha(lp['runtime_lock']);shutil.copyfile(lp['runtime_lock'],logs/'runtime_lock.json')
+        def sealed(command):return ['/usr/bin/python3','-I',str(HERE/'e029_runtime_exec.py'),'--lock',lp['runtime_lock'],'--expected-sha256',trusted_runtime,'--',*command]
         py=cfg['producer']['python'];verify_source(source,args.manifest_sha256)
         # Imports verify versions/device; zero model/GT/sample probe.
         preflight="import sys;sys.path.insert(0,"+repr(str(HERE))+");import e029_linux_environment as e,json;cfg=json.load(open("+repr(str(DOC/'taobo_run_config.json'))+"));e.production_environment(cfg);print('Linux exact runtime verified; zero model/GT')"
-        invoke([py,'-I','-c',preflight],'preflight',cfg,logs,env)
-        cmd=[py,str(HERE/'run.py'),'--profile','taobo','--run',lp['run'],'--paths',str(DOC/'taobo_private_paths.json'),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',args.manifest_sha256,'--approval-file',str(args.approval)]
-        invoke(cmd,'controller',cfg,logs,env);state='completed'
+        invoke(sealed([py,'-I','-c',preflight]),'preflight',cfg,logs,env)
+        cmd=[py,str(HERE/'run.py'),'--profile','taobo','--run',lp['run'],'--paths',str(DOC/'taobo_private_paths.json'),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',args.manifest_sha256,'--approval-file',str(args.approval),'--runtime-lock-sha256',trusted_runtime]
+        invoke(sealed(cmd),'controller',cfg,logs,env);state='completed'
     except BaseException as e:reason=repr(e)
     finally:
         try:write(logs/'wrapper_status.json',dict(state=state,reason=reason,elapsed_seconds=time.monotonic()-started,wall_seconds=None,no_retry=True,source_commit=args.reviewed_commit,manifest=args.manifest_sha256))

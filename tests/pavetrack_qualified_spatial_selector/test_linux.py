@@ -14,7 +14,7 @@ import producer_taobo as wrapper
 spec=importlib.util.spec_from_file_location('e029_linux_test_run',HERE/'run.py');run=importlib.util.module_from_spec(spec);spec.loader.exec_module(run)
 
 class LinuxChecks(unittest.TestCase):
-    def setUp(self):self.tmp=tempfile.TemporaryDirectory();self.p=Path(self.tmp.name)
+    def setUp(self):self.tmp=tempfile.TemporaryDirectory();self.p=Path(self.tmp.name).resolve()
     def tearDown(self):self.tmp.cleanup()
     def test_frozen_science_equal(self):
         old,_=c.config();new,_=c.config('taobo')
@@ -94,7 +94,7 @@ class LinuxChecks(unittest.TestCase):
             managed.terminate_child(handle,self.p/'run',1,Mock(Process=Mock(return_value=process),NoSuchProcess=psutil.NoSuchProcess,STATUS_ZOMBIE=psutil.STATUS_ZOMBIE))
         process.send_signal.assert_called_once_with(signal.SIGTERM)
     def test_outer_persistence_failure_still_terminates(self):
-        import psutil
+        import e029_system_proc as psutil
         cfg,_=c.config('taobo');cfg['linux_paths']['root']=str(self.p);logs=self.p/'logs';logs.mkdir();child=Mock(pid=10);child.poll.return_value=None;proc=self.process();proc.send_signal.side_effect=lambda sig:proc.status.configure_mock(return_value=psutil.STATUS_ZOMBIE)
         with patch.object(wrapper.subprocess,'Popen',return_value=child),patch.object(wrapper,'write',side_effect=OSError('disk full')),patch.object(psutil,'Process',return_value=proc),patch.object(psutil,'process_iter',return_value=[proc]),patch.object(os,'getsid',return_value=10):
             with self.assertRaises(OSError):wrapper.invoke(['python',str(self.p/'run')],'mock',cfg,logs,{})
@@ -107,6 +107,63 @@ class LinuxChecks(unittest.TestCase):
         from e029_permissions import Files
         own=self.p/'proc/123/statm';other=self.p/'proc/456/statm';font=self.p/'runtime/font.ttf';caps=Files([own,font],[],[])
         self.assertTrue(caps.allow(own));self.assertTrue(caps.allow(font));self.assertFalse(caps.allow(other));self.assertFalse(caps.allow(self.p/'private/metadata.json'));self.assertFalse(caps.allow(self.p/'runtime/unlisted.py'))
+    def test_clean_environment_ignores_inherited_injection(self):
+        poison=dict(PATH='/evil',LD_PRELOAD='/evil.so',LD_LIBRARY_PATH='/evil',PYTHONPATH='/evil',PIP_INDEX_URL='https://evil',CFLAGS='-fplugin=evil',HOME='/evil')
+        with patch.dict(os.environ,poison):env=wrapper.execution_environment(self.p)
+        self.assertEqual(env['PATH'],'/usr/bin:/bin');self.assertEqual(env['CFLAGS'],'-O2');self.assertEqual(env['PIP_CONFIG_FILE'],'/dev/null')
+        for key in ['LD_PRELOAD','LD_LIBRARY_PATH','PYTHONPATH','PIP_INDEX_URL','HOME']:self.assertNotIn(key,env)
+    def runtime_fixture(self):
+        import e029_runtime_exec as seal
+        root=self.p/'runtime';root.mkdir();f=root/'manual';f.write_bytes(b'manual sealed bytes');lock=self.p/'lock.json'
+        lock.write_text(json.dumps(dict(state='built_from_frozen_artifacts',prefix=str(root),files={'manual':seal.sha(f)})))
+        return seal,root,f,lock,seal.sha(lock)
+    def test_runtime_trusted_seal_rejects_file_and_self_rehash(self):
+        seal,root,f,lock,expected=self.runtime_fixture();seal.verify(lock,expected)
+        f.write_bytes(b'changed')
+        with self.assertRaises(ValueError):seal.verify(lock,expected)
+        value=json.loads(lock.read_text());value['files']['manual']=seal.sha(f);lock.write_text(json.dumps(value))
+        with self.assertRaises(ValueError):seal.verify(lock,expected)
+    def test_runtime_parent_loss_and_extra_inventory_stop(self):
+        seal,root,f,lock,expected=self.runtime_fixture()
+        with patch.object(os,'getppid',return_value=2):
+            with self.assertRaises(RuntimeError):seal.verify(lock,expected,parent=1)
+        (root/'extra').write_bytes(b'extra')
+        with self.assertRaises(ValueError):seal.verify(lock,expected)
+    def test_lifeline_parent_birth_and_reparenting(self):
+        import e029_parent_watch as watch
+        ps=Mock();ps.Process.return_value.create_time.return_value=11
+        with patch.object(os,'getppid',return_value=7):
+            self.assertTrue(watch.parent_alive(7,11,ps));self.assertFalse(watch.parent_alive(7,12,ps))
+        with patch.object(os,'getppid',return_value=1):self.assertFalse(watch.parent_alive(7,11,ps))
+    def test_lifeline_receipt_failure_still_signals_only_owned_group(self):
+        import e029_parent_watch as watch
+        with patch.object(os,'getpid',return_value=7),patch.object(os,'getpgid',return_value=7),patch.object(os,'getsid',return_value=7),patch.object(Path,'write_text',side_effect=OSError('disk full')),patch.object(os,'write'),patch.object(signal,'signal'),patch.object(os,'killpg') as kill,patch.object(watch.time,'sleep'):
+            watch.stop_group(self.p/'note','parent died')
+        self.assertEqual(kill.call_args_list,[unittest.mock.call(7,signal.SIGTERM),unittest.mock.call(7,signal.SIGKILL)])
+        with patch.object(os,'getpid',return_value=7),patch.object(os,'killpg') as kill:
+            with self.assertRaises(PermissionError):watch.stop_group(self.p/'note','bad group',8)
+            kill.assert_not_called()
+    def test_lifeline_long_payload_parent_death(self):
+        import e029_parent_watch as watch
+        child=Mock();child.poll.return_value=None
+        argv=['watch','--parent','9','--birth','11','--note',str(self.p/'note'),'--','compiler','manual']
+        with patch.object(sys,'argv',argv),patch.object(os,'getpid',return_value=7),patch.object(os,'getsid',return_value=7),patch.object(os,'getpgid',return_value=7),patch.object(signal,'signal'),patch('e029_system_proc.Process') as proc,patch.object(watch,'parent_alive',side_effect=[True,False]),patch.object(watch.subprocess,'Popen',return_value=child) as popen,patch.object(watch,'stop_group',side_effect=RuntimeError('owned group stopped')) as stop:
+            proc.return_value.create_time.return_value=10
+            with self.assertRaisesRegex(RuntimeError,'owned group stopped'):watch.main()
+            stop.assert_called_once();self.assertFalse(popen.call_args.kwargs['start_new_session'])
+    def test_proc_stat_spaces_and_PID_reuse(self):
+        import e029_system_proc as proc
+        fields=['R','2','3','4']+['0']*15+['123','0','5']
+        raw='7 (a tricky ) process) '+' '.join(fields)
+        with patch.object(Path,'read_text',return_value=raw),patch.object(os,'sysconf',return_value=4096):
+            self.assertEqual(proc.stat(7),dict(state='R',ppid=2,group=3,session=4,birth=123,rss=20480))
+        with patch.object(proc,'stat',side_effect=[dict(birth=1),dict(birth=2)]):
+            p=proc.Process(7)
+            with self.assertRaises(proc.NoSuchProcess):p.create_time()
+    def test_proc_cpu_guest_not_double_counted(self):
+        import e029_system_proc as proc
+        with patch.object(Path,'read_text',side_effect=['cpu 10 0 0 90 0 0 0 0 5 0','cpu 30 0 0 170 0 0 0 0 15 0']),patch.object(proc.time,'sleep'):
+            self.assertEqual(proc.cpu_percent(),20.)
     def test_science_files_not_modified(self):
         # Reviewed read-only mathematical mechanism remains original, including fixed overlap.
         source=json.loads((c.DOC/'source_manifest.json').read_text())['files']
