@@ -110,6 +110,7 @@ for step=1:max_steps
     fprintf(fid,'%d,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%d,%.6f,%.6f\n',...
         step,U,Rx_top,Rx_bottom,E_el,E_d,res_u,res_pf,min(p_field),max(p_field),max_healing,it,toc(start),toc(step_start));
     fprintf('ACCEPTED step=%d U=%.4f Rx=%.6g maxalpha=%.6g seconds=%.1f\n',step,U,Rx_top,max(p_field),toc(start));
+    timing='post_accepted_state_history_update_in_progress';
     p_field_old=p_field;
     [~,~,~,history_vars_old]=pf(sys.MESH,sys.DOFS,sys.GEOM.t,sys.QUADRATURE,...
         sys.MAT_CHAR,sys.CC,p_field,p_field_old,driver,sys.stress_state.as_number,history_vars_old);

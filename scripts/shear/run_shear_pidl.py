@@ -32,6 +32,7 @@ class ShearFieldComputation(FieldComputation):
         # Nodal FE energy interpolates these essential values into incident T3s.
         # This changes the trial space before fitting, not any saved candidate.
         alpha = torch.where(initial_crack_mask(inp), torch.ones_like(alpha), alpha)
+        self.latest_fields=(u.detach(),v.detach(),alpha.detach(),self.lmbda.detach())
         if guard is not None: guard()
         return u, v, alpha
 
@@ -115,46 +116,66 @@ def main():
         writer = None
         for step, U in enumerate(schedule, 1):
             step_start=time.monotonic()
-            assert time.monotonic()-start < args.hours*3600, 'PIDL budget reached'
-            field.lmbda = torch.tensor([float(U)], device='cuda')
-            if step == 1:
-                fit(field, training, conn, areas, history, mat, pff, 1e-5, 1,
-                    get_optimizer(field.parameters(),'LBFGS'), irreversibility_penalty_cfg=cfg)
-            losses = fit_with_early_stopping(field, training, conn, areas, history, mat, pff,
-                1e-5, args.epochs, get_optimizer(field.parameters(),'RPROP'), 5e-7,
-                irreversibility_penalty_cfg=cfg)
-            with torch.no_grad():
-                u,v,alpha=field.fieldCalculation(x)
-            u=u.detach().requires_grad_(True); v=v.detach().requires_grad_(True); alpha=alpha.detach()
-            eel,ed,eh=compute_energy(x,u,v,alpha,history,mat,pff,areas,conn,irreversibility_penalty_cfg=cfg)
-            assert all(torch.isfinite(z) for z in (eel,ed,eh)), 'Nonfinite energy'
-            force_u,force_v=torch.autograd.grad(eel,(u,v))
-            strain=gradients(x,u.detach(),v.detach(),alpha,areas,conn)[:3]
-            energies=compute_energy_per_elem(x,u.detach(),v.detach(),alpha,history,mat,pff,areas,conn,irreversibility_penalty_cfg=cfg)
-            psi_active=get_psi_plus_per_elem(x,u.detach(),v.detach(),alpha,mat,pff,areas,conn)
-            psi_raw=get_psi_plus_per_elem(x,u.detach(),v.detach(),torch.zeros_like(alpha),mat,pff,areas,conn)
-            cpu=lambda z:z.detach().cpu().numpy()
-            residual=torch.sqrt((force_u[free_u]**2).sum()+(force_v[free_u]**2).sum())
-            row=dict(step=step,U=float(U),Rx_top=float(force_u[top].sum()),Rx_bottom=float(force_u[bottom].sum()),
-                E_el=float(eel),E_d=float(ed),E_hist=float(eh),res_u=float(residual),
-                alpha_min=float(alpha.min()),alpha_max=float(alpha.max()),max_healing=float((history-alpha).max()),
-                epochs=len(losses),seconds=time.monotonic()-start,step_seconds=time.monotonic()-step_start,
-                cuda_allocated_bytes=torch.cuda.memory_allocated(),cuda_reserved_bytes=torch.cuda.memory_reserved())
-            np.savez_compressed(args.output/f'state_{step:03d}.npz',u=cpu(u),v=cpu(v),alpha=cpu(alpha),hist_alpha=cpu(history),
-                eps_xx=cpu(strain[0]),eps_yy=cpu(strain[1]),eps_xy=cpu(strain[2]),
-                E_el_elem=cpu(energies[0]),E_d_elem=cpu(energies[1]),E_hist_elem=cpu(energies[2]),
-                psi_active=cpu(psi_active),psi_raw=cpu(psi_raw),force_u=cpu(force_u),force_v=cpu(force_v),
-                U=U,step=step,timing='post_solve_pre_history_update')
-            torch.save(dict(network=net.state_dict(),hist_alpha=cpu(history),U=float(U),step=step),args.output/f'model_{step:03d}.pt')
-            if writer is None:
-                writer=csv.DictWriter(f,fieldnames=list(row)); writer.writeheader()
-            writer.writerow(row); f.flush()
-            print(json.dumps(row),flush=True)
-            assert torch.all(alpha[crack_mask] == 1), 'Initial crack BC failed'
-            assert row['alpha_min'] >= -.005 and row['alpha_max'] <= 1.005 and row['max_healing'] <= .005, 'PIDL damage validity failed; candidate retained'
-            assert all(torch.isfinite(z).all() for z in (u,v,alpha,force_u,force_v)), 'Nonfinite candidate'
-            # Preserve the existing soft-penalty history policy, no hidden max/clip.
-            history=alpha.clone()
+            stage='before_fit'
+            try:
+                assert time.monotonic()-start < args.hours*3600, 'PIDL budget reached'
+                field.lmbda = torch.tensor([float(U)], device='cuda')
+                stage='first_LBFGS_or_RPROP'
+                if step == 1:
+                    fit(field, training, conn, areas, history, mat, pff, 1e-5, 1,
+                        get_optimizer(field.parameters(),'LBFGS'), irreversibility_penalty_cfg=cfg)
+                losses = fit_with_early_stopping(field, training, conn, areas, history, mat, pff,
+                    1e-5, args.epochs, get_optimizer(field.parameters(),'RPROP'), 5e-7,
+                    irreversibility_penalty_cfg=cfg)
+                stage='post_fit_diagnostics_pre_history_update'
+                with torch.no_grad():
+                    u,v,alpha=field.fieldCalculation(x)
+                u=u.detach().requires_grad_(True); v=v.detach().requires_grad_(True); alpha=alpha.detach()
+                eel,ed,eh=compute_energy(x,u,v,alpha,history,mat,pff,areas,conn,irreversibility_penalty_cfg=cfg)
+                assert all(torch.isfinite(z) for z in (eel,ed,eh)), 'Nonfinite energy'
+                force_u,force_v=torch.autograd.grad(eel,(u,v))
+                strain=gradients(x,u.detach(),v.detach(),alpha,areas,conn)[:3]
+                energies=compute_energy_per_elem(x,u.detach(),v.detach(),alpha,history,mat,pff,areas,conn,irreversibility_penalty_cfg=cfg)
+                psi_active=get_psi_plus_per_elem(x,u.detach(),v.detach(),alpha,mat,pff,areas,conn)
+                psi_raw=get_psi_plus_per_elem(x,u.detach(),v.detach(),torch.zeros_like(alpha),mat,pff,areas,conn)
+                cpu=lambda z:z.detach().cpu().numpy()
+                residual=torch.sqrt((force_u[free_u]**2).sum()+(force_v[free_u]**2).sum())
+                row=dict(step=step,U=float(U),Rx_top=float(force_u[top].sum()),Rx_bottom=float(force_u[bottom].sum()),
+                    E_el=float(eel),E_d=float(ed),E_hist=float(eh),res_u=float(residual),
+                    alpha_min=float(alpha.min()),alpha_max=float(alpha.max()),max_healing=float((history-alpha).max()),
+                    epochs=len(losses),seconds=time.monotonic()-start,step_seconds=time.monotonic()-step_start,
+                    cuda_allocated_bytes=torch.cuda.memory_allocated(),cuda_reserved_bytes=torch.cuda.memory_reserved())
+                np.savez_compressed(args.output/f'state_{step:03d}.npz',u=cpu(u),v=cpu(v),alpha=cpu(alpha),hist_alpha=cpu(history),
+                    eps_xx=cpu(strain[0]),eps_yy=cpu(strain[1]),eps_xy=cpu(strain[2]),
+                    E_el_elem=cpu(energies[0]),E_d_elem=cpu(energies[1]),E_hist_elem=cpu(energies[2]),
+                    psi_active=cpu(psi_active),psi_raw=cpu(psi_raw),force_u=cpu(force_u),force_v=cpu(force_v),
+                    U=U,step=step,timing='post_solve_pre_history_update')
+                torch.save(dict(network=net.state_dict(),hist_alpha=cpu(history),U=float(U),step=step),args.output/f'model_{step:03d}.pt')
+                if writer is None:
+                    writer=csv.DictWriter(f,fieldnames=list(row)); writer.writeheader()
+                writer.writerow(row); f.flush()
+                print(json.dumps(row),flush=True)
+                assert torch.all(alpha[crack_mask] == 1), 'Initial crack BC failed'
+                assert row['alpha_min'] >= -.005 and row['alpha_max'] <= 1.005 and row['max_healing'] <= .005, 'PIDL damage validity failed; candidate retained'
+                assert all(torch.isfinite(z).all() for z in (u,v,alpha,force_u,force_v)), 'Nonfinite candidate'
+                # Preserve the existing soft-penalty history policy, no hidden max/clip.
+                stage='post_candidate_history_update'
+                history=alpha.clone()
+            except Exception as failure:
+                # Retain the last actually evaluated iterate; never refit/re-evaluate.
+                record=dict(step=step,U=float(U),stage=stage,reason=str(failure),
+                    seconds=time.monotonic()-start,step_seconds=time.monotonic()-step_start)
+                latest=getattr(field,'latest_fields',None)
+                if latest is not None:
+                    lu,lv,la,lU=latest
+                    np.savez_compressed(args.output/f'failed_state_{step:03d}.npz',
+                        u=lu.cpu().numpy(),v=lv.cpu().numpy(),alpha=la.cpu().numpy(),
+                        evaluated_U=lU.cpu().numpy(),requested_U=float(U),step=step,
+                        hist_alpha=history.cpu().numpy(),timing='unaccepted_last_evaluated_iterate',
+                        stage=stage,rejection_reason=str(failure))
+                torch.save(dict(network=net.state_dict(),U=float(U),step=step,stage=stage),args.output/f'failed_model_{step:03d}.pt')
+                (args.output/'failure.json').write_text(json.dumps(record,indent=2))
+                raise
     (args.output/'COMPLETED.txt').write_text('All prescribed states solved; numerical validity still requires analysis.\n')
 
 
