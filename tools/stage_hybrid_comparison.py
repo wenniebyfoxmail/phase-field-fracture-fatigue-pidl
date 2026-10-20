@@ -87,6 +87,8 @@ def main():
                     continue
                 src = Path(base)/filename
                 selected_files.append((src, Path('deps')/src.relative_to(OLD/'deps'), None))
+    if sum(p.stat().st_size for p, rel, _ in selected_files if rel.parts[0] == 'deps') > 32*2**20:
+        raise RuntimeError('OSQP-only copy exceeds32MiB')
     if len(selected_files) > 1024 or sum(p.stat().st_size for p,_,_ in selected_files) > 160*2**20:
         raise RuntimeError('bounded staging file/byte cap exceeded')
     for src, rel, expected in selected_files:
