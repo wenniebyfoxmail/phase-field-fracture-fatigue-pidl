@@ -26,9 +26,11 @@ class CouplingSettings:
     schur_cycles: int = 3
     schur_action_limit: int = 64
     schur_relative_tolerance: float = 1.e-3
+    max_newton_directions: int = 8
+    block_relative_tolerance: float = 1.e-3
 
     def __post_init__(self):
-        if self.mode not in ('none','projected_anderson','projected_anderson_monotone','guarded_vi_newton'):raise ValueError('unknown coupling policy')
+        if self.mode not in ('none','projected_anderson','projected_anderson_monotone','guarded_vi_newton','guarded_block_newton'):raise ValueError('unknown coupling policy')
         if self.mechanics_solver not in ('direct','recycled_gmres'):raise ValueError('unknown mechanics solver')
         for k in ('depth','max_proposals','max_rejections'):
             if type(getattr(self,k)) is not int or not 1<=getattr(self,k)<=5:raise ValueError('unbounded coupling policy')
@@ -38,6 +40,8 @@ class CouplingSettings:
         for key,cap in [('backtrack_candidates',6),('schur_restart',24),('schur_cycles',4),('schur_action_limit',128)]:
             value=getattr(self,key)
             if type(value) is not int or not 1<=value<=cap:raise ValueError('unbounded reduced coupling policy')
+        if type(self.max_newton_directions)is not int or not 1<=self.max_newton_directions<=8:raise ValueError('unbounded Newton directions')
+        if not np.isfinite(self.block_relative_tolerance) or not 0<self.block_relative_tolerance<=1e-3:raise ValueError('invalid separate block row tolerance')
         if (not np.isfinite([self.schur_trigger_ratio,self.schur_relative_tolerance]).all()
                 or not 0<self.schur_trigger_ratio<1 or not 0<self.schur_relative_tolerance<=.01):
             raise ValueError('invalid reduced coupling control')

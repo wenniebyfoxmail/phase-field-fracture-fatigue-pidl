@@ -245,7 +245,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                 work.append(dict(work_id=len(work), kind="initial_guess_fallback",
                                  reason=str(exc), wall_seconds=0., status="baseline_initial"))
         initial_damage=d.copy()
-        if coupling.mode=='guarded_vi_newton':
+        if coupling.mode in ('guarded_vi_newton','guarded_block_newton'):
             if not isinstance(backend,NativeQ4Backend):
                 raise ValueError('reduced native coupling requires NativeQ4Backend')
             from hybrid_guarded_coupling import solve_guarded

@@ -71,7 +71,7 @@ def marker(out, **values):
 
 
 def trajectory_storage_check(card,out,archive,headroom=False):
-    if card.get('schema')!='hybrid-cpu-trajectory-v7':return
+    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8'):return
     # One scan at step boundaries, not every element/operator call. The live
     # supervisor also scans and final completion has an independent last check.
     from run_hybrid_producer import bytes_under
@@ -89,7 +89,7 @@ def trajectory(card, spec, inputs, out, archive):
     phase = archive / spec["id"]
     phase.mkdir()
     (phase/"states").mkdir()
-    if coupling.mode=='guarded_vi_newton':
+    if coupling.mode in ('guarded_vi_newton','guarded_block_newton'):
         def save_work_point(tag,point):
             import tempfile
             folder=phase/'unaccepted_work_points';folder.mkdir(exist_ok=True)
@@ -98,7 +98,9 @@ def trajectory(card, spec, inputs, out, archive):
                 metadata=dict(classification='UNACCEPTED_SOLVER_WORK_POINT_NOT_LABEL',
                     tag=tag,outer=point['outer'],m_work=point['m_work'],m_accept=point['m_accept'],
                     parent_id=point['previous_id'],load_id=point['load_id'],
-                    f_solve_operation='NA' if point['f_solve'] is None else 'actual_QP')
+                    f_solve_operation='NA' if point['f_solve'] is None else 'actual_QP',
+                    alpha=point.get('alpha'),full_original_QP_map=point.get('full_original_QP_map'),
+                    damage=point['damage'],force={k:point['force'][k] for k in ('force_inf','force_l2','force_scaled','boundary_inf')})
                 with os.fdopen(fd,'wb') as f:
                     fields=dict(u=point['u'],d=point['d'],A=point['q'].accumulated,
                         r=point['q'].driver,f=point['q'].fatigue,psi=point['psi'],
@@ -109,6 +111,23 @@ def trajectory(card, spec, inputs, out, archive):
             finally:
                 if os.path.exists(name):os.unlink(name)
         backend.unaccepted_point_observer=save_work_point
+        if coupling.mode=='guarded_block_newton':
+            import warnings
+            warnings.simplefilter('error')
+            def save_direction(point,info,vectors):
+                import tempfile
+                folder=phase/'unaccepted_work_points';folder.mkdir(exist_ok=True)
+                fd,name=tempfile.mkstemp(prefix='.direction-',suffix='.npz',dir=folder)
+                try:
+                    metadata=dict(classification='UNACCEPTED_LINEAR_DIRECTION_NOT_LABEL',
+                        outer=point['outer'],parent_id=point['previous_id'],load_id=point['load_id'],diagnostics=info)
+                    with os.fdopen(fd,'wb') as f:
+                        np.savez_compressed(f,**vectors,metadata=np.array(json.dumps(metadata,allow_nan=False)))
+                        f.flush();os.fsync(f.fileno())
+                    os.replace(name,folder/'last_block_direction.npz')
+                finally:
+                    if os.path.exists(name):os.unlink(name)
+            backend.block_direction_observer=save_direction
     store = StateStore(phase/"latest.npz")
     store.initialize(old, context=step_context(card,spec,old,0,dofs,bc))
     shutil.copy2(store.path, phase/"states/state0000.npz")

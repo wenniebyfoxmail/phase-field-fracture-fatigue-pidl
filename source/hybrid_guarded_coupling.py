@@ -11,6 +11,7 @@ from hybrid_coupled_acceleration import ProjectedAnderson, active_codes, joint_m
 from hybrid_damage import kkt_audit, solve_nodal_qp
 from hybrid_history import AcceptedState, frozen_array
 from hybrid_reduced_tangent import reduced_direction
+from hybrid_coupled_block import block_direction
 
 
 def work_merit(damage,force,s):
@@ -27,6 +28,13 @@ def work_merit(damage,force,s):
         force['boundary_inf']/s.bound_tolerance]
     if not np.isfinite(values).all():raise RuntimeError('nonfinite working residual')
     return float(max(values))
+
+
+def backtrack_candidate(base,target,alpha,lower,crack):
+    # alpha1 is an operation identity, not a subtract/add floating point test.
+    d=np.clip(np.asarray(target,float).copy(),lower,1.) if alpha==1. else np.clip(base+alpha*(target-base),lower,1.)
+    d[crack]=1.
+    return d
 
 
 def solve_guarded(backend,old,dofs,values,load_id,settings,policy,initial_damage,
@@ -82,6 +90,7 @@ def solve_guarded(backend,old,dofs,values,load_id,settings,policy,initial_damage
             baseline_outer=None if base is None else base['outer'],alpha=float(alpha),
             damage=dict(da),force={k:fa[k] for k in ('force_inf','force_l2','force_scaled','boundary_inf')},
             m_work=mw,m_accept=ma,merit=ma,fatigue_residual=fatigue,
+            full_original_QP_map=bool(kind=='ordinary_QP_map' and alpha==1. and f_solve is not None),
             qp_operation_component='NA' if f_solve is None else 'actual_QP',
             passed_physical=bool(passed),kept_as_iteration_point=bool(kept),
             input_damage_id=array_id(d),output_equilibrated_u_id=array_id(u),
@@ -100,8 +109,12 @@ def solve_guarded(backend,old,dofs,values,load_id,settings,policy,initial_damage
         p=dict(d=d,u=u,psi=psi,q=q,qp=qp,damage=da,force=fa,m_work=mw,m_accept=ma,
             fatigue=fatigue,passed=passed,kept=kept,outer=evaluations,cache=snapshot(),
             load_id=load_id,previous_id=previous_id,
-            f_solve=None if f_solve is None else frozen_array(f_solve),qp_info=qp_info)
+            f_solve=None if f_solve is None else frozen_array(f_solve),qp_info=qp_info,alpha=float(alpha),
+            full_original_QP_map=bool(kind=='ordinary_QP_map' and alpha==1. and f_solve is not None))
         if not kept:
+            hook=getattr(backend,'unaccepted_point_observer',None)
+            if policy.mode=='guarded_block_newton' and hook is not None:
+                call('unaccepted_rejected_candidate',lambda:hook('last_rejected_candidate',p))
             counts['rejections']+=1;restore(base)
             emit(dict(event='work_point_rollback',outer=evaluations,restored_outer=base['outer'],
                 restored_d_id=array_id(base['d']),restored_u_id=array_id(base['u']),
@@ -133,7 +146,7 @@ def solve_guarded(backend,old,dofs,values,load_id,settings,policy,initial_damage
         # toward one fresh-candidate cap and the original step clock.
         for backtrack in range(policy.backtrack_candidates):
             room();alpha=2.**(-backtrack)
-            d=np.clip(base['d']+alpha*(target-base['d']),lower,1.);d[backend.crack]=1.
+            d=backtrack_candidate(base['d'],target,alpha,lower,backend.crack)
             if np.array_equal(d,base['d']) and not (backtrack==0 and f_solve is not None):continue
             if backtrack:counts['backtrack_evaluations']+=1
             p=evaluate(d,base['u'],kind,base,alpha,
@@ -159,9 +172,12 @@ def solve_guarded(backend,old,dofs,values,load_id,settings,policy,initial_damage
         ratio=1. if ordinary is None else ordinary['m_work']/base['m_work']
         if ordinary is not None:
             current=ordinary
-            if np.array_equal(ordinary['d'],target):aa.add(base['d'],target)
-            else:aa.history=[]
-        else:aa.history=[]
+            if ordinary['full_original_QP_map']:
+                aa.add(base['d'],ordinary['d']);history_operation='add_full_original_QP_map'
+            else:aa.history=[];history_operation='clear_backtracked_QP_map'
+        else:aa.history=[];history_operation='clear_no_kept_QP_map'
+        emit(dict(event='anderson_history',outer=current['outer'],operation=history_operation,
+            history_length=len(aa.history),alpha=None if ordinary is None else ordinary['alpha']))
         # Successful AA is not permanently disabled by a lifetime cap. The total
         # fresh cap is authoritative; each proposal still uses original guards.
         if ratio<policy.schur_trigger_ratio:
@@ -173,16 +189,26 @@ def solve_guarded(backend,old,dofs,values,load_id,settings,policy,initial_damage
                 trial=search(current,candidate,'anderson_work')
                 if trial is not None:
                     counts['kept_accelerated_maps']+=1;current=trial
-                else:aa.history=[]
+                else:
+                    aa.history=[]
+                    emit(dict(event='anderson_history',outer=current['outer'],operation='clear_rejected_AA',history_length=0))
             continue
+        if policy.mode=='guarded_block_newton' and counts['newton_directions']>=policy.max_newton_directions:
+            emit(dict(event='block_direction_budget',directions=counts['newton_directions'],limit=policy.max_newton_directions))
+            raise RuntimeError('coupled block direction budget exhausted')
         counts['newton_directions']+=1;restore(current)
+        emit(dict(event='newton_direction_start',outer=current['outer'],direction=counts['newton_directions'],
+            limit=policy.max_newton_directions if policy.mode=='guarded_block_newton' else None))
         hook=getattr(backend,'unaccepted_point_observer',None)
-        if hook is not None:call('unaccepted_before_schur',lambda:hook('best_before_schur',current))
-        direction,info=reduced_direction(backend,old,current,dofs,settings,policy,call,remaining,emit)
+        block=policy.mode=='guarded_block_newton'
+        before_tag='best_before_newton' if block else 'best_before_schur'
+        if hook is not None:call('unaccepted_before_direction',lambda:hook(before_tag,current))
+        direction,info=(block_direction if block else reduced_direction)(backend,old,current,dofs,settings,policy,call,remaining,emit)
         current['cache']=snapshot()
-        trial=search(current,current['d']+direction,'reduced_VI_Newton')
+        trial=search(current,current['d']+direction,'coupled_block_Newton' if block else 'reduced_VI_Newton')
         aa.history=[]
+        emit(dict(event='anderson_history',outer=current['outer'],operation='clear_after_Newton',history_length=0))
         if trial is not None:
             current=trial
-            if hook is not None:call('unaccepted_after_schur',lambda:hook('candidate_after_schur',current))
-        elif ordinary is None:raise RuntimeError('no decreasing ordinary or Schur candidate')
+            if hook is not None:call('unaccepted_after_direction',lambda:hook('candidate_after_newton' if block else 'candidate_after_schur',current))
+        elif ordinary is None:raise RuntimeError('no decreasing ordinary or coupled block candidate' if block else 'no decreasing ordinary or Schur candidate')

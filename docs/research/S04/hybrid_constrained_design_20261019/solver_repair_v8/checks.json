@@ -1,0 +1,29 @@
+{
+  "scope": "Changed block/AA/controller and CPU envelope artificial checks only; no project operator/solve/training/SSH",
+  "command": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_hybrid_cpu_v8.py",
+    "tests/test_hybrid_coupled_block.py",
+    "tests/test_hybrid_guarded_coupling.py"
+  ],
+  "returncode": 0,
+  "wall_seconds": 1.059616915998049,
+  "CPU_seconds": 1.032748,
+  "log_sha256": "71e6bd868977471dd99f00a3cfbf65f67a39d291dac4c92e6d3483f0497cfaf4",
+  "files": {
+    "source/hybrid_coupled_block.py": "3527f23e2ef49063c0b6a012f48aea5eceb515eddfa7fae3915ce0676908463d",
+    "source/hybrid_guarded_coupling.py": "311066806aba622165109ab47446bafbec0a70f662a7da8371ae146ed855bc9a",
+    "source/hybrid_coupled_acceleration.py": "751aed58073d0c3a4f52742e30652e9b1f0e71a30738a5393ac0d616c637f4bf",
+    "source/hybrid_incremental.py": "c38b5ca2812d28c4cecb227475f32ad2ae9e5f13afbda6a3051f05d38afde67f",
+    "tools/hybrid_producer_worker.py": "39e26044c094e5c344c9dd2317bc9267011aea22183e64cc154fad7a71a25a76",
+    "tools/run_hybrid_cpu_v8_budgeted.py": "8c846f68fe234bb19d59006eefd03a42373fbaf6de5e4eb46439304debe22ab1",
+    "tools/preflight_hybrid_cpu_v8.py": "0cd7d492b3b1939ca2ec4f2b2f3258bd7567edf142803f0ff30ef1e91223ba7d",
+    "tools/receive_hybrid_cpu_v8.py": "637553a4afe76d86137c2bae18f0a6e8f89605882097a5a74bc43e07a66c37c0",
+    "tests/test_hybrid_coupled_block.py": "793f02feb667581b6e2be124f97f62fee3457337a6c42ae1560e0d56d08a02bc",
+    "tests/test_hybrid_cpu_v8.py": "91a0951a96941740dca1a4afb42c31e5962a3730ed9ebc42c9b488935d0b08af"
+  },
+  "prior_failure": "First controller test found storage_schema v8 missing; corrected before scientific freeze. Prior receipts/logs preserved. OriginalRd precision issue repaired with independent review and targeted regression."
+}

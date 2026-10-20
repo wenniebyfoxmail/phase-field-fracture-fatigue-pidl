@@ -1,0 +1,16 @@
+{
+  "mesh_sha256": "ac13f6fd68a77de9f68edf7098c3e17c2acd0eb44a7fa346ec520fc7732887f6",
+  "nodes": 86756,
+  "cells": 86408,
+  "free_mechanics_dofs": 172916,
+  "maximum_damage_inactive_nodes": 86756,
+  "maximum_block_dimension": 259672,
+  "node_adjacency_structural_entries": 778714,
+  "full_node_pair_structural_upper_nnz": 7008426,
+  "CSC_numeric_and_index_upper_bytes": 85142188,
+  "structural_count_wall_seconds": 0.035386291914619505,
+  "scientific_solves": 0,
+  "operator_assemblies": 0,
+  "LU_factorizations": 0,
+  "assumptions": "Counts include structural zero potential, all nodes inactive and uneliminated constraints, hence sparse matrix storage upper estimate only. SuperLU fill, pivoting workspace and time cannot be predicted from nnz. No guarantee of32GiB/300s; hard workerAS30GiB/fulltree32GiB and deadline provide bounded failure, not success. ExistingR4 observed treeRSS4.09GiB is a prefix observation, not a whole-run maximum."
+}
