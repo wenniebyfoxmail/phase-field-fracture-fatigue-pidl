@@ -5,6 +5,9 @@ $c=Get-Content -LiteralPath $Config -Raw | ConvertFrom-Json
 $limitSeconds=14400
 if ($null -ne $c.timeout_seconds) { $limitSeconds=[double]$c.timeout_seconds }
 if ($limitSeconds -le 0 -or $limitSeconds -gt 14400) { throw 'Invalid bounded timeout' }
+$totalEnd=[DateTime]::Parse($c.total_deadline_utc).ToUniversalTime()
+$limitSeconds=[Math]::Min($limitSeconds,($totalEnd.AddSeconds(-600)-[DateTime]::UtcNow).TotalSeconds)
+if ($limitSeconds -le 0) { throw 'No science budget after retrieval reserve' }
 $receipt=Join-Path $c.root 'launch.json'
 if (Test-Path -LiteralPath $receipt) { throw 'Launch already recorded; inspect before any retry' }
 if (Test-Path -LiteralPath $c.output) { throw 'Output already exists; fresh run required' }
@@ -32,6 +35,8 @@ $proc=Start-Process -FilePath $c.executable -ArgumentList $c.arguments -WorkingD
     -RedirectStandardOutput (Join-Path $c.root 'stdout.log') `
     -RedirectStandardError (Join-Path $c.root 'stderr.log') -PassThru
 $childHandle=$proc.Handle
+try { $proc.ProcessorAffinity=[IntPtr]15 } catch { $proc.Kill(); $proc.WaitForExit(); throw }
+$peakRSS=0
 @{pid=$proc.Id;started_utc=$started.ToString('o');host=$env:COMPUTERNAME;kind=$c.kind;
   executable=$c.executable;arguments=$c.arguments;root=$c.root;output=$c.output;code_commit=$c.commit;
   deadline_seconds=$limitSeconds;output_limit_GiB=10} | ConvertTo-Json | Set-Content -LiteralPath $receipt
@@ -43,8 +48,17 @@ while ($true) {
         if (-not $proc.HasExited) { $proc.Kill(); $proc.WaitForExit() }
         break
     }
-    if ($proc.WaitForExit([Math]::Min(30000,$remaining))) { break }
-    $bytes=(Get-ChildItem -LiteralPath $c.output -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum
+    if ($proc.WaitForExit([Math]::Min(1000,$remaining))) { break }
+    $sample=$null
+    try {
+        $sample=[System.Diagnostics.Process]::GetProcessById($proc.Id)
+        $peakRSS=[Math]::Max($peakRSS,$sample.PeakWorkingSet64)
+    } catch {
+        if ($proc.HasExited) { break }
+        $reason='monitor_failed'; $proc.Kill(); $proc.WaitForExit(); break
+    } finally { if ($null -ne $sample) { $sample.Dispose() } }
+    if ($peakRSS -gt 16GB) { $reason='memory_stopped'; $proc.Kill(); $proc.WaitForExit(); break }
+    $bytes=(Get-ChildItem -LiteralPath $c.root -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum
     if ($bytes -gt 10GB) {
         $reason='budget_stopped'
         # This Process object is the exact child created above; no name/user kill.
@@ -52,6 +66,6 @@ while ($true) {
     }
 }
 @{pid=$proc.Id;finished_utc=[DateTime]::UtcNow.ToString('o');exit_code=$proc.ExitCode;
-  reason=$reason;completed_marker=(Test-Path -LiteralPath (Join-Path $c.output 'COMPLETED.txt'));
+  peak_RSS_bytes=$peakRSS;cpu_affinity=15;total_deadline_utc=$totalEnd.ToString('o');reason=$reason;completed_marker=(Test-Path -LiteralPath (Join-Path $c.output 'COMPLETED.txt'));
   prefix_completed=(Test-Path -LiteralPath (Join-Path $c.output 'PREFIX_COMPLETED.txt'))} |
   ConvertTo-Json | Set-Content -LiteralPath (Join-Path $c.root 'exit.json')

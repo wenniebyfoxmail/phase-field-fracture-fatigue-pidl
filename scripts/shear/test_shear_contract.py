@@ -7,7 +7,7 @@ import torch
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path[:0]=[str(ROOT/'scripts/shear'),str(ROOT/'SENS_tensile'),str(ROOT/'source')]
-from run_shear_pidl import split_quads
+from run_shear_pidl import split_quads, ShearFieldComputation, initial_crack_mask
 from field_computation import FieldComputation
 from material_properties import MaterialProperties
 from pff_model import PFFModel
@@ -27,6 +27,14 @@ class ShearContract(unittest.TestCase):
         torch.testing.assert_close(u[:3],torch.zeros(3))
         torch.testing.assert_close(u[3:],torch.ones(3)*.31)
         torch.testing.assert_close(v,torch.zeros(6))
+
+    def test_existing_crack_is_fixed_but_future_path_is_free(self):
+        x=torch.tensor([[-.5,0.],[-.12,0.],[0.,0.],[.002,0.],[-.12,.002],[-.12,-.002]])
+        f=ShearFieldComputation(ArbitraryRaw(),torch.tensor([[-.5,.5],[-.5,.5]]),torch.tensor([.03]),torch.tensor([0.]))
+        u,v,a=f.fieldCalculation(x)
+        torch.testing.assert_close(a[:3],torch.ones(3))
+        torch.testing.assert_close(a[3:],torch.full((3,),.5))
+        self.assertEqual(initial_crack_mask(x).tolist(),[True,True,True,False,False,False])
 
     def test_affine_shear_energy_and_direct_reaction(self):
         # Reversed node orientation must preserve positive integration area.

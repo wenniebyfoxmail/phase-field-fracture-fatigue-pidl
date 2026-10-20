@@ -14,12 +14,16 @@ assert(size(quads,2)==4, 'Expected native Q4 mesh');
 top = find(abs(nodes(:,2)-0.5)<1e-10);
 bot = find(abs(nodes(:,2)+0.5)<1e-10);
 assert(~isempty(top) && ~isempty(bot));
+crack = find(abs(nodes(:,2))<1e-10 & nodes(:,1)>=-0.5-1e-10 & nodes(:,1)<=1e-10);
+assert(numel(crack)==251,'Unexpected initial crack identity');
 MAT_CHAR = phase_field.init.material_characteristic(1,'AT1',...
     'E',1,'ni',0.3,'Gc',0.01,'ell',0.01,'res_stiff',0,...
     'tol_irrev',0.005,'tol_AT1_recovery',0.001);
 NODE_BOUNDARIES = phase_field.fem.bc.set_boundaries(...
-    'fix_X',bot,'fix_Y',[bot;top],'disp_X',top);
+    'fix_X',bot,'fix_Y',[bot;top],'disp_X',top,'non_hom_pf',crack);
 DOFS = phase_field.init.dofs(MESH,NODE_BOUNDARIES);
+assert(isempty(intersect(crack,DOFS.active_dof_pf)));
+assert(isequal(sort(DOFS.non_hom_dirichlet_bc_pf(:)),sort(crack(:))));
 QUADRATURE = phase_field.init.quadrature(MESH.dim);
 schedule = [0.03:0.03:0.21, 0.24:0.01:0.46]';
 if nargin < 3, max_steps=numel(schedule); end
@@ -32,6 +36,7 @@ SOL_STAG_PAR = phase_field.fem.solver.stag.params('tol',1e-4,'max_iter',1000);
 % Retained-material diffuse AT1 notch, matching utils.hist_alpha_init.
 distance = hypot(nodes(:,1)-min(max(nodes(:,1),-0.5),0),nodes(:,2));
 alpha_initial = max(1-distance/0.02,0).^2;
+assert(all(alpha_initial(crack)==1),'Initial profile must already match crack BC');
 p_field = alpha_initial; p_field_old = alpha_initial;
 displ = zeros(DOFS.num_dof,1);
 history_vars_old = zeros(MESH.num_elem,QUADRATURE.num_gauss_pts,1);
@@ -39,14 +44,18 @@ sys = phase_field.System(MAT_CHAR,GEOM,QUADRATURE,DOFS,NODE_BOUNDARIES,...
     SOL_STEP_PAR,MESH,phase_field.StressState.PlaneStrain,p_field,'AT1');
 eq = @phase_field.mex.fem.assembly.equilibrium.AMOR;
 pf = @phase_field.mex.fem.assembly.pf.AT1_PENALTY;
-save(fullfile(out_root,'mesh.mat'),'nodes','quads','alpha_initial','schedule','top','bot','-v7');
+save(fullfile(out_root,'mesh.mat'),'nodes','quads','alpha_initial','schedule','top','bot','crack','-v7');
 U=0; step=0; timing='initial_unloaded_before_any_solve';
 save(fullfile(out_root,'state_000.mat'),'nodes','quads','p_field','p_field_old','displ','U','step','timing','-v7');
 fid=fopen(fullfile(out_root,'trajectory.csv'),'w');
 cleaner=onCleanup(@() fclose(fid));
-fprintf(fid,'step,U,Rx_top,Rx_bottom,E_el,E_d,res_u,res_pf,alpha_min,alpha_max,max_healing,stag_iters,seconds\n');
+fprintf(fid,'step,U,Rx_top,Rx_bottom,E_el,E_d,res_u,res_pf,alpha_min,alpha_max,max_healing,stag_iters,seconds,step_seconds\n');
 for step=1:max_steps
     assert(toc(start)<14400,'Four-hour FEM budget reached');
+    step_start=tic; U=schedule(step);
+    timing='unaccepted_in_progress';
+    driver=[]; forces=[]; res_u=NaN; res_pf=NaN;
+    try
     previous_alpha=p_field_old;
     [displ,res_displ,D_RHS_tract] = phase_field.fem.solver.step.pre_iter_update(step,sys,displ,SOL_STEP_PAR);
     res_displ_0=norm(res_displ(DOFS.active_dof));
@@ -83,6 +92,7 @@ for step=1:max_steps
     alpha_min=min(p_field); alpha_max=max(p_field);
     fprintf('CANDIDATE step=%d U=%.17g alpha_min=%.17g alpha_max=%.17g max_healing=%.17g res_u=%.17g res_pf=%.17g\n',...
         step,schedule(step),alpha_min,alpha_max,max_healing,res_u,res_pf);
+    assert(all(p_field(crack)==1),'Essential initial crack BC changed');
     valid_damage=alpha_min>=-0.005 && alpha_max<=1.005 && max_healing<=0.005;
     if ~valid_damage
         U=schedule(step); timing='unaccepted_post_solve_pre_history_update';
@@ -97,12 +107,20 @@ for step=1:max_steps
     Rx_top=sum(forces(top)); Rx_bottom=sum(forces(bot));
     save(fullfile(out_root,sprintf('state_%03d.mat',step)),...
         'p_field','p_field_old','displ','U','step','timing','driver','forces','res_u','res_pf','E_el','E_d','-v7');
-    fprintf(fid,'%d,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%d,%.6f\n',...
-        step,U,Rx_top,Rx_bottom,E_el,E_d,res_u,res_pf,min(p_field),max(p_field),max_healing,it,toc(start));
+    fprintf(fid,'%d,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%d,%.6f,%.6f\n',...
+        step,U,Rx_top,Rx_bottom,E_el,E_d,res_u,res_pf,min(p_field),max(p_field),max_healing,it,toc(start),toc(step_start));
     fprintf('ACCEPTED step=%d U=%.4f Rx=%.6g maxalpha=%.6g seconds=%.1f\n',step,U,Rx_top,max(p_field),toc(start));
     p_field_old=p_field;
     [~,~,~,history_vars_old]=pf(sys.MESH,sys.DOFS,sys.GEOM.t,sys.QUADRATURE,...
         sys.MAT_CHAR,sys.CC,p_field,p_field_old,driver,sys.stress_state.as_number,history_vars_old);
+    catch failure
+        elapsed_seconds=toc(start); step_seconds=toc(step_start);
+        rejection_reason=failure.message;
+        save(fullfile(out_root,sprintf('failed_state_%03d.mat',step)),...
+            'p_field','p_field_old','displ','U','step','timing','driver','forces',...
+            'res_u','res_pf','elapsed_seconds','step_seconds','rejection_reason','-v7');
+        rethrow(failure);
+    end
 end
 marker='PREFIX_COMPLETED.txt';
 if max_steps==numel(schedule), marker='COMPLETED.txt'; end

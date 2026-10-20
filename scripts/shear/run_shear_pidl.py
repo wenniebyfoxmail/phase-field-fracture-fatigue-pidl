@@ -15,6 +15,24 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / 'SENS_tensile'), str(ROOT / 'source')]
 
 
+import torch
+from field_computation import FieldComputation
+
+
+def initial_crack_mask(x):
+    """Geometric original segment only; never constrain a future crack path."""
+    return (x[:, 1].abs() < 1e-10) & (x[:, 0] >= -.5-1e-10) & (x[:, 0] <= 1e-10)
+
+
+class ShearFieldComputation(FieldComputation):
+    def fieldCalculation(self, inp):
+        u, v, alpha = super().fieldCalculation(inp)
+        # Nodal FE energy interpolates these essential values into incident T3s.
+        # This changes the trial space before fitting, not any saved candidate.
+        alpha = torch.where(initial_crack_mask(inp), torch.ones_like(alpha), alpha)
+        return u, v, alpha
+
+
 def split_quads(nodes, quads):
     import numpy as np
     triangles = np.stack([quads[:, [0, 1, 2]], quads[:, [0, 2, 3]]], axis=1).reshape(-1, 3)
@@ -60,10 +78,14 @@ def main():
     pff, mat, net = construct_model(dict(PFF_model='AT1', se_split='volumetric', tol_ir=.005, residual_stiffness=0.),
         dict(mat_E=1., mat_nu=.3, w1=1., l0=.01), network, domain, 'cuda')
     net = net.to('cuda')
-    field = FieldComputation(net, domain, torch.tensor([0.], device='cuda'), torch.tensor([0.], device='cuda'))
+    field = ShearFieldComputation(net, domain, torch.tensor([0.], device='cuda'), torch.tensor([0.], device='cuda'))
     crack = dict(x_init=[-.5], y_init=[0.], L_crack=[.5], angle_crack=[0.])
     history = hist_alpha_init(x, mat, pff, crack).detach()
     assert np.max(np.abs(history.cpu().numpy()-data['alpha_initial'].ravel())) < 2e-5
+    crack_mask = initial_crack_mask(x)
+    assert int(crack_mask.sum()) == 251
+    assert np.array_equal(np.flatnonzero(crack_mask.cpu().numpy()), data['crack'].ravel().astype(int)-1)
+    assert torch.all(history[crack_mask] == 1)
     schedule = data['schedule'].ravel()
     top = torch.isclose(x[:, 1], torch.tensor(.5, device='cuda'))
     bottom = torch.isclose(x[:, 1], torch.tensor(-.5, device='cuda'))
@@ -74,7 +96,7 @@ def main():
     np.savez_compressed(args.output/'state_000.npz', alpha=history.cpu().numpy(), u=np.zeros(len(nodes)), v=np.zeros(len(nodes)), U=0., step=0, timing='initial_unloaded_before_any_solve')
     (args.output/'settings.json').write_text(json.dumps(dict(network=network, pff='AT1', split='AMOR', fatigue=False,
         material=dict(E=1., nu=.3, Gc=.01, ell=.01, eta=0.), schedule=schedule.tolist(),
-        irreversibility_tolerance=.005, irreversibility_quadrature=cfg, weight_decay=1e-5,
+        contract='shear-r2-hard-initial-crack', initial_crack_nodes=251, irreversibility_tolerance=.005, irreversibility_quadrature=cfg, weight_decay=1e-5,
         max_epochs=args.epochs, hours=args.hours, torch=torch.__version__, gpu=torch.cuda.get_device_name(),
         pretraining='same mesh first loaded state; first step uses 1 LBFGS epoch then RPROP',
         interpretation='exploratory; Q4/T3 discretization and AT1 recovery implementations differ'), indent=2))
@@ -82,6 +104,7 @@ def main():
     with (args.output/'trajectory.csv').open('w', newline='') as f:
         writer = None
         for step, U in enumerate(schedule, 1):
+            step_start=time.monotonic()
             assert time.monotonic()-start < args.hours*3600, 'PIDL budget reached'
             field.lmbda = torch.tensor([float(U)], device='cuda')
             if step == 1:
@@ -105,7 +128,8 @@ def main():
             row=dict(step=step,U=float(U),Rx_top=float(force_u[top].sum()),Rx_bottom=float(force_u[bottom].sum()),
                 E_el=float(eel),E_d=float(ed),E_hist=float(eh),res_u=float(residual),
                 alpha_min=float(alpha.min()),alpha_max=float(alpha.max()),max_healing=float((history-alpha).max()),
-                epochs=len(losses),seconds=time.monotonic()-start)
+                epochs=len(losses),seconds=time.monotonic()-start,step_seconds=time.monotonic()-step_start,
+                cuda_allocated_bytes=torch.cuda.memory_allocated(),cuda_reserved_bytes=torch.cuda.memory_reserved())
             np.savez_compressed(args.output/f'state_{step:03d}.npz',u=cpu(u),v=cpu(v),alpha=cpu(alpha),hist_alpha=cpu(history),
                 eps_xx=cpu(strain[0]),eps_yy=cpu(strain[1]),eps_xy=cpu(strain[2]),
                 E_el_elem=cpu(energies[0]),E_d_elem=cpu(energies[1]),E_hist_elem=cpu(energies[2]),
@@ -116,6 +140,9 @@ def main():
                 writer=csv.DictWriter(f,fieldnames=list(row)); writer.writeheader()
             writer.writerow(row); f.flush()
             print(json.dumps(row),flush=True)
+            assert torch.all(alpha[crack_mask] == 1), 'Initial crack BC failed'
+            assert row['alpha_min'] >= -.005 and row['alpha_max'] <= 1.005 and row['max_healing'] <= .005, 'PIDL damage validity failed; candidate retained'
+            assert all(torch.isfinite(z).all() for z in (u,v,alpha,force_u,force_v)), 'Nonfinite candidate'
             # Preserve the existing soft-penalty history policy, no hidden max/clip.
             history=alpha.clone()
     (args.output/'COMPLETED.txt').write_text('All prescribed states solved; numerical validity still requires analysis.\n')

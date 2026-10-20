@@ -140,3 +140,9 @@ is claimed. The original shear comparison goal is unchanged.
 ## R004 diagnostic outcome and next decision
 
 R004 retrieved the failing vector under the new900s total window. Both bounds and residuals pass; healing.00960853>.005 fails on250nodes, all on the initial fully damaged line. Independent recomputation confirms localisation and identical initial data. Accepted loaded states0/30; PIDL still not launched. See [receipt](runs/S04-E035-R004.md) and [prospective paired repair/resource proposal](repair_and_comparison_plan.md). D2 now awaits review/authority for the common hard initial-crack condition; no further solve is authorised by R004. Earlier pending-status paragraphs are historical.
+
+## Prospective revision 2 — paired hard initial crack, 21 October BST
+
+HQ-SHEAR-PAIRED-PRECRACK-20261020 (human_delegated_hq) authorises the proposed common alpha=1 condition on the existing251-node segment in both solvers, review, one full30-state FEM and—only if reference complete and HQ explicitly releases GPU0—one matching PIDL. Off-line initial profile, original material/load/penalty/tolerances unchanged. Contract family now shear-r2-hard-initial-crack. This does not replace or rehabilitate revision1 negatives.
+
+Total new package hard8hours INCLUDING preparation, review, queue, both runs, retrieval, analysis and Obsidian. Conservatively count from23:17:49Z; stop07:17:49Z, earlier than HQ absolute07:50Z. Native/PIDL each≤4hours,4CPU,16GiB hostRSS,10GiB output including temp/archive; GPU allocated/reserved≤24GiB, physical free≥4GiB. First scientific failure stops whole package. One≤60s zero-start admission per producer. See authority_paired_precrack.json; older proposed extra1hour is superseded, not additive. First FEM state is production prefix, no new diagnostic/pilot.
