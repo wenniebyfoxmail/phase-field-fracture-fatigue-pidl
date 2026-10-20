@@ -1180,5 +1180,969 @@
     "schema/selected file coverage only, not numerical qualification",
     "does not inspect protected evaluation inputs or other producers",
     "full history absent from inspected top-level MAT/VTK/peak schema; other archive families not exhaustively searched"
-  ]
+  ],
+  "e011_original_snapshot_tape": {
+    "case": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/S04_E011_raw_outputs_ad749c8_20261005_backup_20261015/S04_E011_FEM_Q4_C120",
+    "family": "E011 original Q4; NOT repaired nodal-K trajectory",
+    "snapshot_count": 600,
+    "calendar": "c1s1..c120s5, contiguous",
+    "all_600_headers_shapes_and_commit_scalars_checked": true,
+    "existing_manifest_sizes_checked": 600,
+    "full_file_hashes_recomputed": false,
+    "snapshot_schema": {
+      "request28_snapshot/alpha_bar_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/alpha_bar_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/connectivity": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/cycle": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/cyclemax_updated": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/d_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/d_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/d_node": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/damage_committed": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/element_ids": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/f_alpha_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/f_alpha_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/g_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/history_H_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/history_committed": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/history_vars_old": {
+        "shape": [
+          4,
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/load_factor": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/node_coords": {
+        "shape": [
+          2,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/node_ids": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/num_gauss_points": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/psi_cyclemax_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/psi_cyclemax_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/psi_eff_prev_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/psi_raw_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/psi_raw_peak_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/semantic_class": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/staggered_iterations": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/state_timing": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/strain_gp": {
+        "shape": [
+          3,
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/substep": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/topology": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/trace_strain_gp": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "request28_snapshot/u_node": {
+        "shape": [
+          2,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      }
+    },
+    "reaction_text_rows": 600,
+    "native_peak_files_count": 120,
+    "native_peak_example_schema": {
+      "converged_peak_solution/cycle": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/d": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/is_converged_peak_damage": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/load_factor": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/staggered_iteration": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/state_kind": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/step": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/timing": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/u": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/uy": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "converged_peak_solution/v": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/alpha_bar_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/cycle": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/d_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/displ": {
+        "shape": [
+          1,
+          173512
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/boundary_count": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/boundary_max_d": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/capture_complete": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/confirm_remaining": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/confirmed_event_cycle": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/criterion": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/cycle": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/detected_now": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/first_hit": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/first_hit_cycle": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/post_event": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/stop_allowed": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/event/triggered": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/f_alpha_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/history_vars_old": {
+        "shape": [
+          4,
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/p_field": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/peak_psi_plus": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/post_event": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "cycle_end_state/psi_elem": {
+        "shape": [
+          1,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/R_d_free": {
+        "shape": [
+          1,
+          86505
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/R_d_full": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/R_u_free": {
+        "shape": [
+          1,
+          172916
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/R_u_full": {
+        "shape": [
+          1,
+          173512
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/external_load_subtracted_d": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/external_load_subtracted_u": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/free_dof_d": {
+        "shape": [
+          1,
+          86505
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/free_dof_u": {
+        "shape": [
+          1,
+          172916
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/history_vars_old": {
+        "shape": [
+          4,
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/load_factor": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/R_d_free_L2": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/R_d_free_Linf": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/R_d_full_L2": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/R_d_full_Linf": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/R_u_free_L2": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/R_u_free_Linf": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/R_u_full_L2": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/R_u_full_Linf": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/reaction_d_prescribed_L2": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/reaction_d_prescribed_Linf": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/reaction_u_prescribed_L2": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/norms/reaction_u_prescribed_Linf": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/p_field_old": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/prescribed_dof_d": {
+        "shape": [
+          1,
+          251
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/prescribed_dof_u": {
+        "shape": [
+          1,
+          596
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/reaction_d_prescribed": {
+        "shape": [
+          1,
+          251
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/reaction_u_prescribed": {
+        "shape": [
+          1,
+          596
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "matlab_residual/sign_convention": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/active_dof": {
+        "shape": [
+          172916,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/active_dof_pf": {
+        "shape": [
+          86505,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/axis_order": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/bc_masks/hom_displ": {
+        "shape": [
+          1,
+          569
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/bc_masks/hom_pf": {
+        "shape": [
+          2
+        ],
+        "dtype": "uint64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/bc_masks/prescribed_displ": {
+        "shape": [
+          1,
+          27
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/bc_masks/prescribed_pf": {
+        "shape": [
+          1,
+          251
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/cycle": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/displ": {
+        "shape": [
+          1,
+          173512
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/history_vars_old": {
+        "shape": [
+          4,
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/is_converged_peak_damage": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "uint8",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/load_factor": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/p_field": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/p_field_old": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/staggered_iteration": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/state_kind": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/step": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/strain_en_undgr": {
+        "shape": [
+          4,
+          86408
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/timing": {
+        "shape": [
+          1,
+          6
+        ],
+        "dtype": "uint32",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "pre_phase_input/uy": {
+        "shape": [
+          1,
+          1
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      }
+    },
+    "recovery_file_schema": {
+      "state0_node": {
+        "shape": [
+          2,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      },
+      "state0_p_field": {
+        "shape": [
+          1,
+          86756
+        ],
+        "dtype": "float64",
+        "layout": "HDF storage order; not MATLAB logical axis order"
+      }
+    },
+    "limitations": [
+      "commit flags and complete calendar do not establish fresh joint equilibrium/KKT",
+      "only HDF shapes/scalars and text responses read; scientific arrays not decoded or numerically replayed",
+      "600 native state snapshots are original solver records; not material truth for changed constraint/acceptance rules",
+      "recovery state0_analysis stores coordinates/damage; complete initial-state identity and reaction boundary/sign must be separately bound",
+      "no reaction computed or data interpolated; peak reaction schema is not all-substep numerical validation"
+    ]
+  }
 }

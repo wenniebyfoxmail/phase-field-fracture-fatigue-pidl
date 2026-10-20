@@ -11,7 +11,7 @@ from hybrid_history import AcceptedState, fatigue_factor
 from hybrid_kinematics import build_portable_native_q4_kinematics
 from q4_inverse_derivatives import (
     ImplicitStep, Material, NonregularBranch, Q4Residual, Variation,
-    observation_tangent,
+    observation_tangent, dense_regularity_evidence,
 )
 
 
@@ -159,6 +159,21 @@ def test_fatigue_threshold_has_correct_one_sided_direction():
     np.testing.assert_allclose(out.fatigue, (plus.fatigue-1)/1.e-7, rtol=1.e-6)
 
 
+@pytest.mark.parametrize("sign", [-1., 1.])
+def test_amor_trace_switch_right_direction_matches_original_residual(sign):
+    kin, m, old, _, d = fixture()
+    u = np.column_stack((.05*kin.points[:, 0], -.05*kin.points[:, 1])).ravel()
+    du = sign*np.column_stack((.01*kin.points[:, 0], .02*kin.points[:, 1])).ravel()
+    r = Q4Residual(kin, m, old)
+    z = r.zero_variation()
+    out = r.directional(u, d, du, z.damage, strict=False)
+    plus = perturbed(kin, m, old, u, d, du, z.damage, z, np.zeros(3), 1.e-7)
+    p = r.evaluate(u, d)
+    for name in vars(out):
+        np.testing.assert_allclose(getattr(out, name),
+            (getattr(plus, name)-getattr(p, name))/1.e-7, rtol=1.e-5, atol=3.e-9)
+
+
 def test_rejects_bad_material_history_geometry_and_sensors():
     kin, m, old, u, d = fixture()
     with pytest.raises(ValueError):
@@ -207,13 +222,14 @@ def test_coupled_implicit_algebra_and_boundary_lift_on_analytic_patch():
                         force_tolerance=1.e-12, damage_tolerance=1.e-12)
     assert step.size == 11
     matrix = np.column_stack([step.operator @ col for col in np.eye(step.size)])
+    regularity = dense_regularity_evidence(step.operator)
     assert np.linalg.norm(matrix[:2, 2:]) > .001  # Kud retained
     assert np.linalg.norm(matrix[2:, :2]) > .001  # Kdu retained
     ov = Variation(np.zeros(18), np.zeros(9), np.full((4, 4), .02), np.zeros((4, 4)))
     pm = np.array([.1, .01, .03]); scale = .04
     solve = lambda op, rhs: np.linalg.solve(matrix, rhs)
     v, fields = step.propagate(ov, parameters=pm, boundary_variation=scale*u[bc],
-                              solve=solve, linear_tolerance=1.e-11)
+                              solve=solve, linear_tolerance=1.e-11, regularity=regularity)
     expected_df = m.power*(pm[2]/m.alpha_t-(.02+pm[2])/(2.+m.alpha_t))
     expected_dd = -(1.-damage)*(pm[1]/m.gc+expected_df-pm[0]/m.youngs_modulus-2*scale)
     np.testing.assert_allclose(v.displacement, scale*u, atol=3.e-15)
@@ -227,4 +243,26 @@ def test_coupled_implicit_algebra_and_boundary_lift_on_analytic_patch():
     np.testing.assert_allclose(reaction, expected_force, atol=3.e-14)
     with pytest.raises(RuntimeError, match="linear solve failed"):
         step.propagate(ov, parameters=pm, solve=lambda op, rhs: np.ones(step.size)*123,
-                       linear_tolerance=1.e-12)
+                       linear_tolerance=1.e-12, regularity=regularity)
+    with pytest.raises(NonregularBranch, match="missing or wrong-operator"):
+        step.propagate(ov, parameters=pm, solve=solve, linear_tolerance=1.e-12)
+    malformed = replace(regularity, sigma_min=np.nan)
+    with pytest.raises(NonregularBranch, match="malformed"):
+        step.propagate(ov, parameters=pm, solve=solve, linear_tolerance=1.e-12, regularity=malformed)
+    wrong_op = replace(regularity, operator=np.eye(step.size))
+    with pytest.raises(NonregularBranch, match="wrong-operator"):
+        step.propagate(ov, parameters=pm, solve=solve, linear_tolerance=1.e-12, regularity=wrong_op)
+
+
+def test_null_modes_rejected_before_any_tangent_solve():
+    kin, m, old, u, _ = fixture(accumulating=False)
+    old = replace(old, damage=np.ones(4))
+    r = Q4Residual(kin, m, old)
+    step = ImplicitStep(r, u, np.ones(4), np.array([], dtype=int),
+                        force_tolerance=1.e-10, damage_tolerance=1.e-10)
+    evidence = dense_regularity_evidence(step.operator)
+    def forbidden(*args):
+        raise AssertionError("must reject singular operator before solver callback")
+    with pytest.raises(NonregularBranch, match="singular or inadequately conditioned"):
+        step.propagate(r.zero_variation(), solve=forbidden, linear_tolerance=1.e-12,
+                       regularity=evidence)

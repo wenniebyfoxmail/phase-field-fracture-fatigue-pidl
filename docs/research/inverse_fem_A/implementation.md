@@ -48,12 +48,19 @@ linearization of supplied equilibrated/KKT fields. On a strongly active lower
 bound, dd=dd_old; on an upper/fixed-crack bound, dd=0. Boundary displacement
 tangents and total reaction derivatives are retained. A linear-solver callback
 is required; there is no default solver or invocation path. Its residual is
-checked independently. The operator is not the frozen-f QP Hessian.
+checked independently. Nonempty reduced systems additionally require scaled
+singular-value evidence from a trusted linear-algebra provider, bound to the
+exact immutable operator, with prospective minimum singular-value and reciprocal
+condition thresholds. Missing, malformed, wrong-operator or deficient evidence
+is rejected before solving. A bounded dense-SVD helper is provided only for
+1..256 unknowns; a native-size sparse provider is not yet implemented/reviewed.
+The operator is not the frozen-f QP Hessian.
 
 Strict classical Jacobians reject Amor trace switches, positive-part history
 switches, fatigue-threshold switches, and weakly active/coincident constraints.
 A separate explicitly non-linear one-sided directional mode is implemented for
-constitutive switches and cannot be silently used as an implicit linear
+nominal constitutive switches within declared strain/energy margins (including
+roundoff), and cannot be silently used as an implicit linear
 operator. A complete trajectory through exactly unloaded/switching states
 requires an explicitly reviewed directional/semismooth strategy; no current
 claim of a universally smooth or complete trajectory derivative is made.
@@ -68,7 +75,8 @@ it cannot authenticate the provenance of a caller's external accepted state.
 ## Lightweight verification actually performed
 
 Command: `/Users/wenxiaofang/miniconda3/bin/python3 -m pytest -q tests/test_q4_inverse_derivatives.py`.
-Initial implementation: 16 tests passed in 0.17s. Tests are supplied one-Q4
+Initial implementation: 16 tests passed in 0.17s. After independent review and
+focused fixes, 19 tests passed in 0.17s. Tests are supplied one-Q4
 arrays and an analytic four-cell patch. They compare the derivative against
 central differences of the unchanged residual kernels in tension/compression,
 active/inactive fatigue accumulation; each material path, scale invariance,
@@ -78,17 +86,24 @@ switches, geometry isolation and explicit reaction sensitivity are checked.
 The four-cell stationary patch is prescribed analytically; no primal FEM
 solver is called. Its 11x11 sensitivity equation is ordinary unit-test linear
 algebra and checks both coupling blocks, previous-history propagation and a
-nonzero boundary lifting against analytic derivatives. No inverse fit or new
+nonzero boundary lifting against analytic derivatives. The reviewer-discovered
+fully damaged/null-mode state is rejected before a tangent solve; missing,
+wrong-operator and malformed regularity evidence are covered. Two nominal
+zero-trace one-sided checks initially exposed roundoff-dependent branch
+classification; the separately labeled directional path now uses its declared
+switch margins and both signs agree with finite differences. Classical implicit
+mode still rejects these states. No inverse fit or new
 physical trajectory is produced. These tests establish bounded implementation
 behavior, not reference qualification, parameter identifiability or science.
 
-## Raw data inspection: better coverage, still not a complete path
+## Raw data inspection: distinguish old three-case outputs and newer E011 tape
 
 Reproducible local read-only command:
 
 ```
 /Users/wenxiaofang/miniconda3/bin/python3 tools/audit_inverse_raw_q4.py \
   --root /Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729 \
+  --e011-case /Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/S04_E011_raw_outputs_ad749c8_20261005_backup_20261015/S04_E011_FEM_Q4_C120 \
   --output docs/research/inverse_fem_A/raw_data_inventory.json
 ```
 
@@ -118,13 +133,45 @@ recompute forces. The three expected cases were found:
   cover unloading. Endpoint/schema presence does not supply all loaded u/d.
 - `psi_fields/cycle_0001.mat` has only element-average d/A/f/raw. A schema check
   of that representative file does not prove every cycle file identical.
-- Therefore stored reactions can be recovered and some displacements/full GP
+- Within this old three-case family, stored reactions can be recovered and some displacements/full GP
   histories exist at endpoints. The inspected family cannot currently supply
   a complete per-substep native restart tape. No GP values are invented from
   element averages or projected VTK. The earlier Obsidian statement about
   processed NPZ missing fields remains correct; original raw files have more.
 
+**Newer historical E011 Q4 has a complete physical-substep snapshot calendar.**
+The explicitly inspected backup
+`S04_E011_raw_outputs_ad749c8_20261005_backup_20261015/S04_E011_FEM_Q4_C120`
+contains 600 `request28_post_commit/cXXXX_sYYY_post_commit.mat` files, c1s1
+through c120s5. All 600 filenames, actual cycle/substep scalars, stored damage/
+history commit flags and the required native field shapes/dtypes were checked.
+All 600 file sizes match entries in the already-existing backup manifest; the
+large scientific arrays were not decoded and whole-file hashes not recomputed.
+
+Every checked snapshot has u_node `[2,86756]`, d_node `[1,86756]`, full
+history_vars_old `[4,4,86408]`, alpha_bar_gp, psi_eff_prev_gp and f_alpha_gp
+`[4,86408]` in HDF storage order. This case also has 600 load-displacement text
+rows in repeated 1..5 order and 120 native peak files. The first peak header
+contains original full/free residuals and prescribed-reaction vectors as well
+as pre-phase/history inputs. Thus displacement, response and GP-history
+coverage CAN be supplemented from this family; it is incorrect to generalize
+the old three-case gap to all project assets.
+
+This is the original solver tape, not a repaired nodal-K/fresh-joint accepted
+trajectory and not physical material truth. Commit labels do not prove
+numerical consistency. `state0_analysis.mat` contains coordinates/damage only;
+the recovery/initial-history identity still needs an exact state/schema
+binding, and stored reaction timing/sign must be matched without recomputation.
+The adapter does not silently mix E011 with old Hard5 labels or use original
+solver states as accepted targets for the changed constrained model.
+
 ## Independent review scope and remaining readiness
+
+Initial independent read-only Codex review of `acb505005b7c5f4a8c047b587553ea51b9691aab`
+returned MODIFY_AND_REREVIEW: residual-only acceptance cannot distinguish
+nonunique tangents in eta=0 nullspaces. See `review_v1.md`. The explicit
+regularity contract, regression tests and supplemental E011 audit are prepared
+for exact-commit focused rereview. No initial negative finding is erased.
 
 Review the exact implementation commit, reused source identity, derivative
 equations, branch/constraint handling, sensitivity propagation, tests and audit
@@ -134,7 +181,7 @@ fixes are recorded separately with exact code identity.
 
 Even a positive review here would cover this bounded derivative-only layer.
 It would not authorize execution or establish full-path sensitivities across
-switches, complete raw-data availability, material recovery, a qualified FEM
+switches, numerical validity of all archived states, material recovery, a qualified FEM
 teacher, or physical/road validation. Next decisions are the missing state
 tape/export contract and the switching strategy, followed by separately
 authorized numerical derivative/identifiability/inversion validation.

@@ -94,10 +94,57 @@ def inspect_case(case):
             warning="No missing GP histories or peak displacements synthesized from element averages/VTK"))
 
 
+def inspect_e011(case):
+    """Check all historical Q4 snapshot headers/scalars, never scientific arrays."""
+    snapshots = sorted((case/"request28_post_commit").glob("*.mat"))
+    expected = {f"c{c:04d}_s{s:03d}_post_commit.mat": (c, s)
+                for c in range(1, 121) for s in range(1, 6)}
+    if {p.name for p in snapshots} != set(expected):
+        raise ValueError("E011 snapshot calendar incomplete or has unexpected files")
+    manifest = json.loads((case.parent/"backup_manifest.json").read_text())
+    entries = {x["Relative"].replace("\\", "/"):x for x in manifest["files"]}
+    required = dict(u_node=(2, 86756), d_node=(1, 86756),
+                    history_vars_old=(4, 4, 86408), alpha_bar_gp=(4, 86408),
+                    psi_eff_prev_gp=(4, 86408), f_alpha_gp=(4, 86408))
+    for p in snapshots:
+        key = str(p.relative_to(case.parent)).replace("\\", "/")
+        if key not in entries or entries[key]["Bytes"] != p.stat().st_size:
+            raise ValueError("E011 file not size-matched to existing backup manifest")
+        c, s = expected[p.name]
+        with h5py.File(p) as h:
+            g = h["request28_snapshot"]
+            if int(g["cycle"][()].item()) != c or int(g["substep"][()].item()) != s:
+                raise ValueError("E011 filename/calendar scalars disagree")
+            if not all(bool(g[k][()].item()) for k in ("damage_committed", "history_committed")):
+                raise ValueError("E011 record not labeled post commit")
+            for name, shape in required.items():
+                if g[name].shape != shape or g[name].dtype != np.dtype("float64"):
+                    raise ValueError("E011 native state schema mismatch")
+    rows = np.loadtxt(case/f"load_displ_{case.name}.out", skiprows=1, ndmin=2)
+    if rows.shape != (600, 5) or not np.isfinite(rows).all() or not np.array_equal(rows[:, 0], np.tile(np.arange(1, 6), 120)):
+        raise ValueError("E011 reaction text/substep chronology mismatch")
+    peak = sorted((case/"native_gp_staging").glob("cycle_*_peak_q4.mat"))
+    example = snapshots[0]
+    return dict(case=str(case), family="E011 original Q4; NOT repaired nodal-K trajectory",
+        snapshot_count=len(snapshots), calendar="c1s1..c120s5, contiguous",
+        all_600_headers_shapes_and_commit_scalars_checked=True,
+        existing_manifest_sizes_checked=600, full_file_hashes_recomputed=False,
+        snapshot_schema=mat_schema(example), reaction_text_rows=600,
+        native_peak_files_count=len(peak), native_peak_example_schema=mat_schema(peak[0]),
+        recovery_file_schema=mat_schema(case/"state0_analysis.mat"),
+        limitations=["commit flags and complete calendar do not establish fresh joint equilibrium/KKT",
+            "only HDF shapes/scalars and text responses read; scientific arrays not decoded or numerically replayed",
+            "600 native state snapshots are original solver records; not material truth for changed constraint/acceptance rules",
+            "recovery state0_analysis stores coordinates/damage; complete initial-state identity and reaction boundary/sign must be separately bound",
+            "no reaction computed or data interpolated; peak reaction schema is not all-substep numerical validation"])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--e011-case", type=Path,
+                        help="Explicit already-viewed historical Q4 case; headers/scalars only")
     args = parser.parse_args()
     cases = sorted(p for p in args.root.glob("u*/SENS*") if p.is_dir())
     if len(cases) != 3:
@@ -107,6 +154,8 @@ def main():
                   limitations=["schema/selected file coverage only, not numerical qualification",
                       "does not inspect protected evaluation inputs or other producers",
                       "full history absent from inspected top-level MAT/VTK/peak schema; other archive families not exhaustively searched"])
+    if args.e011_case is not None:
+        result["e011_original_snapshot_tape"] = inspect_e011(args.e011_case)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False)+"\n")
     print(json.dumps({"cases":len(cases), "output":str(args.output),

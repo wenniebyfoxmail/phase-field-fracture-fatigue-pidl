@@ -84,6 +84,49 @@ class Fields:
     fatigue: np.ndarray
 
 
+@dataclass(frozen=True)
+class RegularityEvidence:
+    """Trusted linear-algebra provider's scaled singular-value evidence.
+
+    Values refer to diag(1/row_scale) @ J @ diag(column_scale). A production
+    provider and its numerical method must be reviewed independently; this
+    record does not itself prove a provider's reported singular values.
+    The exact operator object binds the evidence to this immutable state.
+    """
+    operator: LinearOperator
+    row_scale: np.ndarray
+    column_scale: np.ndarray
+    sigma_min: float
+    sigma_max: float
+    method: str
+
+    def __post_init__(self):
+        object.__setattr__(self, "row_scale", frozen_array(self.row_scale))
+        object.__setattr__(self, "column_scale", frozen_array(self.column_scale))
+
+
+def dense_regularity_evidence(operator, *, row_scale=None, column_scale=None, max_size=256):
+    """Explicit small-system algebra helper, never automatic on a native mesh.
+
+    Production-size use needs a separately reviewed sparse provider. No primal
+    FEM solution, inverse fit, or default sensitivity solve is invoked.
+    """
+    n, k = operator.shape
+    if n != k or not 0 < n <= max_size or max_size > 256:
+        raise ValueError("dense regularity helper limited to 1..256 unknowns")
+    rows = np.ones(n) if row_scale is None else _array(row_scale, (n,), "row scale")
+    cols = np.ones(n) if column_scale is None else _array(column_scale, (n,), "column scale")
+    if np.any(rows <= 0) or np.any(cols <= 0):
+        raise ValueError("regularity scales must be positive")
+    matrix = np.column_stack([operator @ col for col in np.eye(n)])
+    matrix = matrix*cols[None, :]/rows[:, None]
+    if not np.isfinite(matrix).all():
+        raise ValueError("nonfinite scaled operator")
+    singular = np.linalg.svd(matrix, compute_uv=False)
+    return RegularityEvidence(operator, frozen_array(rows), frozen_array(cols),
+                              float(singular[-1]), float(singular[0]), "dense_svd")
+
+
 def _array(value, shape, name):
     a = np.asarray(value, dtype=np.float64)
     if a.shape != shape or not np.isfinite(a).all():
@@ -121,9 +164,9 @@ class Q4Residual:
         self.shape = frozen_array(kinematics.shape_values)
         self.B = frozen_array(kinematics.b_matrices)
         self.weights = frozen_array(material.thickness * kinematics.det_jacobians)
-        self.cells = np.array(kinematics.cells, dtype=np.int32, copy=True)
-        self.dofs = np.array(kinematics.element_dofs, dtype=np.int32, copy=True)
-        self.grad = np.stack((self.B[:, :, 0, 0::2], self.B[:, :, 1, 1::2]), axis=2)
+        self.cells = kinematics.cells
+        self.dofs = kinematics.element_dofs
+        self.grad = frozen_array(np.stack((self.B[:, :, 0, 0::2], self.B[:, :, 1, 1::2]), axis=2))
 
     def zero_variation(self):
         return Variation(np.zeros(2*self.n), np.zeros(self.n),
@@ -158,7 +201,8 @@ class Q4Residual:
         """JVP of fresh force/Rd/raw/A/q/f, including the preceding state.
 
         parameters = (dE, dGc, dAlphaT), in physical units. ``strict=False``
-        selects right directional derivatives at exact switches; that map need
+        selects right directional derivatives at nominal switches within the
+        declared margins (including floating-point roundoff). That map need
         not be linear and MUST NOT be passed as a classical implicit Jacobian.
         """
         u, d = self._fields(u, d)
@@ -185,7 +229,7 @@ class Q4Residual:
             raise NonregularBranch("Amor/history/fatigue switch: classical derivative unavailable")
 
         C, vol, dev, bulk, shear = plane_strain_tensors(m.youngs_modulus, m.poisson_ratio)
-        positive = (tr > 0) | ((tr == 0) & (dtr >= 0))
+        positive = np.where(abs(tr) <= margins.strain, dtr >= 0, tr > 0)
         Cplus = np.where(positive[:, :, None, None], C, 2*shear*dev)
         stress_plus = np.einsum("egij,egj->egi", Cplus, eps)
         draw = np.einsum("egi,egi->eg", stress_plus, deps) + p.raw*dE/m.youngs_modulus
@@ -193,9 +237,11 @@ class Q4Residual:
         dg_factor = -2*(1-dg)*ddg
         dq = dg_factor*p.raw + g*draw
         change = dq - dqprev
-        dA = da + np.where(gap > 0, change, np.where(gap < 0, 0., np.maximum(change, 0.)))
+        dA = da + np.where(abs(gap) <= margins.energy, np.maximum(change, 0.),
+                           np.where(gap > 0, change, 0.))
         decay = p.fatigue*m.power*(dT/m.alpha_t-(dA+dT)/(p.accumulated+m.alpha_t))
-        df = np.where(fgap > 0, decay, np.where(fgap < 0, 0., np.minimum(decay, 0.)))
+        df = np.where(abs(fgap) <= margins.energy, np.minimum(decay, 0.),
+                      np.where(fgap > 0, decay, 0.))
 
         Cminus = np.where(positive[:, :, None, None], 0., bulk*vol)
         Ct = g[:, :, None, None]*Cplus + Cminus
@@ -225,7 +271,8 @@ def _indices(value, size, name):
     if (x.ndim != 1 or x.dtype.kind not in "iu" or np.any(x < 0)
             or np.any(x >= size) or len(np.unique(x)) != len(x)):
         raise ValueError(f"invalid {name}")
-    return np.array(x, dtype=np.int64, copy=True)
+    a = np.array(x, dtype=np.int64, copy=True)
+    return np.frombuffer(a.tobytes(), dtype=a.dtype).reshape(a.shape)
 
 
 class ImplicitStep:
@@ -252,6 +299,9 @@ class ImplicitStep:
             raise NonregularBranch("nearly coincident damage bounds")
         self.fixed = fixed
         self.interior = np.flatnonzero(~(fixed | self.lower | self.upper))
+        for name in ("free_u", "lower", "upper", "fixed", "interior"):
+            a = np.ascontiguousarray(getattr(self, name))
+            setattr(self, name, np.frombuffer(a.tobytes(), dtype=a.dtype).reshape(a.shape))
         q = p.damage_residual
         if (np.linalg.norm(p.force[self.free_u], ord=np.inf) > force_tolerance if len(self.free_u) else False):
             raise ValueError("supplied mechanical state is not equilibrated")
@@ -281,7 +331,9 @@ class ImplicitStep:
                             z.damage, strict=True, margins=self.margins))
 
     def propagate(self, old_variation: Variation, *, parameters=(0., 0., 0.),
-                  boundary_variation=None, solve: Callable, linear_tolerance):
+                  boundary_variation=None, solve: Callable, linear_tolerance,
+                  regularity=None, minimum_scaled_singular_value=1.e-12,
+                  minimum_reciprocal_condition=1.e-12):
         """Carry preceding-state and parameter tangents through one given step.
 
         solve(operator, rhs) -> x is supplied by the authorized caller. No
@@ -290,6 +342,22 @@ class ImplicitStep:
         """
         if not np.isfinite(linear_tolerance) or linear_tolerance <= 0:
             raise ValueError("positive linear residual tolerance required")
+        thresholds = [minimum_scaled_singular_value, minimum_reciprocal_condition]
+        if not np.isfinite(thresholds).all() or min(thresholds) <= 0 or minimum_reciprocal_condition > 1:
+            raise ValueError("invalid prospective regularity thresholds")
+        if self.size:
+            if not isinstance(regularity, RegularityEvidence) or regularity.operator is not self.operator:
+                raise NonregularBranch("missing or wrong-operator regularity evidence")
+            rows = _array(regularity.row_scale, (self.size,), "regularity row scales")
+            cols = _array(regularity.column_scale, (self.size,), "regularity column scales")
+            sv = np.array([regularity.sigma_min, regularity.sigma_max])
+            if (np.any(rows <= 0) or np.any(cols <= 0)
+                    or not isinstance(regularity.method, str) or not regularity.method.strip()
+                    or not np.isfinite(sv).all() or not 0 <= sv[0] <= sv[1]):
+                raise NonregularBranch("malformed regularity evidence")
+            if (sv[0] < minimum_scaled_singular_value or sv[1] <= 0
+                    or sv[0]/sv[1] < minimum_reciprocal_condition):
+                raise NonregularBranch("singular or inadequately conditioned scaled sensitivity operator")
         _array(old_variation.damage, (self.r.n,), "old damage tangent")
         if np.any(old_variation.damage[self.fixed] != 0):
             raise ValueError("fixed crack has a nonzero old tangent")
