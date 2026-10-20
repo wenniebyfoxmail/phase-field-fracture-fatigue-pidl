@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "C:\Users\xw436\jobs\hq_road_centerline_001_r003_stage_20261021\HQ-ROAD-UQ-FEAS-001\centerline_target_r003_20261021\d5_runner.py", line 29, in <module>
+    from centerline_core import (aggregate, centreline, centreline_metrics, field_dice,
+  File "C:\Users\xw436\jobs\hq_road_centerline_001_r003_stage_20261021\HQ-ROAD-UQ-FEAS-001\centerline_target_r003_20261021\centerline_core.py", line 10, in <module>
+    from skimage.morphology import skeletonize
+ModuleNotFoundError: No module named 'skimage.morphology'
