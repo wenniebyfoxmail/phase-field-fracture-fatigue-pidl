@@ -102,3 +102,8 @@ These are SHA-256 hashes of file bytes, **not** the runner's canonical JSON `spe
 | `docs/research/S04/S04-E027-SYNMEM/experiment.md` | `08c52f77222b9f7989085b69af65563f3e9f0007785f4d2def30ceef52eb30e9` |
 
 This scoped review does not enable `authority.json` or authorize any producer run. Claim-changing edits to these scientific/observation rules require a new version-specific review.
+
+
+## 2026-10-20 Execution authority and producer mapping correction
+
+The human user approved one CPU execution and then explicitly clarified: “按方案写出的 GPUServer8，使用陶博服务器的 CPU”. The physical producer remains the reviewed Linux GPUServer8 at drtao@172.16.100.2, with the same owner root and budget. The historical frozen producer.alias `gpu-server` was an erroneous mapping: the local SSH alias actually targets Cambridge D-26-09. It will not be used for dispatch. This preparation error was caught before any scientific launch. The actual SSH target and exact user approval are recorded in authority.json, outside the unchanged producer object. Independent read-only control reviewer physics_transition_audit confirmed alias is not used by the runner and no scientific/control change is needed. The original code-only reviews remain historical; execution authority comes from the user's new approval.

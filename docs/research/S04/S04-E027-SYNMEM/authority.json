@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "experiment_id": "S04-E027-SYNMEM",
   "spec_id": "bff278a41264db2070745a31b90ff742a19b88b1bbc66ad325073ff08f832f23",
   "code_commit": "95709f9ca50edd6da2377d983ab1f2e994a0b31b",
@@ -11,6 +11,18 @@
   "maximum_runs": 1,
   "retry_allowed": false,
   "run_root": "/mnt/data2/drtao/wennie/S04-E027-SYNMEM-R001",
-  "user_approval": null,
-  "status": "Prepared; await user confirmation of the concrete reviewed configuration and budget"
+  "user_approval": {
+    "date": "2026-10-20",
+    "source": "human user in current task",
+    "execution_quote": "同意，按这版方案在 gpu-server 的 CPU 上执行一次，。完成后整理结果图，说明它对我们研究路线的判断有什么影响。",
+    "producer_clarification_quote": "按方案写出的 GPUServer8，使用陶博服务器的 CPU",
+    "scope": "One R001 CPU execution of reviewed 95709f9c and frozen spec; 4 host-hours, 4 CPU threads, zero GPU, first scientific/numerical/resource failure stops, no retry/resume; retrieve, plot and independently review actual results"
+  },
+  "connection": {
+    "ssh_target": "drtao@172.16.100.2",
+    "ssh_config": "/dev/null",
+    "expected_hostname": "GPUServer8",
+    "alias_correction": "The frozen producer.alias is a mistaken historical label, not an SSH instruction. Local SSH alias gpu-server points to Cambridge D-26-09 and must NOT be used. User explicitly selected the already specified physical GPUServer8 CPU producer. Hostname, owner root, all science and budgets remain unchanged."
+  },
+  "status": "Enabled by explicit bounded user approval; automatic environment and exact-version admission still required"
 }
