@@ -60,3 +60,11 @@ Actual result review: [scoped independent receipt](../research/S04/S04-E011/runs
 依赖、Agg3.10.3和native saved-field replay实际通过，train_A首步30.748秒接受、第2步运行中，无新科学结论。各case elapsed/accepted/error持续落盘；首个科学失败停止整条pipeline且不重试，不把运行启动视为NN额外收益。详见[准确执行审核](../research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/execution_review.json)、[运行状态](../research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/run_status.md)。
 
 2026-10-20 22:29 D14终态：R3按第2步300秒首停，train_A仅1/600、phase333.032秒，后续case/fit未开始，GPU0；3归属PID均退出且未重试。38fresh末KKT/联合L2仍不达标，完整轨迹失败不能称NN比较完成。已知生产及控制费用1232.463秒，600秒预留非actual；详见[终态](../research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_r3/terminal_summary.md)。
+
+
+<!-- HYBRID_R3_D15_COUPLING_DIAGNOSIS -->
+### 2026-10-20 D15：R3保存证据定位外层反弹，下一数值方案仅设计
+
+复用全部8份已核验日志、38fresh与完整work trace；机械再平衡中位数7.784→2.884秒、step2新LU0、82返回GMRES调用，前三次Anderson全有效。但全步3提议耗尽后，普通map仍接受恶化点；m于134.064秒最低1.78275仍未过门，末6.53011。最初反弹18–20轮未见active/trace/loading切换，f始终1；无失败残差向量或谱，不能证明特定不稳定模态。
+
+建议共同外层以统一m_work保护普通/AA/约化VI Newton-Schur，保留实际最终QP、完整m_accept及D13的真实f_solve/f_commit和CAS。方案未实现、无新科学尝试；原R3首停/预算/NN未参与事实保留。[完整诊断与可迁移方法](../research/S04/hybrid_constrained_design_20261019/solver_repair_v6/r3_coupling_diagnosis.md)。

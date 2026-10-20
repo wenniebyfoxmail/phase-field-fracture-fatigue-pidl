@@ -1,0 +1,117 @@
+{
+  "verdict": "ANALYSIS_AND_PROPOSAL_REVIEW_PASS_ONLY",
+  "scope": "SAVED_LOG_DIAGNOSIS_FIGURES_AND_UNIMPLEMENTED_NUMERICAL_DESIGN_ONLY",
+  "reviewer": "Codex /root/hybrid_readiness_review",
+  "reviewed_utc": "2026-10-20T22:07:28.540594+00:00",
+  "report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/r3_coupling_diagnosis.md",
+  "report_sha256": "b4801cc57ff218e8dd4bb6f6fa5904dcd57ccf5acc758ae17e997f4584c885f7",
+  "analysis_script": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v6_20261020/execution_r3/analysis/coupling_diagnosis/analyse.py",
+  "analysis_script_sha256": "068824c8328cf48ef8900ff396e00fb0d7726e0d64bc89e55a24e23b227e7246",
+  "analysis_summary": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v6_20261020/execution_r3/analysis/coupling_diagnosis/analysis_summary.json",
+  "analysis_summary_sha256": "0748177c8ce7751e43b83341378bbad5f6a16378c67629ea1147309fd4c0ac7d",
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "WORK_VS_ACCEPT_MERIT",
+      "status": "RESOLVED",
+      "evidence": "All internal ordinary/Anderson/Newton points use a consistently defined m_work. A no-QP point has no actual f_solve; missing QP-to-commit fatigue operation component is NA, not zero. Complete original m_accept is evaluated only after the actual final QP and audits. m_work<=1 does not certify final acceptance."
+    },
+    {
+      "id": "LAGGED_MAP_VS_REDUCED_TANGENT",
+      "status": "RESOLVED",
+      "evidence": "D^-1 C A^-1 B is restricted to the R3 f=1 fixed smooth inactive branch with invertible blocks. Future lagged-fatigue map G prime is explicitly distinguished from the reduced residual Schur tangent including full history chain derivatives."
+    },
+    {
+      "id": "SCALAR_FIELD_LABELS",
+      "status": "RESOLVED",
+      "evidence": "outer18 now1.78345185 consistent with raw1.7834518495352114; CSV has joint_l2_ratio and joint_l2_raw, independently checked for all38 rows."
+    }
+  ],
+  "independent_evidence_checks": {
+    "R3_retrieved_file_bytes_and_hashes_verified": 8,
+    "R3_missing_phase_failure_file_explicit_not_fabricated": true,
+    "R2_R3_four_analysis_input_hashes_match_raw_logs": true,
+    "root_work_intervals_independently_stack_reconstructed_and_nonoverlapping": true,
+    "top_level_cost_groups_reproduced_exactly": true,
+    "nested_LU_GMRES_not_added_to_mechanical_parent": true,
+    "R3_fresh_evaluations": 38,
+    "R3_completed_QP_calls": 39,
+    "R3_completed_GMRES_calls": 82,
+    "R3_step2_new_LU_count": 0,
+    "R2_fresh_evaluations": 8,
+    "R2_completed_QP_calls": 9,
+    "R2_new_LU_count": 9,
+    "R2_new_LU_seconds": 52.80695719085634,
+    "R2_re_equilibration_median_seconds": 7.7835558867082,
+    "R3_re_equilibration_median_seconds": 2.884210917633027,
+    "anderson_trial_outers": [
+      3,
+      4,
+      5
+    ],
+    "all_three_trials_kept": true,
+    "rejections": 0,
+    "R3_best_merit": 1.7827456777474993,
+    "R3_best_merit_outer": 17,
+    "R3_best_merit_elapsed_seconds": 134.06392009742558,
+    "initial_merit_rise_outer": 18,
+    "first_fixed_point_RMS_growth_outer": 19,
+    "first_logged_loading_mask_change_outer": 21,
+    "outer18_20_logged_active_trace_loading_changes_all_zero": true,
+    "R3_csv_raw_and_ratio_rows_verified": 38,
+    "raw_field_arrays_or_Jacobian_spectrum_available": false
+  },
+  "figure_review": {
+    "skill": "/Users/wenxiaofang/.codex/skills/research-figure-workflow/SKILL.md",
+    "PNG_visual_inspection_completed": true,
+    "figures": {
+      "r3_step2_residual_turn.png": "99be6576fcafb8c1206b0987a8945f377b8cb163c81c471ceeb7a4bae571dd98",
+      "r3_step2_work_cost.png": "3e85c8b678055e5d8ba72fcb921d55660a1cb395838f74c1cdd3bc7a7ad64b07"
+    },
+    "same_stem_sidecars_present": true,
+    "scope_and_axes_clear": true,
+    "checks": "Both figures visually inspected. Full stored audit prefix shown; component medians and completed-root sums distinguish120/300-second censoring windows. Dual-axis lower panel is two scalar diagnostics; norm ratio is explicitly not spectral radius. No clipping, blank panel or double-counted LU/GMRES identified.",
+    "component_timing_not_controlled_causal_AB_or_full_trajectory_speedup": true
+  },
+  "mathematical_design_review": {
+    "status": "ACCEPTABLE_CANDIDATE_DESIGN_NOT_IMPLEMENTED_OR_EXECUTED",
+    "original_Rd_preserved": true,
+    "differentiate_original_residual_not_energy_with_substituted_f": true,
+    "fixed_branch_reduced_tangent": "Uprime=-Ainverse B; S=D-C Ainverse B, with appropriate original-history residual chain derivatives.",
+    "natural_residual_tangent": "F=d-project_[d_n,1](d-sigma R); generalized Fprime=I-P(I-sigma S) on stated branches.",
+    "immutable_lower_and_active_release_preserved_in_design": true,
+    "work_merit_separate_from_final_accept_merit": true,
+    "final_true_QP_mechanics_fresh_audits_current_K_pivot_required": true,
+    "D13_f_solve_real_operation_and_f_commit_real_final_trial_required": true,
+    "same_old_state_history_and_single_CAS_commit_preserved": true,
+    "newton_regularization_does_not_modify_physical_Rd_or_material_in_design": true,
+    "future_implementation_freeze_requirements": [
+      "Freeze exact m_work components/scales, directional derivative checks including active/loading/trace branches, finite candidate/backtracking/linear-work budgets and final-QP certification operations before an executable card.",
+      "Keep each Newton point current-A action fixed as proposed first version. If later using variable/inexact A inverse inside Schur matvecs, separately control inexact operator errors and true residuals; flexible preconditioning alone is not a blanket guarantee for arbitrary changing operator actions.",
+      "Retain singular/current-matrix qualification and final original physical predicates; no claim of global convergence, SPD Schur, unique physical branch or achieved speed is admitted."
+    ]
+  },
+  "claim_boundary": {
+    "control_allows_plain_map_rebound_verified": true,
+    "cause_of_specific_spectral_mode_or_nodes_identified": false,
+    "QP_solved_status_does_not_supply_missing_native_frozen_operator_KKT": true,
+    "completed_fresh_fatigue_factor_one_does_not_prove_all_unlogged_trials": true,
+    "component_progress_preserved_without_full_solver_success": true,
+    "original_R3_numerical_completion_failure_unchanged": true,
+    "NN_training_or_comparison_performed": false,
+    "new_solver_candidate_validated": false,
+    "new_authority": false,
+    "new_implementation_or_scientific_run_authorized": false
+  },
+  "review_actions": {
+    "SSH": 0,
+    "FEM_solves": 0,
+    "training_updates": 0,
+    "project_array_decodes": 0,
+    "scientific_source_or_report_edits": 0,
+    "full_test_runs": 0,
+    "analysis_rerun_by_reviewer": false,
+    "method": "Read saved JSONL/source/report, independent scalar/stack accounting, rendered figure inspection, final hash binding.",
+    "only_written_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/r3_coupling_diagnosis_review.json"
+  }
+}

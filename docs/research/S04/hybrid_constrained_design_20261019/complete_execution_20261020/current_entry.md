@@ -1,3 +1,6 @@
+<!-- HYBRID_R3_D15_COUPLING_DIAGNOSIS -->
+> D15（2026-10-20）：R3原日志诊断已完成；机械单次成本下降，但第17轮m最低1.783后回升，3次有效Anderson在第5轮耗尽，普通map无全程保护。下一候选为统一工作残差保护＋受约束Newton/Schur，并保留真实最终QP及原接受态合同；仅方案，无新实现/重跑。[完整诊断](../solver_repair_v6/r3_coupling_diagnosis.md)／[独立诊断与方案复核](../solver_repair_v6/r3_coupling_diagnosis_review.json)。
+
 > 最新终态：R3已在2026-10-20 22:29:18英国时间按首科学失败停止，第2子步300秒未接受；train_A1/600、phase333.032秒，其余case/fit未开始、GPU0，三个归属PID均退出，没有重试。[终态与边界](../solver_repair_v6/execution_r3/terminal_summary.md)／[逐case elapsed](../solver_repair_v6/execution_r3/case_elapsed_times.csv)。下方启动/运行中/审批阻断条目均为历史状态，不代表当前仍在运行。
 
 > 当前D14更新：用户已明确批准原GPUServer8的具体脚本、同机R2→R3复制和一次修复后重跑。R3 stage成功、准确独立执行绑定REVIEW_PASS后已单次提交；源9216909d，物理/历史/预算不变。依赖/Agg/native replay准入通过，最新真实进度见[运行记录](../solver_repair_v6/execution_r3/run_status.md)和[逐case elapsed](../solver_repair_v6/execution_r3/case_elapsed_times.csv)。首科学失败即停，不自动重试。下方stage被拦文字属已解决历史，不能代表当前状态。
