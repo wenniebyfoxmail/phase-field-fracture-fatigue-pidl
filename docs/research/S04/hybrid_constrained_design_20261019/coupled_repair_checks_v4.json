@@ -1,0 +1,10 @@
+{
+  "scope": "v3 sole review finding: dependency auxiliary log must not mask first cause or lose phase costs; all other v3/ee49 findings inherited",
+  "tests": 5,
+  "passed": true,
+  "seconds": 8.85,
+  "command": "PYTHONPATH=source:tools:.:tests MPLCONFIGDIR=<local unit cache> <existing dev venv>/bin/python -m pytest -q tests/test_hybrid_plotting_admission.py",
+  "inherited_checks": "v3 independent41 local checks; ee49 original84 artificial checks; no actual control/grid reruns",
+  "fix": "Basic phase usage/wall/CPU/shared charge first; auxiliary JSON OSError/ValueError becomes secondary dependency_failure_read_error; original worker error rethrows",
+  "no_remote_or_science": true
+}

@@ -389,13 +389,19 @@ def main():
                 usage.update(wall_seconds=perf_counter()-phase_started,
                              cpu_seconds=(use_after.ru_utime+use_after.ru_stime-use_before.ru_utime-use_before.ru_stime),
                              completed=phase_ok)
-                if spec['id']=='plotting_admission' and (runroot/'plotting_admission_failure.json').exists():
-                    usage['dependency_failure']=read_manifest(runroot/'plotting_admission_failure.json')
                 totals['phases'][spec['id']]=usage
                 totals['wall_seconds']+=usage['wall_seconds'];totals['cpu_seconds']+=usage['cpu_seconds']
                 if spec['id'] in ('plotting_admission','native_replay','analysis'):totals['shared_analysis_seconds']+=usage['wall_seconds']
                 if spec['gpu']:totals['gpu_seconds']+=usage['wall_seconds']
                 if spec['kind']=='trajectory':totals['numerical_seconds']+=usage['wall_seconds']
+                if spec['id']=='plotting_admission':
+                    try:
+                        failure_path=runroot/'plotting_admission_failure.json'
+                        if failure_path.exists():usage['dependency_failure']=read_manifest(failure_path)
+                    except (OSError,ValueError) as exc:
+                        # Auxiliary diagnostics cannot mask the worker failure
+                        # or prevent its basic wall/CPU charge.
+                        usage['dependency_failure_read_error']=f'{type(exc).__name__}: {exc}'
                 # Failed/killed work is always charged, even without a worker result.
                 write_json(runroot/'cost_ledger.json',totals)
             result=read_manifest(runroot/f"result_{spec['id']}.json")

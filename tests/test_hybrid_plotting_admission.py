@@ -39,7 +39,8 @@ def test_plot_admission_precedes_original_complete_phase_order():
     assert sum(x.get('cycles',0)*5 for x in specs)==3600
 
 
-def test_first_dependency_failure_is_charged_and_stops_before_any_scientific_phase(tmp_path,monkeypatch):
+@pytest.mark.parametrize('corrupt',[False,True])
+def test_first_dependency_failure_is_charged_and_stops_before_any_scientific_phase(tmp_path,monkeypatch,corrupt):
     import run_hybrid_producer as r
     c=card();root=tmp_path/'run';root.mkdir();archive=tmp_path/'archive';inputs=tmp_path/'inputs';inputs.mkdir()
     write_json(inputs/'inputs.json',{})
@@ -55,7 +56,8 @@ def test_first_dependency_failure_is_charged_and_stops_before_any_scientific_pha
     calls=[]
     def failure(command,code,env,log,spec,card,runroot,archive,totals,usage):
         calls.append(spec['id']);assert env['MPLBACKEND']=='Agg' and env['MPLCONFIGDIR'].startswith(str(root))
-        write_json(runroot/'plotting_admission_failure.json',dict(first_cause='PLOTTING_VERSION_UNCONFIRMED'))
+        if corrupt:(runroot/'plotting_admission_failure.json').write_text('{truncated')
+        else:write_json(runroot/'plotting_admission_failure.json',dict(first_cause='PLOTTING_VERSION_UNCONFIRMED'))
         raise RuntimeError('worker exit 1')
     monkeypatch.setattr(r,'run_owned_worker',failure)
     with pytest.raises(RuntimeError,match='worker exit'):r.main()
@@ -64,5 +66,7 @@ def test_first_dependency_failure_is_charged_and_stops_before_any_scientific_pha
     phase=cost['phases']['plotting_admission']
     assert phase['completed'] is False and phase['wall_seconds']>=0 and phase['cpu_seconds']>=0
     assert cost['gpu_seconds']==0 and cost['numerical_seconds']==0 and cost['shared_analysis_seconds']>=phase['wall_seconds']
-    assert failure['totals']['phases']['plotting_admission']['dependency_failure']['first_cause']=='PLOTTING_VERSION_UNCONFIRMED'
+    if corrupt:
+        assert 'JSONDecodeError' in phase['dependency_failure_read_error'] and failure['reason']=='worker exit 1'
+    else:assert failure['totals']['phases']['plotting_admission']['dependency_failure']['first_cause']=='PLOTTING_VERSION_UNCONFIRMED'
     assert json.loads((root/'terminal.json').read_text())['status']=='failed'
