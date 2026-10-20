@@ -1,0 +1,267 @@
+{
+  "schema": "hybrid-execution-card-v1",
+  "run_id": "pf_hybrid_solver_v6_20261020_r3",
+  "run_root": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_hybrid_solver_v6_20261020_r3",
+  "producer": {
+    "hostname": "GPUServer8",
+    "account": "drtao",
+    "gpu_index": 5,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b"
+  },
+  "inputs_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c",
+  "state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+  "base_load_cycle": [
+    0.02999988,
+    0.05999988,
+    0.08999988,
+    0.11999988,
+    0.0
+  ],
+  "displacement_scale": 0.108,
+  "solver": {
+    "force_scale": 1.0,
+    "damage_gradient_scale": 1.0,
+    "force_tolerance": 1e-08,
+    "joint_residual_sum_tolerance": 4e-06,
+    "damage_tolerance": 1e-07,
+    "bound_tolerance": 1e-10,
+    "fatigue_tolerance": 1e-08,
+    "qp_precision": 1e-10,
+    "max_outer": 100,
+    "max_mechanics": 50,
+    "max_qp": 200000,
+    "wall_seconds": 300.0
+  },
+  "training": {
+    "seed": 20261019,
+    "fits": 1,
+    "max_updates": 20000,
+    "wall_seconds": 21600,
+    "learning_rate": 0.001,
+    "validation_every": 1000,
+    "patience": 3,
+    "loss": "mass mean squared damage plus ell^2 GP gradient squared; full graph one transition per update",
+    "initialization": "head weight zero/bias .05; four64 residual message blocks"
+  },
+  "criteria": {
+    "mean_J_max": 0.001,
+    "max_J_max": 0.01,
+    "speed_fraction_min": 0.1,
+    "role": "prospective synthetic single-family online acceleration claim; all physical acceptance and f<1 coverage necessary",
+    "rationale": "accuracy-first 0.1 percent mean normalized field agreement and1percent worst-step cap;10percent time reduction is a practical margin, not a confidence bound; no old criterion changed",
+    "timing_uncertainty": "single matched whole-trajectory timing; no statistical repeatability claim",
+    "history_relative_max": 0.05,
+    "fatigue_absolute_max": 0.01,
+    "reaction_relative_max": 0.01,
+    "scoring_timing": "all reference comparisons are posthoc analysis; excluded from matched online CF/CC/CH and fully charged as study evaluation work"
+  },
+  "budget": {
+    "gpu_hours": 12,
+    "cpu_wall_hours": 136,
+    "cpu_core_hours": 2176,
+    "cpu_cores": 16,
+    "ram_gib": 64,
+    "gpu_vram_gib": 24,
+    "primary_gib": 128,
+    "archive_gib": 128,
+    "free_storage_gib_required": 256,
+    "producer_retries": 0,
+    "training_fits": 1,
+    "numerical_substeps": 3600,
+    "replay_analysis_hours": 4,
+    "termination_reserve_seconds": 45,
+    "proposed_training_gpu_hours": 6,
+    "proposed_hybrid_gpu_hours": 6,
+    "remaining_host_hours_after_all_known_prior_runs": 135.77504312592393
+  },
+  "runtime_expected": {
+    "numpy": "1.24.4",
+    "scipy": "1.15.3",
+    "torch": "2.7.0+cu126",
+    "osqp": "1.0.4",
+    "h5py": "3.13.0",
+    "psutil": "7.0.0",
+    "matplotlib": "3.10.3"
+  },
+  "phases": [
+    {
+      "id": "native_replay",
+      "kind": "replay",
+      "gpu": false,
+      "wall_seconds": 14400
+    },
+    {
+      "id": "train_A",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.8,
+      "role": "labels",
+      "initializer": "previous"
+    },
+    {
+      "id": "train_B",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 1.2,
+      "role": "labels",
+      "initializer": "previous"
+    },
+    {
+      "id": "validation",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 1.0,
+      "role": "labels",
+      "initializer": "previous"
+    },
+    {
+      "id": "training",
+      "kind": "training",
+      "gpu": true,
+      "wall_seconds": 21600
+    },
+    {
+      "id": "test_reference",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_reference",
+      "initializer": "previous"
+    },
+    {
+      "id": "test_classical",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_candidate",
+      "initializer": "classical"
+    },
+    {
+      "id": "test_hybrid",
+      "kind": "trajectory",
+      "gpu": true,
+      "wall_seconds": 21600,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_candidate",
+      "initializer": "neural"
+    },
+    {
+      "id": "analysis",
+      "kind": "analysis",
+      "gpu": false,
+      "wall_seconds": 14400
+    }
+  ],
+  "stopping": "first unaccepted state/time/RAM/storage/identity failure stops whole pipeline; no partial fit/resume/retry or threshold/eta change",
+  "interpretation": "old c1 fields are replay only; state0 is prescribed; newly accepted same-contract trajectory states alone form labels; test opens only after model frozen",
+  "stopping_details": {
+    "substep_solver_deadline_seconds": 300,
+    "supervisor_poll_seconds": 1,
+    "gpu_query_timeout_seconds": 2,
+    "term_then_kill_grace_seconds": 10,
+    "cleanup_reserve_seconds": 45,
+    "meaning": "300s prospective cooperative deadline and Linux pidfd watchdog trigger; original total/phase budgets and cleanup reserves unchanged; no reset of the step clock. Actual elapsed includes cleanup and is reported."
+  },
+  "input_identity_revision": "portable fixed-order native Q4 B/det; original scientific state arrays bitwise unchanged, derivation in inputs.json; no threshold change",
+  "execution_enabled": false,
+  "prior_terminal_run": "pf_hybrid_complete_20261020_r2",
+  "method_revision": {
+    "mechanics": "current K/rhs GMRES with old-LU preconditioner; bounded exact current-LU fallback; final current-K LU/pivot certificate; same policy in all arms",
+    "active_set": "no threshold/freeze change; stable-free mask restricts only extrapolation; original full QP can release nodes",
+    "reuse": "full exact CSC/free-domain key for exact LU; stale LU used only as preconditioner; no stale exact-key promotion",
+    "audit": "uncached legacy final mechanical assembly plus unchanged fresh joint residual/KKT and immutable accepted-history map",
+    "durable_observability": "start/end fsync per block, separate Linux pidfd controller and gated worker start; report incomplete work after kill",
+    "matched_quality": "classical and hybrid must BOTH satisfy unchanged quality limits before joint matched-quality acceleration claim",
+    "posthoc": "sealed-state raw/active, energies/trace branches, fronts/support, feasibility/healing, correction/fallback and fixed4/304/599/600 field maps, separate evaluation cost",
+    "coupling": "strict fresh-merit improvement for intermediate trials, max3 proposals/rejections; physical acceptance unchanged; complete cache/domain rollback",
+    "accepted_state": "D13 same accepted-state timing; true f_solve and fresh f_commit distinct; immutable old-state history map and CAS unchanged"
+  },
+  "coupling": {
+    "mode": "projected_anderson_monotone",
+    "depth": 3,
+    "max_proposals": 3,
+    "max_rejections": 3,
+    "merit_factor": 0.5,
+    "coefficient_l1_cap": 5.0,
+    "trust_factor": 2.0,
+    "ridge_relative": 1e-10,
+    "condition_cap": 1000000.0,
+    "mechanics_solver": "recycled_gmres"
+  },
+  "prior_costs": [
+    {
+      "source": "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/budget_reconciliation.json",
+      "sha256": "74dd605299567a12e9aeda3b65cd765595f18a15be2b6b9168f8462ac32051d2",
+      "lineage": [
+        "pf_hybrid_full_20261019_r1",
+        "pf_hybrid_validate_20261020_01",
+        "pf_hybrid_validate_20261020_02",
+        "pf_hybrid_complete_20261020_r2",
+        "pf_hybrid_r2_dispatch_and_diagnosis_control"
+      ],
+      "metrics": {
+        "wall_seconds": [
+          "charged",
+          "wall_seconds"
+        ],
+        "cpu_seconds": [
+          "charged",
+          "cpu_seconds"
+        ],
+        "gpu_seconds": [
+          "charged",
+          "gpu_seconds"
+        ],
+        "numerical_seconds": [
+          "charged",
+          "numerical_seconds"
+        ]
+      },
+      "cost_only_not_admission": true
+    }
+  ],
+  "authority": {
+    "quote": "同意，请按这个优先顺序推进数值求解器修复，复用现有代码，先完成实现、相关测试和必要的独立复审。保持物理接受精度和历史更新规则不变，无误后重跑",
+    "scope": "one NEW complete 3600-step attempt, same data/producer/physical tolerances; original total resource caps retained; first scientific failure stops, no retry",
+    "new_retry_authority": true,
+    "new_numerical_execution_authorized": true,
+    "remote_action_blocked": "auto-review requires user confirmation of exact destination/script/copy before staging; no stage, dispatch or science has occurred"
+  },
+  "plotting_admission": {
+    "id": "plotting_admission",
+    "kind": "admission",
+    "gpu": false,
+    "wall_seconds": 120
+  },
+  "dispatch_accounting": {
+    "dispatch_reserve_seconds": 45,
+    "cleanup_reserve_seconds": 45,
+    "kill_after_seconds": 20
+  },
+  "state_contract_id": "811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12",
+  "budget_reconciliation": {
+    "complete": false,
+    "receipt": "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/budget_reconciliation.json",
+    "receipt_sha256": "74dd605299567a12e9aeda3b65cd765595f18a15be2b6b9168f8462ac32051d2",
+    "active_or_unknown_runs": [],
+    "remaining_numerical_steps": 3600,
+    "remaining_training_fits": 1,
+    "current_remaining_host_hours": 135.77504312592393,
+    "current_remaining_gpu_hours": 12.0,
+    "pending": "R3 stage actual receipt/cost and final exact execution binding"
+  },
+  "preparation_status": "LOCAL_REVIEWABLE_REMOTE_STAGE_BLOCKED_BY_AUTO_APPROVAL",
+  "numerical_solver_revision": "coupled-recycle-v6"
+}

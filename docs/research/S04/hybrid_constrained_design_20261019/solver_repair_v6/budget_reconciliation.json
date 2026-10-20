@@ -1,0 +1,456 @@
+{
+  "schema": "hybrid-budget-reconciliation-v1",
+  "complete": false,
+  "preparation_status": "R2_TERMINAL_SETTLED_R3_STAGE_AND_FINAL_BINDING_PENDING",
+  "settled_runs": [
+    "pf_hybrid_full_20261019_r1",
+    "pf_hybrid_validate_20261020_01",
+    "pf_hybrid_validate_20261020_02",
+    "pf_hybrid_complete_20261020_r2"
+  ],
+  "active_or_unknown_runs": [],
+  "snapshot_epoch": 1792526093.13642,
+  "source_snapshot_sha256": "9a78551d2e3596eb0811ba85eb4509c7b12451242fd14737075ba99876ecf13d",
+  "old_attributed_processes": {
+    "3210954": null,
+    "3210955": null,
+    "3211535": null
+  },
+  "r2_terminal": {
+    "status": "failed",
+    "totals": {
+      "wall_seconds": 795.7615206749178,
+      "cpu_seconds": 833.5435930000001,
+      "gpu_seconds": 0.0,
+      "numerical_seconds": 497.477721337229,
+      "phases": {
+        "plotting_admission": {
+          "peak_rss_bytes": 99627008,
+          "peak_gpu_mib": null,
+          "rss_observed": true,
+          "gpu_observed": false,
+          "rss_sample_count": 3,
+          "gpu_sample_count": 0,
+          "gpu_status": "not_applicable",
+          "last_rss_sample_monotonic": 5541560.427887627,
+          "storage": {},
+          "last_sample_monotonic": 5541560.427904487,
+          "deadline_guard": {
+            "status": "worker_exited",
+            "reason": null,
+            "active": null,
+            "last_step": 0,
+            "started": 5541558.315787355,
+            "finished": 5541560.439783899,
+            "worker_pid": 3211032,
+            "observations": {
+              "worker_exit_observed_at": 5541560.439759349,
+              "supervisor_exit_observed_at": null,
+              "exit_review_seconds": 1.0,
+              "exit_review_deadline": null,
+              "pending_step_at_exit": null
+            }
+          },
+          "wall_seconds": 3.1543830279260874,
+          "cpu_seconds": 5.101211999999999,
+          "completed": true,
+          "plotting_runtime": {
+            "completed": true,
+            "matplotlib": "3.10.3",
+            "backend": "Agg",
+            "rendered_bytes": {
+              "png": 3885,
+              "pdf": 10937
+            },
+            "scope": "constant triangle dependency probe only; no project state/model access",
+            "process_wall_seconds": 1.901348628103733,
+            "cpu_seconds": 4.229649,
+            "maximum_rss_kib": 448716
+          }
+        },
+        "native_replay": {
+          "peak_rss_bytes": 926650368,
+          "peak_gpu_mib": null,
+          "rss_observed": true,
+          "gpu_observed": false,
+          "rss_sample_count": 9,
+          "gpu_sample_count": 0,
+          "gpu_status": "not_applicable",
+          "last_rss_sample_monotonic": 5541569.861305189,
+          "storage": {},
+          "last_sample_monotonic": 5541569.861320649,
+          "deadline_guard": {
+            "status": "worker_exited",
+            "reason": null,
+            "active": null,
+            "last_step": 0,
+            "started": 5541561.472987097,
+            "finished": 5541570.1185796,
+            "worker_pid": 3211157,
+            "observations": {
+              "worker_exit_observed_at": 5541570.118559719,
+              "supervisor_exit_observed_at": null,
+              "exit_review_seconds": 1.0,
+              "exit_review_deadline": null,
+              "pending_step_at_exit": null
+            }
+          },
+          "wall_seconds": 9.430830866098404,
+          "cpu_seconds": 10.809842999999997,
+          "completed": true
+        },
+        "train_A": {
+          "peak_rss_bytes": 5310750720,
+          "peak_gpu_mib": null,
+          "rss_observed": true,
+          "gpu_observed": false,
+          "rss_sample_count": 151,
+          "gpu_sample_count": 0,
+          "gpu_status": "not_applicable",
+          "last_rss_sample_monotonic": 5541727.340108418,
+          "storage": {
+            "primary_bytes": 94944362,
+            "archive_bytes": 45832037
+          },
+          "last_sample_monotonic": 5541727.340120678,
+          "last_primary_storage_sample_monotonic": 5541726.298833878,
+          "last_archive_storage_sample_monotonic": 5541726.29905424,
+          "stop_reason": "worker exit -15",
+          "termination_seconds": 2.177990972995758e-05,
+          "deadline_guard": {
+            "status": "deadline_or_control_stop",
+            "reason": "physical-substep120s deadline",
+            "active": {
+              "step": 2,
+              "started": 5541607.664143263,
+              "deadline": 5541727.664143263
+            },
+            "last_step": 2,
+            "started": 5541570.905174141,
+            "finished": 5541727.82876675,
+            "worker_pid": 3211535,
+            "observations": {
+              "worker_exit_observed_at": null,
+              "supervisor_exit_observed_at": null,
+              "exit_review_seconds": 1.0,
+              "exit_review_deadline": null,
+              "pending_step_at_exit": null
+            }
+          },
+          "wall_seconds": 157.47752637509257,
+          "cpu_seconds": 244.937985,
+          "completed": false
+        }
+      },
+      "start_monotonic": 5540931.2671272345,
+      "shared_analysis_seconds": 298.28379933768883,
+      "pre_execution_cost": {
+        "wall_seconds": 625.6987804058008,
+        "cpu_seconds": 572.694553,
+        "gpu_seconds": 0.0,
+        "numerical_seconds": 340.00019496213645,
+        "facts": [
+          {
+            "source": "docs/research/S04/hybrid_constrained_design_20261019/producer_delivery_v4.json",
+            "sha256": "7d2c49cb96786ffce6ca5956c12c8090901538e7a31e3d822bf1e1c87446cecf",
+            "lineage": [
+              "pf_hybrid_full_20261019_r1"
+            ],
+            "wall_seconds": 187.86706474237144,
+            "cpu_seconds": 251.959305,
+            "gpu_seconds": 0.0,
+            "numerical_seconds": 178.3489510184154
+          },
+          {
+            "source": "docs/research/S04/hybrid_constrained_design_20261019/linux_validation_result_v1.json",
+            "sha256": "01ea71fcdf196985b01d503d14e107c757a4543a6829ac5b04000662e642e724",
+            "lineage": [
+              "pf_hybrid_validate_20261020_01",
+              "pf_hybrid_validate_20261020_02"
+            ],
+            "wall_seconds": 429.45687678735703,
+            "cpu_seconds": 320.355808,
+            "gpu_seconds": 0.0,
+            "numerical_seconds": 161.65124394372106
+          },
+          {
+            "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/runtime_inventory_receipt_attempt1.json",
+            "sha256": "4bf4110baa345f74492fb64192574b2f20507b1fcd05224817ed07585720d85d",
+            "lineage": [
+              "pf_hybrid_runtime_inventory_20261020_attempt1"
+            ],
+            "wall_seconds": 3.900547833996825,
+            "cpu_seconds": 0.070198,
+            "gpu_seconds": 0.0,
+            "numerical_seconds": 0.0
+          },
+          {
+            "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/stage_receipt_attempt1.json",
+            "sha256": "875390cd661b71ea5f18137c7e14b1496c1f411694b364a312a8b1427b2836f5",
+            "lineage": [
+              "pf_hybrid_stage_20261020_attempt1"
+            ],
+            "wall_seconds": 4.474291042075492,
+            "cpu_seconds": 0.30924199999999996,
+            "gpu_seconds": 0.0,
+            "numerical_seconds": 0.0
+          }
+        ],
+        "cost_only_not_admission": true
+      },
+      "producer_wall_seconds": 171.37977050803602,
+      "total_job_wall_seconds": 797.0785519238561,
+      "supervisor_overhead_seconds": 1.3170312489382923,
+      "allocated_cpu_core_hours_upper": 3.542571341883805
+    },
+    "end_epoch": 1792519645.839732
+  },
+  "r2_cost_ledger": {
+    "wall_seconds": 795.7615206749178,
+    "cpu_seconds": 833.5435930000001,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 497.477721337229,
+    "phases": {
+      "plotting_admission": {
+        "peak_rss_bytes": 99627008,
+        "peak_gpu_mib": null,
+        "rss_observed": true,
+        "gpu_observed": false,
+        "rss_sample_count": 3,
+        "gpu_sample_count": 0,
+        "gpu_status": "not_applicable",
+        "last_rss_sample_monotonic": 5541560.427887627,
+        "storage": {},
+        "last_sample_monotonic": 5541560.427904487,
+        "deadline_guard": {
+          "status": "worker_exited",
+          "reason": null,
+          "active": null,
+          "last_step": 0,
+          "started": 5541558.315787355,
+          "finished": 5541560.439783899,
+          "worker_pid": 3211032,
+          "observations": {
+            "worker_exit_observed_at": 5541560.439759349,
+            "supervisor_exit_observed_at": null,
+            "exit_review_seconds": 1.0,
+            "exit_review_deadline": null,
+            "pending_step_at_exit": null
+          }
+        },
+        "wall_seconds": 3.1543830279260874,
+        "cpu_seconds": 5.101211999999999,
+        "completed": true,
+        "plotting_runtime": {
+          "completed": true,
+          "matplotlib": "3.10.3",
+          "backend": "Agg",
+          "rendered_bytes": {
+            "png": 3885,
+            "pdf": 10937
+          },
+          "scope": "constant triangle dependency probe only; no project state/model access",
+          "process_wall_seconds": 1.901348628103733,
+          "cpu_seconds": 4.229649,
+          "maximum_rss_kib": 448716
+        }
+      },
+      "native_replay": {
+        "peak_rss_bytes": 926650368,
+        "peak_gpu_mib": null,
+        "rss_observed": true,
+        "gpu_observed": false,
+        "rss_sample_count": 9,
+        "gpu_sample_count": 0,
+        "gpu_status": "not_applicable",
+        "last_rss_sample_monotonic": 5541569.861305189,
+        "storage": {},
+        "last_sample_monotonic": 5541569.861320649,
+        "deadline_guard": {
+          "status": "worker_exited",
+          "reason": null,
+          "active": null,
+          "last_step": 0,
+          "started": 5541561.472987097,
+          "finished": 5541570.1185796,
+          "worker_pid": 3211157,
+          "observations": {
+            "worker_exit_observed_at": 5541570.118559719,
+            "supervisor_exit_observed_at": null,
+            "exit_review_seconds": 1.0,
+            "exit_review_deadline": null,
+            "pending_step_at_exit": null
+          }
+        },
+        "wall_seconds": 9.430830866098404,
+        "cpu_seconds": 10.809842999999997,
+        "completed": true
+      },
+      "train_A": {
+        "peak_rss_bytes": 5310750720,
+        "peak_gpu_mib": null,
+        "rss_observed": true,
+        "gpu_observed": false,
+        "rss_sample_count": 151,
+        "gpu_sample_count": 0,
+        "gpu_status": "not_applicable",
+        "last_rss_sample_monotonic": 5541727.340108418,
+        "storage": {
+          "primary_bytes": 94944362,
+          "archive_bytes": 45832037
+        },
+        "last_sample_monotonic": 5541727.340120678,
+        "last_primary_storage_sample_monotonic": 5541726.298833878,
+        "last_archive_storage_sample_monotonic": 5541726.29905424,
+        "stop_reason": "worker exit -15",
+        "termination_seconds": 2.177990972995758e-05,
+        "deadline_guard": {
+          "status": "deadline_or_control_stop",
+          "reason": "physical-substep120s deadline",
+          "active": {
+            "step": 2,
+            "started": 5541607.664143263,
+            "deadline": 5541727.664143263
+          },
+          "last_step": 2,
+          "started": 5541570.905174141,
+          "finished": 5541727.82876675,
+          "worker_pid": 3211535,
+          "observations": {
+            "worker_exit_observed_at": null,
+            "supervisor_exit_observed_at": null,
+            "exit_review_seconds": 1.0,
+            "exit_review_deadline": null,
+            "pending_step_at_exit": null
+          }
+        },
+        "wall_seconds": 157.47752637509257,
+        "cpu_seconds": 244.937985,
+        "completed": false
+      }
+    },
+    "start_monotonic": 5540931.2671272345,
+    "shared_analysis_seconds": 298.28379933768883,
+    "pre_execution_cost": {
+      "wall_seconds": 625.6987804058008,
+      "cpu_seconds": 572.694553,
+      "gpu_seconds": 0.0,
+      "numerical_seconds": 340.00019496213645,
+      "facts": [
+        {
+          "source": "docs/research/S04/hybrid_constrained_design_20261019/producer_delivery_v4.json",
+          "sha256": "7d2c49cb96786ffce6ca5956c12c8090901538e7a31e3d822bf1e1c87446cecf",
+          "lineage": [
+            "pf_hybrid_full_20261019_r1"
+          ],
+          "wall_seconds": 187.86706474237144,
+          "cpu_seconds": 251.959305,
+          "gpu_seconds": 0.0,
+          "numerical_seconds": 178.3489510184154
+        },
+        {
+          "source": "docs/research/S04/hybrid_constrained_design_20261019/linux_validation_result_v1.json",
+          "sha256": "01ea71fcdf196985b01d503d14e107c757a4543a6829ac5b04000662e642e724",
+          "lineage": [
+            "pf_hybrid_validate_20261020_01",
+            "pf_hybrid_validate_20261020_02"
+          ],
+          "wall_seconds": 429.45687678735703,
+          "cpu_seconds": 320.355808,
+          "gpu_seconds": 0.0,
+          "numerical_seconds": 161.65124394372106
+        },
+        {
+          "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/runtime_inventory_receipt_attempt1.json",
+          "sha256": "4bf4110baa345f74492fb64192574b2f20507b1fcd05224817ed07585720d85d",
+          "lineage": [
+            "pf_hybrid_runtime_inventory_20261020_attempt1"
+          ],
+          "wall_seconds": 3.900547833996825,
+          "cpu_seconds": 0.070198,
+          "gpu_seconds": 0.0,
+          "numerical_seconds": 0.0
+        },
+        {
+          "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/stage_receipt_attempt1.json",
+          "sha256": "875390cd661b71ea5f18137c7e14b1496c1f411694b364a312a8b1427b2836f5",
+          "lineage": [
+            "pf_hybrid_stage_20261020_attempt1"
+          ],
+          "wall_seconds": 4.474291042075492,
+          "cpu_seconds": 0.30924199999999996,
+          "gpu_seconds": 0.0,
+          "numerical_seconds": 0.0
+        }
+      ],
+      "cost_only_not_admission": true
+    },
+    "producer_wall_seconds": 171.37977050803602,
+    "total_job_wall_seconds": 797.0785519238561,
+    "supervisor_overhead_seconds": 1.3170312489382923,
+    "allocated_cpu_core_hours_upper": 3.542571341883805
+  },
+  "control_facts": [
+    {
+      "receipt": "dispatch_receipt_attempt1.json",
+      "sha256": "27c21aee915c5731879c2c1dfaea8336bd880d7d05036b3600f2305b2c5aac61",
+      "wall_seconds": 5.258660624967888
+    },
+    {
+      "receipt": "status_check_20261020T195435Z/query_network_receipt.json",
+      "sha256": "c6b1447d7679f53e267711f37b2c1a15f5d2d2b7d99f1cd8cd549474bf9a7de1",
+      "wall_seconds": 3.4965070839971304
+    },
+    {
+      "receipt": "status_check_20261020T195435Z/query_receipt.json",
+      "sha256": "174e72eb480f362be0c4c105d2dc377bc094fc17c34718be4a4185a1746cc2c7",
+      "wall_seconds": 0.008393957978114486
+    },
+    {
+      "receipt": "timeout_diagnosis_20261020/query_receipt.json",
+      "sha256": "bd79db442424c3f74c0d146839e9f54fbf9213c4f072a5df2a599d4ced229489",
+      "wall_seconds": 4.00263308302965
+    }
+  ],
+  "charged": {
+    "wall_seconds": 809.8447466738289,
+    "cpu_seconds": 833.5476140000001,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 497.477721337229
+  },
+  "accounting": "R2 cumulative study total already contains R1/validation/pre-R2 prep once; do not add those again. Measured local dispatch/query durations charged as separate control work; overlapping calendar wall is conservatively not deducted. R3 staging has not executed and is not recorded as zero actual work.",
+  "missing_observations": {
+    "control_cpu_seconds": null,
+    "initial_R2_monitor_query_wall_seconds": null,
+    "meaning": "not measured; not zero. Scientific worker costs are settled; missing historical read-only control observations are disclosed, never reconstructed as actual."
+  },
+  "remaining_numerical_steps": 3600,
+  "remaining_training_fits": 1,
+  "authority": {
+    "quote": "同意，请按这个优先顺序推进数值求解器修复，复用现有代码，先完成实现、相关测试和必要的独立复审。保持物理接受精度和历史更新规则不变，无误后重跑",
+    "scope": "one NEW complete 3600-step attempt, same data/producer/physical tolerances; original total resource caps retained; first scientific failure stops, no retry",
+    "new_retry_authority": true
+  },
+  "scientific_attempts": [
+    {
+      "run": "pf_hybrid_full_20261019_r1",
+      "accepted_train_A": 1,
+      "failed_substep": 2
+    },
+    {
+      "run": "pf_hybrid_validate_20261020_02",
+      "accepted_train_A": 1,
+      "failed_substep": 2,
+      "role": "bounded diagnostic"
+    },
+    {
+      "run": "pf_hybrid_complete_20261020_r2",
+      "accepted_train_A": 1,
+      "failed_substep": 2
+    }
+  ],
+  "synthetic_control_steps": "Other artificial supervisor/control checks remain in original linux_validation_result_v1.json; not FEM labels or new physical axes.",
+  "training_fits_consumed": 0,
+  "prior_labels_admitted_to_v6": false,
+  "next_binding": "Add actual successful R3 stage receipt/cost, fresh identity/resource check, exact enabled-card and independent execution review; do not change a scientific failure into a mechanical retry."
+}

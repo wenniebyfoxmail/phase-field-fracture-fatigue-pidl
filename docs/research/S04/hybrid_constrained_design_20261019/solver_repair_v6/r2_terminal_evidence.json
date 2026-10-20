@@ -1,0 +1,840 @@
+{
+  "source_snapshot_sha256": "9a78551d2e3596eb0811ba85eb4509c7b12451242fd14737075ba99876ecf13d",
+  "hostname": "GPUServer8",
+  "observed_epoch": 1792526093.13642,
+  "records": {
+    "terminal.json": {
+      "status": "failed",
+      "totals": {
+        "wall_seconds": 795.7615206749178,
+        "cpu_seconds": 833.5435930000001,
+        "gpu_seconds": 0.0,
+        "numerical_seconds": 497.477721337229,
+        "phases": {
+          "plotting_admission": {
+            "peak_rss_bytes": 99627008,
+            "peak_gpu_mib": null,
+            "rss_observed": true,
+            "gpu_observed": false,
+            "rss_sample_count": 3,
+            "gpu_sample_count": 0,
+            "gpu_status": "not_applicable",
+            "last_rss_sample_monotonic": 5541560.427887627,
+            "storage": {},
+            "last_sample_monotonic": 5541560.427904487,
+            "deadline_guard": {
+              "status": "worker_exited",
+              "reason": null,
+              "active": null,
+              "last_step": 0,
+              "started": 5541558.315787355,
+              "finished": 5541560.439783899,
+              "worker_pid": 3211032,
+              "observations": {
+                "worker_exit_observed_at": 5541560.439759349,
+                "supervisor_exit_observed_at": null,
+                "exit_review_seconds": 1.0,
+                "exit_review_deadline": null,
+                "pending_step_at_exit": null
+              }
+            },
+            "wall_seconds": 3.1543830279260874,
+            "cpu_seconds": 5.101211999999999,
+            "completed": true,
+            "plotting_runtime": {
+              "completed": true,
+              "matplotlib": "3.10.3",
+              "backend": "Agg",
+              "rendered_bytes": {
+                "png": 3885,
+                "pdf": 10937
+              },
+              "scope": "constant triangle dependency probe only; no project state/model access",
+              "process_wall_seconds": 1.901348628103733,
+              "cpu_seconds": 4.229649,
+              "maximum_rss_kib": 448716
+            }
+          },
+          "native_replay": {
+            "peak_rss_bytes": 926650368,
+            "peak_gpu_mib": null,
+            "rss_observed": true,
+            "gpu_observed": false,
+            "rss_sample_count": 9,
+            "gpu_sample_count": 0,
+            "gpu_status": "not_applicable",
+            "last_rss_sample_monotonic": 5541569.861305189,
+            "storage": {},
+            "last_sample_monotonic": 5541569.861320649,
+            "deadline_guard": {
+              "status": "worker_exited",
+              "reason": null,
+              "active": null,
+              "last_step": 0,
+              "started": 5541561.472987097,
+              "finished": 5541570.1185796,
+              "worker_pid": 3211157,
+              "observations": {
+                "worker_exit_observed_at": 5541570.118559719,
+                "supervisor_exit_observed_at": null,
+                "exit_review_seconds": 1.0,
+                "exit_review_deadline": null,
+                "pending_step_at_exit": null
+              }
+            },
+            "wall_seconds": 9.430830866098404,
+            "cpu_seconds": 10.809842999999997,
+            "completed": true
+          },
+          "train_A": {
+            "peak_rss_bytes": 5310750720,
+            "peak_gpu_mib": null,
+            "rss_observed": true,
+            "gpu_observed": false,
+            "rss_sample_count": 151,
+            "gpu_sample_count": 0,
+            "gpu_status": "not_applicable",
+            "last_rss_sample_monotonic": 5541727.340108418,
+            "storage": {
+              "primary_bytes": 94944362,
+              "archive_bytes": 45832037
+            },
+            "last_sample_monotonic": 5541727.340120678,
+            "last_primary_storage_sample_monotonic": 5541726.298833878,
+            "last_archive_storage_sample_monotonic": 5541726.29905424,
+            "stop_reason": "worker exit -15",
+            "termination_seconds": 2.177990972995758e-05,
+            "deadline_guard": {
+              "status": "deadline_or_control_stop",
+              "reason": "physical-substep120s deadline",
+              "active": {
+                "step": 2,
+                "started": 5541607.664143263,
+                "deadline": 5541727.664143263
+              },
+              "last_step": 2,
+              "started": 5541570.905174141,
+              "finished": 5541727.82876675,
+              "worker_pid": 3211535,
+              "observations": {
+                "worker_exit_observed_at": null,
+                "supervisor_exit_observed_at": null,
+                "exit_review_seconds": 1.0,
+                "exit_review_deadline": null,
+                "pending_step_at_exit": null
+              }
+            },
+            "wall_seconds": 157.47752637509257,
+            "cpu_seconds": 244.937985,
+            "completed": false
+          }
+        },
+        "start_monotonic": 5540931.2671272345,
+        "shared_analysis_seconds": 298.28379933768883,
+        "pre_execution_cost": {
+          "wall_seconds": 625.6987804058008,
+          "cpu_seconds": 572.694553,
+          "gpu_seconds": 0.0,
+          "numerical_seconds": 340.00019496213645,
+          "facts": [
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/producer_delivery_v4.json",
+              "sha256": "7d2c49cb96786ffce6ca5956c12c8090901538e7a31e3d822bf1e1c87446cecf",
+              "lineage": [
+                "pf_hybrid_full_20261019_r1"
+              ],
+              "wall_seconds": 187.86706474237144,
+              "cpu_seconds": 251.959305,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 178.3489510184154
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/linux_validation_result_v1.json",
+              "sha256": "01ea71fcdf196985b01d503d14e107c757a4543a6829ac5b04000662e642e724",
+              "lineage": [
+                "pf_hybrid_validate_20261020_01",
+                "pf_hybrid_validate_20261020_02"
+              ],
+              "wall_seconds": 429.45687678735703,
+              "cpu_seconds": 320.355808,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 161.65124394372106
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/runtime_inventory_receipt_attempt1.json",
+              "sha256": "4bf4110baa345f74492fb64192574b2f20507b1fcd05224817ed07585720d85d",
+              "lineage": [
+                "pf_hybrid_runtime_inventory_20261020_attempt1"
+              ],
+              "wall_seconds": 3.900547833996825,
+              "cpu_seconds": 0.070198,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 0.0
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/stage_receipt_attempt1.json",
+              "sha256": "875390cd661b71ea5f18137c7e14b1496c1f411694b364a312a8b1427b2836f5",
+              "lineage": [
+                "pf_hybrid_stage_20261020_attempt1"
+              ],
+              "wall_seconds": 4.474291042075492,
+              "cpu_seconds": 0.30924199999999996,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 0.0
+            }
+          ],
+          "cost_only_not_admission": true
+        },
+        "producer_wall_seconds": 171.37977050803602,
+        "total_job_wall_seconds": 797.0785519238561,
+        "supervisor_overhead_seconds": 1.3170312489382923,
+        "allocated_cpu_core_hours_upper": 3.542571341883805
+      },
+      "end_epoch": 1792519645.839732
+    },
+    "cost_ledger.json": {
+      "wall_seconds": 795.7615206749178,
+      "cpu_seconds": 833.5435930000001,
+      "gpu_seconds": 0.0,
+      "numerical_seconds": 497.477721337229,
+      "phases": {
+        "plotting_admission": {
+          "peak_rss_bytes": 99627008,
+          "peak_gpu_mib": null,
+          "rss_observed": true,
+          "gpu_observed": false,
+          "rss_sample_count": 3,
+          "gpu_sample_count": 0,
+          "gpu_status": "not_applicable",
+          "last_rss_sample_monotonic": 5541560.427887627,
+          "storage": {},
+          "last_sample_monotonic": 5541560.427904487,
+          "deadline_guard": {
+            "status": "worker_exited",
+            "reason": null,
+            "active": null,
+            "last_step": 0,
+            "started": 5541558.315787355,
+            "finished": 5541560.439783899,
+            "worker_pid": 3211032,
+            "observations": {
+              "worker_exit_observed_at": 5541560.439759349,
+              "supervisor_exit_observed_at": null,
+              "exit_review_seconds": 1.0,
+              "exit_review_deadline": null,
+              "pending_step_at_exit": null
+            }
+          },
+          "wall_seconds": 3.1543830279260874,
+          "cpu_seconds": 5.101211999999999,
+          "completed": true,
+          "plotting_runtime": {
+            "completed": true,
+            "matplotlib": "3.10.3",
+            "backend": "Agg",
+            "rendered_bytes": {
+              "png": 3885,
+              "pdf": 10937
+            },
+            "scope": "constant triangle dependency probe only; no project state/model access",
+            "process_wall_seconds": 1.901348628103733,
+            "cpu_seconds": 4.229649,
+            "maximum_rss_kib": 448716
+          }
+        },
+        "native_replay": {
+          "peak_rss_bytes": 926650368,
+          "peak_gpu_mib": null,
+          "rss_observed": true,
+          "gpu_observed": false,
+          "rss_sample_count": 9,
+          "gpu_sample_count": 0,
+          "gpu_status": "not_applicable",
+          "last_rss_sample_monotonic": 5541569.861305189,
+          "storage": {},
+          "last_sample_monotonic": 5541569.861320649,
+          "deadline_guard": {
+            "status": "worker_exited",
+            "reason": null,
+            "active": null,
+            "last_step": 0,
+            "started": 5541561.472987097,
+            "finished": 5541570.1185796,
+            "worker_pid": 3211157,
+            "observations": {
+              "worker_exit_observed_at": 5541570.118559719,
+              "supervisor_exit_observed_at": null,
+              "exit_review_seconds": 1.0,
+              "exit_review_deadline": null,
+              "pending_step_at_exit": null
+            }
+          },
+          "wall_seconds": 9.430830866098404,
+          "cpu_seconds": 10.809842999999997,
+          "completed": true
+        },
+        "train_A": {
+          "peak_rss_bytes": 5310750720,
+          "peak_gpu_mib": null,
+          "rss_observed": true,
+          "gpu_observed": false,
+          "rss_sample_count": 151,
+          "gpu_sample_count": 0,
+          "gpu_status": "not_applicable",
+          "last_rss_sample_monotonic": 5541727.340108418,
+          "storage": {
+            "primary_bytes": 94944362,
+            "archive_bytes": 45832037
+          },
+          "last_sample_monotonic": 5541727.340120678,
+          "last_primary_storage_sample_monotonic": 5541726.298833878,
+          "last_archive_storage_sample_monotonic": 5541726.29905424,
+          "stop_reason": "worker exit -15",
+          "termination_seconds": 2.177990972995758e-05,
+          "deadline_guard": {
+            "status": "deadline_or_control_stop",
+            "reason": "physical-substep120s deadline",
+            "active": {
+              "step": 2,
+              "started": 5541607.664143263,
+              "deadline": 5541727.664143263
+            },
+            "last_step": 2,
+            "started": 5541570.905174141,
+            "finished": 5541727.82876675,
+            "worker_pid": 3211535,
+            "observations": {
+              "worker_exit_observed_at": null,
+              "supervisor_exit_observed_at": null,
+              "exit_review_seconds": 1.0,
+              "exit_review_deadline": null,
+              "pending_step_at_exit": null
+            }
+          },
+          "wall_seconds": 157.47752637509257,
+          "cpu_seconds": 244.937985,
+          "completed": false
+        }
+      },
+      "start_monotonic": 5540931.2671272345,
+      "shared_analysis_seconds": 298.28379933768883,
+      "pre_execution_cost": {
+        "wall_seconds": 625.6987804058008,
+        "cpu_seconds": 572.694553,
+        "gpu_seconds": 0.0,
+        "numerical_seconds": 340.00019496213645,
+        "facts": [
+          {
+            "source": "docs/research/S04/hybrid_constrained_design_20261019/producer_delivery_v4.json",
+            "sha256": "7d2c49cb96786ffce6ca5956c12c8090901538e7a31e3d822bf1e1c87446cecf",
+            "lineage": [
+              "pf_hybrid_full_20261019_r1"
+            ],
+            "wall_seconds": 187.86706474237144,
+            "cpu_seconds": 251.959305,
+            "gpu_seconds": 0.0,
+            "numerical_seconds": 178.3489510184154
+          },
+          {
+            "source": "docs/research/S04/hybrid_constrained_design_20261019/linux_validation_result_v1.json",
+            "sha256": "01ea71fcdf196985b01d503d14e107c757a4543a6829ac5b04000662e642e724",
+            "lineage": [
+              "pf_hybrid_validate_20261020_01",
+              "pf_hybrid_validate_20261020_02"
+            ],
+            "wall_seconds": 429.45687678735703,
+            "cpu_seconds": 320.355808,
+            "gpu_seconds": 0.0,
+            "numerical_seconds": 161.65124394372106
+          },
+          {
+            "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/runtime_inventory_receipt_attempt1.json",
+            "sha256": "4bf4110baa345f74492fb64192574b2f20507b1fcd05224817ed07585720d85d",
+            "lineage": [
+              "pf_hybrid_runtime_inventory_20261020_attempt1"
+            ],
+            "wall_seconds": 3.900547833996825,
+            "cpu_seconds": 0.070198,
+            "gpu_seconds": 0.0,
+            "numerical_seconds": 0.0
+          },
+          {
+            "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/stage_receipt_attempt1.json",
+            "sha256": "875390cd661b71ea5f18137c7e14b1496c1f411694b364a312a8b1427b2836f5",
+            "lineage": [
+              "pf_hybrid_stage_20261020_attempt1"
+            ],
+            "wall_seconds": 4.474291042075492,
+            "cpu_seconds": 0.30924199999999996,
+            "gpu_seconds": 0.0,
+            "numerical_seconds": 0.0
+          }
+        ],
+        "cost_only_not_admission": true
+      },
+      "producer_wall_seconds": 171.37977050803602,
+      "total_job_wall_seconds": 797.0785519238561,
+      "supervisor_overhead_seconds": 1.3170312489382923,
+      "allocated_cpu_core_hours_upper": 3.542571341883805
+    },
+    "failure.json": {
+      "reason": "worker exit -15",
+      "totals": {
+        "wall_seconds": 795.7615206749178,
+        "cpu_seconds": 833.5435930000001,
+        "gpu_seconds": 0.0,
+        "numerical_seconds": 497.477721337229,
+        "phases": {
+          "plotting_admission": {
+            "peak_rss_bytes": 99627008,
+            "peak_gpu_mib": null,
+            "rss_observed": true,
+            "gpu_observed": false,
+            "rss_sample_count": 3,
+            "gpu_sample_count": 0,
+            "gpu_status": "not_applicable",
+            "last_rss_sample_monotonic": 5541560.427887627,
+            "storage": {},
+            "last_sample_monotonic": 5541560.427904487,
+            "deadline_guard": {
+              "status": "worker_exited",
+              "reason": null,
+              "active": null,
+              "last_step": 0,
+              "started": 5541558.315787355,
+              "finished": 5541560.439783899,
+              "worker_pid": 3211032,
+              "observations": {
+                "worker_exit_observed_at": 5541560.439759349,
+                "supervisor_exit_observed_at": null,
+                "exit_review_seconds": 1.0,
+                "exit_review_deadline": null,
+                "pending_step_at_exit": null
+              }
+            },
+            "wall_seconds": 3.1543830279260874,
+            "cpu_seconds": 5.101211999999999,
+            "completed": true,
+            "plotting_runtime": {
+              "completed": true,
+              "matplotlib": "3.10.3",
+              "backend": "Agg",
+              "rendered_bytes": {
+                "png": 3885,
+                "pdf": 10937
+              },
+              "scope": "constant triangle dependency probe only; no project state/model access",
+              "process_wall_seconds": 1.901348628103733,
+              "cpu_seconds": 4.229649,
+              "maximum_rss_kib": 448716
+            }
+          },
+          "native_replay": {
+            "peak_rss_bytes": 926650368,
+            "peak_gpu_mib": null,
+            "rss_observed": true,
+            "gpu_observed": false,
+            "rss_sample_count": 9,
+            "gpu_sample_count": 0,
+            "gpu_status": "not_applicable",
+            "last_rss_sample_monotonic": 5541569.861305189,
+            "storage": {},
+            "last_sample_monotonic": 5541569.861320649,
+            "deadline_guard": {
+              "status": "worker_exited",
+              "reason": null,
+              "active": null,
+              "last_step": 0,
+              "started": 5541561.472987097,
+              "finished": 5541570.1185796,
+              "worker_pid": 3211157,
+              "observations": {
+                "worker_exit_observed_at": 5541570.118559719,
+                "supervisor_exit_observed_at": null,
+                "exit_review_seconds": 1.0,
+                "exit_review_deadline": null,
+                "pending_step_at_exit": null
+              }
+            },
+            "wall_seconds": 9.430830866098404,
+            "cpu_seconds": 10.809842999999997,
+            "completed": true
+          },
+          "train_A": {
+            "peak_rss_bytes": 5310750720,
+            "peak_gpu_mib": null,
+            "rss_observed": true,
+            "gpu_observed": false,
+            "rss_sample_count": 151,
+            "gpu_sample_count": 0,
+            "gpu_status": "not_applicable",
+            "last_rss_sample_monotonic": 5541727.340108418,
+            "storage": {
+              "primary_bytes": 94944362,
+              "archive_bytes": 45832037
+            },
+            "last_sample_monotonic": 5541727.340120678,
+            "last_primary_storage_sample_monotonic": 5541726.298833878,
+            "last_archive_storage_sample_monotonic": 5541726.29905424,
+            "stop_reason": "worker exit -15",
+            "termination_seconds": 2.177990972995758e-05,
+            "deadline_guard": {
+              "status": "deadline_or_control_stop",
+              "reason": "physical-substep120s deadline",
+              "active": {
+                "step": 2,
+                "started": 5541607.664143263,
+                "deadline": 5541727.664143263
+              },
+              "last_step": 2,
+              "started": 5541570.905174141,
+              "finished": 5541727.82876675,
+              "worker_pid": 3211535,
+              "observations": {
+                "worker_exit_observed_at": null,
+                "supervisor_exit_observed_at": null,
+                "exit_review_seconds": 1.0,
+                "exit_review_deadline": null,
+                "pending_step_at_exit": null
+              }
+            },
+            "wall_seconds": 157.47752637509257,
+            "cpu_seconds": 244.937985,
+            "completed": false
+          }
+        },
+        "start_monotonic": 5540931.2671272345,
+        "shared_analysis_seconds": 298.28379933768883,
+        "pre_execution_cost": {
+          "wall_seconds": 625.6987804058008,
+          "cpu_seconds": 572.694553,
+          "gpu_seconds": 0.0,
+          "numerical_seconds": 340.00019496213645,
+          "facts": [
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/producer_delivery_v4.json",
+              "sha256": "7d2c49cb96786ffce6ca5956c12c8090901538e7a31e3d822bf1e1c87446cecf",
+              "lineage": [
+                "pf_hybrid_full_20261019_r1"
+              ],
+              "wall_seconds": 187.86706474237144,
+              "cpu_seconds": 251.959305,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 178.3489510184154
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/linux_validation_result_v1.json",
+              "sha256": "01ea71fcdf196985b01d503d14e107c757a4543a6829ac5b04000662e642e724",
+              "lineage": [
+                "pf_hybrid_validate_20261020_01",
+                "pf_hybrid_validate_20261020_02"
+              ],
+              "wall_seconds": 429.45687678735703,
+              "cpu_seconds": 320.355808,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 161.65124394372106
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/runtime_inventory_receipt_attempt1.json",
+              "sha256": "4bf4110baa345f74492fb64192574b2f20507b1fcd05224817ed07585720d85d",
+              "lineage": [
+                "pf_hybrid_runtime_inventory_20261020_attempt1"
+              ],
+              "wall_seconds": 3.900547833996825,
+              "cpu_seconds": 0.070198,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 0.0
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/stage_receipt_attempt1.json",
+              "sha256": "875390cd661b71ea5f18137c7e14b1496c1f411694b364a312a8b1427b2836f5",
+              "lineage": [
+                "pf_hybrid_stage_20261020_attempt1"
+              ],
+              "wall_seconds": 4.474291042075492,
+              "cpu_seconds": 0.30924199999999996,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 0.0
+            }
+          ],
+          "cost_only_not_admission": true
+        }
+      },
+      "rule": "no retries/partial fit/threshold relaxation; inspect latest durable versions"
+    },
+    "launch_receipt.json": {
+      "pid": 3210955,
+      "hostname": "GPUServer8",
+      "command": [
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/code/tools/run_hybrid_producer.py",
+        "--card",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/execution_card.json",
+        "--package",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/source_manifest.json",
+        "--inputs",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/inputs",
+        "--review",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/execution_review.json",
+        "--execute"
+      ],
+      "card_sha256": "f3cc0463755b43ab6d84f5b54153c74a8bb86f8ecf0469d57d217a4109d16fd5",
+      "artifact_id": "7c150a6839dc368c9e536f03d326050ce20d26681cd3c71374969ce8d5d72846",
+      "host_admission": {
+        "available_ram_bytes": 394214105088,
+        "available_disk_bytes": 638209433600,
+        "cpu_affinity": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "load_average": [
+          5.8203125,
+          5.11962890625,
+          5.07177734375
+        ]
+      },
+      "runtime": {
+        "numpy": "1.24.4",
+        "scipy": "1.15.3",
+        "torch": "2.7.0+cu126",
+        "osqp": "1.0.4",
+        "h5py": "3.13.0",
+        "psutil": "7.0.0"
+      },
+      "start_epoch": 1792519475.768586
+    },
+    "launch_reservation.json": {
+      "state": "spawned",
+      "command": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=20s",
+        "488884.294013s",
+        "/usr/bin/python3",
+        "-u",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/code/tools/run_hybrid_producer.py",
+        "--card",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/execution_card.json",
+        "--package",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/source_manifest.json",
+        "--inputs",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/inputs",
+        "--review",
+        "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/execution_review.json",
+        "--execute"
+      ],
+      "artifact_id": "7c150a6839dc368c9e536f03d326050ce20d26681cd3c71374969ce8d5d72846",
+      "time": 1792519474.2785535,
+      "actual_prior_wall_seconds": 625.6987804058008,
+      "outer_timeout_seconds": 488884.29401278635,
+      "dispatch_reserve_seconds": 45,
+      "cleanup_reserve_seconds": 45,
+      "timeout_exit124_or137_is_failure": true,
+      "pid": 3210954
+    },
+    "monitor.json": {
+      "phase": "train_A",
+      "pid": 3211535,
+      "elapsed": 156.3951297318563,
+      "rss_bytes": 3285798912,
+      "peak_rss_bytes": 5310750720,
+      "storage": {
+        "primary_bytes": 94944362,
+        "archive_bytes": 45832037
+      },
+      "peak_gpu_mib": null,
+      "rss_observed": true,
+      "gpu_observed": false,
+      "gpu_status": "not_applicable",
+      "totals_before_phase": {
+        "wall_seconds": 638.2839942998253,
+        "cpu_seconds": 588.6056080000001,
+        "gpu_seconds": 0.0,
+        "numerical_seconds": 340.00019496213645,
+        "phases": {
+          "plotting_admission": {
+            "peak_rss_bytes": 99627008,
+            "peak_gpu_mib": null,
+            "rss_observed": true,
+            "gpu_observed": false,
+            "rss_sample_count": 3,
+            "gpu_sample_count": 0,
+            "gpu_status": "not_applicable",
+            "last_rss_sample_monotonic": 5541560.427887627,
+            "storage": {},
+            "last_sample_monotonic": 5541560.427904487,
+            "deadline_guard": {
+              "status": "worker_exited",
+              "reason": null,
+              "active": null,
+              "last_step": 0,
+              "started": 5541558.315787355,
+              "finished": 5541560.439783899,
+              "worker_pid": 3211032,
+              "observations": {
+                "worker_exit_observed_at": 5541560.439759349,
+                "supervisor_exit_observed_at": null,
+                "exit_review_seconds": 1.0,
+                "exit_review_deadline": null,
+                "pending_step_at_exit": null
+              }
+            },
+            "wall_seconds": 3.1543830279260874,
+            "cpu_seconds": 5.101211999999999,
+            "completed": true,
+            "plotting_runtime": {
+              "completed": true,
+              "matplotlib": "3.10.3",
+              "backend": "Agg",
+              "rendered_bytes": {
+                "png": 3885,
+                "pdf": 10937
+              },
+              "scope": "constant triangle dependency probe only; no project state/model access",
+              "process_wall_seconds": 1.901348628103733,
+              "cpu_seconds": 4.229649,
+              "maximum_rss_kib": 448716
+            }
+          },
+          "native_replay": {
+            "peak_rss_bytes": 926650368,
+            "peak_gpu_mib": null,
+            "rss_observed": true,
+            "gpu_observed": false,
+            "rss_sample_count": 9,
+            "gpu_sample_count": 0,
+            "gpu_status": "not_applicable",
+            "last_rss_sample_monotonic": 5541569.861305189,
+            "storage": {},
+            "last_sample_monotonic": 5541569.861320649,
+            "deadline_guard": {
+              "status": "worker_exited",
+              "reason": null,
+              "active": null,
+              "last_step": 0,
+              "started": 5541561.472987097,
+              "finished": 5541570.1185796,
+              "worker_pid": 3211157,
+              "observations": {
+                "worker_exit_observed_at": 5541570.118559719,
+                "supervisor_exit_observed_at": null,
+                "exit_review_seconds": 1.0,
+                "exit_review_deadline": null,
+                "pending_step_at_exit": null
+              }
+            },
+            "wall_seconds": 9.430830866098404,
+            "cpu_seconds": 10.809842999999997,
+            "completed": true
+          }
+        },
+        "start_monotonic": 5540931.2671272345,
+        "shared_analysis_seconds": 298.28379933768883,
+        "pre_execution_cost": {
+          "wall_seconds": 625.6987804058008,
+          "cpu_seconds": 572.694553,
+          "gpu_seconds": 0.0,
+          "numerical_seconds": 340.00019496213645,
+          "facts": [
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/producer_delivery_v4.json",
+              "sha256": "7d2c49cb96786ffce6ca5956c12c8090901538e7a31e3d822bf1e1c87446cecf",
+              "lineage": [
+                "pf_hybrid_full_20261019_r1"
+              ],
+              "wall_seconds": 187.86706474237144,
+              "cpu_seconds": 251.959305,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 178.3489510184154
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/linux_validation_result_v1.json",
+              "sha256": "01ea71fcdf196985b01d503d14e107c757a4543a6829ac5b04000662e642e724",
+              "lineage": [
+                "pf_hybrid_validate_20261020_01",
+                "pf_hybrid_validate_20261020_02"
+              ],
+              "wall_seconds": 429.45687678735703,
+              "cpu_seconds": 320.355808,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 161.65124394372106
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/runtime_inventory_receipt_attempt1.json",
+              "sha256": "4bf4110baa345f74492fb64192574b2f20507b1fcd05224817ed07585720d85d",
+              "lineage": [
+                "pf_hybrid_runtime_inventory_20261020_attempt1"
+              ],
+              "wall_seconds": 3.900547833996825,
+              "cpu_seconds": 0.070198,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 0.0
+            },
+            {
+              "source": "docs/research/S04/hybrid_constrained_design_20261019/complete_execution_20261020/stage_receipt_attempt1.json",
+              "sha256": "875390cd661b71ea5f18137c7e14b1496c1f411694b364a312a8b1427b2836f5",
+              "lineage": [
+                "pf_hybrid_stage_20261020_attempt1"
+              ],
+              "wall_seconds": 4.474291042075492,
+              "cpu_seconds": 0.30924199999999996,
+              "gpu_seconds": 0.0,
+              "numerical_seconds": 0.0
+            }
+          ],
+          "cost_only_not_admission": true
+        }
+      }
+    }
+  },
+  "processes": {
+    "3210954": null,
+    "3210955": null,
+    "3211535": null
+  },
+  "case_events": {
+    "train_A": {
+      "accepted_substeps": 1,
+      "last": {
+        "step": 1,
+        "cycle": 1,
+        "substep": 1,
+        "load": 0.023999904000000002,
+        "total_step_wall_seconds": 34.249059395864606
+      }
+    },
+    "train_B": {
+      "accepted_substeps": 0,
+      "last": null
+    },
+    "validation": {
+      "accepted_substeps": 0,
+      "last": null
+    },
+    "test_reference": {
+      "accepted_substeps": 0,
+      "last": null
+    },
+    "test_classical": {
+      "accepted_substeps": 0,
+      "last": null
+    },
+    "test_hybrid": {
+      "accepted_substeps": 0,
+      "last": null
+    }
+  }
+}

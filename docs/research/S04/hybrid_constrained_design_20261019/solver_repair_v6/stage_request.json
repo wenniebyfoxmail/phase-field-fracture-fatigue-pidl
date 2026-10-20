@@ -1,0 +1,23 @@
+{
+  "schema": "hybrid-v6-bounded-stage-request",
+  "sender_account": "local workstation existing SSH identity",
+  "destination": "drtao@172.16.100.2",
+  "expected_hostname": "GPUServer8",
+  "payload": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/tools/stage_hybrid_solver_v6.py",
+  "payload_sha256": "258794689908f2dc6bf759828be93a73a4f8e81c81f3c974d1dfb2e369896e5a",
+  "network_outbound": "this exact standard-library script only; no scientific input arrays uploaded",
+  "remote_source": "/mnt/data2/drtao/wennie/pf_hybrid_complete_20261020_r2/{inputs,deps}",
+  "remote_destination": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/{inputs,deps}",
+  "mutation": "exclusive fresh run directory; verified same-host copy <=160MiB/1024 files; OSQP <=32MiB; never overwrite",
+  "remote_timeout_seconds": 30,
+  "kill_after_seconds": 3,
+  "local_timeout_seconds": 45,
+  "numerical_solves": 0,
+  "training": 0,
+  "installs": 0,
+  "retries": 0,
+  "stdout": "metadata only, no array decode",
+  "authority_quote": "同意，请按这个优先顺序推进数值求解器修复，复用现有代码，先完成实现、相关测试和必要的独立复审。保持物理接受精度和历史更新规则不变，无误后重跑",
+  "continuity_evidence": "Original R2 signed card and launch receipts identify the same account/host. New stage reuses only those exact retained inputs and OSQP. User requests corrected one rerun in the same scope.",
+  "previous_auto_review": "Rejected before process creation for unclear specific payload/destination authorization; no workaround used. Independently checked technical data flow and same endpoint before submitting this request on the original approval channel."
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "hybrid-solver-code-review-v6",
+  "verdict": "CODE_REVIEW_PASS",
+  "reviewer": "/root/hybrid_readiness_review",
+  "scope": "88c91249 core plus dd0efd6e observability corrections; no scientific execution",
+  "findings_closed": [
+    "dynamic deadline reason",
+    "unobserved pivot is None",
+    "factor_domain rollback assertion"
+  ],
+  "tests": {
+    "owner_full": "142 passed in 3.70s",
+    "independent_targeted": "26 passed in 0.75s",
+    "data": "artificial Q4/algebraic/fault only"
+  },
+  "unchanged": [
+    "physical acceptance thresholds",
+    "QP precision",
+    "history trial/acceptance/CAS rules",
+    "D13 accepted-state field timing",
+    "shared solver policy all comparison arms"
+  ],
+  "files": {
+    "source/hybrid_mechanics.py": "5639714731c64f9d7398c572f6dcec6bcb973f119f48576643d747e834340595",
+    "source/hybrid_incremental.py": "8a95c52496064e46331535c123ba423cdf261613652405d8d754e254ccbcc7d0",
+    "source/hybrid_coupled_acceleration.py": "daede8a9e6237671d5a8913d67bc2973ecbd7123f7a49a1541f887c0d9612b12",
+    "tools/run_hybrid_producer.py": "4c0c130a74e80313fbf2d338290ee3046b0cd60fe1248ac7df41bab52410e17b",
+    "tools/hybrid_deadline_guard.py": "1b9d1e1ccfbcb6f28b05342b9e2939ceef34fd6bae5ba98ce5a71749cdbd668b",
+    "tools/stage_hybrid_solver_v6.py": "258794689908f2dc6bf759828be93a73a4f8e81c81f3c974d1dfb2e369896e5a",
+    "tools/receive_hybrid_solver_v6.py": "9699bf5ffdf6619db119adb2a50335aa17eec90779b929587d3c3a29e7e37d01"
+  },
+  "execution_review_pending": "Bind final card, cost reconciliation, artifact and immutable staged receipt; this code review alone does not admit execution"
+}
