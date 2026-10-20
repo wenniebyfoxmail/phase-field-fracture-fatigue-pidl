@@ -73,7 +73,7 @@
     "termination_reserve_seconds": 45,
     "proposed_training_gpu_hours": 6,
     "proposed_hybrid_gpu_hours": 6,
-    "remaining_host_hours_after_all_known_prior_runs": 135.77504312592393
+    "remaining_host_hours_after_all_known_prior_runs": 135.60837645925727
   },
   "runtime_expected": {
     "numpy": "1.24.4",
@@ -203,7 +203,7 @@
   "prior_costs": [
     {
       "source": "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/budget_reconciliation.json",
-      "sha256": "74dd605299567a12e9aeda3b65cd765595f18a15be2b6b9168f8462ac32051d2",
+      "sha256": "e8515061fa412363609666730de7a2ed6c044b4d3353f3aa95c513a964f7dcb4",
       "lineage": [
         "pf_hybrid_full_20261019_r1",
         "pf_hybrid_validate_20261020_01",
@@ -254,14 +254,16 @@
   "budget_reconciliation": {
     "complete": false,
     "receipt": "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/budget_reconciliation.json",
-    "receipt_sha256": "74dd605299567a12e9aeda3b65cd765595f18a15be2b6b9168f8462ac32051d2",
+    "receipt_sha256": "e8515061fa412363609666730de7a2ed6c044b4d3353f3aa95c513a964f7dcb4",
     "active_or_unknown_runs": [],
     "remaining_numerical_steps": 3600,
     "remaining_training_fits": 1,
-    "current_remaining_host_hours": 135.77504312592393,
+    "current_remaining_host_hours": 135.60837645925727,
     "current_remaining_gpu_hours": 12.0,
+    "historical_control_reserve_seconds": 600,
     "pending": "R3 stage actual receipt/cost and final exact execution binding"
   },
   "preparation_status": "LOCAL_REVIEWABLE_REMOTE_STAGE_BLOCKED_BY_AUTO_APPROVAL",
-  "numerical_solver_revision": "coupled-recycle-v6"
+  "numerical_solver_revision": "coupled-recycle-v6",
+  "historical_control_reserve_seconds": 600
 }

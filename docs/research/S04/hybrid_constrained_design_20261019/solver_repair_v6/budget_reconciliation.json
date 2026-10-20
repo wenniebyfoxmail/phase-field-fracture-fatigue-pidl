@@ -424,6 +424,8 @@
     "initial_R2_monitor_query_wall_seconds": null,
     "meaning": "not measured; not zero. Scientific worker costs are settled; missing historical read-only control observations are disclosed, never reconstructed as actual."
   },
+  "historical_control_reserve_seconds": 600,
+  "reserve_policy": "Unmeasured historical control margin, not observed actual work. Subtract600s from outer GNU-timeout usable allowance within original136h; never include in charged actual wall/CPU.",
   "remaining_numerical_steps": 3600,
   "remaining_training_fits": 1,
   "authority": {

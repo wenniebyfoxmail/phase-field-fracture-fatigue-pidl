@@ -1,6 +1,6 @@
 {
   "schema": "hybrid-solver-source-v6",
-  "source_commit": "1181c979dcf8a4035a643e2d6aa803e9b58f734a",
+  "source_commit": "807696565612e69ebd65381718c1fd7253874dbc",
   "base_owner_commit": "edbba209",
   "files": {
     "docs/experiments/s04_fem_pidl_field_alignment_track.md": "83c07f18ea7201a9c188ef94d7c9538d5a467932b6ebf7be37507ffa07a2093c",
@@ -41,13 +41,13 @@
     "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v2.md": "8fa98ab0796913fe6db3ecfac7a1c67a4ad507bb46fda442fb428eb1d4688ddc",
     "docs/research/S04/hybrid_constrained_design_20261019/performance_preparation_v3.md": "649d141b02663f96d1a25acc6d02a21b24ddef1e97f415dca84fe3ad03a1cb6e",
     "docs/research/S04/hybrid_constrained_design_20261019/producer_delivery_v4.json": "7d2c49cb96786ffce6ca5956c12c8090901538e7a31e3d822bf1e1c87446cecf",
-    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/approval_action.md": "1e1dd6a80391471c21e2eb3455afabe8cb54953bbb9901baf009f28e47b8cc31",
-    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/budget_reconciliation.json": "74dd605299567a12e9aeda3b65cd765595f18a15be2b6b9168f8462ac32051d2",
+    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/approval_action.md": "593dd78cf38bc4623427c5fc942a0b6263bab45218130b91f6087495838eb533",
+    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/budget_reconciliation.json": "e8515061fa412363609666730de7a2ed6c044b4d3353f3aa95c513a964f7dcb4",
     "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/code_review.json": "057e75c16bb235d380ed292bdbbbe246f3750b67d5273f5f625ada954f13ff9a",
-    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_card_disabled.json": "b7f6dfd198d7a444851e495c86222eab5b3babb4452b0f289b6ce520cade9ce7",
-    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/prepare_local_packet.py": "ddfd15200c0c3e9e6c654cc2926ac18343cfa1003c5347e0df9e10137f4667ba",
+    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/execution_card_disabled.json": "321f36ba8a17da667ab35f01f69932ef1b4e75d0c5c59a19a372a9a055ba85d8",
+    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/prepare_local_packet.py": "8a36bb438fefb0f9ed5883bc5f30d8aebf9e5b06771296f3c09741510e279a0c",
     "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/r2_terminal_evidence.json": "139062e07294768a2a5c5047acfaf9983298e2d5531b49ced8a088548c9254ab",
-    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/repair_plan.md": "b40bc5878d7a5106fba8102e05e28027142561215352cbd30a3bea1aeed9d16f",
+    "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/repair_plan.md": "2bc4fb4d796ccc9a5ecdf7bb6d8cee39feb83f25f9a74772d2b898b9972c7665",
     "docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v6/stage_request.json": "fe4cdb3254a7712054cb1300e550c0d5d155c24e6ba8e82e6f36e181599f63f6",
     "docs/research/S04/hybrid_constrained_design_20261019/state_schedule_v5.csv": "d8426f2820980e3f4d18cace970e4da2f16f0a63561ed290b5d4e7cfbb4bee13",
     "docs/research/S04/hybrid_constrained_design_20261019/storage_budget_v5.json": "40c0e546f0fecd31d7b37ec3b055fd7c5842d4b56f33f0f0c8b54d9d198a169f",
@@ -81,7 +81,7 @@
     "tests/test_hybrid_performance.py": "b433ea9afd13063e6b7b76631941f5377624a7b4c979d47456999a3814f51e76",
     "tests/test_hybrid_plotting_admission.py": "85b13ef89b37ff74aaf1e2374675edba228e42523c1d5afdd6763698db475420",
     "tests/test_hybrid_producer.py": "4d779364f64f0251f3fc04e9f59b6788359f4b1e7df593ba2309e99f50bdf6bd",
-    "tests/test_hybrid_solver_repair_v6.py": "b1edd3e0f2c7cf5bcee201b95d9d0fac8c7bc1a7e39403b976260f0cffadbe65",
+    "tests/test_hybrid_solver_repair_v6.py": "5bd6ffbca70e1a740181eb85f9d89988119ff0c6779a838a97b2c8618678d734",
     "tests/test_hybrid_state_contract.py": "51f7196f010a91575b625d0a4af70da29f8022af974e9de662ce2854768b5ad9",
     "tests/test_native_q4_damage_qp.py": "4bed1a890c9f8b28fd8701033b6ac7fa3d9d1c4284a6bded813e4a05d3893934",
     "tools/audit_hybrid_labels.py": "a4c91c4d0c5f1b924dcd5e1205b92ecfd6117d84d3c2fe7336f11038a38c8ba4",
@@ -90,7 +90,7 @@
     "tools/hybrid_producer_worker.py": "b9939b1bdd3ecc62ef5cd22d605b46523d31387566351b98dd03643ef8e649c7",
     "tools/hybrid_runtime_inventory.py": "2ecff9e30fc458d97f7e0111a44ec2319201d9b5ebb9b7121107df2aabe28490",
     "tools/inspect_hybrid_run.py": "ef9e14949515b95ab7ebb4e63f4b63908cb244e0daa62d661ac766184bc497c6",
-    "tools/launch_hybrid_budgeted.py": "f42ea5653aa5c330b10b0974a566a446605a61642c92550b074b76a7bfec49ec",
+    "tools/launch_hybrid_budgeted.py": "d1750997ecbbfc5d9670e2a9e6a0f52e0e9503fbeaba1ed6edb8a75386f427b8",
     "tools/launch_hybrid_detached.py": "20d9ba36c83328edd2d3541ce1244074ceaa2b32c829dcfb57120b9d71750235",
     "tools/launch_hybrid_validation.py": "da0c2ec799feae32d26fa942999c53aacca2dddb0d88bffd3e69c3b0d749b534",
     "tools/prepare_hybrid_comparison.py": "39e2f84154185e5aa805f98f4972f577f8e6c08aae20aca684c3ba71f0b7bfa9",
@@ -98,10 +98,10 @@
     "tools/receive_hybrid_solver_v6.py": "9699bf5ffdf6619db119adb2a50335aa17eec90779b929587d3c3a29e7e37d01",
     "tools/replay_hybrid_native_operators.py": "c11cda89358edaaf868fb8f2188fadcebfecda664056ac4cb3290ed73c9f13c8",
     "tools/request_hybrid_runtime_inventory.py": "af6495a8abe69555ea374de86f4bdab1b1d3ec25d77a6f7506bf4fa520ef2bb3",
-    "tools/run_hybrid_producer.py": "4c0c130a74e80313fbf2d338290ee3046b0cd60fe1248ac7df41bab52410e17b",
+    "tools/run_hybrid_producer.py": "9e45e9957e8a40f4781849136724f7379cbdd7711924b5c0fc81324f258050b0",
     "tools/stage_hybrid_solver_v6.py": "258794689908f2dc6bf759828be93a73a4f8e81c81f3c974d1dfb2e369896e5a",
     "tools/validate_hybrid_linux.py": "73c50be265c7af53bd782228173facd89911ff1b011a4ec77819e15b230d2532"
   },
   "scope": "disabled local packet; no science, staging or execution review admission",
-  "artifact_id": "67cced2c9611e309b20f084f3fcda046ed6c93fb48b89661811d22dcdfa5d2d0"
+  "artifact_id": "605443be64260f0fdcf6d9f454f605551dd73075b698702190191b30d9eae55b"
 }
