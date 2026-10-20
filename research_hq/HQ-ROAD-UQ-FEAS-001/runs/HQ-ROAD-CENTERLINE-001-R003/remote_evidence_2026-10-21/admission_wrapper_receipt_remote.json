@@ -1,0 +1,59 @@
+{
+    "status":  "PASS_ADMISSION_WATCHDOG",
+    "run_id":  "HQ-ROAD-CENTERLINE-001-R003",
+    "task_name":  "HQ-ROAD-CENTERLINE-001-R003-20261021",
+    "r003_check_number":  1,
+    "r003_check_cap":  1,
+    "r001_checks_preserved":  3,
+    "r002_checks_preserved":  1,
+    "check_limit_seconds":  90,
+    "package_clock_start_utc":  "2026-10-20T21:59:35.0000000+00:00",
+    "package_deadline_utc":  "2026-10-21T01:59:35.0000000+00:00",
+    "package_remaining_seconds_at_wrapper_end":  8897.491,
+    "parent_watchdog_timed_out":  false,
+    "owned_control_receipt":  {
+                                  "schema":  1,
+                                  "status":  "COMPLETE_ZERO",
+                                  "run_id":  "HQ-ROAD-CENTERLINE-001-R003",
+                                  "role":  "admission_child",
+                                  "invocation_sha256":  "f104542630a9330a8078a7e7b863a16ed4315b383520bef1fee132cba8aaf4eb",
+                                  "command_sha256":  "79f9dc9c5d765bfb84eda9b90bc1712885df718f9aade37e1ab20df17d24e7e0",
+                                  "code_snapshot":  "36bbd0109dc2319714669b9c24c77e6dd1a44fc33a304a9b71d041589d945736",
+                                  "data_lock_sha256":  "8751d519d869ac3f2ead4334d8146e9e99deedd1c9c01b96db1f506b2286dcd5",
+                                  "claim_sha256":  "b479ae6a8759bfeb484d87e898906ce7e87f315086a875539a92c4803cda6a7f",
+                                  "child_exit_code":  0,
+                                  "controller_exit_code":  0,
+                                  "timed_out":  false,
+                                  "timeout_seconds_at_start":  83.0,
+                                  "pid":  21736,
+                                  "kill":  null,
+                                  "launch_error":  null,
+                                  "started_utc":  "2026-10-20T23:30:49.394569+00:00",
+                                  "ended_utc":  "2026-10-20T23:31:17.334351+00:00",
+                                  "elapsed_seconds":  27.937,
+                                  "stdout":  {
+                                                 "bytes":  0,
+                                                 "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                                             },
+                                  "stderr":  {
+                                                 "bytes":  0,
+                                                 "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                                             }
+                              },
+    "owned_control_error":  null,
+    "child_receipt_exists":  true,
+    "child_receipt_sha256":  "0e31096a9d3a50cf4c11bb1fb607284c6b548decd56696cdc5d70f1ee3820268",
+    "child_status":  "PASS_ADMISSION_READY_TO_LAUNCH",
+    "process_tree_kill_exit_code":  null,
+    "process_tree_kill_output":  null,
+    "remaining_admission_processes":  [
+
+                                      ],
+    "scientific_execution_started":  false,
+    "training_steps":  0,
+    "optimizer_steps":  0,
+    "road420_access":  false,
+    "started_iso":  "2026-10-21T00:30:49.1861662+01:00",
+    "ended_iso":  "2026-10-21T00:31:17.5092026+01:00",
+    "elapsed_seconds":  28.179
+}

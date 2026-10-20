@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "run_id": "HQ-ROAD-CENTERLINE-001-R003",
+  "source_remote_run": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R003",
+  "manifest_updated_at_utc": "2026-10-20T23:43:24.464330+00:00",
+  "remote_originals_preserved": true,
+  "remote_stage_file_count": 30,
+  "retrieved_remote_file_count": 30,
+  "all_remote_files_match_final_state_sha256": true,
+  "additional_readonly_snapshots": [
+    "remote_readonly_final_state_2026-10-21.json",
+    "remote_dependency_and_task_context_2026-10-21.json"
+  ],
+  "files": [
+    {
+      "relative_path": "00_AUTHORITY_AND_INTENT.md",
+      "bytes": 1700,
+      "sha256": "3b07400ec2f777ae75df349da03c46a9863963a42ff50510f701911fbfd4102c",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission.child.exit.json",
+      "bytes": 1093,
+      "sha256": "a7fec78de3dbc5d0e8e10290c842366b2bf9bc18a14e108cd079a3256e83f8bf",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission.child.exit.json.claim",
+      "bytes": 183,
+      "sha256": "b479ae6a8759bfeb484d87e898906ce7e87f315086a875539a92c4803cda6a7f",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission.child.exitcode.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission.child.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission.child.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission.controller.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission.controller.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission_receipt_remote.json",
+      "bytes": 44045,
+      "sha256": "0e31096a9d3a50cf4c11bb1fb607284c6b548decd56696cdc5d70f1ee3820268",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "admission_wrapper_receipt_remote.json",
+      "bytes": 3366,
+      "sha256": "1d508040a4c7fa1a3f8303b70da63b2618580c1b130e17e1fbe5f3598880bed2",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "approval_hq.json",
+      "bytes": 3361,
+      "sha256": "3735d57553b33e2d64dfe706c68059492c33bfc695ef0e18015c17c1df5a468e",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "environment.exit.json",
+      "bytes": 1090,
+      "sha256": "d3760941b23bc9bc5f1b1110acb487b5ab6daa8a186786287ae5783139c18c02",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "environment.exit.json.claim",
+      "bytes": 179,
+      "sha256": "3d9d5dfc6cf5cd6e0524129de6d0b430a6bb72dd1995d5242337ec3148ad2927",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "environment.exitcode.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "environment.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "environment.stdout.log",
+      "bytes": 318,
+      "sha256": "9759858513955a528d0d8441d56076c0cc8d6d7f7a6a86d93e2805d3a4f8b0d2",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "launch_gpu_server.cmd",
+      "bytes": 659,
+      "sha256": "4f8228a2d276ac73c27d948952e0d8fca0446de8b1d56974530279d18bc6696b",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "launch_receipt_remote.json",
+      "bytes": 6310,
+      "sha256": "0f9e62aac3967d5e7dabc18a3ea3e54084ad2f01dd158e0a5da516628bfad4f3",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "package_clock_ledger.json",
+      "bytes": 749,
+      "sha256": "438b68407d2201b006c872a5782a35c054f24193e59732f67c4ad1f7e03efe94",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "preflight.exit.json",
+      "bytes": 1090,
+      "sha256": "e3e784ffcf7601780610878d1d41f03aaafb11385b9f3cd56ff3e4c01d918540",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "preflight.exit.json.claim",
+      "bytes": 177,
+      "sha256": "e5161af5b31038d18d1c51fc8893e2bc5ccd504b3e8919d4cbc9efcc44dfbbf0",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "preflight.exitcode.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "preflight.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "preflight.stdout.log",
+      "bytes": 3618,
+      "sha256": "f6dae9f4375d258a9d5646ed2466195b429439697416fd869e90f869a2833691",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "register_and_start.ps1",
+      "bytes": 10555,
+      "sha256": "d7f00bdceb11341568d8028b9b9b1500fb343c3f4f430f35952c7dc1c8ad7c8e",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "remote_dependency_and_task_context_2026-10-21.json",
+      "bytes": 1226,
+      "sha256": "c92e065ffa7c0e2d3c029710f070cccc3a184e8a1be68dda48520a5c99c84551"
+    },
+    {
+      "relative_path": "remote_readonly_final_state_2026-10-21.json",
+      "bytes": 7254,
+      "sha256": "62258eb6804b208321a2e6e25b2c7abf5a1c74dc59bd5ebcac75528873251e78"
+    },
+    {
+      "relative_path": "scientific_worker.exit.json",
+      "bytes": 1105,
+      "sha256": "b91a00f5852d02feafbbf6d0cf9750e137603dac52d620d4a25b64af6e4218dc",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "scientific_worker.exit.json.claim",
+      "bytes": 185,
+      "sha256": "7b45965b911563ff0217f73a98bd42a8f8eca323481374ba12670ccaa6de2f83",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "scientific_worker.exitcode.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "scientific_worker.stderr.log",
+      "bytes": 558,
+      "sha256": "875b4fa9e42c95e3af0901dbf83ad5d32e5c9d5bc07223dd84334ec0cc461487",
+      "remote_final_state_match": true
+    },
+    {
+      "relative_path": "scientific_worker.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "remote_final_state_match": true
+    }
+  ]
+}

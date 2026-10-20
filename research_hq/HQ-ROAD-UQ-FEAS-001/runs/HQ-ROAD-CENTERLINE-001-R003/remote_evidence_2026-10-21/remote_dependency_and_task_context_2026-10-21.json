@@ -1,0 +1,41 @@
+{
+  "observed_utc": "2026-10-20T23:43:15.2791525+00:00",
+  "computer_name": "D-26-09",
+  "user": "AD\\xw436",
+  "task_name": "HQ-ROAD-CENTERLINE-001-R003-20261021",
+  "task_state": "Ready",
+  "principal": {
+    "user_id": "xw436",
+    "logon_type": "Interactive",
+    "run_level": "Limited"
+  },
+  "actions": [
+    {
+      "execute": "cmd.exe",
+      "arguments": "/d /c C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r003_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R003\\launch_gpu_server.cmd",
+      "working_directory": null
+    }
+  ],
+  "dependency_paths": [
+    {
+      "path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+      "exists": true,
+      "item_type": "directory"
+    },
+    {
+      "path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage",
+      "exists": true,
+      "item_type": "directory"
+    },
+    {
+      "path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology",
+      "exists": true,
+      "item_type": "directory"
+    },
+    {
+      "path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+      "exists": true,
+      "item_type": "file"
+    }
+  ]
+}
