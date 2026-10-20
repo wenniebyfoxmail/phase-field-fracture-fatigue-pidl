@@ -1,6 +1,6 @@
 # Attempt S09-E017-A007-resolver-admission-only-plan
 
-- Status: `plan-ready-awaiting-local-implementation-approval`
+- Status: `repaired-exact-candidate-under-independent-rereview`
 - Created: 2026-10-20
 - Type: `control-separation-plan`
 - Remote actions: 0
@@ -36,3 +36,13 @@ The user approved Phase L only. Exact candidate
 passes 23 focused tests plus a 64-test adjacent synthetic suite. No remote or
 scientific action occurred. The candidate is now under independent Code Ready
 review; Phase R remains unapproved and no granted authority exists.
+
+## 2026-10-20 independent review and repair
+
+The first exact review of `982249f9b4d542833fbddc120995c8c7673217e2`
+returned `E017_ADMISSION_ONLY_REVISE` for remote shell argument binding, two
+archive content reads instead of one, and incomplete post-consumption failure
+evidence. Repair commit `a8bb84f730dccae8b822ca7bd653b428354bf118`
+addresses all three and passes 27 focused tests plus 68 adjacent synthetic
+tests. It is under exact-commit rereview. No SSH, remote state read/write,
+scientific content read, CUDA, producer or training occurred.

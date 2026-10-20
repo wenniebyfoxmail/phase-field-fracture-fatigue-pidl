@@ -1,8 +1,8 @@
 ---
 experiment_id: S09-E017
 run_id: S09-E017-R001-factorised-head-p0
-status: EXACT_CANDIDATE_UNDER_INDEPENDENT_CODE_REVIEW
-candidate_commit: 982249f9b4d542833fbddc120995c8c7673217e2
+status: REPAIRED_EXACT_CANDIDATE_UNDER_INDEPENDENT_REREVIEW
+candidate_commit: a8bb84f730dccae8b822ca7bd653b428354bf118
 remote_actions: 0
 scientific_operations: 0
 date: 2026-10-20
@@ -12,7 +12,7 @@ date: 2026-10-20
 
 ## Implemented boundary
 
-Exact candidate `982249f9b4d542833fbddc120995c8c7673217e2` implements the
+Exact repaired candidate `a8bb84f730dccae8b822ca7bd653b428354bf118` implements the
 locally approved Phase L separation. It adds a standard-library-only control
 module, a nonexecuting resolver, a stop-after-metadata admission runner, a
 finite outer guard, one bounded shell plan and focused synthetic tests.
@@ -26,12 +26,12 @@ cannot call the real adapter or producer.
 
 | item | SHA256 |
 |---|---|
-| admission-only candidate JSON | `5dae58ab39502f0b9af9c055b1d2a7470980f4ddc46b5d72a05a799bd7e8ed2b` |
-| disabled authority template | `727f81c95082e115b174c46ee97478da3bd014dedcaa6d6e1efcb649ba216793` |
-| outer guard | `a7c4f2768dcf124369e7cc0ed02c214397b75dd17c084db79c01f536d55d10a7` |
-| finite shell plan | `7b7dec1d63c8aff65dbcb3325512cea816e5ef252daa030cb228eb412173ea1c` |
-| standard-library core | `838b557aa289c6163a1eb313286b793e44b0ab9dc817e54f6f6de3d31143e7d4` |
-| resolver CLI | `1858ce5e9fbd5ba744e5cb7cd5af1b5b4d3c3337e69bcf3a56b5f99bf30191a5` |
+| admission-only candidate JSON | `d8c1748463270ea8dce0fa512ae32920d5018b90b3cfe1499e951dbddd364033` |
+| disabled authority template | `5ca28357236b576000739bfdb9005211dc2706304b8b296ff4a36752a8e90c20` |
+| outer guard | `5a97784a3a7a2b002a34dcc17484f0beac4667f082c341502e7116025ec0ba6f` |
+| finite shell plan | `56ced032e9c52cefc355da865efb1dac19d7bd517264f9a57b6b65512bca1f4b` |
+| standard-library core | `d45710c7657f8d70cfa8cbced3bb28e7b258f4d7d32b77f0ed9de2894392d98d` |
+| resolver CLI | `eacf9e4c961cd474cf6748329f334d14ac4c1ab052f21cbf402f21573276ea1e` |
 | admission-only runner | `04f73b97de7a66a85a826b6a3b535caa4892d6d47eaf175cf82dcf06b37364ea` |
 
 The candidate also binds the accepted archive path, 14,359,316-byte size and
@@ -54,9 +54,9 @@ autograd, optimizer construction or training path.
 
 ## Local verification
 
-- focused admission-only suite: `23 passed in 0.04s`;
+- focused admission-only suite: `27 passed in 0.20s`;
 - adjacent admission-only + existing execution-control + producer-package
-  synthetic suite: `64 passed in 0.22s`;
+  synthetic suite: `68 passed in 0.41s`;
 - Ruff: pass;
 - Ruff format check: pass;
 - `py_compile`: pass;
@@ -64,16 +64,29 @@ autograd, optimizer construction or training path.
 - `git diff --check`: pass;
 - fresh standard-library import: banned scientific modules `[]`.
 
-Tests cover disabled/full-run authority rejection, scope expansions, exact
-hashes, nonexecuting resolved config, scientific-file metadata without open,
-GPU UUID/free-memory/process conditions, exclusive attempt token, guard
-single-consumption/replay conflict, nonzero terminal stop, explicit enable flag,
-prohibited imports/calls, one connection/one rsync and authority-swap rejection.
+Tests additionally reproduce the initial review blockers: OpenSSH-style command
+concatenation into the stdin shell, one counted 14,359,316-byte archive read
+across resolver and admission, no archive content reopen in admission, and
+post-consumption process-start/log-write failure receipts.
+
+## Independent review rounds
+
+The first review bound to `982249f9b4d542833fbddc120995c8c7673217e2`
+returned `E017_ADMISSION_ONLY_REVISE`. It reproduced three blockers: broken
+remote `bash -c` argument binding, two full archive reads, and missing terminal
+guard evidence after process-start or log-write failure.
+
+Repair commit `a8bb84f730dccae8b822ca7bd653b428354bf118` replaces the
+remote command with an stdin script, carries the resolver's single archive
+verification plus before/after stat identity into admission, and writes a
+minimal terminal guard receipt after post-consumption failures. The same
+reviewer is performing an exact-commit rereview. This is not yet a PASS.
 
 ## Not performed and next gate
 
 No granted authority was created. No SSH, DNS/network probe, remote file write,
 real packet/checkpoint content read, CUDA, model, optimizer, producer or
-training occurred. The exact candidate is under independent read-only Code
-Ready review. A PASS would make it eligible only for a fully instantiated Phase
-R card and a new user approval; it would not itself authorize remote action.
+training occurred. The repaired exact candidate is under independent read-only
+Code Ready rereview. A PASS would make it eligible only for a fully instantiated
+Phase R card and a new user approval; it would not itself authorize remote
+action.
