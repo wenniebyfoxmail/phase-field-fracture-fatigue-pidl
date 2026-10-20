@@ -2,7 +2,7 @@
 
 Date: 2026-10-19
 
-Status: `IMPLEMENTATION_CANDIDATE_AWAITING_EXACT_REVIEW__NO_EXECUTION`
+Status: `CODE_READY_AWAITING_FINAL_EXECUTION_APPROVAL__NO_EXECUTION`
 
 ## Purpose
 
@@ -51,24 +51,20 @@ schedule remain valid local implementation evidence.
 
 ## Next gate
 
-The real-head-adapter design amendment received
-`E017_REAL_HEAD_ADAPTER_DESIGN_READY_PASS` at exact commit
-`06bf5fef693be5321ce7daf9d2384b8fa3953fde`. The next gate is a disabled local
-implementation candidate with checkpoint conversion, the common frozen `h_i`
-feature, independent damage/amplitude/shape parameters, exact operation-bound
-counters, failure-safe streaming evidence and retrieval verification. Obtain an
-exact-commit implementation review before enabling any real adapter or reading
-scientific assets.
+The exact disabled implementation at
+`662005f1fde22cb9a6e8069f4e430b7190f21860` is Code Ready. The next gate is
+final approval for one exact live identity/resource preflight and, only after
+successful admission, the fixed three-arm x 64-update execution. Keep the
+tracked config disabled and do not read scientific assets before that approval.
 
-## 2026-10-20 implementation update
+## Historical 2026-10-20 implementation update
 
 The disabled candidate now contains the real checkpoint converter, isolated
 three-arm heads, concrete A/S/R/P-to-PCGrad-to-AdamW path, transactional
 evidence boundaries, fixed evaluator and field/figure outputs. The focused
-synthetic suite reports `122 passed`; Ruff, syntax, canonical-config and
-whitespace checks pass. This closes implementation work locally but does not
-close Code Ready: the exact dependency-closed commit still requires the
-requested independent package review.
+synthetic suite reported `122 passed`; Ruff, syntax, canonical-config and
+whitespace checks passed. At that point the exact dependency-closed commit
+still required independent package review.
 
 A pre-review counterexample audit then repaired two evidence gaps before
 submission: batch-level forward counting was replaced by operation-entry
@@ -81,9 +77,9 @@ failure-evidence paths. The revised candidate now performs the final full
 artifact and inventory reread before publishing `COMPLETED`, removes a failed
 terminal receipt, and propagates the exact persistence/retrieval artifact into
 `missing_or_unreadable`. Missing, corrupted and public-wrapper failure
-counterexamples are now covered; the full synthetic suite reports `147
-passed` (`125 passed` in the focused E017 package suite). Exact-commit rereview
-remains required.
+counterexamples were then covered; the full synthetic suite reported `147
+passed` (`125 passed` in the focused E017 package suite). The rereview outcome
+is recorded below.
 
 ## Prohibited and not performed
 
@@ -91,3 +87,25 @@ No real packet, checkpoint or FEM array read; no fresh holdout; no real runtime
 or optimizer construction; no model forward; no autograd/backward; no SSH/GPU
 connection or preflight; no training; no producer output; no scientific
 classification.
+
+## 2026-10-20 exact implementation review closure
+
+The first source review of `6220101e4e4bad6342fae52eb91ac44fe5b249fa`
+returned `E017_REAL_ADAPTER_REVISE` because completion could precede final
+retrieval verification and real failure handlers discarded the failed artifact
+identity. The repairs at exact commit
+`662005f1fde22cb9a6e8069f4e430b7190f21860` moved completion after full
+artifact/inventory verification and propagated exact persistence/retrieval
+identities into the independent failure receipt.
+
+The dependency-closed rereview package has 39 manifest items/40 files. Its ZIP
+SHA256 is
+`32e667d0bd316b5772cc45c7d2a13b8fe8019dc719f147714d0720823ce561ae`
+and manifest SHA256 is
+`6fcc15e5174d62c58c18191a2d68b39d35a7883f2aacf8709da8009fbeceeaa2`.
+An independent read-only Codex reviewer verified every identity, reran 125
+focused synthetic tests and returned `E017_REAL_ADAPTER_CODE_READY_PASS`.
+
+The ChatGPT Pro/Haofan implementation attempt is recorded separately as
+`NOT_REVIEWABLE__MATERIAL_NOT_DELIVERED`; it supplied no source-code verdict.
+No execution authority or scientific conclusion follows from Code Ready.

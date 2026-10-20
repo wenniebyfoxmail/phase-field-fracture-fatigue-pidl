@@ -1,7 +1,7 @@
 # S09-E017 real-head-adapter implementation status
 
 Date: 2026-10-20
-Status: `IMPLEMENTATION_CANDIDATE_AWAITING_EXACT_REVIEW__NO_EXECUTION`
+Status: `CODE_READY_AWAITING_FINAL_EXECUTION_APPROVAL__NO_EXECUTION`
 
 ## Purpose
 
@@ -79,7 +79,10 @@ variance of `v_A^T h_bar` are both nonzero.
 
 ## Next gate
 
-Create a dependency-closed archive bound to the exact candidate commit and ask
-ChatGPT Pro on the Haofan account to review the actual source, tests, config,
-manifest and commit identity. Do not enable the tracked config or perform a
-scientific run from this candidate.
+The dependency-closed candidate at
+`662005f1fde22cb9a6e8069f4e430b7190f21860` received
+`E017_REAL_ADAPTER_CODE_READY_PASS` from an independent read-only Codex review.
+The ChatGPT Pro/Haofan implementation channel is separately recorded as
+`NOT_REVIEWABLE__MATERIAL_NOT_DELIVERED`, not as a code verdict. The next gate
+is final approval for the exact live preflight and fixed 192-update execution.
+Do not enable the tracked config or access scientific assets before that gate.
