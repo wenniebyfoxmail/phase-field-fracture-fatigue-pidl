@@ -258,3 +258,25 @@ archive path is absent. No authority, resolver, admission token, runner, output
 or scientific operation was created. The complete receipt is in
 `final_execution_repair_stop_20261020.md` and
 `final_execution_repair_stop_receipt_20261020.json`.
+
+## 2026-10-20 content-addressed deployment candidate
+
+The frozen archive now has a reviewed local deployment route: 28 immutable
+chunks, legacy-range revalidation, at most one metadata and one missing-chunk
+transfer, one SSH connection attempt, a 14,500,000-byte source cap and one
+1,800-second process-group deadline. The guard consumes a fixed authority
+attempt before `Popen`; replay, missing-master fallback, late publication and
+ambiguous post-link state are fail-closed.
+
+Implementation commit `6a83eb3fd2f167c5ace2a846a123a214982184f4` is bound
+by reviewed commit `a7de1b2a017f806eee55752b5a2459e1d2c23add`.
+Candidate SHA256 is
+`90d0caab8752d662a1db8d475b2f9769f2185f3ea88b06ead5e1a675d8e3be25`;
+plan SHA256 is
+`0f5179cbbcc0e52f1923b4132d1e05694a3eccea2e8ffbfb9df1ac1562c0093a`.
+Independent verdict: `E017_CHUNKED_DEPLOYMENT_REVIEW_PASS`.
+
+No remote action occurred during preparation or review. The tracked authority
+template is disabled. A future deployment therefore requires a new explicit
+deployment-only authority bound to these identities; resolver, admission and
+the three-arm run remain separate later gates.
