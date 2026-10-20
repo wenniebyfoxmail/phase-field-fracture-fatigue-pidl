@@ -1,0 +1,25 @@
+{
+  "status": "completed",
+  "machine": "Mac-PIDL dev saved-array analysis; no NN/producer",
+  "source_commit": "59322bcd155bb0d41140e484b872b3fd5e1b1f55",
+  "source_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production",
+  "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929",
+  "command": [
+    "/Users/wenxiaofang/miniconda3/bin/python",
+    "-u",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/tools/s04_e011_analysis/analyze_pidl_hidden_directions.py",
+    "--run",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production",
+    "--out",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1"
+  ],
+  "pid": 91668,
+  "started_utc": "2026-10-20T10:17:10.724747+00:00",
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1",
+  "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_hidden_direction_preparation_20261020_v1/analysis_console.log",
+  "field_cap": 240,
+  "seconds_cap": 300,
+  "no_automatic_retry": true,
+  "exit_code": 0,
+  "finished_utc": "2026-10-20T10:17:23.391687+00:00"
+}

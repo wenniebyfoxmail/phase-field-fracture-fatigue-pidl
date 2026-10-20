@@ -1,0 +1,35 @@
+{
+  "hidden": {
+    "E_change": -1.6675514095520344e-06,
+    "active_integral_change": -1.4275672374506124e-06,
+    "compression_energy_change": -2.399841720978793e-07,
+    "R2_change": -1.1050244018312742e-06,
+    "active_error2_change": -1.6649726452948885e-05,
+    "R_increase_count": 2,
+    "active_increase_count": 4,
+    "R_positive_forward_slope_count": 2,
+    "active_positive_forward_slope_count": 4
+  },
+  "head": {
+    "E_change": -2.7091966163083486e-07,
+    "active_integral_change": -5.425353288646476e-07,
+    "compression_energy_change": 2.7161566723046395e-07,
+    "R2_change": 2.68696242724148e-06,
+    "active_error2_change": 3.1787802819735304e-06,
+    "R_increase_count": 4,
+    "active_increase_count": 4,
+    "R_positive_forward_slope_count": 4,
+    "active_positive_forward_slope_count": 4
+  },
+  "net": {
+    "E_change": -1.9384710711828693e-06,
+    "active_integral_change": -1.97010256631526e-06,
+    "compression_energy_change": 3.1631495132584634e-08,
+    "R2_change": 1.5819380254102056e-06,
+    "active_error2_change": -1.3470946170975355e-05,
+    "R_increase_count": 4,
+    "active_increase_count": 3,
+    "R_positive_forward_slope_count": 4,
+    "active_positive_forward_slope_count": 3
+  }
+}

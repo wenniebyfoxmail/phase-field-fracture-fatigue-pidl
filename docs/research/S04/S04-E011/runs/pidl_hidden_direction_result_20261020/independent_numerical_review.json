@@ -1,0 +1,334 @@
+{
+  "status": "passed",
+  "review_scope": "Independent saved force/scalar/vector/localization-array arithmetic only; no native Operator/NN/SVD/solve or new field replay.",
+  "source_summary_sha256": "b9862699a6135877a008c534c271d9cdc875346cf9e045ecc563ca950b430d35",
+  "stages": 17,
+  "primitive_transitions": 16,
+  "net_transitions": 8,
+  "grouped": {
+    "hidden": {
+      "count": 8,
+      "E_sum": -1.6675514095537691e-06,
+      "active_integral_sum": -1.4275672374514797e-06,
+      "compression_sum": -2.399841721022894e-07,
+      "R2_sum": -1.1050244018314369e-06,
+      "Rcross_sum": -1.2665850755063788e-06,
+      "Rincrement2_sum": 1.615606736749907e-07,
+      "active_error2_sum": -1.6649726452949705e-05,
+      "Ru_increases": 2,
+      "active_error_increases": 4,
+      "energy_decreases": 8
+    },
+    "head": {
+      "count": 8,
+      "E_sum": -2.7091966162910014e-07,
+      "active_integral_sum": -5.425353288637802e-07,
+      "compression_sum": 2.7161566723468006e-07,
+      "R2_sum": 2.6869624272417238e-06,
+      "Rcross_sum": 2.484793133826709e-06,
+      "Rincrement2_sum": 2.0216929341493486e-07,
+      "active_error2_sum": 3.178780281973905e-06,
+      "Ru_increases": 4,
+      "active_error_increases": 4,
+      "energy_decreases": 8
+    },
+    "net": {
+      "count": 8,
+      "E_sum": -1.9384710711828693e-06,
+      "active_integral_sum": -1.97010256631526e-06,
+      "compression_sum": 3.1631495132390663e-08,
+      "R2_sum": 1.581938025410287e-06,
+      "Rcross_sum": 1.2699501892896306e-06,
+      "Rincrement2_sum": 3.119878361206253e-07,
+      "active_error2_sum": -1.34709461709758e-05,
+      "Ru_increases": 4,
+      "active_error_increases": 3,
+      "energy_decreases": 8
+    }
+  },
+  "transition_checks": [
+    {
+      "transition": "p1_hidden",
+      "max_saved_scalar_or_force_difference": 8.673617379884035e-19
+    },
+    {
+      "transition": "p1_head",
+      "max_saved_scalar_or_force_difference": 8.673617379884035e-19
+    },
+    {
+      "transition": "p1_net",
+      "max_saved_scalar_or_force_difference": 1.1210481056910665e-18
+    },
+    {
+      "transition": "p2_hidden",
+      "max_saved_scalar_or_force_difference": 9.084428359302371e-19
+    },
+    {
+      "transition": "p2_head",
+      "max_saved_scalar_or_force_difference": 4.379160337304733e-19
+    },
+    {
+      "transition": "p2_net",
+      "max_saved_scalar_or_force_difference": 1.2375151359385328e-18
+    },
+    {
+      "transition": "p3_hidden",
+      "max_saved_scalar_or_force_difference": 2.3052001659525784e-18
+    },
+    {
+      "transition": "p3_head",
+      "max_saved_scalar_or_force_difference": 8.673617379884035e-19
+    },
+    {
+      "transition": "p3_net",
+      "max_saved_scalar_or_force_difference": 2.275554012798678e-18
+    },
+    {
+      "transition": "p4_hidden",
+      "max_saved_scalar_or_force_difference": 8.673617379884035e-19
+    },
+    {
+      "transition": "p4_head",
+      "max_saved_scalar_or_force_difference": 2.507217523872729e-19
+    },
+    {
+      "transition": "p4_net",
+      "max_saved_scalar_or_force_difference": 8.673617379884035e-19
+    },
+    {
+      "transition": "p5_hidden",
+      "max_saved_scalar_or_force_difference": 5.433716356636337e-19
+    },
+    {
+      "transition": "p5_head",
+      "max_saved_scalar_or_force_difference": 8.830318475126081e-19
+    },
+    {
+      "transition": "p5_net",
+      "max_saved_scalar_or_force_difference": 5.677238328971948e-19
+    },
+    {
+      "transition": "p6_hidden",
+      "max_saved_scalar_or_force_difference": 1.5242357885841135e-18
+    },
+    {
+      "transition": "p6_head",
+      "max_saved_scalar_or_force_difference": 1.2116806310472766e-18
+    },
+    {
+      "transition": "p6_net",
+      "max_saved_scalar_or_force_difference": 8.673617379884035e-19
+    },
+    {
+      "transition": "p7_hidden",
+      "max_saved_scalar_or_force_difference": 2.317905660161393e-18
+    },
+    {
+      "transition": "p7_head",
+      "max_saved_scalar_or_force_difference": 2.298423902374544e-18
+    },
+    {
+      "transition": "p7_net",
+      "max_saved_scalar_or_force_difference": 8.673617379884035e-19
+    },
+    {
+      "transition": "p8_hidden",
+      "max_saved_scalar_or_force_difference": 8.673617379884035e-19
+    },
+    {
+      "transition": "p8_head",
+      "max_saved_scalar_or_force_difference": 9.173366818764073e-19
+    },
+    {
+      "transition": "p8_net",
+      "max_saved_scalar_or_force_difference": 9.762054717105811e-19
+    }
+  ],
+  "closed_head_vectors": [
+    {
+      "stage": "initial",
+      "g_inf": 3.3665696098916786e-11
+    },
+    {
+      "stage": "head_1",
+      "g_inf": 5.6219792710088257e-11
+    },
+    {
+      "stage": "head_2",
+      "g_inf": 3.3395557152982036e-11
+    },
+    {
+      "stage": "head_3",
+      "g_inf": 3.786868626835804e-11
+    },
+    {
+      "stage": "head_4",
+      "g_inf": 3.667147835395568e-11
+    },
+    {
+      "stage": "head_5",
+      "g_inf": 3.693976981938851e-11
+    },
+    {
+      "stage": "head_6",
+      "g_inf": 3.444594696283554e-11
+    },
+    {
+      "stage": "head_7",
+      "g_inf": 3.573620826341495e-11
+    },
+    {
+      "stage": "head_8",
+      "g_inf": 3.9319147113539565e-11
+    }
+  ],
+  "controls": [
+    {
+      "anchor": "initial",
+      "direction": "observed_hidden",
+      "Ru_change_at_alpha1": 6.659766637495679e-06,
+      "alpha_energy": 2.5043520210011923,
+      "alpha_residual": null
+    },
+    {
+      "anchor": "initial",
+      "direction": "nodal_energy",
+      "Ru_change_at_alpha1": -0.37084729284378437,
+      "alpha_energy": 2.323504700426715,
+      "alpha_residual": 1.6844372806477041
+    },
+    {
+      "anchor": "initial",
+      "direction": "nodal_Jacobi",
+      "Ru_change_at_alpha1": -0.004941714376679118,
+      "alpha_energy": 183.65245900208348,
+      "alpha_residual": 153.61614184364876
+    },
+    {
+      "anchor": "initial",
+      "direction": "nodal_residual",
+      "Ru_change_at_alpha1": -0.3134050000545694,
+      "alpha_energy": 1.2718610900800509,
+      "alpha_residual": 1.0495366713828318
+    },
+    {
+      "anchor": "initial",
+      "direction": "FEM_reference_chord",
+      "Ru_change_at_alpha1": -0.0013123256572052933,
+      "alpha_energy": 768.1356216498364,
+      "alpha_residual": 755.2500430665062
+    },
+    {
+      "anchor": "head_4",
+      "direction": "observed_hidden",
+      "Ru_change_at_alpha1": -6.352757216943061e-05,
+      "alpha_energy": 4.162475680327846,
+      "alpha_residual": 37.12042930844803
+    },
+    {
+      "anchor": "head_4",
+      "direction": "nodal_energy",
+      "Ru_change_at_alpha1": -0.17172029812607892,
+      "alpha_energy": 5.5812976761167645,
+      "alpha_residual": 4.048851285508912
+    },
+    {
+      "anchor": "head_4",
+      "direction": "nodal_Jacobi",
+      "Ru_change_at_alpha1": -0.0020680723161513592,
+      "alpha_energy": 440.45920886930054,
+      "alpha_residual": 366.8262319403395
+    },
+    {
+      "anchor": "head_4",
+      "direction": "nodal_residual",
+      "Ru_change_at_alpha1": -0.1859248014929925,
+      "alpha_energy": 3.0589212214339443,
+      "alpha_residual": 2.5253478673719725
+    },
+    {
+      "anchor": "head_4",
+      "direction": "FEM_reference_chord",
+      "Ru_change_at_alpha1": -0.0005470310752840879,
+      "alpha_energy": 1843.49927003473,
+      "alpha_residual": 1811.9156067219826
+    },
+    {
+      "anchor": "head_7",
+      "direction": "observed_hidden",
+      "Ru_change_at_alpha1": -1.960915129051166e-05,
+      "alpha_energy": 4.646896264256894,
+      "alpha_residual": 9.430725024901763
+    },
+    {
+      "anchor": "head_7",
+      "direction": "nodal_energy",
+      "Ru_change_at_alpha1": -0.2394338725932602,
+      "alpha_energy": 3.903949401439873,
+      "alpha_residual": 2.835015996934015
+    },
+    {
+      "anchor": "head_7",
+      "direction": "nodal_Jacobi",
+      "Ru_change_at_alpha1": -0.0029457868024779232,
+      "alpha_energy": 307.9291809684185,
+      "alpha_residual": 258.26061675442816
+    },
+    {
+      "anchor": "head_7",
+      "direction": "nodal_residual",
+      "Ru_change_at_alpha1": -0.2457320360252535,
+      "alpha_energy": 2.143822730733938,
+      "alpha_residual": 1.7709975369989768
+    },
+    {
+      "anchor": "head_7",
+      "direction": "FEM_reference_chord",
+      "Ru_change_at_alpha1": -0.0007834712974594815,
+      "alpha_energy": 1286.8041989544765,
+      "alpha_residual": 1265.0112674267107
+    }
+  ],
+  "signed_increment_checks": [
+    {
+      "transition": "initial->head_8",
+      "field": "residual_squared",
+      "signed_total": 1.5819380254102704e-06
+    },
+    {
+      "transition": "initial->head_8",
+      "field": "active_error_squared",
+      "signed_total": -1.3470946170976571e-05
+    },
+    {
+      "transition": "head_7->head_8",
+      "field": "residual_squared",
+      "signed_total": -1.217543235360484e-07
+    },
+    {
+      "transition": "head_7->head_8",
+      "field": "active_error_squared",
+      "signed_total": -2.4629384256717125e-06
+    }
+  ],
+  "producer_analytic_closure_readback": {
+    "exact_energy_work_closure_error": 2.4170018975452456e-18,
+    "exact_secant_force_maxerr": 3.1548483274315264e-17,
+    "energy_component_change_closure_error": 3.1852673981497964e-18
+  },
+  "FD_readback": {
+    "count": 32,
+    "max_force_relative_error": 1.0178995410391854e-06,
+    "max_energy_derivative_error": 2.1991999372588034e-10
+  },
+  "budget": {
+    "field_evaluations": 139,
+    "cap": 240,
+    "tangent_actions": 81,
+    "elapsed_seconds": 9.61207241693046,
+    "seconds": 300
+  },
+  "no_new_native_field_evaluations": 0,
+  "figure_review": "Both actual PNGs viewed; signed spatial colorbar overlapping near zero needs presentation-only fixed ticks. Spatial anti-aliasing texture is not a physical location claim.",
+  "interpretation": "Within this saved PIDL run hidden stages reduce R\u00b2 in aggregate; UV-head stages increase it more. Both stages reduce energy in every pair. Active error fluctuates in both. Nodal controls are not NN parameter updates."
+}

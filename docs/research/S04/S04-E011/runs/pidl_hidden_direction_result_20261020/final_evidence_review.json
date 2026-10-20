@@ -1,0 +1,119 @@
+{
+  "status": "passed",
+  "reviewer": "b0_route_inventory",
+  "scope": "Final focused saved-force/scalar/17-state/24-transition/physical-control/component-localization/actual-figure/report review; no native operator, NN, SVD, FEM solve, SSH, producer or new parameter update.",
+  "independent_numerical_review": "independent_numerical_review.json",
+  "component_localization_independent_check": {
+    "real_subupdates": 16,
+    "max_centroid_difference": 0,
+    "force_source": "Saved gu/gv arrays; fixed reaction DOFs excluded; no operator call."
+  },
+  "figures": {
+    "actually_viewed": [
+      "direction_decision.png",
+      "direction_locations.png",
+      "direction_net_locations.png"
+    ],
+    "selected": [
+      "direction_decision.png",
+      "direction_net_locations.png"
+    ],
+    "original_retained": "Original location figure has overlapping near-zero signed ticks; excluded from reporting; no numerical data invalidated.",
+    "corrected": "Presentation-only renderer reads localization.npz; explicit ticks/antialias-off and total initial-to-final third column are accurately labeled.",
+    "attachments_unique_and_byte_identical": true
+  },
+  "report_review": {
+    "status": "passed",
+    "checks": [
+      "FEM and PIDL subjects and same-initial versus previous-two-block baseline distinguished.",
+      "Hidden aggregate lowers R²; UV head aggregate raises it more; all eight chronological pairs included.",
+      "Four positive head starting residual derivatives establish those local rises are not merely oversized steps.",
+      "All eight heads show opposed Ru/active signs only in this run; no impossibility theorem, head gate retained.",
+      "Energy decline is active-integral decline with net compression increase; active integral distinguished from spatial squared error.",
+      "Three fixed anchors match physical nodal norm; physical Jacobi/minus-R are counterfactual fields, not newly trained or qualified PIDL endpoints.",
+      "ActualPhi head closure does not certify full residual/active minimization, hidden metric and network reachability remain unseparated.",
+      "Signed increment centroids describe dispersed contribution, not peak/causal parameter location.",
+      "Conditional FEM outer18/history0 is not a full repaired trajectory or physical truth.",
+      "No extra training/run/threshold relaxation or unused-cap continuation."
+    ]
+  },
+  "bindings": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020.md": "a40701f6b231433785f93049f74218f7eb69709d18e83176ee6258a973060762",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1/summary.json": "b9862699a6135877a008c534c271d9cdc875346cf9e045ecc563ca950b430d35",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1/aggregate_metrics.json": "b8fa8a783cc6db3827da1c7f30dcdf7d6d08d0c0774542cfc4abe45e90fd1eb9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1/component_force_localization.json": "7bac9200b9020f00cca707a2c31b0de5622469f8ad89fc2dd522e8f70761002b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1/direction_decision.png": "1f782e4a1d1f8264321ad1a2172f2cffe356a1fc8554d490bac08f4157bc17df",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1/direction_decision.md": "39e68ba8f158170117f2d0d092280ae1c20600e801ddc014d1396b7ccc150049",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1/direction_net_locations.png": "b5b38c81e9b20fcf5835dad9c8f5e5059df08aa72e30886ed77143e8606bf149",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1/direction_net_locations.md": "44714b2f9b5e9fff2a459bd9b5983882002071f527475d105280e8ff5f6ee711",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_tightcouple_137cb03_20261019T122720Z_production/analysis_hidden_direction_20261020_r1/figure_review.json": "e63af6a2dfb1daa2a224b22d02f4ac9d16a99b96f89ef6d6342f1a506f3f9761",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_hidden_direction_preparation_20261020_v1/independent_numerical_review.json": "df92275bf16e58edfbb1acc7b4c407697f72aaa0b57b4661e86cbfc34e7524d6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/tools/s04_e011_analysis/render_hidden_direction_locations.py": "1f864ae670bf369ffc451328a4ca8076ec03a914580b885b6b4c6421968cf7ac",
+    "/Users/wenxiaofang/obsidian/attachments/S04/2026-10-20/E011_hidden_directions/direction_decision.png": "1f782e4a1d1f8264321ad1a2172f2cffe356a1fc8554d490bac08f4157bc17df",
+    "/Users/wenxiaofang/obsidian/attachments/S04/2026-10-20/E011_hidden_directions/direction_net_locations.png": "b5b38c81e9b20fcf5835dad9c8f5e5059df08aa72e30886ed77143e8606bf149",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/summary.json": "b9862699a6135877a008c534c271d9cdc875346cf9e045ecc563ca950b430d35",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/stages.csv": "9a5c869a8617ad8830e1f5086a84f556c7e2459d9beac4fa5dcd14999ce24438",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/analysis_receipt.json": "48372bc3eb8eee8b1e75b4e3e824e2bcd4aee165d722e8cf2cdf7a4a00ac4658",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/figure_review.json": "e63af6a2dfb1daa2a224b22d02f4ac9d16a99b96f89ef6d6342f1a506f3f9761",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/input_identity.json": "e0843364e5b27887da87b38640468fac66f93f1f3a04ea4857b116420896b801",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/transitions.csv": "d36cf9f02f5aa6c063d53e62bd29600efe654f2f26bdf5f27ebc85113aaa8158",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/code_review.json": "fc95c79bae6c29115e82df63246d9d78a49cb49a8c0dbef0616c8ebfc76245ab",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/independent_numerical_review.json": "df92275bf16e58edfbb1acc7b4c407697f72aaa0b57b4661e86cbfc34e7524d6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/aggregate_metrics.json": "b8fa8a783cc6db3827da1c7f30dcdf7d6d08d0c0774542cfc4abe45e90fd1eb9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/control_lines.csv": "314fdd231553dccbbcbf44f5dc4200f664eef407edbc2d371b10b792614484e3",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/directions.csv": "797fc22669c7ae39c771215a437cdda5c9020e616e1ec6f3ecec4086711b7d43",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/component_force_localization.json": "7bac9200b9020f00cca707a2c31b0de5622469f8ad89fc2dd522e8f70761002b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_hidden_direction_preparation_20261020_v1/postprocess_report.py": "f04376e0b745544b70cea28f66936b1dfa88569db19ac94ebe5d78b494ba5477",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_hidden_direction_result_20261020/csv_text_normalization.json": "97008d77fa07efdd2dd0bb323ab60ef42a3ddb35729d4bcc8308123668367088"
+  },
+  "shared_markdown_binding": {
+    "path": "/Users/wenxiaofang/obsidian/mesh对齐.md",
+    "own_block_sha256": "f62f260a62163996d0bc64cdaa12e10e26504b00d2bce3e65303c3296115388d",
+    "latest_PIDLc20_line_sha256": "f214f3d478c85fc390c512ccc87de13d051810438a17c5823564d386ddaf0880",
+    "roadmap_path": "/Users/wenxiaofang/obsidian/01 Research Tracks/000 research note/Road crack prediction/0 Roadmap.md",
+    "unique_20261020_E011_line_sha256": "a6bd1ccb37d72af105eefffb8f3e34ae8d7c71a0218128193c80490e3b59a0e8",
+    "other_threads_not_reviewed_or_modified": true
+  },
+  "remaining_blockers": [],
+  "postprocess_note": "Historical draft generator retired with unconditional SystemExit before imports or writes; final canonical is authoritative and cannot be overwritten by this template.",
+  "status_finalization": {
+    "status": "passed",
+    "method": "Reverse the exact two final-status sentences; reconstructed original canonical and own-block hashes match prior reviewed versions. Every prior numeric/CSV/plot/compact binding and latest/Roadmap line hash unchanged. No new scientific review or run.",
+    "canonical_sha256": "a40701f6b231433785f93049f74218f7eb69709d18e83176ee6258a973060762",
+    "own_block_sha256": "f62f260a62163996d0bc64cdaa12e10e26504b00d2bce3e65303c3296115388d"
+  },
+  "csv_line_ending_addendum": {
+    "status": "passed",
+    "scope": "Four compact CSV files only; archive originals unchanged, byte CRLF replacement and csv.reader exact cell equality independently verified; no science/figure/source rerun.",
+    "files": [
+      {
+        "name": "stages.csv",
+        "original_sha256": "6de9ed7afc1f516c50b4b54312f514e758aa06f6e99800dc09523dea01090c1d",
+        "compact_sha256": "9a5c869a8617ad8830e1f5086a84f556c7e2459d9beac4fa5dcd14999ce24438",
+        "CRLF_to_LF_only": true,
+        "decoded_cells_equal": true
+      },
+      {
+        "name": "transitions.csv",
+        "original_sha256": "f33deeda339bc71f99c42fa9eb8f9cb3d84b3f9a990c0c072e58d6b9da6cbf3f",
+        "compact_sha256": "d36cf9f02f5aa6c063d53e62bd29600efe654f2f26bdf5f27ebc85113aaa8158",
+        "CRLF_to_LF_only": true,
+        "decoded_cells_equal": true
+      },
+      {
+        "name": "directions.csv",
+        "original_sha256": "b559d95e961015205914f278e4d1ea58741b992025c284261ef41621fc025356",
+        "compact_sha256": "797fc22669c7ae39c771215a437cdda5c9020e616e1ec6f3ecec4086711b7d43",
+        "CRLF_to_LF_only": true,
+        "decoded_cells_equal": true
+      },
+      {
+        "name": "control_lines.csv",
+        "original_sha256": "bca57844d2d690765182e8a7703a02b955b324db876e2109def6199214158b4d",
+        "compact_sha256": "314fdd231553dccbbcbf44f5dc4200f664eef407edbc2d371b10b792614484e3",
+        "CRLF_to_LF_only": true,
+        "decoded_cells_equal": true
+      }
+    ]
+  }
+}

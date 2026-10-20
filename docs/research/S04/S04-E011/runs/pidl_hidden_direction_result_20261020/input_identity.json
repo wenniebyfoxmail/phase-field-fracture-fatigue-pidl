@@ -1,0 +1,34 @@
+{
+  "source_summary_sha256": "1fbe3909293944be045e2cbd53df480e779890adc2d101fab831d9cff89f919b",
+  "input": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_block_preparation_20261017_v1/inputs/c20_peak.npz",
+    "role": "conditional accepted FEM c20 outer18 state",
+    "bytes": 15502614,
+    "sha256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3"
+  },
+  "state": [
+    20,
+    4,
+    99,
+    0.11999988
+  ],
+  "stage_order": [
+    "initial",
+    "hidden_1",
+    "head_1",
+    "hidden_2",
+    "head_2",
+    "hidden_3",
+    "head_3",
+    "hidden_4",
+    "head_4",
+    "hidden_5",
+    "head_5",
+    "hidden_6",
+    "head_6",
+    "hidden_7",
+    "head_7",
+    "hidden_8",
+    "head_8"
+  ]
+}

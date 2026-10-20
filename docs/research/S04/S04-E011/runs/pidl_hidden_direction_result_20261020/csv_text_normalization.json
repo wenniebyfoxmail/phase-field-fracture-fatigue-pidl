@@ -1,0 +1,22 @@
+[
+  {
+    "file": "stages.csv",
+    "change": "compact copy CRLF to LF only; raw archive unchanged",
+    "parsed_csv_equal": true
+  },
+  {
+    "file": "transitions.csv",
+    "change": "compact copy CRLF to LF only; raw archive unchanged",
+    "parsed_csv_equal": true
+  },
+  {
+    "file": "directions.csv",
+    "change": "compact copy CRLF to LF only; raw archive unchanged",
+    "parsed_csv_equal": true
+  },
+  {
+    "file": "control_lines.csv",
+    "change": "compact copy CRLF to LF only; raw archive unchanged",
+    "parsed_csv_equal": true
+  }
+]

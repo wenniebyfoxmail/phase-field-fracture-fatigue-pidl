@@ -1,0 +1,370 @@
+[
+  {
+    "pair": 1,
+    "kind": "hidden",
+    "positive": {
+      "magnitude": 2.3488671221215303e-07,
+      "absolute_increment_share": 0.5025928298465041,
+      "centroid": [
+        -0.1898984257150348,
+        0.0038038225631062757
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 2.3246319463767086e-07,
+      "absolute_increment_share": 0.4974071701534961,
+      "centroid": [
+        -0.18537272241064148,
+        -0.01740029992058504
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": 2.423517574482174e-09
+  },
+  {
+    "pair": 1,
+    "kind": "head",
+    "positive": {
+      "magnitude": 5.855800315863224e-07,
+      "absolute_increment_share": 0.42617476099591095,
+      "centroid": [
+        -0.12768525912747408,
+        -0.003728162829848
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 7.884573004647443e-07,
+      "absolute_increment_share": 0.5738252390040891,
+      "centroid": [
+        -0.08139495001459689,
+        0.051943427134786946
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -2.0287726887842186e-07
+  },
+  {
+    "pair": 2,
+    "kind": "hidden",
+    "positive": {
+      "magnitude": 1.917356672235935e-06,
+      "absolute_increment_share": 0.43255616642666533,
+      "centroid": [
+        -0.09458400175975788,
+        0.019263463215425065
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 2.5152623054916648e-06,
+      "absolute_increment_share": 0.5674438335733345,
+      "centroid": [
+        -0.10127184408373452,
+        0.009039609020491281
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -5.979056332557303e-07
+  },
+  {
+    "pair": 2,
+    "kind": "head",
+    "positive": {
+      "magnitude": 3.550535619101213e-06,
+      "absolute_increment_share": 0.6804650737013453,
+      "centroid": [
+        -0.10757623003692017,
+        0.052766680920122516
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 1.6672716664194188e-06,
+      "absolute_increment_share": 0.31953492629865476,
+      "centroid": [
+        -0.07932351029594575,
+        -0.03575799827553022
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": 1.8832639526817945e-06
+  },
+  {
+    "pair": 3,
+    "kind": "hidden",
+    "positive": {
+      "magnitude": 2.0900593692564834e-07,
+      "absolute_increment_share": 0.5065461271444056,
+      "centroid": [
+        -0.18145504296058879,
+        -0.0006652916166579561
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 2.036039434496983e-07,
+      "absolute_increment_share": 0.49345387285559433,
+      "centroid": [
+        -0.17934837230407327,
+        -0.021775753042872825
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": 5.401993475950081e-09
+  },
+  {
+    "pair": 3,
+    "kind": "head",
+    "positive": {
+      "magnitude": 5.109513468404814e-07,
+      "absolute_increment_share": 0.4146942991401924,
+      "centroid": [
+        -0.12681314857017184,
+        -0.004782011435717836
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 7.211643294537522e-07,
+      "absolute_increment_share": 0.5853057008598075,
+      "centroid": [
+        -0.0819593631758974,
+        0.05302126284693522
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -2.1021298261327088e-07
+  },
+  {
+    "pair": 4,
+    "kind": "hidden",
+    "positive": {
+      "magnitude": 8.711617192491526e-07,
+      "absolute_increment_share": 0.45041309017013575,
+      "centroid": [
+        -0.18570418079510004,
+        0.04903405912240875
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 1.062977714664916e-06,
+      "absolute_increment_share": 0.5495869098298644,
+      "centroid": [
+        -0.17298929689809545,
+        0.017489555462939756
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -1.9181599541576349e-07
+  },
+  {
+    "pair": 4,
+    "kind": "head",
+    "positive": {
+      "magnitude": 1.6715093274904751e-06,
+      "absolute_increment_share": 0.4844773910790878,
+      "centroid": [
+        -0.14212308082914518,
+        0.0011513647369367208
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 1.7786193230281462e-06,
+      "absolute_increment_share": 0.5155226089209125,
+      "centroid": [
+        -0.07730451784866398,
+        0.041320521569648806
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -1.071099955376711e-07
+  },
+  {
+    "pair": 5,
+    "kind": "hidden",
+    "positive": {
+      "magnitude": 1.020580289780602e-07,
+      "absolute_increment_share": 0.4489875412015798,
+      "centroid": [
+        -0.1485002546409061,
+        -0.023793442458250023
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 1.2524901100111755e-07,
+      "absolute_increment_share": 0.5510124587984203,
+      "centroid": [
+        -0.1501026348064306,
+        -0.010538963015631614
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -2.3190982023057335e-08
+  },
+  {
+    "pair": 5,
+    "kind": "head",
+    "positive": {
+      "magnitude": 3.775233131428211e-07,
+      "absolute_increment_share": 0.609861262670747,
+      "centroid": [
+        -0.08555321294856943,
+        0.05751649686472321
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 2.415081555711362e-07,
+      "absolute_increment_share": 0.39013873732925275,
+      "centroid": [
+        -0.11838029256731268,
+        -0.007841495978429511
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": 1.3601515757168493e-07
+  },
+  {
+    "pair": 6,
+    "kind": "hidden",
+    "positive": {
+      "magnitude": 3.086974042072018e-07,
+      "absolute_increment_share": 0.45002138080029463,
+      "centroid": [
+        -0.14416010402467527,
+        -0.019754688647384378
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 3.7726423534474663e-07,
+      "absolute_increment_share": 0.5499786191997055,
+      "centroid": [
+        -0.14509733664767463,
+        -0.008596549779229776
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -6.85668311375449e-08
+  },
+  {
+    "pair": 6,
+    "kind": "head",
+    "positive": {
+      "magnitude": 1.1135681629167018e-06,
+      "absolute_increment_share": 0.6138207019294017,
+      "centroid": [
+        -0.08586953651585594,
+        0.05722189889937276
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 7.005905310088379e-07,
+      "absolute_increment_share": 0.386179298070598,
+      "centroid": [
+        -0.11793603952633702,
+        -0.008053033213320881
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": 4.129776319078638e-07
+  },
+  {
+    "pair": 7,
+    "kind": "hidden",
+    "positive": {
+      "magnitude": 7.555091117057635e-07,
+      "absolute_increment_share": 0.4354052303050907,
+      "centroid": [
+        -0.11276413614521155,
+        0.01495893277203986
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 9.796770071572881e-07,
+      "absolute_increment_share": 0.5645947696949093,
+      "centroid": [
+        -0.11757820412903636,
+        0.006714675314076216
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -2.2416789545152437e-07
+  },
+  {
+    "pair": 7,
+    "kind": "head",
+    "positive": {
+      "magnitude": 1.8896563527164928e-06,
+      "absolute_increment_share": 0.6538931317028495,
+      "centroid": [
+        -0.09280666814600604,
+        0.05611826083090553
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 1.0001986726689318e-06,
+      "absolute_increment_share": 0.3461068682971506,
+      "centroid": [
+        -0.10543559728557834,
+        -0.01564301328419349
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": 8.894576800475616e-07
+  },
+  {
+    "pair": 8,
+    "kind": "hidden",
+    "positive": {
+      "magnitude": 1.3616269548088e-07,
+      "absolute_increment_share": 0.48711653848657704,
+      "centroid": [
+        -0.18121325528446303,
+        0.01288022112362738
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 1.433652710790813e-07,
+      "absolute_increment_share": 0.5128834615134229,
+      "centroid": [
+        -0.171955763478518,
+        -0.01055725284963704
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -7.2025755982012896e-09
+  },
+  {
+    "pair": 8,
+    "kind": "head",
+    "positive": {
+      "magnitude": 3.097065269223347e-07,
+      "absolute_increment_share": 0.42196373200752535,
+      "centroid": [
+        -0.13024085167062166,
+        -0.004577203168818945
+      ],
+      "reference_top1_share": null
+    },
+    "negative": {
+      "magnitude": 4.242582748602303e-07,
+      "absolute_increment_share": 0.5780362679924748,
+      "centroid": [
+        -0.08078343589935602,
+        0.05256614770054836
+      ],
+      "reference_top1_share": null
+    },
+    "signed_total": -1.1455174793789562e-07
+  }
+]

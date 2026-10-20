@@ -1,0 +1,16 @@
+{
+  "status": "passed_selected_figures",
+  "method": "root actual PNG inspection; source arrays unchanged",
+  "selected": [
+    "direction_decision.png",
+    "direction_net_locations.png"
+  ],
+  "checks": [
+    "All labels visible; first two map columns share each row scale; total initial-to-final signed third column uses own symmetric scale.",
+    "Native metrics unchanged, display node/GP cell averaging documented, explicit colorbar ticks, polygon antialias disabled.",
+    "Physical controls explicitly not trained PIDL updates; all eight chronological pairs retained."
+  ],
+  "deprecated_presentation": {
+    "direction_locations.png": "Near-zero automatic signed colorbar tick overlap and subpixel mesh-edge texture; retained original, superseded for report by net-change map; no numerical failure."
+  }
+}
