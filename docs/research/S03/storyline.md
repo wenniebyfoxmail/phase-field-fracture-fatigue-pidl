@@ -908,3 +908,16 @@
   Full right colourbar/wholeframe and final identity remain unreviewed; no
   resumption/QR-SVD/arrays/B003/real/held/C-D or frozen edits. D3 awaiting
   specific layout choice and later separate generation/review authority.
+
+- **2026-10-20 — V002-L01 offline preparation consolidated into approval packet.**
+  Continue the same owner/D3. See
+  S03-E019/preparation/f01_v002_layout/execution_package.md and README.md.
+  Code/fixtures/manifest snapshot a8b10844; stdlib CLI has generate/verify/finish,
+  fixed OLD ten/new seven, exclusive new-directory/file writes, source/layout
+  mappings and completion binding. Original renderer/G01/draft SHA unchanged.
+  One bounded artificial XML/memory suite: 24/24, chunk46ea82 exit0, no warnings,
+  suite0.004s plus finalsoft60 checks; no actual SVD/QR. No repeat or expanded
+  review, real SVG execution, candidate output/render, B003numeric/real/held,
+  frozen edits or C/D. Human decision now concerns exact G and optionally
+  independent V1-V3; actual right-colourbar/wholeframe and final cross-view
+  identity remain incomplete. Artificial success is not visual/scientific QA.
