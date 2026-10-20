@@ -2,8 +2,8 @@
   "experiment": "S01-E028",
   "current_run": {
     "run": "S01-E028-R002",
-    "execution": "running",
-    "retrieval": "pending",
+    "execution": "succeeded",
+    "retrieval": "pending explicit R002-package approval",
     "producer": "gpu-server/D-26-09",
     "account": "ad\\xw436",
     "reviewed_commit": "a5a8f46510885f585fc1b84f004662e09309413d",
@@ -41,8 +41,108 @@
     "retention": null,
     "net_GT": null,
     "sealed_sites_accessed": false,
-    "archive": null,
-    "private_operations": "owner local_archive/experiments/S01-E028/execution_R002/"
+    "archive": {
+      "archive": "C:\\Users\\xw436\\pavetrack_runs\\S01-E028-R002-fixed-v1.tar.gz",
+      "wrapper_state": "completed",
+      "producer_elapsed_seconds": 1196.4529999997467,
+      "reviewed_commit": "a5a8f46510885f585fc1b84f004662e09309413d",
+      "R001_plus_R002_seconds": 1198.6709999996237,
+      "state": "fixed",
+      "sha256": "7bce884594a1ba2a28dcc65e59b0a957c13a1045f1d5c75b154fdeb4f7f2c4ef",
+      "timestamp": "2026-10-20T11:27:43.4472032+01:00",
+      "bytes": 3533768071,
+      "raw_bytes": 3959404834,
+      "file_count": 375,
+      "run_state": "completed"
+    },
+    "private_operations": "owner local_archive/experiments/S01-E028/execution_R002/",
+    "finish": "2026-10-20T11:23:43.1370390+01:00",
+    "exit_code": 0,
+    "producer_guard_seconds": 1196.4529999997467,
+    "producer_python_wall_seconds": 1200.784702,
+    "resource": {
+      "elapsed_seconds": 1196.4529999997467,
+      "peak_RSS_bytes": 2585952256,
+      "peak_GPU_allocated_bytes": 1561851904,
+      "peak_GPU_reserved_bytes": 1734344704,
+      "counts": {
+        "source_image_decodes": 338,
+        "native_tiles": 13520,
+        "cached_forwards": 12238
+      },
+      "model_fits": 0,
+      "updates": 0,
+      "E003_loaded": false,
+      "selector": false,
+      "OOF": null
+    },
+    "server_primary_pass": true,
+    "server_original_pairs": [
+      {
+        "fold": 0,
+        "locations": [
+          "1638",
+          "2027"
+        ],
+        "qualified": true
+      },
+      {
+        "fold": 1,
+        "locations": [
+          "24",
+          "2027"
+        ],
+        "qualified": false
+      },
+      {
+        "fold": 2,
+        "locations": [
+          "24",
+          "1638"
+        ],
+        "qualified": false
+      }
+    ],
+    "server_primary_sites": [
+      {
+        "location": "24",
+        "images": 116,
+        "common_images": 115,
+        "Dice": 0.2657252825734189,
+        "gain": -0.07162575563653824,
+        "qualified": false,
+        "status": "negative"
+      },
+      {
+        "location": "1638",
+        "images": 109,
+        "common_images": 109,
+        "Dice": 0.36536765164692775,
+        "gain": 0.14520018304770302,
+        "qualified": true,
+        "status": "pass"
+      },
+      {
+        "location": "2027",
+        "images": 113,
+        "common_images": 113,
+        "Dice": 0.4089136961407405,
+        "gain": 0.20423654092480134,
+        "qualified": true,
+        "status": "pass"
+      }
+    ],
+    "scientific_verdict": null,
+    "evidence_acceptance": "pending full-package retrieval, image inspection and independent evidence review",
+    "generated_figures": 5,
+    "combined_R001_R002_python_wall_seconds": 1203.0846342999998,
+    "archive_server_integrity": {
+      "timestamp": "2026-10-20T11:29:04.3145556+01:00",
+      "file_count": 375,
+      "entry_count": 381,
+      "tar_listing_CRC": "passed"
+    },
+    "server_summary_review": "gpt-6.1-sol High consistency passed; not full Evidence Ready"
   },
   "R001": {
     "execution": "stopped_before_model",

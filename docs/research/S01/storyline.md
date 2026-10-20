@@ -352,3 +352,12 @@ Prelaunch environment has another-account RealtekAudioControl C+G outside approv
 User authorisedGPU0/Taobo; reviewedGPU0 source80d6f665/public44a9a0f2 deployed with27bindings/private9/native338identityverified. ActualR001 stopped2.218seconds atPillow11.3vsrequired12.3, beforemodel/RGB/reference;0forwards/fits/evaluations. This is our incomplete runtimepreflight, no localisation verdict; no automaticretry. Fixed12member/6669byte stoppackage remainsremote/retrievalpending; execution_status.md/json carriesidentity.
 
 ActiveD7stilltargetqualification. Proposedrepair usesfreshPillow12.3overlay/exact121libraryfiles/completeversion-origin-GPUUUID plusdatafreesyntheticpreflight, sharedvenvunchanged; newR0023590s withinoriginalaggregate3600budget needs independentreview/exact humanauthorisation. Science/data/E003/caps/abstention/intersection/sealedsitesunchanged; noselector/OOF/retention/netclaim.
+
+
+## 2026-10-20 — E028 R002 completes; positive server target qualification, acceptance pending
+
+R001 stoparchive received/CRC11bindings12files/independent6.1solHigh acceptance; no real outputs there. Authorised a5a8f465 R002 used fresh Pillow12.3 overlay121pinnedfiles, fullruntime/nativeorigin/GPUUUID+syntheticfixture preflight; sharedvenv unchanged. Publicb675c51b readback, server31sourcebindings/private9/native338identity verified. GPU0 run exit0,25758forwards/338sourceimages/0fits; actualR0021200.785s, combinedR001+R0021203.085s<3600, all4GiB/6GiBcaps met.
+
+Frozen primary native/max/any server gain1638+.145200,2027+.204237,24−.071626; exactly originalpair1638+2027 qualifies. Preserve24negative and all8comparisons; no posthoc candidate or thresholds. This advances the target-envelope information question beyond the prior allzero control result, but does not establish exhaustive crack pixels/generalisation/selector/top3/OOF/retention/netbenefit. Metadata/preview consistency independently checked only; formalclaimpendingoriginal evidence.
+
+R002fixedarchive3.53GB/375files SHA7bce884594a1ba2a28dcc65e59b0a957c13a1045f1d5c75b154fdeb4f7f2c4ef, serverintegritypassed. ActiveD7=evidence acceptance after explicitR002package reception approval; then separately freeze utility/selector route if admissible. Noadditionalproducer/selector/new-site access. See S01-E028/runs/S01-E028-R002/result.md,receipt.json,reception_approval_R002.md.

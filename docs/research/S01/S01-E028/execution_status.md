@@ -1,3 +1,15 @@
+# S01-E028 current execution — 2026-10-20 final server state
+
+**R001 stop package accepted and archived on Mac; R002 completed on GPU0 within all caps. R002 full-package reception and scientific acceptance remain pending.**
+
+R002 Python actual1200.785seconds, combined R001+R002 actual1203.085seconds <3600; guard1196.453seconds.338sourceimages/13520nativetiles/12238cachedforwards, zero fitting/selector. RSS2.408GiB/CUDAallocated1.455GiB/reserved1.615GiB below4GiB. Original prediction/reference barrier and center-reference check completed.
+
+Server frozen-main-candidate result:1638Dice.365368/gain+.145200;2027Dice.408914/gain+.204237;24Dice.265725/gain−.071626. Only original1638+2027pair qualifies; no replacement of main candidate. This is preliminary partial-envelope correspondence on reused sites; full-package reconstruction and original pixel-image inspection are not completed. OOF/retention/netGT remain null. Metadata/preview consistency alone passed independent6.1solHigh review.
+
+Fixed R002 archive3533768071bytes/375files/381tarentries, SHA2567bce884594a1ba2a28dcc65e59b0a957c13a1045f1d5c75b154fdeb4f7f2c4ef, server tar listing/CRC and output bindings passed. Exact retrieval version: reception_approval_R002.md. No R003/retry/selector, no sealed-site access; E003/capacity/abstention/intersection intact. See runs/S01-E028-R002/result.md and receipt.json.
+
+## Historical execution states
+
 # S01-E028 current execution — 2026-10-20
 
 **R001 stop package retrieved, verified and independently accepted; authorised R002 is running on GPU0.**

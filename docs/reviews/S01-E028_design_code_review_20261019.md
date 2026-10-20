@@ -26,3 +26,7 @@ R001在Pillow11.3vs冻结12.3处停止，2.218s/0forward/0源图/0参考，原�
 ## 2026-10-20 R001停止包接收验收
 
 独立gpt-6.1-sol / High：接收归档PASS。6669bytes/SHA一致/gzipCRC通过，12文件(加4目录共16tar条目)与解包字节一致，11项manifest大小/hash完整匹配；status/resource/wrapper一致，2.218秒/0forward/RGB/reference/fits，原80d6f665身份保留，无真实图验收或科学结果。峰值内存0未采样，不解释为实际零占用。此审查不涉及R002结果。
+
+## 2026-10-20 R002服务器摘要与预览一致性（非完整Evidence Ready）
+
+独立gpt-6.1-sol / High检查summary/terminal/receipt/metadata预览：一致性通过，主候选1638(.365368,+.145200)+2027(.408914,+.204237)原pair符合冻结规则，24(.265725,−.071626)负向保留；预览标记初步、Dice−gain重建同口径基线正确且可读。实际两次Python合计约1203.085秒<3600，计数25758/338/0fits及RSS/CUDA各<4GiB一致。完整原包/冻结链/参考复现/逐context六基线分层复算/服务器五图README均尚未验收；不作最终科学判定，不连接selector。
