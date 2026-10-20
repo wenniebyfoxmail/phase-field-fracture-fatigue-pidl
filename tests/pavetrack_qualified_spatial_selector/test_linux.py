@@ -180,6 +180,24 @@ class LinuxChecks(unittest.TestCase):
         self.assertIn("['make','-j1','COMPILEALL_OPTS=-j1','install']",s)
         self.assertIn("'-I','-B'",s)
         self.assertIn('python3 -I -B ',(HERE/'producer_taobo.sh').read_text())
+    def test_real_worker_entry_uses_controller_chain_without_approval_argument(self):
+        from types import SimpleNamespace
+        import e029_system_proc as proc
+        cfg,base=c.config('taobo');args=SimpleNamespace(run=self.p/'run',request=self.p/'request',role='bank',fold=None,reviewed_commit='commit',approval_file=None)
+        args.run.mkdir();approval=dict(run_id='S01-E029-R001',reviewed_commit='commit',source_manifest_sha256='manifest',execute_once=True,wall_seconds=None,GPU_uuid=cfg['producer']['gpu_uuid'])
+        claim=dict(pid=9,wrapper_birth=100,commit='commit',manifest='manifest',approval_sha256='sha')
+        launch=dict(controller_birth=200,lifeline_pid=8,lifeline_birth=150,approval_value=approval,approval_sha256='sha')
+        req=dict(role='bank',fold=None,manifest='manifest',run_id='S01-E029-R001',input_freezes={});control=dict(controller_pid=7,controller_birth=200,expected=req)
+        values={str(args.run/'launch.json'):launch,str(args.run/'control.json'):control,str(args.request):req,str(cfg['linux_paths']['launch_claim']):claim}
+        processes={}
+        for pid,birth,parent in [(7,200,8),(8,150,9),(9,100,1)]:
+            processes[pid]=Mock();processes[pid].create_time.return_value=birth;processes[pid].ppid.return_value=parent
+        live=Mock();live.parents.return_value=[Mock(pid=7),Mock(pid=8),Mock(pid=9)]
+        with patch.dict(os.environ,dict(E029_PARENT_PID='7',E029_PARENT_BIRTH='200')),patch.object(os,'getppid',return_value=7),patch.object(proc,'Process',side_effect=lambda pid=None:processes[pid]),patch.object(c,'read',side_effect=lambda p:values[str(p)]),patch.object(c,'environment',return_value=Mock()),patch('psutil.Process',return_value=live),patch.object(run,'read_caps',side_effect=RuntimeError('reached capabilities before phase')):
+            with self.assertRaisesRegex(RuntimeError,'reached capabilities before phase'):run.worker(args,cfg,base,{}, {},'manifest')
+            processes[7].create_time.return_value=201
+            with self.assertRaises(PermissionError):run.worker(args,cfg,base,{}, {},'manifest')
+        self.assertNotIn('torch',sys.modules)
     def test_science_files_not_modified(self):
         # Reviewed read-only mathematical mechanism remains original, including fixed overlap.
         source=json.loads((c.DOC/'source_manifest.json').read_text())['files']

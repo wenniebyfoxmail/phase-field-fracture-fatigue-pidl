@@ -93,14 +93,15 @@ def persist_then_cleanup(path,payload,cleanup):
 
 
 def worker(args,plan,cfg,lock,paths,manifest_sha):
+    launch=c.read(args.run/'launch.json');control=c.read(args.run/'control.json')
     if c.linux(plan):
         import e029_system_proc as proc
         claim=c.read(plan['linux_paths']['launch_claim'])
-        proc.approved_chain(claim,int(os.environ['E029_PARENT_PID']),int(os.environ['E029_PARENT_BIRTH']))
-        if claim['commit']!=args.reviewed_commit or claim['manifest']!=manifest_sha or claim['approval_sha256']!=c.sha(args.approval_file):raise PermissionError('controller exact wrapper claim')
+        proc.approved_worker_chain(claim,launch,control,int(os.environ['E029_PARENT_PID']),int(os.environ['E029_PARENT_BIRTH']))
+        if claim['commit']!=args.reviewed_commit or claim['manifest']!=manifest_sha or claim['approval_sha256']!=launch['approval_sha256']:raise PermissionError('worker exact wrapper claim')
     env=c.environment(plan);env.production_environment(plan)
-    launch=c.read(args.run/'launch.json');authority(launch['approval_value'],manifest_sha,args.reviewed_commit,plan)
-    control=c.read(args.run/'control.json');ident=request(c.read(args.request),args.role,args.fold)
+    authority(launch['approval_value'],manifest_sha,args.reviewed_commit,plan)
+    ident=request(c.read(args.request),args.role,args.fold)
     import psutil
     for label,h in ident['input_freezes'].items():
         c.checked(args.run/(label+'.json'),h)
@@ -190,7 +191,7 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
             active[0]=None
     guard.on_fatal=cleanup;stop=guard.watch()
     try:
-        c.write(args.run/'launch.json',dict(reviewed_commit=args.reviewed_commit,source_manifest_sha256=manifest_sha,paths_sha256=c.sha(args.paths),approval_sha256=c.sha(args.approval_file),approval_value=c.read(args.approval_file),pid=os.getpid(),command=sys.argv,producer=plan['producer'],execution_enabled_in_package=False,runtime_lock_sha256=args.runtime_lock_sha256))
+        c.write(args.run/'launch.json',dict(reviewed_commit=args.reviewed_commit,source_manifest_sha256=manifest_sha,paths_sha256=c.sha(args.paths),approval_sha256=c.sha(args.approval_file),approval_value=c.read(args.approval_file),pid=os.getpid(),command=sys.argv,producer=plan['producer'],execution_enabled_in_package=False,runtime_lock_sha256=args.runtime_lock_sha256,**(dict(controller_birth=proc.Process().create_time(),lifeline_pid=int(os.environ['E029_PARENT_PID']),lifeline_birth=int(os.environ['E029_PARENT_BIRTH'])) if c.linux(plan) else {})))
         for key,rec in lock['input_files'].items():
             p=Path(paths[key]);guard.check()
             if rec['bytes'] is not None and p.stat().st_size!=rec['bytes']:raise ValueError('input bytes '+key)
@@ -204,7 +205,7 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
                 for f,h in c.read(args.run/'spatial/spatial_freeze.json')['files'].items():c.checked(args.run/'spatial'/f,h)
             if role=='held':verify_barrier(args.run,'models_freeze',trusted['models_freeze'])
             if role=='evaluate':verify_barrier(args.run,'prediction_freeze',trusted['prediction_freeze'])
-            req=dict(role=role,fold=k,manifest=manifest_sha,run_id='S01-E029-R001',input_freezes={label:c.sha(args.run/(label+'.json')) for label in trusted});rp=args.run/(name(role,k)+'_request.json');c.write(rp,req);c.write(args.run/'control.json',dict(controller_pid=os.getpid(),expected=req))
+            req=dict(role=role,fold=k,manifest=manifest_sha,run_id='S01-E029-R001',input_freezes={label:c.sha(args.run/(label+'.json')) for label in trusted});rp=args.run/(name(role,k)+'_request.json');c.write(rp,req);c.write(args.run/'control.json',dict(controller_pid=os.getpid(),expected=req,**(dict(controller_birth=proc.Process().create_time()) if c.linux(plan) else {})))
             stdout=args.run/(name(role,k)+'.stdout.log');stderr=args.run/(name(role,k)+'.stderr.log')
             cmd=[sys.executable,str(Path(__file__).resolve()),'--run',str(args.run),'--paths',str(args.paths),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',manifest_sha,'--role',role,'--request',str(rp),'--profile',args.profile]
             if k is not None:cmd+=['--fold',str(k)]
@@ -212,7 +213,7 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
                 cmd.insert(1,'-B');cmd+=['--runtime-lock-sha256',args.runtime_lock_sha256]
                 cmd=['/usr/bin/python3','-I','-B',str(Path(__file__).with_name('e029_runtime_exec.py')),'--lock',plan['linux_paths']['runtime_lock'],'--expected-sha256',args.runtime_lock_sha256,'--',*cmd]
             with stdout.open('wb') as so,stderr.open('wb') as se:
-                child=subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=False,env=dict(os.environ,MPLCONFIGDIR=str(args.run/('_mplcache_'+name(role,k))),**(dict(E029_PARENT_PID=str(os.getpid())) if c.linux(plan) else {})));active[0]=child
+                child=subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=False,env=dict(os.environ,MPLCONFIGDIR=str(args.run/('_mplcache_'+name(role,k))),**(dict(E029_PARENT_PID=str(os.getpid()),E029_PARENT_BIRTH=str(proc.Process().create_time())) if c.linux(plan) else {})));active[0]=child
                 try:
                     while child.poll() is None:guard.check();time.sleep(.1)
                 except BaseException as exc:
