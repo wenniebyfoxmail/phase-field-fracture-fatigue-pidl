@@ -48,7 +48,7 @@ def spatial(paths,lock,plan,cfg,run,out,guard,engine):
     geometry=c.adapter.geometry
     cases=[];progress=[]
     for im in new:
-        rec=bank['images'][im];raw=Path(rec['prepared_image']).read_bytes();guard.take('source_image_reads')
+        rec=bank['images'][im];raw=c.image_path(rec,plan).read_bytes();guard.take('source_image_reads')
         if hashlib.sha256(raw).hexdigest()!=rec['prepared_image_sha256']:raise ValueError('source RGB byte identity')
         guard.take('source_image_decodes')
         with Image.open(io.BytesIO(raw)) as source:

@@ -1,0 +1,13 @@
+{
+  "E017_zip": "/mnt/data2/drtao/wennie/S01-E029-R001/private/E017_zip.zip",
+  "metadata": "/mnt/data2/drtao/wennie/S01-E029-R001/private/metadata.json",
+  "contexts": "/mnt/data2/drtao/wennie/S01-E029-R001/private/contexts.json",
+  "R002_scope": "/mnt/data2/drtao/wennie/S01-E029-R001/private/R002_scope.json",
+  "R002_projections": "/mnt/data2/drtao/wennie/S01-E029-R001/private/R002_projections.npz",
+  "checkpoint": "/mnt/data2/drtao/wennie/S01-E029-R001/private/DeepCrack_CT260_FT1.pth",
+  "network": "/mnt/data2/drtao/wennie/S01-E029-R001/private/deepcrack.py",
+  "E018_OOF": "/mnt/data2/drtao/wennie/S01-E029-R001/private/E018_OOF.json",
+  "E018_model_0": "/mnt/data2/drtao/wennie/S01-E029-R001/private/E018_model_0.json",
+  "E018_model_1": "/mnt/data2/drtao/wennie/S01-E029-R001/private/E018_model_1.json",
+  "E018_model_2": "/mnt/data2/drtao/wennie/S01-E029-R001/private/E018_model_2.json"
+}

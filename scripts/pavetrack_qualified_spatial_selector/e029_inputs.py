@@ -1,6 +1,6 @@
 """Role-scoped legacy member access and immutable geometry; no global GT load."""
 import collections,hashlib,json,zipfile
-from pathlib import Path
+from pathlib import Path,PureWindowsPath
 import e029_support as c
 
 BANK_MEMBERS={'input_snapshot/qualification.json','input_snapshot/candidate_identity.json','input_snapshot/scores.json'}
@@ -36,7 +36,7 @@ def bank(paths,lock,cfg,guard,out):
         rec={k:m[k] for k in ['image_id','location','prepared_image','prepared_image_sha256','width','height']}
         if m['width']!=1920 or m['height']!=1080 or rec['location']!=ims[rec['image_id']]:raise ValueError('image dimensions/location')
         if rec['image_id'] in images and images[rec['image_id']]!=rec:raise ValueError('image duplicate identity')
-        if Path(rec['prepared_image']).parent!=Path(lock['source_image_root']) or Path(rec['prepared_image']).name!=rec['image_id']:raise ValueError('source image path')
+        if PureWindowsPath(rec['prepared_image']).parent!=PureWindowsPath(lock['source_image_root']) or PureWindowsPath(rec['prepared_image']).name!=rec['image_id']:raise ValueError('source image path')
         images[rec['image_id']]=rec
     if len(ims)!=835 or set(images)!=set(ims) or sum(r['eligible'] for r in rows)!=19384 or set(ims.values())!=set(cfg['locations']):raise ValueError('bank scope/count')
     c.checked(paths['contexts'],lock['contexts_sha256']);contexts=c.read(paths['contexts'])['rows']

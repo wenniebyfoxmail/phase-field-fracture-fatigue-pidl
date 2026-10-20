@@ -12,8 +12,8 @@ ORDER=[('bank',None),('spatial',None),*[('fit',k) for k in range(3)],*[('held',k
 def name(role,fold):return role if fold is None else f'{role}_{fold}'
 
 def authority(value,manifest,commit,plan):
-    expected=dict(run_id=plan['proposed_run_id'],reviewed_commit=commit,source_manifest_sha256=manifest,execute_once=True,wall_seconds=3600,GPU_uuid=plan['producer']['gpu_uuid'])
-    if value!=expected or type(value.get('execute_once')) is not bool or value['execute_once'] is not True or type(value.get('wall_seconds')) is not int:raise PermissionError('exact new E029 one-shot authorisation required')
+    expected=dict(run_id=plan['proposed_run_id'],reviewed_commit=commit,source_manifest_sha256=manifest,execute_once=True,wall_seconds=plan['budget']['total_task_wall_seconds'],GPU_uuid=plan['producer']['gpu_uuid'])
+    if value!=expected or type(value.get('execute_once')) is not bool or value['execute_once'] is not True or (type(value.get('wall_seconds')) is not int if expected['wall_seconds'] is not None else value.get('wall_seconds') is not None):raise PermissionError('exact new E029 one-shot authorisation required')
 
 def barrier(run,files,label):
     if not files:raise ValueError('empty freeze')
@@ -93,7 +93,7 @@ def persist_then_cleanup(path,payload,cleanup):
 
 
 def worker(args,plan,cfg,lock,paths,manifest_sha):
-    env=c.core.module('e029_environment',c.ROOT/'scripts/pavetrack_target_spatial/environment.py');env.production_environment(plan)
+    env=c.environment(plan);env.production_environment(plan)
     launch=c.read(args.run/'launch.json');authority(launch['approval_value'],manifest_sha,args.reviewed_commit,plan)
     control=c.read(args.run/'control.json');ident=request(c.read(args.request),args.role,args.fold)
     import psutil
@@ -106,15 +106,22 @@ def worker(args,plan,cfg,lock,paths,manifest_sha):
     bank=c.read(args.run/'bank/bank.json') if args.role!='bank' else None
     expected_counts=role_counts(args.role,args.fold,bank,plan);role_plan=copy.deepcopy(plan);role_plan['counts']=expected_counts
     guard=Guard(role_plan,args.run);guard.note=out
+    if c.linux(plan):guard.self_only=True;guard.process=psutil.Process();guard.expected_parent_pid=control['controller_pid']
     local,extras=read_caps(args.role,args.fold,args.run,paths,bank)
+    if c.linux(plan) and args.role=='spatial':extras=[*paths_for_spatial(paths),*[c.image_path(v,plan) for v in bank['images'].values() if v['location'] not in plan['qualification_reused']]]
     # These checks spawn identity/inventory commands, before restricting subprocesses.
     t=None;engine=None
     if args.role=='spatial':
         source=c.core.module('e029_frozen_source',c.ROOT/'scripts/pavetrack_spatial_source/run.py')
         t,identity=env.production_checks(plan,guard,source.prior.runtime.desktop_inventory,c.sha);c.write(out/'runtime.json',identity)
     code_roots=[Path(sys.prefix),Path(sys.base_prefix),Path(os.environ.get('WINDIR','C:/Windows'))/'System32',Path(os.environ.get('WINDIR','C:/Windows'))/'Fonts']
-    library_files=runtime_reads(c.read(c.ROOT/'docs/research/S01/S01-E028/runtime_lock.json'))
-    source_files=[c.ROOT/f for f in c.read(c.DOC/'source_manifest.json')['files'] if f.startswith('scripts/') and f.endswith('.py')]
+    library_files=runtime_reads(c.read(c.ROOT/'docs/research/S01/S01-E028/runtime_lock.json')) if not c.linux(plan) else env.worker_runtime_reads(plan)
+    if c.linux(plan):
+        code_roots=[]
+        if args.role=='render':env.prepare_fonts(plan)
+        # All prefix/stdlib/font files are exact pinned files; only own statm is OS metadata.
+        library_files += [Path('/proc')/str(os.getpid())/'statm']
+    source_files=[c.ROOT/f for f in c.read(c.manifest_path(plan))['files'] if f.startswith('scripts/') and f.endswith('.py')]
     if os.environ['MPLCONFIGDIR']!=str(args.run/('_mplcache_'+name(args.role,args.fold))):raise PermissionError('own phase font cache only')
     caps=Files(local+extras+source_files+library_files,[out,Path(os.environ['MPLCONFIGDIR'])],code_roots);sys.addaudithook(caps.hook)
     stop=guard.watch()
@@ -138,6 +145,13 @@ def worker(args,plan,cfg,lock,paths,manifest_sha):
     finally:stop.set()
 
 
+def paths_for_spatial(paths):return [paths[k] for k in ['R002_scope','R002_projections','checkpoint','network']]
+
+def terminate_owned_linux(child,run,controller_pid):
+    import e029_linux_process as managed
+    managed.terminate_child(child,run,controller_pid)
+
+
 def terminate_owned(child,run,controller_pid):
     import psutil
     p=psutil.Process(child.pid)
@@ -153,14 +167,14 @@ def terminate_owned(child,run,controller_pid):
 
 
 def controller(args,plan,cfg,lock,paths,manifest_sha):
-    env=c.core.module('e029_environment_main',c.ROOT/'scripts/pavetrack_target_spatial/environment.py');env.production_environment(plan)
+    env=c.environment(plan);env.production_environment(plan)
     authority(c.read(args.approval_file),manifest_sha,args.reviewed_commit,plan)
-    if paths!=c.read(c.DOC/'private_paths.template.json'):raise ValueError('exact private input placement')
+    if paths!=c.read(c.paths_path(plan)):raise ValueError('exact private input placement')
     if args.run!=Path(plan['run_path']) or args.run.exists():raise PermissionError('fresh named run only')
     args.run.mkdir(parents=True,exist_ok=False);guard=Guard(plan,args.run,start=START);guard.note=args.run;done=[];counts=collections.Counter();active=[None];trusted={};cleanup_lock=threading.Lock()
     def cleanup():
         with cleanup_lock:
-            if active[0] is not None and active[0].poll() is None:terminate_owned(active[0],args.run,os.getpid())
+            if active[0] is not None and active[0].poll() is None:(terminate_owned_linux if c.linux(plan) else terminate_owned)(active[0],args.run,os.getpid())
             active[0]=None
     guard.on_fatal=cleanup;stop=guard.watch()
     try:
@@ -179,10 +193,10 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
             if role=='evaluate':verify_barrier(args.run,'prediction_freeze',trusted['prediction_freeze'])
             req=dict(role=role,fold=k,manifest=manifest_sha,run_id='S01-E029-R001',input_freezes={label:c.sha(args.run/(label+'.json')) for label in trusted});rp=args.run/(name(role,k)+'_request.json');c.write(rp,req);c.write(args.run/'control.json',dict(controller_pid=os.getpid(),expected=req))
             stdout=args.run/(name(role,k)+'.stdout.log');stderr=args.run/(name(role,k)+'.stderr.log')
-            cmd=[sys.executable,str(Path(__file__).resolve()),'--run',str(args.run),'--paths',str(args.paths),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',manifest_sha,'--role',role,'--request',str(rp)]
+            cmd=[sys.executable,str(Path(__file__).resolve()),'--run',str(args.run),'--paths',str(args.paths),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',manifest_sha,'--role',role,'--request',str(rp),'--profile',args.profile]
             if k is not None:cmd+=['--fold',str(k)]
             with stdout.open('wb') as so,stderr.open('wb') as se:
-                child=subprocess.Popen(cmd,stdout=so,stderr=se,env=dict(os.environ,MPLCONFIGDIR=str(args.run/('_mplcache_'+name(role,k)))));active[0]=child
+                child=subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=c.linux(plan),env=dict(os.environ,MPLCONFIGDIR=str(args.run/('_mplcache_'+name(role,k)))));active[0]=child
                 try:
                     while child.poll() is None:guard.check();time.sleep(.1)
                 except BaseException as exc:
@@ -221,10 +235,10 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
 def main():
     p=argparse.ArgumentParser()
     for key in ['run','paths','request','approval-file']:p.add_argument('--'+key,type=Path)
-    p.add_argument('--reviewed-commit',required=True);p.add_argument('--manifest-sha256',required=True);p.add_argument('--role',choices=[r for r,k in ORDER]);p.add_argument('--fold',type=int);args=p.parse_args()
-    plan,cfg=c.config()
+    p.add_argument('--profile',choices=['windows','taobo'],default='windows');p.add_argument('--reviewed-commit',required=True);p.add_argument('--manifest-sha256',required=True);p.add_argument('--role',choices=[r for r,k in ORDER]);p.add_argument('--fold',type=int);args=p.parse_args()
+    plan,cfg=c.config(args.profile)
     if plan['execution_enabled'] is not False:raise PermissionError('immutable package must remain disabled; exact external approval required')
-    lock=c.read(c.DOC/'data_lock.json');manifest=c.DOC/'source_manifest.json'
+    lock=c.read(c.DOC/'data_lock.json');manifest=c.manifest_path(plan)
     if c.sha(manifest)!=args.manifest_sha256:raise ValueError('exact source manifest')
     for f,h in c.read(manifest)['files'].items():c.checked(c.ROOT/f,h)
     paths=c.read(args.paths)

@@ -10,15 +10,16 @@ class Guard:
     def check(self):
         import psutil
         with self.lock:
-            p=psutil.Process();rss=0
-            for proc in [p,*p.children(recursive=True)]:
+            if hasattr(self,'expected_parent_pid') and os.getppid()!=self.expected_parent_pid:raise RuntimeError('owned controller disappeared')
+            p=getattr(self,'process',None) or psutil.Process();rss=0
+            for proc in ([p] if getattr(self,'self_only',False) else [p,*p.children(recursive=True)]):
                 try:info=proc.memory_info()
                 except psutil.NoSuchProcess:
                     if proc.pid==p.pid:raise
                     continue
                 rss+=getattr(info,'peak_wset',info.rss)
             self.peak=max(self.peak,rss);a,r=self.gpu();self.allocated=max(self.allocated,a);self.reserved=max(self.reserved,r);b=self.cfg['budget']
-            if time.monotonic()-self.start>b['wall_seconds']:raise TimeoutError('E029 global wall cap')
+            if b['wall_seconds'] is not None and time.monotonic()-self.start>b['wall_seconds']:raise TimeoutError('E029 global wall cap')
             if self.peak>b['RSS_bytes'] or self.allocated>b['GPU_allocated_bytes'] or self.reserved>b['GPU_reserved_bytes']:raise MemoryError('E029 memory cap')
             size=0
             for f in self.out.rglob('*'):
