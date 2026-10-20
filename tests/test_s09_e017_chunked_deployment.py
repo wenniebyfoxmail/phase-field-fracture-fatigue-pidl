@@ -3,8 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
+
+import s09_e017_chunked_deployment as deployment
 
 from s09_e017_chunked_deployment import (
     DeploymentStop,
@@ -189,6 +193,161 @@ def test_complete_store_publishes_original_bytes_atomically(tmp_path: Path) -> N
     assert result["archive_sha256"] == hashlib.sha256(payload).hexdigest()
     assert output.read_bytes() == payload
     assert not list(tmp_path.glob(".*.assembly-*.tmp"))
+
+
+def test_post_link_directory_fsync_failure_records_true_publication_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    payload, _, chunk_dir, manifest, _ = _fixture(tmp_path)
+    output = tmp_path / "published.tar.gz"
+    receipt = tmp_path / "receipt.json"
+    real_link = deployment.os.link
+    real_open = deployment.os.open
+    state = {"linked": False, "failed": False}
+
+    def tracking_link(source, destination):
+        real_link(source, destination)
+        if Path(destination) == output:
+            state["linked"] = True
+
+    def one_failure_open(path, flags):
+        if state["linked"] and not state["failed"] and Path(path) == output.parent:
+            state["failed"] = True
+            raise OSError("injected directory fsync open failure")
+        return real_open(path, flags)
+
+    monkeypatch.setattr(deployment.os, "link", tracking_link)
+    monkeypatch.setattr(deployment.os, "open", one_failure_open)
+    result = assemble_with_receipt(
+        manifest, chunk_dir, output, receipt, max_wall_seconds=30
+    )
+    assert result["terminal_state"] == "DEPLOYMENT_STOPPED_AFTER_PUBLICATION"
+    assert result["first_reason"] == "PUBLISH_DURABILITY_UNCONFIRMED"
+    assert result["published"] is True
+    assert result["output_exists"] is True
+    assert output.read_bytes() == payload
+    assert json.loads(receipt.read_text()) == result
+
+
+def test_success_receipt_failure_leaves_prepared_journal_and_fallback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    payload, _, chunk_dir, manifest, _ = _fixture(tmp_path)
+    output = tmp_path / "published.tar.gz"
+    receipt = tmp_path / "receipt.json"
+    real_publish = deployment._publish_bytes_no_replace
+    failed = {"value": False}
+
+    def fail_terminal_once(path: Path, data: bytes) -> None:
+        if path == receipt and not failed["value"]:
+            failed["value"] = True
+            raise OSError("injected terminal receipt failure")
+        real_publish(path, data)
+
+    monkeypatch.setattr(deployment, "_publish_bytes_no_replace", fail_terminal_once)
+    result = assemble_with_receipt(
+        manifest, chunk_dir, output, receipt, max_wall_seconds=30
+    )
+    assert result["terminal_state"] == "DEPLOYMENT_TERMINAL_RECEIPT_WRITE_FAILED"
+    assert result["published"] is True
+    assert output.read_bytes() == payload
+    assert receipt.with_name(f"{receipt.name}.attempt").exists()
+    assert receipt.with_name(f"{receipt.name}.prepared").exists()
+    assert receipt.with_name(f"{receipt.name}.failure").exists()
+
+
+def test_cli_stopped_assembly_returns_nonzero(tmp_path: Path) -> None:
+    _, _, chunk_dir, manifest, manifest_path = _fixture(tmp_path)
+    (chunk_dir / manifest["chunks"][0]["name"]).unlink()
+    output = tmp_path / "published.tar.gz"
+    receipt = tmp_path / "receipt.json"
+    cli = Path(__file__).resolve().parents[1] / "scripts/s09_e017_chunked_archive.py"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(cli),
+            "assemble",
+            "--manifest",
+            str(manifest_path),
+            "--manifest-sha256",
+            manifest_sha256(manifest),
+            "--chunk-dir",
+            str(chunk_dir),
+            "--output",
+            str(output),
+            "--receipt",
+            str(receipt),
+            "--max-wall-seconds",
+            "30",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 2
+    assert json.loads(completed.stdout)["first_reason"] == "CHUNK_MISSING"
+    assert not output.exists()
+
+
+def test_cli_inspect_success_without_terminal_state_returns_zero(
+    tmp_path: Path
+) -> None:
+    _, _, chunk_dir, manifest, manifest_path = _fixture(tmp_path)
+    cli = Path(__file__).resolve().parents[1] / "scripts/s09_e017_chunked_archive.py"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(cli),
+            "inspect-store",
+            "--manifest",
+            str(manifest_path),
+            "--manifest-sha256",
+            manifest_sha256(manifest),
+            "--chunk-dir",
+            str(chunk_dir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout)["complete"] is True
+
+
+def test_import_report_conflict_is_checked_before_chunk_mutation(
+    tmp_path: Path
+) -> None:
+    payload, _, _, manifest, manifest_path = _fixture(tmp_path)
+    legacy = tmp_path / "legacy.partial"
+    legacy.write_bytes(payload)
+    imported = tmp_path / "imported"
+    report = tmp_path / "import-report.json"
+    report.write_text("preserve", encoding="utf-8")
+    cli = Path(__file__).resolve().parents[1] / "scripts/s09_e017_chunked_archive.py"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(cli),
+            "import-legacy",
+            "--manifest",
+            str(manifest_path),
+            "--manifest-sha256",
+            manifest_sha256(manifest),
+            "--legacy-partial",
+            str(legacy),
+            "--chunk-dir",
+            str(imported),
+            "--report",
+            str(report),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 1
+    assert json.loads(completed.stderr)["first_reason"] == "REPORT_PATH_CONFLICT"
+    assert not imported.exists()
+    assert report.read_text() == "preserve"
 
 
 def test_receipt_is_write_once(tmp_path: Path) -> None:

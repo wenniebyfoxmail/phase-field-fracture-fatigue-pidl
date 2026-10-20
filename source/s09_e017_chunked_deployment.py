@@ -25,9 +25,12 @@ READ_SIZE = 1024 * 1024
 class DeploymentStop(RuntimeError):
     """A first-stop condition with a stable machine-readable reason."""
 
-    def __init__(self, first_reason: str, message: str) -> None:
+    def __init__(
+        self, first_reason: str, message: str, *, published: bool = False
+    ) -> None:
         super().__init__(message)
         self.first_reason = first_reason
+        self.published = published
 
 
 @dataclass(frozen=True)
@@ -105,6 +108,10 @@ def _publish_bytes_no_replace(path: Path, payload: bytes) -> None:
     finally:
         if temp.exists():
             temp.unlink()
+
+
+def require_new_path(path: Path, *, reason: str = "PATH_CONFLICT") -> None:
+    _require(not path.exists(), reason, f"refusing to replace {path}")
 
 
 def manifest_sha256(manifest: Mapping[str, Any]) -> str:
@@ -475,6 +482,7 @@ def assemble_archive(
     *,
     max_wall_seconds: float,
     monotonic: Callable[[], float] = time.monotonic,
+    before_publish: Callable[[Mapping[str, Any]], None] | None = None,
 ) -> AssemblyResult:
     validate_manifest(manifest)
     _require(max_wall_seconds > 0, "BUDGET_INVALID", "wall cap must be positive")
@@ -488,7 +496,6 @@ def assemble_archive(
     verified_chunks = 0
     bytes_written = 0
     digest = hashlib.sha256()
-    published = False
     try:
         with temp.open("xb") as stream:
             for chunk in manifest["chunks"]:
@@ -528,18 +535,36 @@ def assemble_archive(
             "ASSEMBLED_HASH_MISMATCH",
             "assembled archive SHA-256 mismatch",
         )
+        if before_publish is not None:
+            before_publish(
+                {
+                    "archive_bytes": bytes_written,
+                    "archive_sha256": archive_sha,
+                    "manifest_sha256": manifest_hash,
+                    "output": str(output),
+                    "verified_chunks": verified_chunks,
+                }
+            )
         try:
             os.link(temp, output)
         except FileExistsError as error:
             raise DeploymentStop(
-                "PUBLISH_PATH_CONFLICT", f"refusing to replace {output}"
+                "PUBLISH_PATH_CONFLICT",
+                f"refusing to replace {output}",
+                published=False,
             ) from error
-        published = True
-        directory_fd = os.open(output.parent, os.O_RDONLY)
         try:
-            os.fsync(directory_fd)
-        finally:
-            os.close(directory_fd)
+            directory_fd = os.open(output.parent, os.O_RDONLY)
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+        except OSError as error:
+            raise DeploymentStop(
+                "PUBLISH_DURABILITY_UNCONFIRMED",
+                f"archive linked but directory fsync failed: {error}",
+                published=True,
+            ) from error
         elapsed = monotonic() - start
         return AssemblyResult(
             output=output,
@@ -550,13 +575,12 @@ def assemble_archive(
         )
     finally:
         if temp.exists():
-            temp.unlink()
-        if not published:
-            _require(
-                not output.exists(),
-                "PUBLISH_PATH_CONFLICT",
-                "failed assembly exposed an output path",
-            )
+            try:
+                temp.unlink()
+            except OSError:
+                # The original stop remains authoritative. A stale hidden temp
+                # cannot be mistaken for the expected archive path.
+                pass
 
 
 def assemble_with_receipt(
@@ -568,12 +592,34 @@ def assemble_with_receipt(
     max_wall_seconds: float,
     monotonic: Callable[[], float] = time.monotonic,
 ) -> dict[str, Any]:
-    _require(
-        not receipt.exists(),
-        "RECEIPT_PATH_CONFLICT",
-        f"refusing to replace receipt {receipt}",
-    )
+    attempt_receipt = receipt.with_name(f"{receipt.name}.attempt")
+    prepared_receipt = receipt.with_name(f"{receipt.name}.prepared")
+    fallback_receipt = receipt.with_name(f"{receipt.name}.failure")
+    for path in (receipt, attempt_receipt, prepared_receipt, fallback_receipt):
+        require_new_path(path, reason="RECEIPT_PATH_CONFLICT")
     start = monotonic()
+    attempt = {
+        "schema_version": RECEIPT_SCHEMA,
+        "terminal_state": "DEPLOYMENT_ASSEMBLY_STARTED",
+        "manifest_sha256": manifest_sha256(manifest),
+        "output": str(output),
+        "published": False,
+    }
+    _publish_bytes_no_replace(attempt_receipt, canonical_json(attempt))
+
+    def record_prepared(details: Mapping[str, Any]) -> None:
+        prepared = {
+            "schema_version": RECEIPT_SCHEMA,
+            "terminal_state": "DEPLOYMENT_ARCHIVE_PREPARED",
+            "manifest_sha256": details["manifest_sha256"],
+            "output": details["output"],
+            "archive_bytes": details["archive_bytes"],
+            "archive_sha256": details["archive_sha256"],
+            "verified_chunks": details["verified_chunks"],
+            "published": False,
+        }
+        _publish_bytes_no_replace(prepared_receipt, canonical_json(prepared))
+
     try:
         result = assemble_archive(
             manifest,
@@ -581,18 +627,36 @@ def assemble_with_receipt(
             output,
             max_wall_seconds=max_wall_seconds,
             monotonic=monotonic,
+            before_publish=record_prepared,
         )
-    except DeploymentStop as error:
+    except (DeploymentStop, OSError) as error:
+        if isinstance(error, DeploymentStop):
+            first_reason = error.first_reason
+            published = error.published
+        else:
+            first_reason = "DEPLOYMENT_IO_ERROR"
+            published = False
         payload = {
             "schema_version": RECEIPT_SCHEMA,
-            "terminal_state": "DEPLOYMENT_STOPPED",
-            "first_reason": error.first_reason,
+            "terminal_state": (
+                "DEPLOYMENT_STOPPED_AFTER_PUBLICATION"
+                if published
+                else "DEPLOYMENT_STOPPED_BEFORE_PUBLICATION"
+            ),
+            "first_reason": first_reason,
             "message": str(error),
             "manifest_sha256": manifest_sha256(manifest),
-            "published": False,
+            "published": published,
+            "output_exists": output.exists(),
             "elapsed_seconds": monotonic() - start,
         }
-        _publish_bytes_no_replace(receipt, canonical_json(payload))
+        try:
+            _publish_bytes_no_replace(receipt, canonical_json(payload))
+        except (DeploymentStop, OSError) as receipt_error:
+            fallback = dict(payload)
+            fallback["terminal_state"] = "DEPLOYMENT_TERMINAL_RECEIPT_WRITE_FAILED"
+            fallback["terminal_receipt_error"] = str(receipt_error)
+            _publish_bytes_no_replace(fallback_receipt, canonical_json(fallback))
         return payload
     payload = {
         "schema_version": RECEIPT_SCHEMA,
@@ -606,5 +670,21 @@ def assemble_with_receipt(
         "verified_chunks": result.verified_chunks,
         "elapsed_seconds": result.elapsed_seconds,
     }
-    _publish_bytes_no_replace(receipt, canonical_json(payload))
+    try:
+        _publish_bytes_no_replace(receipt, canonical_json(payload))
+    except (DeploymentStop, OSError) as error:
+        fallback = {
+            "schema_version": RECEIPT_SCHEMA,
+            "terminal_state": "DEPLOYMENT_TERMINAL_RECEIPT_WRITE_FAILED",
+            "first_reason": "TERMINAL_RECEIPT_WRITE_FAILED",
+            "message": str(error),
+            "manifest_sha256": manifest_sha256(manifest),
+            "published": True,
+            "output_exists": output.exists(),
+            "archive_bytes": result.bytes_written,
+            "archive_sha256": result.sha256,
+            "elapsed_seconds": monotonic() - start,
+        }
+        _publish_bytes_no_replace(fallback_receipt, canonical_json(fallback))
+        return fallback
     return payload

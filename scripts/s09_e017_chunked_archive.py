@@ -20,6 +20,7 @@ from s09_e017_chunked_deployment import (  # noqa: E402
     inspect_chunk_store,
     load_manifest,
     manifest_sha256,
+    require_new_path,
     _publish_bytes_no_replace,
 )
 
@@ -71,6 +72,7 @@ def main() -> None:
 
     args = parser.parse_args()
     if args.command == "build":
+        require_new_path(args.manifest, reason="MANIFEST_PATH_CONFLICT")
         manifest = build_chunk_store(
             args.archive,
             args.chunk_dir,
@@ -87,6 +89,8 @@ def main() -> None:
             "archive_bytes": manifest["source"]["bytes"],
         }
     else:
+        if getattr(args, "report", None) is not None:
+            require_new_path(args.report, reason="REPORT_PATH_CONFLICT")
         manifest = load_manifest(args.manifest, expected_sha256=args.manifest_sha256)
         if args.command == "inspect-store":
             output = inspect_chunk_store(manifest, args.chunk_dir)
@@ -107,6 +111,11 @@ def main() -> None:
         if getattr(args, "report", None) is not None:
             _publish_bytes_no_replace(args.report, canonical_json(output))
     print(canonical_json(output).decode("utf-8"), end="")
+    terminal_state = output.get("terminal_state", "")
+    if terminal_state.startswith("DEPLOYMENT_STOPPED") or terminal_state == (
+        "DEPLOYMENT_TERMINAL_RECEIPT_WRITE_FAILED"
+    ):
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":
