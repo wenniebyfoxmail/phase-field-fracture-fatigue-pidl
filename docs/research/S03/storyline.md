@@ -932,3 +932,15 @@
   V1-V3/independent review/validator, B003numeric/real/held/C-D or frozen edits.
   D3: layout generation capability only; actual sidecar/wholeframe/colourbar
   and cross-view identity remain pending, no science/inversion acceptance.
+
+- **2026-10-20 — V002-L01 V1 accepted; first native UI action stopped review.**
+  Independent e019_d02_review, clean runtimec8e064f1, fixed protocol/CLI/manifest
+  matched. V1 once d7b860 exit0: ten-source/seven-output identity, approved
+  layout and new sidecar semantics passed. V2 open once812c15 exit0, but first
+  native zoom key returned server-10005/keyNotFound("-"); no NEW screenshot or
+  actual visual QA. NOT_REVIEWABLE for remaining display/finish, not science
+  failure. Continuous monotonic timer last before-call11.940338s; stop wall33.150s,
+  no retry/channel switch/V3/final cross-view hash. See
+  S03-E019/font_svg_v002_l01_evidence_review.md. V1/original structure/S01 gains
+  retained; fullframe/colourbar/JQ/window/zoom unverified. No frozen edits,
+  redraw/recompute/SVDQR/B003numeric/real/held/C-D. D3 stopped pending direction.
