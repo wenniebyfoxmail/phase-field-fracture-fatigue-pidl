@@ -54,7 +54,7 @@ def build(cfg):
     source_extract(cache/spec['python']['filename'],work/'src',spec['source_extract_limit_bytes']);src=work/'src/Python-3.12.14';target=str(prefix)
     run([str(src/'configure'),'--prefix='+target,'--with-ensurepip=install'],src);run(['make','-j1'],src);run(['make','install'],src)
     exe=prefix/'bin/python3.12'
-    run([str(exe),'-I','-m','pip','install','--no-index','--no-deps','--no-cache-dir',*[str(cache/r['filename']) for r in spec['wheels']]])
+    run([str(exe),'-I','-m','pip','install','--prefix='+target,'--disable-pip-version-check','--no-index','--no-deps','--no-cache-dir',*[str(cache/r['filename']) for r in spec['wheels']]])
     # Materialise only internal file symlinks so an exact runtime read inventory is sufficient.
     for p in sorted(prefix.rglob('*')):
         if p.is_symlink():
@@ -68,7 +68,12 @@ def build(cfg):
     return lock
 
 if __name__=='__main__':
+    sys.path.insert(0,str(Path(__file__).resolve().parent))
+    import e029_system_proc as proc
     cfg=json.loads((DOC/'taobo_run_config.json').read_text());lp=cfg['linux_paths'];approval=json.loads(Path(lp['approval']).read_text());claim=json.loads(Path(lp['launch_claim']).read_text())
     expected=dict(run_id='S01-E029-R001',reviewed_commit=claim['commit'],source_manifest_sha256=claim['manifest'],execute_once=True,wall_seconds=None,GPU_uuid=cfg['producer']['gpu_uuid'])
-    if approval!=expected or type(approval.get('execute_once')) is not bool or approval.get('wall_seconds') is not None or claim['approval_sha256']!=sha(Path(lp['approval'])) or os.getppid()!=claim['pid']:raise PermissionError('bootstrap only in exact approved wrapper lifecycle')
+    parent=proc.Process(os.getppid())
+    if parent.ppid()!=claim['pid'] or parent.create_time()!=int(os.environ.get('E029_PARENT_BIRTH','-1')) or proc.Process(claim['pid']).create_time()!=claim['wrapper_birth']:raise PermissionError('bootstrap lifeline/wrapper birth chain')
+    if os.getppid()==claim['pid']:raise PermissionError('bootstrap requires independent stage lifeline')
+    if approval!=expected or type(approval.get('execute_once')) is not bool or approval.get('wall_seconds') is not None or claim['approval_sha256']!=sha(Path(lp['approval'])) or os.getppid()!=int(os.environ.get('E029_PARENT_PID','-1')):raise PermissionError('bootstrap only in exact approved wrapper lifecycle')
     build(cfg)

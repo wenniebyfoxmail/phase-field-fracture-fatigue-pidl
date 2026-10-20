@@ -171,20 +171,23 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
     authority(c.read(args.approval_file),manifest_sha,args.reviewed_commit,plan)
     if paths!=c.read(c.paths_path(plan)):raise ValueError('exact private input placement')
     if args.run!=Path(plan['run_path']) or args.run.exists():raise PermissionError('fresh named run only')
-    args.run.mkdir(parents=True,exist_ok=False);guard=Guard(plan,args.run,start=START);guard.note=args.run;done=[];counts=collections.Counter();active=[None];trusted={};cleanup_lock=threading.Lock()
+    args.run.mkdir(parents=True,exist_ok=False);guard=Guard(plan,args.run,start=START);guard.note=args.run;
+    if c.linux(plan):guard.expected_parent_pid=int(os.environ['E029_PARENT_PID'])
+    done=[];counts=collections.Counter();active=[None];trusted={};cleanup_lock=threading.Lock()
     def cleanup():
         with cleanup_lock:
             if active[0] is not None and active[0].poll() is None:(terminate_owned_linux if c.linux(plan) else terminate_owned)(active[0],args.run,os.getpid())
             active[0]=None
     guard.on_fatal=cleanup;stop=guard.watch()
     try:
-        c.write(args.run/'launch.json',dict(reviewed_commit=args.reviewed_commit,source_manifest_sha256=manifest_sha,paths_sha256=c.sha(args.paths),approval_sha256=c.sha(args.approval_file),approval_value=c.read(args.approval_file),pid=os.getpid(),command=sys.argv,producer=plan['producer'],execution_enabled_in_package=False))
+        c.write(args.run/'launch.json',dict(reviewed_commit=args.reviewed_commit,source_manifest_sha256=manifest_sha,paths_sha256=c.sha(args.paths),approval_sha256=c.sha(args.approval_file),approval_value=c.read(args.approval_file),pid=os.getpid(),command=sys.argv,producer=plan['producer'],execution_enabled_in_package=False,runtime_lock_sha256=args.runtime_lock_sha256))
         for key,rec in lock['input_files'].items():
             p=Path(paths[key]);guard.check()
             if rec['bytes'] is not None and p.stat().st_size!=rec['bytes']:raise ValueError('input bytes '+key)
             if p.stat().st_size>256*1024**2:raise ValueError('single input cap '+key)
             c.checked(p,rec['sha256'])
         for role,k in ORDER:
+            if c.linux(plan):c.checked(plan['linux_paths']['runtime_lock'],args.runtime_lock_sha256)
             transition(done,role,k)
             for label,value in trusted.items():verify_barrier(args.run,label,value)
             if role=='fit':
@@ -195,8 +198,11 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
             stdout=args.run/(name(role,k)+'.stdout.log');stderr=args.run/(name(role,k)+'.stderr.log')
             cmd=[sys.executable,str(Path(__file__).resolve()),'--run',str(args.run),'--paths',str(args.paths),'--reviewed-commit',args.reviewed_commit,'--manifest-sha256',manifest_sha,'--role',role,'--request',str(rp),'--profile',args.profile]
             if k is not None:cmd+=['--fold',str(k)]
+            if c.linux(plan):
+                cmd+=['--runtime-lock-sha256',args.runtime_lock_sha256]
+                cmd=['/usr/bin/python3','-I',str(Path(__file__).with_name('e029_runtime_exec.py')),'--lock',plan['linux_paths']['runtime_lock'],'--expected-sha256',args.runtime_lock_sha256,'--',*cmd]
             with stdout.open('wb') as so,stderr.open('wb') as se:
-                child=subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=c.linux(plan),env=dict(os.environ,MPLCONFIGDIR=str(args.run/('_mplcache_'+name(role,k)))));active[0]=child
+                child=subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=False,env=dict(os.environ,MPLCONFIGDIR=str(args.run/('_mplcache_'+name(role,k))),**(dict(E029_PARENT_PID=str(os.getpid())) if c.linux(plan) else {})));active[0]=child
                 try:
                     while child.poll() is None:guard.check();time.sleep(.1)
                 except BaseException as exc:
@@ -235,12 +241,15 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
 def main():
     p=argparse.ArgumentParser()
     for key in ['run','paths','request','approval-file']:p.add_argument('--'+key,type=Path)
-    p.add_argument('--profile',choices=['windows','taobo'],default='windows');p.add_argument('--reviewed-commit',required=True);p.add_argument('--manifest-sha256',required=True);p.add_argument('--role',choices=[r for r,k in ORDER]);p.add_argument('--fold',type=int);args=p.parse_args()
+    p.add_argument('--runtime-lock-sha256');p.add_argument('--profile',choices=['windows','taobo'],default='windows');p.add_argument('--reviewed-commit',required=True);p.add_argument('--manifest-sha256',required=True);p.add_argument('--role',choices=[r for r,k in ORDER]);p.add_argument('--fold',type=int);args=p.parse_args()
     plan,cfg=c.config(args.profile)
     if plan['execution_enabled'] is not False:raise PermissionError('immutable package must remain disabled; exact external approval required')
     lock=c.read(c.DOC/'data_lock.json');manifest=c.manifest_path(plan)
     if c.sha(manifest)!=args.manifest_sha256:raise ValueError('exact source manifest')
     for f,h in c.read(manifest)['files'].items():c.checked(c.ROOT/f,h)
+    if c.linux(plan):
+        if args.runtime_lock_sha256 is None or os.environ.get('E029_RUNTIME_LOCK_SHA256')!=args.runtime_lock_sha256:raise PermissionError('system-verified runtime exec required')
+        c.checked(plan['linux_paths']['runtime_lock'],args.runtime_lock_sha256)
     paths=c.read(args.paths)
     if args.role:worker(args,plan,cfg,lock,paths,args.manifest_sha256)
     else:

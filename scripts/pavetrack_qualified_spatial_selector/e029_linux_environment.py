@@ -34,8 +34,11 @@ def worker_runtime_reads(cfg):
     return [root/rel for rel in lock['files']]
 
 def admission(cfg,psutil_module=None):
-    import psutil
-    ps=psutil if psutil_module is None else psutil_module;p=cfg['producer'];a=cfg['admission']
+    if psutil_module is None:
+        import psutil
+        ps=psutil
+    else:ps=psutil_module
+    p=cfg['producer'];a=cfg['admission']
     rows=[line.split(',') for line in command(['nvidia-smi','--query-gpu=index,uuid,name,memory.free,utilization.gpu','--format=csv,noheader,nounits']).splitlines()]
     rows=[[s.strip() for s in row] for row in rows];match=[r for r in rows if r[0]==str(p['gpu_physical_index'])]
     if len(match)!=1:raise ValueError('selected card missing')
