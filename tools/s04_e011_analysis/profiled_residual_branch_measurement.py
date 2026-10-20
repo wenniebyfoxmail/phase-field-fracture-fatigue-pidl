@@ -42,12 +42,26 @@ def persist_arm_result(archive,label,row,writer):
     writer(Path(archive)/(label+'_result.json'),row)
 
 
+class LinearJournal:
+    """Immutable begin/end receipts; finally index survives partial completion."""
+    def __init__(self,archive,writer):self.archive=Path(archive);self.writer=writer;self.started=[];self.finished=[]
+    def begin(self,role):
+        key=f'{len(self.started)+1:04d}';self.started.append(key)
+        self.writer(self.archive/('linear_'+key+'_start.json'),dict(id=key,role=role))
+        return key
+    def finish(self,key,summary):
+        self.writer(self.archive/('linear_'+key+'_end.json'),dict(id=key,**summary));self.finished.append(key)
+    def index(self,error):
+        self.writer(self.archive/'linear_solve_index.json',dict(started=self.started,finished=self.finished,
+            incomplete=[k for k in self.started if k not in self.finished],primary_error=error))
+
+
 class Meter:
-    def __init__(self,guard):self.guard=guard
+    def __init__(self,guard,combined=500):self.guard=guard;self.combined=combined
     def action(self,kind):
         self.guard.charge(kind)
-        if kind in ['energy_force_field','native_tangent']:
-            if self.guard.counts.get('energy_force_field',0)+self.guard.counts.get('native_tangent',0)>500:self.guard.stop('combined_field_K_500')
+        if kind in ['energy_force_field','native_tangent','frozen_tangent']:
+            if sum(self.guard.counts.get(k,0) for k in ['energy_force_field','native_tangent','frozen_tangent'])>self.combined:self.guard.stop(f'combined_field_K_{self.combined}')
 
 
 def _run(card,root,archive,reporter,started,context):
@@ -70,7 +84,27 @@ def _run(card,root,archive,reporter,started,context):
         CPU_affinity=sorted(os.sched_getaffinity(0)),RLIMIT_AS=resource.getrlimit(resource.RLIMIT_AS),AS_inherited_unchanged=True))
     reporter.cuda=lambda:(torch.cuda.max_memory_allocated(0),torch.cuda.max_memory_reserved(0))
     caps={k:v for k,v in card['work_caps'].items() if v>0}
-    guard=Guard(caps,600.,memory=reporter.ratio,max_bytes=1.);guard.start=started;meter=Meter(guard);context['guard']=guard
+    completion=card.get('mode')=='frozen_completion_only'
+    guard=Guard(caps,float(card['measurement_seconds']),memory=reporter.ratio,max_bytes=1.);guard.start=started
+    meter=Meter(guard,250 if completion else 500);context['guard']=guard;context['journal']=LinearJournal(archive,atomic_json)
+    if completion:
+        verified=[]
+        from profiled_hidden_e011_runtime import binding
+        for item in card['reuse_bindings']:
+            guard.check();actual_item=binding(item['source'])
+            if actual_item['sha256']!=item['sha256'] or actual_item['bytes']!=item['bytes']:raise RuntimeError('old_cache_binding_mismatch_'+item['role'])
+            verified.append(dict(role=item['role'],**actual_item))
+        reuse={x['role']:Path(x['source']) for x in card['reuse_bindings']}
+        for item in card['operator_bindings']:
+            got=binding(root/'code'/item['path'])
+            if got['sha256']!=item['sha256'] or got['bytes']!=item['bytes']:raise RuntimeError('operator_version_not_same_'+item['path'])
+        atomic_json(archive/'native_reuse_inventory.json',[x for x in verified if x['role'].startswith('native:')])
+        atomic_json(archive/'reuse_hash_verification.json',verified)
+        for scope_role in ['old_native_source_card','energy_reference_card']:
+            old_scope=json.loads(reuse[scope_role].read_text())
+            if [(x['role'],x['bytes'],x['sha256']) for x in old_scope['input_bindings']]!=[(x['role'],x['bytes'],x['sha256']) for x in card['input_bindings']]:raise RuntimeError('old_source_state_scope_mismatch_'+scope_role)
+        old_runtime=json.loads(reuse['old_runtime'].read_text())
+        if torch.__version__!=old_runtime['torch'] or np.__version__!=old_runtime['numpy']:raise RuntimeError('cache_runtime_version_mismatch')
     inputs=root/'inputs';inputs.mkdir();paths={r['role']:r['source'] for r in card['input_bindings']}
     atomic_json(archive/'source_assets.json',verify_source_assets(card,paths,guard))
     # Only existing remote inputs are reused. Keep each immutable source binding.
@@ -96,6 +130,9 @@ def _run(card,root,archive,reporter,started,context):
         if np.asarray(array).dtype.kind in 'fc' and not np.isfinite(array).all():raise RuntimeError('nonfinite_saved_'+name)
         with path.open('xb') as stream:np.save(stream,array,allow_pickle=False)
     save('direction',v);save('scales',bridge.scales);save('free_dofs',p.fu);save('transform',bridge.T)
+    if completion:
+        for role,value in [('direction',v),('scales',bridge.scales.cpu().numpy()),('free_dofs',p.fu.cpu().numpy()),('transform',bridge.T.cpu().numpy())]:
+            if not np.array_equal(np.load(reuse[role],allow_pickle=False),value):raise RuntimeError('common_'+role+'_not_exact')
     cache={}
     # Exactly three cache captures. startup raw0 is reused for source design.
     for label,step in [('source',0.),('plus',h),('minus',-h)]:
@@ -106,7 +143,15 @@ def _run(card,root,archive,reporter,started,context):
             rawhead=f@bridge.head[:,:-1].T+bridge.head[:,-1]
             u=(bridge.bubble*rawhead[:,0]+(p.x[:,-1]-bridge.y0)/(bridge.yL-bridge.y0)*torch.cos(bridge.angle))*bridge.load
             vv=(bridge.bubble*rawhead[:,1]+(p.x[:,-1]-bridge.y0)/(bridge.yL-bridge.y0)*torch.sin(bridge.angle))*bridge.load
-            q=torch.cat((u,vv));cache[label]=(phi,q)
+            q=torch.cat((u,vv))
+            if completion:
+                oldphi=torch.as_tensor(np.load(reuse[label+'_phi'],allow_pickle=False),device=device)
+                oldq=torch.as_tensor(np.load(reuse[label+'_qraw'],allow_pickle=False),device=device)
+                same=dict(phi=torch.equal(phi,oldphi),qraw=torch.equal(q,oldq))
+                atomic_json(archive/(label+'_derived_cache_identity.json'),same)
+                if not all(same.values()):raise RuntimeError('derived_cache_not_bit_exact_'+label)
+                phi,q=oldphi,oldq
+            cache[label]=(phi,q)
             save('shared/'+label+'_phi',phi);save('shared/'+label+'_qraw',q)
             del f,design,rawhead,u,vv
     bridge.capture_source=False;del bridge.captured_source_features
@@ -117,6 +162,9 @@ def _run(card,root,archive,reporter,started,context):
         if bool((tr0==0).any()):raise RuntimeError('source_zero_trace')
         dg=torch.einsum('gi,ei->eg',p.N,p.df[p.cells]);degrade=p.model.Edegrade(dg)[0]
     save('shared/source_trace_sign',torch.sign(tr0).to(torch.int8))
+    if completion:
+        if not np.array_equal(np.load(reuse['source_trace'],allow_pickle=False),torch.sign(tr0).to(torch.int8).cpu().numpy()):raise RuntimeError('source_branch_labels_not_exact')
+        if not np.array_equal(np.load(reuse['old_native_q0'],allow_pickle=False),q0[free].cpu().numpy()):raise RuntimeError('native_energy_reference_q0_not_exact')
     source_fields=dict(np.load(paths['source_fields'],allow_pickle=False))
     source_full=np.concatenate((source_fields['u'],source_fields['v']))
     source_error=float(np.max(abs(q0.cpu().numpy()-source_full)))
@@ -136,6 +184,7 @@ def _run(card,root,archive,reporter,started,context):
         energy=(p.w*(.5*bulk*coefficient*tr.square()+p.mat.mat_mu*degrade*dev)).sum()
         return energy,energy*0,energy*0
     def energy(q,branch):
+        if completion and branch!='frozen':raise RuntimeError('native_recomputation_forbidden')
         meter.action('energy_force_field')
         return (native_parts if branch=='native' else frozen_parts)(q[:n],q[n:],p.df)[0]
     def trace(q):
@@ -155,20 +204,25 @@ def _run(card,root,archive,reporter,started,context):
                     guard.check();en=min(st+1024,len(p.cells));local=phi[p.cells[st:en]];grad=torch.einsum('egki,eir->egkr',p.B[st:en],local)
                     self.gx[4*st:4*en]=grad[:,:,0].reshape(-1,r);self.gy[4*st:4*en]=grad[:,:,1].reshape(-1,r)
         def matrix(self,q,branch):
+            if completion and branch!='frozen':raise RuntimeError('native_assembly_forbidden')
             meter.action('head_assembly')
             tr=trace(q) if branch=='native' else tr0
             H,asym=assemble_blocks(self.gx,self.gy,p.w.reshape(-1),degrade.reshape(-1),tr.reshape(-1))
             if not torch.isfinite(H).all():raise RuntimeError('nonfinite_H')
             return H
-    solve_log=[]
+    solve_log=[];journal=context['journal']
     def factor(H):
         meter.action('head_factor');L,info=torch.linalg.cholesky_ex(H,check_errors=False)
         if int(info):raise RuntimeError('head_not_SPD')
         return L
     def solve(H,L,rhs):
         meter.action('head_triangular_solve');meter.action('head_triangular_solve')
+        key=journal.begin('head_vector_solve')
+        for name,value in [('H',H),('factor',L),('rhs',rhs)]:save('linear/'+key+'_'+name,value)
         x=torch.cholesky_solve(rhs[:,None],L).squeeze(1)
         res=H@x-rhs;rel=float(torch.linalg.vector_norm(res)/max(float(torch.linalg.vector_norm(rhs)),np.finfo(float).tiny))
+        for name,value in [('solution',x),('residual',res)]:save('linear/'+key+'_'+name,value)
+        journal.finish(key,dict(relative_residual=rel,rhs_L2=float(torch.linalg.vector_norm(rhs)),solution_L2=float(torch.linalg.vector_norm(x))))
         if not torch.isfinite(x).all() or rel>1e-6:raise RuntimeError('linear_solve_failure')
         solve_log.append(dict(relative_residual=rel,rhs_L2=float(torch.linalg.vector_norm(rhs)),solution_L2=float(torch.linalg.vector_norm(x))))
         return x
@@ -199,15 +253,19 @@ def _run(card,root,archive,reporter,started,context):
             target_is_physical_zero=bool((target==0).all()),physical_gradient_inf=float((last['defect']+target).abs().max()),target_defect_inf=float(last['defect'].abs().max())))
         return last
     results=[];source_data={};endpoint_data={};native_source_reference=None
-    for branch in ['native','frozen']:
+    for branch in (['frozen'] if completion else ['native','frozen']):
         phi,qraw=cache['source'];basis=Basis(phi)
         qleaf=qraw.detach().clone().requires_grad_(True);e=energy(qleaf,branch);R=torch.autograd.grad(e,qleaf)[0].detach();g0=project(phi,R).detach()
         save(branch+'/g0',g0);save(branch+'/R0',R)
         if branch=='native':native_source_reference=(float(e.detach()),R.detach().cpu().numpy())
         else:
+            if completion:
+                old_ref=json.loads(reuse['old_native_energy'].read_text())
+                native_source_reference=(old_ref['E'],np.load(reuse['native_R0'],allow_pickle=False))
             errs=dict(energy_abs=abs(float(e.detach())-native_source_reference[0]),force_maxabs=float(np.max(abs(R.detach().cpu().numpy()-native_source_reference[1]))))
+            if completion:errs['same_coordinate_g0_maxabs']=float(np.max(abs(g0.cpu().numpy()-np.load(reuse['native_g0'],allow_pickle=False))))
             atomic_json(archive/'frozen_source_equivalence.json',errs)
-            if errs['energy_abs']>1e-12 or errs['force_maxabs']>1e-10:raise RuntimeError('frozen_source_E_R_mismatch')
+            if errs['energy_abs']>1e-12 or errs['force_maxabs']>1e-10 or errs.get('same_coordinate_g0_maxabs',0)>1e-10:raise RuntimeError('frozen_source_E_R_mismatch')
         for kind in ['constant','zero']:
             label=branch+'_'+kind;target=g0.clone() if kind=='constant' else torch.zeros_like(g0)
             src=newton(phi,qraw,target,branch,basis,torch.zeros(heads,device=device,dtype=torch.float64),label+'_source')
@@ -239,7 +297,7 @@ def _run(card,root,archive,reporter,started,context):
             if anchor_error>1e-12:raise RuntimeError('source_AD_primal_mismatch')
             J=J.detach();del anchor_value
             qleaf=src['q'].detach().clone().requires_grad_(True);e=energy(qleaf,branch);R=torch.autograd.grad(e,qleaf,create_graph=True)[0]
-            meter.action('native_tangent');KJ=torch.autograd.grad(R,qleaf,grad_outputs=J)[0].detach()
+            meter.action('frozen_tangent' if completion else 'native_tangent');KJ=torch.autograd.grad(R,qleaf,grad_outputs=J)[0].detach()
             Rdet=R.detach()
             meter.action('hidden_jvp')
             C=torch.autograd.functional.jvp(lambda xi:project(bridge.moving_phi(xi),Rdet),bridge.zero,torch.as_tensor(v,device=device),strict=True)[1].detach()
@@ -262,7 +320,12 @@ def _run(card,root,archive,reporter,started,context):
                 save(label+'/'+side+'_linear_defect_field',field_correction)
                 # Inverse of stored H with residual enclosure, no SVD.
                 meter.action('head_triangular_solve');meter.action('head_triangular_solve')
-                inv=torch.cholesky_solve(torch.eye(heads,device=device,dtype=torch.float64),LL)
+                ikey=journal.begin('head_inverse_columns')
+                identity=torch.eye(heads,device=device,dtype=torch.float64)
+                for name,value in [('H',HH),('factor',LL),('rhs',identity)]:save('linear/'+ikey+'_'+name,value)
+                inv=torch.cholesky_solve(identity,LL);inverse_residual=HH@inv-identity
+                save('linear/'+ikey+'_solution',inv);save('linear/'+ikey+'_residual',inverse_residual)
+                journal.finish(ikey,dict(residual_inf=float(inverse_residual.abs().sum(1).max())))
                 hb=inverse_bound(HH.cpu().numpy(),inv.cpu().numpy())
                 # B Gram in free coordinates, no mass weighting.
                 meter.action('explicit_head_products');mask=torch.zeros(2*n,device=device,dtype=torch.float64);mask[free]=1
@@ -278,7 +341,7 @@ def _run(card,root,archive,reporter,started,context):
                 estimate=None if amplification is None else amplification*float(torch.linalg.vector_norm(direct.abs()+proj_round))
                 hb.update(B_norm2_upper=bnorm,local_defect_field_L2=float(torch.linalg.vector_norm(field_correction)),linear_forward_upper_conditional_saved_R=estimate,
                     nodal_force_arithmetic_bound_available=False,native_global_strong_convexity_bound_available=False,
-                    full_forward_bound_trusted=False,reason='Stored-matrix/Gram enclosures only. Native force arithmetic and nonlinear path strong-convexity bounds not established; never use as full certificate.')
+                    full_forward_bound_trusted=False,quadratic_control=bool(completion),reason=('Frozen quadratic control: stored-matrix/Gram bounds only; force and assembly arithmetic enclosures incomplete.' if completion else 'Stored-matrix/Gram enclosures only. Native force arithmetic and nonlinear path strong-convexity bounds not established; never use as full certificate.'))
                 atomic_json(archive/(label+'_'+side+'_forward.json'),hb)
                 endpoint_data[label,side]=dict(q=last['q'][free].cpu().numpy(),local=float(torch.linalg.vector_norm(field_correction)),bound=estimate,trusted=False)
                 del qleaf,ee,force,HH,LL,correction,field_correction,inv,gram_u,gram_v,gram_abs_u,gram_abs_v,projabs,proj_round,last
@@ -296,9 +359,9 @@ def _run(card,root,archive,reporter,started,context):
     for name,value in physical.items():
         if not torch.equal(getattr(p,name),value):raise RuntimeError('physical_state_changed')
     atomic_json(archive/'linear_solve_records.json',solve_log)
-    result=dict(status='FOUR_ARM_COMPLETE_NO_OPTIMIZATION',arms=results,counts=dict(guard.counts,svd=0),scientific_elapsed_seconds=time.monotonic()-started,
+    result=dict(status='FROZEN_PAIR_COMPLETE_NO_OPTIMIZATION' if completion else 'FOUR_ARM_COMPLETE_NO_OPTIMIZATION',arms=results,counts=dict(guard.counts,svd=0),scientific_elapsed_seconds=time.monotonic()-started,
         original_head_limit=1e-10,internal_head_tol=internal,FD_abs=1e-10,FD_rel=1e-4,h=h,source_identity=source_id,rank=r,
-        original_boundary_fixed=True,source_restored=True,all_arms_are_chart_controls=True,optimization_updates=0,history_commits=0,rollout=0,
+        reused_native_run=card.get('reused_native_run'),original_boundary_fixed=True,source_restored=True,all_arms_are_chart_controls=True,optimization_updates=0,history_commits=0,rollout=0,
         full_forward_bound_trusted=False,causal_decision='unresolved_without_full_forward_error_control')
     atomic_json(archive/'measurement_result.json',result);return result
 
@@ -322,6 +385,13 @@ def run(card,root,archive,reporter,started):
             primary_error=None if primary is None else dict(type=type(primary).__name__,message=str(primary)),
             counts=dict(context['guard'].counts,svd=0) if 'guard' in context else {},
             elapsed_seconds=time.monotonic()-started,optimization_updates=0,history_commits=0,rollout=0)
+        if 'journal' in context:
+            try:context['journal'].index(row['primary_error'] or state_error)
+            except BaseException as err:
+                earlier=primary if primary is not None else state_exception
+                if earlier is not None:note_record_failure(earlier,err)
+                else:state_exception=err
+                row['completed']=False;row['linear_index_error']=dict(type=type(err).__name__,message=str(err))
         try:atomic_json(archive/'measurement_terminal.json',row)
         except BaseException as err:
             earlier=primary if primary is not None else state_exception

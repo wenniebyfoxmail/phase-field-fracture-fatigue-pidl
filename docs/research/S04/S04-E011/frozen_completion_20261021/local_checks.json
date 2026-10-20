@@ -1,0 +1,8 @@
+{
+  "extended_lifecycle_fixture": 1,
+  "passed": 1,
+  "wall_reported_seconds": 0.015,
+  "scope": "exclusive writer success and midway-exception finally index only",
+  "old_tests_repeated": false,
+  "producer_or_physics_evaluations": 0
+}

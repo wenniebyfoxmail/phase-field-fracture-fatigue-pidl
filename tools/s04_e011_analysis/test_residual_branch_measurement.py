@@ -1,7 +1,7 @@
 """New four-arm algebra/control fixtures only; no project model or physics."""
 import unittest
 import numpy as np
-from profiled_residual_branch_measurement import residual_target,comparison,inverse_bound,Meter,persist_arm_result
+from profiled_residual_branch_measurement import residual_target,comparison,inverse_bound,Meter,persist_arm_result,LinearJournal
 
 
 class FourArmFixtures(unittest.TestCase):
@@ -49,6 +49,20 @@ class FourArmFixtures(unittest.TestCase):
             with self.assertRaises(FileExistsError):persist_arm_result(folder,'native_constant',{'arm':99},atomic_json)
             self.assertEqual(json.loads((Path(folder)/'native_constant_result.json').read_text()),{'arm':1})
             self.assertFalse((Path(folder)/'partial_results.json').exists())
+            journal=LinearJournal(folder,atomic_json)
+            k=journal.begin('first');journal.finish(k,{'ok':True});k=journal.begin('second');journal.finish(k,{'ok':True});journal.index(None)
+            self.assertEqual(json.loads((Path(folder)/'linear_solve_index.json').read_text())['incomplete'],[])
+        with tempfile.TemporaryDirectory() as folder:
+            journal=LinearJournal(folder,atomic_json);error=None
+            try:
+                k=journal.begin('first');journal.finish(k,{'ok':True});journal.begin('second')
+                raise RuntimeError('injected_mid_solve')
+            except RuntimeError as exc:error=str(exc)
+            finally:journal.index(error)
+            index=json.loads((Path(folder)/'linear_solve_index.json').read_text())
+            self.assertEqual(index['incomplete'],['0002']);self.assertEqual(index['primary_error'],'injected_mid_solve')
+            self.assertTrue((Path(folder)/'linear_0001_end.json').exists());self.assertTrue((Path(folder)/'linear_0002_start.json').exists())
+
     def test_combined_K_and_field_cap(self):
         class Guard:
             counts={'energy_force_field':499,'native_tangent':1}
