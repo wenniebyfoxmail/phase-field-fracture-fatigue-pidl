@@ -2,9 +2,9 @@ param([Parameter(Mandatory=$true)][string]$Config)
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
 $c=Get-Content -LiteralPath $Config -Raw | ConvertFrom-Json
-$limitSeconds=14400
+$limitSeconds=7200
 if ($null -ne $c.timeout_seconds) { $limitSeconds=[double]$c.timeout_seconds }
-if ($limitSeconds -le 0 -or $limitSeconds -gt 14400) { throw 'Invalid bounded timeout' }
+if ($limitSeconds -le 0 -or $limitSeconds -gt 7200) { throw 'Invalid bounded timeout' }
 $totalEnd=[DateTime]::Parse($c.total_deadline_utc).ToUniversalTime()
 $limitSeconds=[Math]::Min($limitSeconds,($totalEnd.AddSeconds(-600)-[DateTime]::UtcNow).TotalSeconds)
 if ($limitSeconds -le 0) { throw 'No science budget after retrieval reserve' }

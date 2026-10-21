@@ -23,7 +23,11 @@ o=opts;o.check=@budget_fail;
 assert(~r.ok && strcmp(r.identifier,'FIXTURE:Budget') && r.evaluations==0);
 calls=0;[u,c,r]=bounded_mechanical_newton(@nonfinite_trial,@(K,b)K\b,0,1,opts);
 assert(~r.ok && strcmp(r.identifier,'SHEAR:Nonfinite') && calls==2 && u==0 && c.R==-1);
-fprintf('BOUNDED_NEWTON_FIXTURES_PASS count=8; no FEM/model/training executed.\n');
+[~,~,r]=bounded_mechanical_newton(@huge_merit,@never_solve,0,1,opts);
+assert(~r.ok && contains(r.message,'Nonfinite residual merit') && r.evaluations==1);
+calls=0;[u,c,r]=bounded_mechanical_newton(@huge_trial,@(K,b)K\b,0,1,opts);
+assert(~r.ok && contains(r.message,'Nonfinite trial merit') && calls==2 && u==0 && c.R==-1 && r.trials==1);
+fprintf('BOUNDED_NEWTON_FIXTURES_PASS count=10; no FEM/model/training executed.\n');
     function collect(e),events{end+1}=e;end
     function c=linear(u),K=diag([2,1]);c=pack(u,K,[2*u(1)-2;u(2)-9],u(1));end
     function c=wrong_tangent(u),c=pack(u,-1,u-1,u);end
@@ -34,6 +38,10 @@ fprintf('BOUNDED_NEWTON_FIXTURES_PASS count=8; no FEM/model/training executed.\n
     end
     function c=nonfinite_trial(u)
         calls=calls+1;c=pack(u,1,u-1,u);if calls>1,c.R=NaN;c.force=NaN;end
+    end
+    function c=huge_merit(u),c=pack(u,1,1e200,0);end
+    function c=huge_trial(u)
+        calls=calls+1;c=pack(u,1,u-1,0);if calls>1,c.R=1e200;c.force=1e200;end
     end
     function p=never_solve(~,~),error('FIXTURE:UnexpectedSolve','Should not solve');p=[];end %#ok<UNRCH>
     function budget_fail(),error('FIXTURE:Budget','Step budget fixture');end
