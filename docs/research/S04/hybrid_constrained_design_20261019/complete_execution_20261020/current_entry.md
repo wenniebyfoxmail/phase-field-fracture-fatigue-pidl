@@ -1,4 +1,4 @@
-> D18新前瞻授权联合(u,d)投影/有限信任半径工作全局化，一次原train_A600，4h自00:23:42Z、首失败停；现实现与原独立复核中，尚未运行。[方案](../solver_repair_v9/plan.md)。D17及更早终态不变。
+> D18终态：R006单次1/600、case160.748秒，第2步8方向后首停；联合Phi下降但原force仍1639倍门，半径限制的小步未达平衡。完整162文件全核/4PID全退，无重试/训练。收束有限Newton-ray，下一全局化承重缺项仅列出、无R007授权。[结果](../solver_repair_v9/result.md)／[elapsed](../solver_repair_v9/step_elapsed_times.csv)／[复核](../solver_repair_v9/evidence_review.json)。
 
 > D17终态（英国2026-10-21 00:49）：R5单次train_A1/600、首步31.843秒、case205.137秒；三次块方向双行真残差通过，但第三方向投影全步触发新未接受候选的原机械pivot保护。全量159文件/75.154MB核验、4进程全退，无重试。重建发现50个全nodal-d1单元/32自由DOF的近零刚度局部，非旧接受态奇异或全模型无解。下一仅联合投影/信任域全局化设计，完整轨迹/NN收益未取得；[结果](../solver_repair_v8/result.md)／[elapsed](../solver_repair_v8/case_elapsed_times.csv)／[结果独立复审](../solver_repair_v8/evidence_review.json)。
 

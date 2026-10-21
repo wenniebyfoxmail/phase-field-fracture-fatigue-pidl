@@ -1,0 +1,312 @@
+{
+  "status": "scientific_failure_stopped_no_retry",
+  "run_id": "pf_hybrid_solver_v9_20261021_r6",
+  "source_commit": "e01a69b5a0cad6ac4ce7670c76f159a9212bd232",
+  "artifact_id": "d1dc3da4db490e72ec5c49ef80227b5369bd3cf6a234446447e59d662134685f",
+  "card_sha256": "07126f393e8f1632d4ece83f211436cbf7a9d20c1de4e5dee15e008196b5ccb0",
+  "launch": {
+    "state": "spawned",
+    "run_id": "pf_hybrid_solver_v9_20261021_r6",
+    "command": [
+      "/usr/bin/timeout",
+      "--signal=TERM",
+      "--kill-after=20s",
+      "12949.295341s",
+      "/usr/bin/python3",
+      "-u",
+      "/mnt/data2/drtao/wennie/pf_hybrid_solver_v9_20261021_r6/code/tools/run_hybrid_cpu_v9_budgeted.py",
+      "--supervise"
+    ],
+    "artifact_id": "d1dc3da4db490e72ec5c49ef80227b5369bd3cf6a234446447e59d662134685f",
+    "card_sha256": "07126f393e8f1632d4ece83f211436cbf7a9d20c1de4e5dee15e008196b5ccb0",
+    "epoch": 1792543027.7051263,
+    "prelaunch_package_wall_charge": 805.7046585083008,
+    "outer_timeout_seconds": 12949.2953414917,
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "gpu_seconds": 0,
+    "scientific_attempt_limit": 1,
+    "pid": 4058425
+  },
+  "remote_root": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v9_20261021_r6",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_hybrid_solver_v9_20261021_r6",
+  "inputs_read_only": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/inputs",
+  "runtime_admission": {
+    "pid": 4058426,
+    "hostname": "GPUServer8",
+    "epoch": 1792543028.0386527,
+    "artifact_id": "d1dc3da4db490e72ec5c49ef80227b5369bd3cf6a234446447e59d662134685f",
+    "card_sha256": "07126f393e8f1632d4ece83f211436cbf7a9d20c1de4e5dee15e008196b5ccb0",
+    "runtime": {
+      "numpy": "1.24.4",
+      "scipy": "1.15.3",
+      "osqp": "1.0.4",
+      "psutil": "7.0.0"
+    },
+    "inputs_read_only": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/inputs",
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "gpu": null,
+    "address_space_limit_bytes": 1610612736
+  },
+  "owned_processes": [
+    {
+      "pid": 4058425,
+      "exists": false
+    },
+    {
+      "pid": 4058426,
+      "exists": false
+    },
+    {
+      "pid": 4058433,
+      "exists": false
+    },
+    {
+      "pid": 4058434,
+      "exists": false
+    }
+  ],
+  "zero_start_actions": [
+    {
+      "action": "preflight",
+      "state": "returned",
+      "epoch": 1792543009.905922,
+      "destination": "drtao@172.16.100.2",
+      "script": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/tools/preflight_hybrid_cpu_v9.py",
+      "script_sha256": "e542c32d815a5dbfa88e8e1bca2ce46771afc95eae7a06152714494b0173f4b0",
+      "payload_sha256": null,
+      "payload_bytes": 0,
+      "local_timeout_seconds": 45,
+      "remote_timeout_seconds": 20,
+      "charged_wall_seconds": 5.583234167075716,
+      "returncode": 0,
+      "stdout": "{\"passed\": true, \"hostname\": \"GPUServer8\", \"account\": \"drtao\", \"epoch\": 1792543015.6183276, \"wall_seconds\": 0.10967215802520514, \"assets\": [{\"name\": \"mesh.npz\", \"sha256\": \"ac13f6fd68a77de9f68edf7098c3e17c2acd0eb44a7fa346ec520fc7732887f6\", \"bytes\": 2070965}, {\"name\": \"seen_s1.npz\", \"sha256\": \"bebb52f97d3f45909ef8eb0bc436257f75bfad4a4576b1bfdec0a98d7336528d\", \"bytes\": 9613954}, {\"name\": \"seen_s2.npz\", \"sha256\": \"229525d0198c0a5f79ed1f86474234685d9c73cb3c164ebf5360c27384b5ae5e\", \"bytes\": 15877041}, {\"name\": \"seen_s3.npz\", \"sha256\": \"45fa4cd0e8f007a0dcf6ab061b404ff9497bd00a33dd2c91fb8485fe223cb605\", \"bytes\": 15978260}, {\"name\": \"seen_s4.npz\", \"sha256\": \"601062ca4337256359c21327994090e7e1c1ea97d0df46589c95fc91fd3c1615\", \"bytes\": 16006042}, {\"name\": \"seen_s5.npz\", \"sha256\": \"54f2087cbb911cf709912ad731e9cec02417f68242b2507f9cac66294b70c648\", \"bytes\": 16364580}, {\"name\": \"state0.npz\", \"sha256\": \"9217ebcb4e890f90761c450369787f74679e1d7230764b197f70e7eccf8b1b7a\", \"bytes\": 13145610}], \"R3_status\": \"failed\", \"R3_attributable_pids_not_alive\": [3631794, 3631795, 3632262], \"R5_status\": \"failed\", \"R5_attributable_pids_not_alive\": [3949659, 3949660, 3949673, 3949674], \"R4_status\": \"failed\", \"R4_attributable_pids_not_alive\": [3850243, 3850244, 3850251, 3850252], \"capacity\": {\"available_ram_bytes\": 393809997824, \"free_disk_bytes\": 615457910784, \"cpu_affinity_count\": 64, \"load_average\": [4.91552734375, 4.94677734375, 4.8916015625]}, \"inputs_read_only\": \"/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/inputs\", \"deps_read_only\": \"/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/deps\", \"GPU_queries\": 0, \"scientific_array_decodes\": 0, \"scientific_imports\": 0, \"writes\": 0}\n",
+      "stderr": "",
+      "observed": {
+        "passed": true,
+        "hostname": "GPUServer8",
+        "account": "drtao",
+        "epoch": 1792543015.6183276,
+        "wall_seconds": 0.10967215802520514,
+        "assets": [
+          {
+            "name": "mesh.npz",
+            "sha256": "ac13f6fd68a77de9f68edf7098c3e17c2acd0eb44a7fa346ec520fc7732887f6",
+            "bytes": 2070965
+          },
+          {
+            "name": "seen_s1.npz",
+            "sha256": "bebb52f97d3f45909ef8eb0bc436257f75bfad4a4576b1bfdec0a98d7336528d",
+            "bytes": 9613954
+          },
+          {
+            "name": "seen_s2.npz",
+            "sha256": "229525d0198c0a5f79ed1f86474234685d9c73cb3c164ebf5360c27384b5ae5e",
+            "bytes": 15877041
+          },
+          {
+            "name": "seen_s3.npz",
+            "sha256": "45fa4cd0e8f007a0dcf6ab061b404ff9497bd00a33dd2c91fb8485fe223cb605",
+            "bytes": 15978260
+          },
+          {
+            "name": "seen_s4.npz",
+            "sha256": "601062ca4337256359c21327994090e7e1c1ea97d0df46589c95fc91fd3c1615",
+            "bytes": 16006042
+          },
+          {
+            "name": "seen_s5.npz",
+            "sha256": "54f2087cbb911cf709912ad731e9cec02417f68242b2507f9cac66294b70c648",
+            "bytes": 16364580
+          },
+          {
+            "name": "state0.npz",
+            "sha256": "9217ebcb4e890f90761c450369787f74679e1d7230764b197f70e7eccf8b1b7a",
+            "bytes": 13145610
+          }
+        ],
+        "R3_status": "failed",
+        "R3_attributable_pids_not_alive": [
+          3631794,
+          3631795,
+          3632262
+        ],
+        "R5_status": "failed",
+        "R5_attributable_pids_not_alive": [
+          3949659,
+          3949660,
+          3949673,
+          3949674
+        ],
+        "R4_status": "failed",
+        "R4_attributable_pids_not_alive": [
+          3850243,
+          3850244,
+          3850251,
+          3850252
+        ],
+        "capacity": {
+          "available_ram_bytes": 393809997824,
+          "free_disk_bytes": 615457910784,
+          "cpu_affinity_count": 64,
+          "load_average": [
+            4.91552734375,
+            4.94677734375,
+            4.8916015625
+          ]
+        },
+        "inputs_read_only": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/inputs",
+        "deps_read_only": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/deps",
+        "GPU_queries": 0,
+        "scientific_array_decodes": 0,
+        "scientific_imports": 0,
+        "writes": 0
+      }
+    },
+    {
+      "action": "dispatch",
+      "state": "returned",
+      "epoch": 1792543022.8429859,
+      "destination": "drtao@172.16.100.2",
+      "script": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/tools/receive_hybrid_cpu_v9.py",
+      "script_sha256": "7c955a4554d405fa9107319764ee11bfadadbc3f7084f16e1458fe0eccdd83fa",
+      "payload_sha256": "2446a71b1b34a2e461962591a51ae5cb1fdb57b5a99ee3d7115dec76defe1be6",
+      "payload_bytes": 105440,
+      "local_timeout_seconds": 45,
+      "remote_timeout_seconds": 20,
+      "charged_wall_seconds": 4.7487081659492105,
+      "returncode": 0,
+      "stdout": "{\"state\": \"dispatched\", \"launch\": {\"state\": \"spawned\", \"run_id\": \"pf_hybrid_solver_v9_20261021_r6\", \"command\": [\"/usr/bin/timeout\", \"--signal=TERM\", \"--kill-after=20s\", \"12949.295341s\", \"/usr/bin/python3\", \"-u\", \"/mnt/data2/drtao/wennie/pf_hybrid_solver_v9_20261021_r6/code/tools/run_hybrid_cpu_v9_budgeted.py\", \"--supervise\"], \"artifact_id\": \"d1dc3da4db490e72ec5c49ef80227b5369bd3cf6a234446447e59d662134685f\", \"card_sha256\": \"07126f393e8f1632d4ece83f211436cbf7a9d20c1de4e5dee15e008196b5ccb0\", \"epoch\": 1792543027.7051263, \"prelaunch_package_wall_charge\": 805.7046585083008, \"outer_timeout_seconds\": 12949.2953414917, \"cpu_affinity\": [0, 1, 2, 3], \"gpu_seconds\": 0, \"scientific_attempt_limit\": 1, \"pid\": 4058425}, \"wall_seconds\": 0.8248998215422034, \"bundle_sha256\": \"2446a71b1b34a2e461962591a51ae5cb1fdb57b5a99ee3d7115dec76defe1be6\", \"artifact_id\": \"d1dc3da4db490e72ec5c49ef80227b5369bd3cf6a234446447e59d662134685f\", \"code_only_no_private_data\": true, \"same_host_retained_OSQP_copied_bytes\": 980049}\n",
+      "stderr": "",
+      "observed": {
+        "state": "dispatched",
+        "launch": {
+          "state": "spawned",
+          "run_id": "pf_hybrid_solver_v9_20261021_r6",
+          "command": [
+            "/usr/bin/timeout",
+            "--signal=TERM",
+            "--kill-after=20s",
+            "12949.295341s",
+            "/usr/bin/python3",
+            "-u",
+            "/mnt/data2/drtao/wennie/pf_hybrid_solver_v9_20261021_r6/code/tools/run_hybrid_cpu_v9_budgeted.py",
+            "--supervise"
+          ],
+          "artifact_id": "d1dc3da4db490e72ec5c49ef80227b5369bd3cf6a234446447e59d662134685f",
+          "card_sha256": "07126f393e8f1632d4ece83f211436cbf7a9d20c1de4e5dee15e008196b5ccb0",
+          "epoch": 1792543027.7051263,
+          "prelaunch_package_wall_charge": 805.7046585083008,
+          "outer_timeout_seconds": 12949.2953414917,
+          "cpu_affinity": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "gpu_seconds": 0,
+          "scientific_attempt_limit": 1,
+          "pid": 4058425
+        },
+        "wall_seconds": 0.8248998215422034,
+        "bundle_sha256": "2446a71b1b34a2e461962591a51ae5cb1fdb57b5a99ee3d7115dec76defe1be6",
+        "artifact_id": "d1dc3da4db490e72ec5c49ef80227b5369bd3cf6a234446447e59d662134685f",
+        "code_only_no_private_data": true,
+        "same_host_retained_OSQP_copied_bytes": 980049
+      }
+    }
+  ],
+  "scientific_attempts": 1,
+  "scientific_retries": 0,
+  "local_evidence_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v9_20261021",
+  "snapshot_epoch": 1792543224.7528503,
+  "accepted_steps": 1,
+  "planned_steps": 600,
+  "scientific_convergence": false,
+  "terminal": {
+    "status": "failed",
+    "run_id": "pf_hybrid_solver_v9_20261021_r6",
+    "epoch": 1792543188.7883527,
+    "totals": {
+      "start_monotonic": 5564304.50708364,
+      "phases": {
+        "train_A": {
+          "peak_rss_bytes": 4484874240,
+          "peak_gpu_mib": null,
+          "rss_observed": true,
+          "gpu_observed": false,
+          "rss_sample_count": 153,
+          "gpu_sample_count": 0,
+          "gpu_status": "not_applicable",
+          "aggregate_vms_bytes": 5095739392,
+          "resource_scope_pid": 4058425,
+          "last_rss_sample_monotonic": 5565269.526791659,
+          "storage": {
+            "primary_bytes": 1344013,
+            "archive_bytes": 80428385
+          },
+          "last_sample_monotonic": 5565269.52680225,
+          "last_primary_storage_sample_monotonic": 5565266.392197666,
+          "last_archive_storage_sample_monotonic": 5565266.39258055,
+          "stop_reason": "worker exit 1",
+          "termination_seconds": 4.509463906288147e-06,
+          "deadline_guard": {
+            "status": "deadline_or_control_stop",
+            "reason": "incomplete step completion at worker exit",
+            "active": {
+              "step": 2,
+              "started": 5565169.771269177,
+              "deadline": 5565469.771269177
+            },
+            "last_step": 2,
+            "started": 5565110.583505672,
+            "finished": 5565271.252115063,
+            "worker_pid": 4058433,
+            "observations": {
+              "worker_exit_observed_at": 5565270.25105246,
+              "supervisor_exit_observed_at": null,
+              "exit_review_seconds": 1.0,
+              "exit_review_deadline": 5565271.25105246,
+              "pending_step_at_exit": {
+                "step": 2,
+                "started": 5565169.771269177,
+                "deadline": 5565469.771269177
+              }
+            }
+          },
+          "wall_seconds": 160.74799116142094,
+          "cpu_seconds": 194.57344899999998,
+          "completed": false
+        }
+      },
+      "gpu_seconds": 0.0,
+      "resource_owner_pid": 4058425,
+      "prelaunch_package_wall_charge": 806.0381064414978,
+      "old_research_known_wall_seconds": 1232.4626276369672,
+      "historical_unknown_control_reserve_seconds": 600.0,
+      "unknown_old_CPU_not_zero": true,
+      "prior_R4_conservative_package_charge_seconds": 4390.0,
+      "prior_R5_conservative_package_charge_seconds": 3056.0,
+      "producer_wall_seconds": 160.74942979495972,
+      "new_package_wall_charge": 966.7875365568325,
+      "new_package_allocated_core_hours_upper": 1.07420837456257,
+      "actual_GPU_seconds": 0.0,
+      "training_fits": 0,
+      "old_known_plus_new_charged_wall_seconds": 9645.2501641938
+    },
+    "scope": "one continuous train_A only; no NN or other cases"
+  },
+  "failure_reason": "joint coupled block direction budget exhausted",
+  "full_return_files": 162,
+  "full_return_bytes": 81832683,
+  "full_return_verified": true
+}

@@ -19,7 +19,7 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S04 hybrid D18准备（2026-10-21）:** 新授权联合投影/信任半径原残差工作全局化，复用合格块方向，原最终精度/currentK/历史不变；一次原train_A600尚未运行，无新科学结果。[方案](research/S04/hybrid_constrained_design_20261019/solver_repair_v9/plan.md)；[canonical track](experiments/s04_fem_pidl_field_alignment_track.md)。
+- **S04 hybrid D18实际首停（2026-10-21）:** R006一次1/600、case160.748秒；联合Phi下降但原force仍1639倍门，8方向后首停。162文件全核、无重试/训练；收束有限Newton-ray，充分约束下降/完整轨迹可负担性仍缺。[结果](research/S04/hybrid_constrained_design_20261019/solver_repair_v9/result.md)；[canonical track](experiments/s04_fem_pidl_field_alignment_track.md)。
 
 - **S04 hybrid D17实际首停（2026-10-21）:** R5单次1/600、case205.137秒；三次块线性方向通过，但投影全步制造近零刚度局部并触发新候选机械pivot资格。159文件全核/进程全退，无重试/完整teacher/NN收益。下一仅联合投影/信任域全局化设计。[结果](research/S04/hybrid_constrained_design_20261019/solver_repair_v8/result.md)；[canonical track](experiments/s04_fem_pidl_field_alignment_track.md)。
 - **S04 hybrid producer time stop (2026-10-19):** source43af56d4/cardv2 reviewed PASS(29files/46checks), full Linux identity/parity/runtime admission passed; actual single run accepted firsttrain_A state56.952s then substep2 hit120s watchdog. Total187.867wall s/251.959CPU s/0GPU s, clean state/journal/snapshot version1 and no live ownprocess. No training/full trajectory/field-benefit result; no retry or threshold/deadline relaxation. Whole solver cost/per-block persistence must be resolved before a new complete execution card. [Actual stop/cost](research/S04/hybrid_constrained_design_20261019/producer_run_stop_v1.md); [canonical track](experiments/s04_fem_pidl_field_alignment_track.md).

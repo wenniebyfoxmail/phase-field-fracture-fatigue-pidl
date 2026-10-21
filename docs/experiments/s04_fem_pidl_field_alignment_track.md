@@ -1,5 +1,7 @@
 # S04 FEM / PIDL fixed-state field alignment track
 
+> Current D18 (2026-10-21): R006's sole joint projected-Newton trajectory stopped at1/600 after8 directions in substep2. Full162-file evidence is verified; no retry/training or R007 authority. Original physical acceptance/history remains unchanged. The bounded Newton-ray route is closed as unsuccessful; sufficient constrained descent and complete-trajectory affordability remain unresolved. [Current result](../research/S04/hybrid_constrained_design_20261019/solver_repair_v9/result.md). D1–D17 statements below retain their historical scope.
+
 Purpose: improve PIDL agreement with the existing FEM numerical comparator while separating initialization, optimizer path and physical feasibility. This track continues the existing S04-E011 diagnostics; it does not replace the frozen native-Q4/T3 trajectory protocol or qualify FEM as physical truth.
 
 Authoritative scientific protocol and dated amendments: [S04-E011 experiment](../research/S04/S04-E011/experiment.md). Earlier physical-u/v, precrack A/B/C and weight designs retain their source records; no old result is overwritten.
@@ -96,3 +98,9 @@ D17实际终态（2026-10-21）：R5按首科学失败停止，1/600、首步31.
 ### 2026-10-21 D18：新授权联合投影信任域工作全局化
 
 HQ-FEM-JOINT-PROJECTED-TRUST-REGION-R006-20261021明确一项联合(u,d)原残差路线、一次train_A连续600；新4h自00:23:42Z/4CPU0GPU/32GiB/合计16GiB，首科学失败停不重试。D17/R3R4失败与累计费用保留，新替换working merit/普通damage map逐点机械消元，绝不改原最终QP/精度/currentK pivot/单CAS历史。初始正算子对角冻结尺度，实际投影步模型/有限radius及ratio规则见[前瞻方案](../research/S04/hybrid_constrained_design_20261019/solver_repair_v9/plan.md)。目前实现/必要人工检查/原所选独立准确复审中，未提交。新法不解trust子问题，无Cauchy/全局收敛保证，严格触发失败不证明物理无根。
+
+
+<!-- HYBRID_R6_D18_TERMINAL -->
+D18实际终态：R006单次1/600、首步57.12955秒/case160.74799秒/producer160.74943秒/worker+guardian CPU194.57345秒/GPU0，第2步100.32661秒用尽8方向首停，非300秒/pivot。14joint trials/15fresh/8keep/6reject、working机械消元0，Phi约降908倍但末forceL2=1.638876e-5（1639倍原门），radius9.77e-5/alpha3.99e-5，最后clipping仅5.54e-17且savedlate full-d1cells均0。先前R5大截断故障路径未重现，但有限Newton-ray仍未到达合格轨迹。11块过原effective/abs门，其中两首块用既有tiny-RHS舍入界，不声称全11严格relative<.001。
+
+完整162files/81.833MB逐SHA、4PID全退、无重试/训练；latestversion1、原D13历史/实际fsolve保留。旧首态与R5不逐位相同，不能拼接或把不同停点耗时当加速。收束本策略，不再只加方向/时间；下一承重缺项是具充分约束下降的全局化/子问题及原完整轨迹可负担性，未实施/授权R007。[完整结果](../research/S04/hybrid_constrained_design_20261019/solver_repair_v9/result.md)／[case elapsed](../research/S04/hybrid_constrained_design_20261019/solver_repair_v9/case_elapsed_times.csv)／[step elapsed](../research/S04/hybrid_constrained_design_20261019/solver_repair_v9/step_elapsed_times.csv)／[保存结果复核](../research/S04/hybrid_constrained_design_20261019/solver_repair_v9/evidence_review.json)。

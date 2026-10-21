@@ -1,0 +1,94 @@
+{
+  "root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v9_20261021/analysis",
+  "files": {
+    "README_analysis.md": {
+      "bytes": 1475,
+      "sha256": "ec6ad362c58c4575f7f15532695017cd6c125290da64b9fba1d29ced0b367ee2"
+    },
+    "accepted_prefix_evolution.csv": {
+      "bytes": 393,
+      "sha256": "c07421b9c386c3321c0e889a869443ae83e15dc077e9010258cb74f6c60ca060"
+    },
+    "analyse_saved.py": {
+      "bytes": 18927,
+      "sha256": "465ac853c33f9773b147815111cbc43bdbacc23a1ca2a1eae3ea11535aef3c6a"
+    },
+    "analysis_summary.json": {
+      "bytes": 42935,
+      "sha256": "c888ce8883daf4715e6278ceacad1c1dc8f03bbd68968c6744467122c77d660a"
+    },
+    "last_trial_inspection.json": {
+      "bytes": 581,
+      "sha256": "0646b98024ef4e5e4d586107f08c5789b7fc97bed87b87c9daf0a71057fe7eb9"
+    },
+    "r6_accepted_prefix_fields.md": {
+      "bytes": 1737,
+      "sha256": "2a04720cdfa2cf00de35f8f2f5df9e7e319ec3adff6053c2cd455bac60b04e1b"
+    },
+    "r6_accepted_prefix_fields.pdf": {
+      "bytes": 81766,
+      "sha256": "15483049fd935d8e5e0e23f78966f901d9e8ad733326fa31087d91d03f5712b7"
+    },
+    "r6_accepted_prefix_fields.png": {
+      "bytes": 181313,
+      "sha256": "4c15ba8e30cdb9ec31d14efdfad42aebb630e6501201529fdc067695c94a6c0b"
+    },
+    "r6_available_prefix_evolution.md": {
+      "bytes": 1749,
+      "sha256": "31794106e09137ccbbec3f9cc29b236435938b4e953e7572b568603270f2fdab"
+    },
+    "r6_available_prefix_evolution.pdf": {
+      "bytes": 19177,
+      "sha256": "d94be959f6330d31ea74d36c4ea3c01f0ceb34c573a4a9d3246ab41e74270976"
+    },
+    "r6_available_prefix_evolution.png": {
+      "bytes": 147495,
+      "sha256": "cb47a100bfc96cd9f163bf5e04aa05bd87d214dc440c89ed1995232a086a0f12"
+    },
+    "r6_block_directions.csv": {
+      "bytes": 3305,
+      "sha256": "d23a26d8f35e64c156ced2cedb3a21970bb2763cf3662e736badf1625dde973e"
+    },
+    "r6_fresh.csv": {
+      "bytes": 2076,
+      "sha256": "f0fb401c468d8d2d9bd0e1af67f908763b210876d9715d060c8ad2c1fc0829ee"
+    },
+    "r6_globalization_trace.md": {
+      "bytes": 1828,
+      "sha256": "b79406f4aee4b01c02c8f8eaa874baa2273248e8deecd08268ec9ef01d650b77"
+    },
+    "r6_globalization_trace.pdf": {
+      "bytes": 24912,
+      "sha256": "4593031911a27b0a12bff3742e66ec407f638f003b5f56e2db4aecd439d000bf"
+    },
+    "r6_globalization_trace.png": {
+      "bytes": 208014,
+      "sha256": "05be12a290fd11051c690ffca1cf0fdcba576f6ae49861564fcf1c87c2300358"
+    },
+    "r6_joint_trials.csv": {
+      "bytes": 3844,
+      "sha256": "79e2ddf5f94399330c2a4df61fcefe293e26cfe854612ec1771c0fc89274940a"
+    },
+    "r6_last_joint_fields.md": {
+      "bytes": 1787,
+      "sha256": "8c6f7a5afbbddbcd378b12920282ae2c2b53fdad6455a6b444067cc18e2fdd51"
+    },
+    "r6_last_joint_fields.pdf": {
+      "bytes": 175508,
+      "sha256": "8cbc02e8f4da38ec722912bb53e58bd79e98ca20abbaf8f4904d6095a32d5a18"
+    },
+    "r6_last_joint_fields.png": {
+      "bytes": 328948,
+      "sha256": "6268cc9166d3a52d1800d5b34e93c68dcfa560fe54f36d32869b73945feda01f"
+    },
+    "r6_trace_work.csv": {
+      "bytes": 30076,
+      "sha256": "50a0931a8a8ed39d83b5e8306163e023ee997c7c03f5db17f629b288b7872862"
+    },
+    "same_key_R5_R6_first_state.json": {
+      "bytes": 888,
+      "sha256": "d0b3b6ead4526c04394c215ad93c71de462f63c71fedee2e5b60a06e94e028ad"
+    }
+  },
+  "full_remote_inventory_sha256": "f7e5e62340c0c047d1603658d5629abfe83e1e53ebab25e2abdb10f6691b843b"
+}

@@ -1,0 +1,100 @@
+{
+  "schema": "hybrid-independent-execution-review-v1",
+  "verdict": "REVIEW_PASS",
+  "scope": "EXACT_STATIC_EXECUTION_PACKAGE_REVIEW_ONLY",
+  "reviewer": "independent Codex reviewer /root/hybrid_readiness_review",
+  "reviewed_at_utc": "2026-10-21T00:36:28.469376+00:00",
+  "source_commit": "e01a69b5a0cad6ac4ce7670c76f159a9212bd232",
+  "artifact_id": "d1dc3da4db490e72ec5c49ef80227b5369bd3cf6a234446447e59d662134685f",
+  "card_sha256": "07126f393e8f1632d4ece83f211436cbf7a9d20c1de4e5dee15e008196b5ccb0",
+  "source_manifest_sha256": "370c7797db08d4bbec1a716ce73ae03ff728f2de74717847f5d34e3b408b4a91",
+  "source_files_verified": 35,
+  "bindings": {
+    "authority.json": "1dcbcfd3009c8e1a0ce43e10b4111817fae138c30060909a15f888c2eb0abdd2",
+    "plan.md": "a6811589be51c4826a51abf5bdb925f1e832d252ec3b2723a1d0057050a1a8a9",
+    "checks.json": "899d82b71f5fc1c4c35af153868bfeafa48029d4db942bad1bb0f3bbd7be113b",
+    "retained_deps_manifest.json": "167da1530d3a864d70d7a8ebe6e5aef870598657895af924373b6b41aff07bf4"
+  },
+  "inherited_scope": [
+    "Unchanged original FEM/material/loading/history operators, original B/C/D trial-fatigue chain and natural VI active-release derivatives previously independently reviewed.",
+    "R5 original coupled sparse active-set block retains nonzero Ru, original Rd inactive RHS and both active-row contributions, one general sparse LU, separate original-scale true-row targets and unchanged physical final thresholds.",
+    "Original D13 actual-QP f_solve/f_commit distinction, current-K/pivot qualification, immutable accepted preimage and single CAS commit.",
+    "Previous CPU-only owned timeout-tree RSS/VMS monitor, AS partitions, pidfd/gated worker/guardian, exact receiver/dependency closure, lossless accepted NPY snapshots, storage headroom and final scans."
+  ],
+  "new_diff_review": {
+    "joint_original_residual": "New joint_projected_trust route evaluates given joint u,d directly by original force/damage/history assembly from the same old state. No candidate mechanical elimination, ordinary damage map, AA history or synthetic f_solve. Legacy AA route semantics are inherited, not claimed as an R006 intervention.",
+    "fixed_scales": "Initial finite positive original free-K/QP-H diagonals freeze Wu=1/sqrt(diagK), Wd=gradient_scale/sqrt(diagH) for the whole step without a tunable floor. Weighted phi, physical m_work and final m_accept are separate.",
+    "model_projection": "Model uses actual free-u and box/crack projected damage increments, including B sd and D sd corrections. Inactive rows use F+(C su+D sd)/scale, base-active rows use F+sd; radius expansion uses actual projected-step norm.",
+    "finite_globalization": "Prospectively fixed radii .1/.25/1e-8, rho/strict actual-phi descent rules, at most8 model trials per direction and8 block directions. Rejected candidates do not update base, frozen weights or accepted history; nonfinite/errors stop rather than becoming retry/fallback.",
+    "acceptance": "Only m_work<=.01 and natural-inf<=original1e-10 trigger exactly one real frozen-fatigue QP, final mechanics, fresh original complete acceptance, current-K certificate and proposal. Failure does not return to the working loop. Actual QP fatigue coefficient remains f_solve and final trial supplies f_commit.",
+    "shared_limits": "Initial predictor, working audits, final QP/mechanics/fresh/current-K certificate share the same300-second step clock. At most99 working fresh evaluations reserve slot100 for final fresh; no clock or count reset.",
+    "diagnostics": "Before joint candidate evaluation, actual u,d/base/Ru/F/weights/parent/radius/model are persisted. Qualification saves current u,d/matrix-key/trace-branch/actual pivot ratio or explicit nonfinite flag before the original pivot guard. Diagnostic errstate only permits recording; unchanged original pivot_ratio still raises. Nested predictor solver info is attached to its captured parent work row.",
+    "admission": "Exact v9 schema/mode/radii/physical values/run/deadline/one reference train_A phase are checked. New read-only preflight checks consumed R5 terminal and saved attributable PID identities, in addition to R3/R4. Receiver creates a fresh exclusive root/reservation, transfers only reviewed code/control, copies98 pinned public OSQP files on the same host, and invokes launch once; no private input upload/install/holdout/GPU query."
+  },
+  "independent_checks": {
+    "all35_manifest_source_hashes_equal_frozen_git_commit": true,
+    "all_manifest_python_syntax_compiled_without_execution": true,
+    "exact_card_validate_passed": true,
+    "card_authority_equals_bound_file": true,
+    "retained_dependency_manifest_binding_matches": true,
+    "artificial_tests_before_final_diagnostic_only_deltas": "59 passed in0.87s: joint trust, CPU-v9 controller/storage/dependency, existing relevant mechanical workspace tests; artificial arrays/one-Q4 and mocked producer only.",
+    "final_targeted_tests": "4 passed,16 deselected in0.49s with warnings-as-errors: final pivot rejection, scalar/key persistence, all-inf diagnostic and nested-parent accounting. Unchanged full suites were not repeated.",
+    "python_absolute_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "owner_checks": "Bound checks.json retains prior72,42,59 artificial runs and subsequent focused diagnostic runs; not producer scientific results.",
+    "closed_findings": [
+      "R4 calendar basis now22:19:36Z to23:32:46Z=4390s; R5 interval23:32:46Z to00:23:42Z=3056s is separate.",
+      "Nested pivot evidence no longer steals common predictor solver accounting.",
+      "All-inf pivot diagnostic now records nonfinite flag/key before unchanged warning/error first-stop."
+    ]
+  },
+  "execution_envelope": {
+    "authority_id": "HQ-FEM-JOINT-PROJECTED-TRUST-REGION-R006-20261021",
+    "authority_type": "human_delegated_hq",
+    "authority_provenance": "Bound authority records owner-verified original direct-human HQ delegation and the new prospectively limited R006 package. This review grants no new authority.",
+    "run_id": "pf_hybrid_solver_v9_20261021_r6",
+    "producer": "drtao@172.16.100.2 GPUServer8",
+    "package_start_epoch": 1792542222.0,
+    "absolute_package_end_epoch": 1792556622.0,
+    "total_envelope_seconds": 14400,
+    "post_execution_reserve_seconds": 600,
+    "termination_reserve_seconds": 45,
+    "numerical_stop_epoch_before_bounded_cleanup": 1792555977.0,
+    "cpu_cores": 4,
+    "gpu_count": 0,
+    "aggregate_rss_vms_limit_bytes": 34359738368,
+    "worker_AS_bytes": 32212254720,
+    "supervisor_soft_AS_bytes": 1610612736,
+    "guardian_AS_bytes": 134217728,
+    "primary_archive_local_retrieval_gib": [
+      1,
+      7,
+      8
+    ],
+    "scientific_attempts": 1,
+    "automatic_retry": false,
+    "solver_fallback": false,
+    "mechanical_admission_actions": 2,
+    "mechanical_admission_total_seconds": 120,
+    "scope": "Only original train_A amplitude0.8,120cycles x original5loads,600continuous accepted steps from original state0/mesh/material; reference role, no NN features/training or other cases.",
+    "old_known_research_wall_seconds_preserved": 1232.4626276369672,
+    "prior_R4_conservative_calendar_charge_seconds_not_actual_CPU": 4390.0,
+    "prior_R5_conservative_calendar_charge_seconds_not_actual_CPU": 3056.0,
+    "historical_unknown_control_reserve_seconds_not_actual": 600
+  },
+  "runtime_requirements": "Original exact source/card/dependency/input/runtime/host/account/mount/capacity/affinity/AS/guardian/resource/deadline checks remain mandatory at producer admission and execution. Unknown dispatch must be reconciled using this fresh run reservation and attributable identities, never resubmitted. Final transfer bundle must mechanically match these reviewed bytes.",
+  "runtime_admission_verified": false,
+  "real_size_block_factorization_verified": false,
+  "scientific_convergence_verified": false,
+  "neural_comparison_verified": false,
+  "reviewer_SSH_actions": 0,
+  "reviewer_project_scientific_array_decodes": 0,
+  "reviewer_project_FEM_or_training_runs": 0,
+  "limitations": [
+    "This is projected/scaled Newton-ray acceptance with a fixed model ratio, not a solved trust-region subproblem or global convergence proof. Projection may prevent predicted descent at any tested radius.",
+    "The conservative final trigger is stricter than original physical acceptance and can exhaust finite limits near an admissible root; it does not guarantee the actual final QP/current-K qualification.",
+    "Sparse LU fill, real mesh runtime/memory, full600-step convergence, fatigue/history branch coverage and numerical teacher qualification remain unverified.",
+    "Resource/storage scans do not prove every unsampled instantaneous peak; bounded AS, storage headroom and final scans remain required.",
+    "Old calendar charges and historical600-second reserve are not measured CPU or additional actual producer time; whole-package CPU still requires honest measured/unknown reporting."
+  ],
+  "blocking_findings": []
+}

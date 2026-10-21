@@ -1,0 +1,2 @@
+run_id,case,planned_steps,accepted_steps,case_phase_wall_seconds,producer_wall_seconds,worker_guardian_CPU_seconds,GPU_seconds,status,failure
+pf_hybrid_solver_v9_20261021_r6,train_A,600,1,160.74799116142094,160.74942979495972,194.57344899999998,0,scientific_failure_stopped_no_retry,joint coupled block direction budget exhausted
