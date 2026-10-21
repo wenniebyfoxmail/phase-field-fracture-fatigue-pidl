@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "status": "PASS_SCHEDULED_CONTEXT",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R004",
+  "observed_utc": "2026-10-21T00:06:57.176345+00:00",
+  "sys_executable": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+  "sys_prefix": "C:\\Users\\xw436\\pavetrack_env",
+  "user": "ad\\xw436",
+  "pid": 13500,
+  "parent_pid": 8572,
+  "cwd": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021",
+  "pythonpath_before": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+  "sys_path_before": [
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+    "C:\\Users\\xw436\\pavetrack_env",
+    "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+  ],
+  "dependency_root": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+  "target": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021\\environment_probe.py",
+  "pythonpath_after": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+  "sys_path_after": [
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+    "C:\\Users\\xw436\\pavetrack_env",
+    "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+  ],
+  "specs": [
+    {
+      "name": "skimage",
+      "found": true,
+      "origin": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+      "submodule_search_locations": [
+        "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage"
+      ]
+    },
+    {
+      "name": "skimage.morphology",
+      "found": true,
+      "origin": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+      "submodule_search_locations": [
+        "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology"
+      ]
+    },
+    {
+      "name": "centerline_core",
+      "found": true,
+      "origin": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021\\centerline_core.py",
+      "submodule_search_locations": null
+    },
+    {
+      "name": "d5_runner",
+      "found": true,
+      "origin": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021\\d5_runner.py",
+      "submodule_search_locations": null
+    }
+  ],
+  "skimage_version": "0.25.2",
+  "skimage_initializer": {
+    "path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+    "bytes": 4255,
+    "sha256": "7aab19d6e977cd0e8cb6febcc224231e547efbe0e254b2e2d6c4036c01fdd3b2"
+  },
+  "morphology_initializer": {
+    "path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+    "bytes": 2208,
+    "sha256": "313e28fe7d04adcdaee46b97931ebe29928b1057a6493747f49f51891191224f"
+  },
+  "target_file": {
+    "path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021\\environment_probe.py",
+    "bytes": 74,
+    "sha256": "ee0d7ad3490e7ca02212b6b45b055ce8ab46661de0eaabec09ca0b42b2d84057"
+  }
+}

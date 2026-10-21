@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-10-21T00:09:54.1109594Z",
+  "host": "D-26-09",
+  "user": "xw436",
+  "task_exists": false,
+  "processes": [],
+  "canonical_output_exists": false,
+  "cache_exists": false,
+  "stage_exists": true,
+  "archive_exists": true
+}

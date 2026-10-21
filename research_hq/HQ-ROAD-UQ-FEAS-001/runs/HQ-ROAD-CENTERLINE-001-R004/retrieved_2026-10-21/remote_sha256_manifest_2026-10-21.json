@@ -1,0 +1,106 @@
+{
+  "remote_run": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R004",
+  "observed_utc": "2026-10-21T00:09:54.1109594Z",
+  "files": [
+    {
+      "name": "00_AUTHORITY_AND_INTENT.md",
+      "bytes": 1579,
+      "sha256": "c736ca7556fbcc728f98db9728e9802f61fd89ee2fa8e6d354efc380c3919083"
+    },
+    {
+      "name": "admission.child.exit.json",
+      "bytes": 1165,
+      "sha256": "ee23e9ce2a00461d01680c9f0e8c7811fef311fcf0e395bc5e8a592c7dfc1504"
+    },
+    {
+      "name": "admission.child.exit.json.claim",
+      "bytes": 183,
+      "sha256": "ba4132ab5d46432883271ddf1dccbddbda47a1535355c58470f9d72616066b64"
+    },
+    {
+      "name": "admission.child.exitcode.txt",
+      "bytes": 2,
+      "sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3"
+    },
+    {
+      "name": "admission.child.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "admission.child.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "admission.controller.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "admission.controller.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "admission_receipt_remote.json",
+      "bytes": 16196,
+      "sha256": "0807fc31d257660034e7a714440fe03fbe2760eab817392ae8fd22f6dc00d31c"
+    },
+    {
+      "name": "admission_wrapper_receipt_remote.json",
+      "bytes": 3603,
+      "sha256": "989847c7891aaf50948f7c75c930a1e4d2a2b994cbf3e2f11145c913eecc4cac"
+    },
+    {
+      "name": "approval_hq.json",
+      "bytes": 3193,
+      "sha256": "b93c9f8e4b1c0cff8c18a3f973d25ee124b617483ce42f243a07319498ac6123"
+    },
+    {
+      "name": "environment.context.json",
+      "bytes": 4263,
+      "sha256": "8d606ce3afa6f917d5b4516fb20a2f2adadda9af811ee8ad5f4c48aecf5cabf3"
+    },
+    {
+      "name": "environment.exit.json",
+      "bytes": 5705,
+      "sha256": "8b2894d9df93441f7942b212bc91efde3fb70107e4bf8c6d58e114c58e85d1a8"
+    },
+    {
+      "name": "environment.exit.json.claim",
+      "bytes": 179,
+      "sha256": "1cd4525a446ebdc0fc82ffda8405b12bdb420cc89fe586ee7c1cdf08663d4633"
+    },
+    {
+      "name": "environment.exitcode.txt",
+      "bytes": 4,
+      "sha256": "a5e45837a2959db847f7e67a915d0ecaddd47f943af2af5fa6453be497faabca"
+    },
+    {
+      "name": "environment.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "environment.stdout.log",
+      "bytes": 318,
+      "sha256": "9759858513955a528d0d8441d56076c0cc8d6d7f7a6a86d93e2805d3a4f8b0d2"
+    },
+    {
+      "name": "launch_gpu_server.cmd",
+      "bytes": 659,
+      "sha256": "49939961336e407e56a75025047201ba7e0493036b7b15d049e07f4a1569e8c2"
+    },
+    {
+      "name": "package_clock_ledger.json",
+      "bytes": 467,
+      "sha256": "06d0413ff8ca2e49dca3f7bd19c1c6b373920a2ad9a937269dc2ed447fa610f9"
+    },
+    {
+      "name": "register_and_start.ps1",
+      "bytes": 11806,
+      "sha256": "31b335405a5af0e9bdda383db13300a4ad453ce3bb1707497f890e07fc0a23ed"
+    }
+  ]
+}
