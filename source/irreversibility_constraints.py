@@ -23,6 +23,17 @@ def _positive_scalar(value, name):
     return value
 
 
+def _penalty_scalar(value, dtype):
+    value = _positive_scalar(value, "rho")
+    # Deliberately conservative domain: keep rho, 2*rho and their inverses
+    # away from scalar overflow/subnormal arithmetic in the autograd graph.
+    # This is an implementation domain, not a recommended scientific rho.
+    limits = torch.finfo(dtype)
+    if not math.sqrt(limits.tiny) <= value <= math.sqrt(limits.max) / 2:
+        raise ValueError("rho outside supported dtype range")
+    return value
+
+
 def _same_vectors(*vectors):
     first = vectors[0]
     if not isinstance(first, torch.Tensor) or first.ndim != 1 or first.numel() == 0:
@@ -44,7 +55,7 @@ def phr_inequality_term(constraint, multiplier, rho, weights):
     caller's protocol. A small value alone is not a feasibility/KKT certificate.
     """
     _same_vectors(constraint, multiplier, weights)
-    rho = _positive_scalar(rho, "rho")
+    rho = _penalty_scalar(rho, constraint.dtype)
     if multiplier.requires_grad or weights.requires_grad:
         raise ValueError("dual variables and weights must be fixed in the primal step")
     if bool((multiplier < 0).any()) or bool((weights <= 0).any()):
@@ -62,7 +73,7 @@ def update_inequality_multiplier(constraint, multiplier, rho):
     deliberately provides no outer loop, retry policy or acceptance decision.
     """
     _same_vectors(constraint, multiplier)
-    rho = _positive_scalar(rho, "rho")
+    rho = _penalty_scalar(rho, constraint.dtype)
     if bool((multiplier < 0).any()):
         raise ValueError("multipliers must be nonnegative")
     return torch.relu(_finite_result(multiplier.detach() + rho * constraint.detach()))

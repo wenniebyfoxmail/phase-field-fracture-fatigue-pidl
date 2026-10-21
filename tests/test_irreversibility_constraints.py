@@ -125,6 +125,9 @@ class ConstraintContracts(unittest.TestCase):
                     box_projected_gradient(make(0.5), make(large), make(0.0), make(1.0), large)
         with self.assertRaises(ValueError):
             phr_inequality_term(vector([0.0], grad=True), vector([1e150]), 1.0, vector([1e200]))
+        for rho in [1e308, 1e-320]:
+            with self.subTest(rho=rho), self.assertRaises(ValueError):
+                phr_inequality_term(vector([0.0], grad=True), vector([1.0]), rho, vector([1.0]))
 
 
 if __name__ == '__main__':

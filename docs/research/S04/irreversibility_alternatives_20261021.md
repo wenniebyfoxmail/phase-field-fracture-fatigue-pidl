@@ -108,7 +108,7 @@ F(\theta)=\log_{10}E_0(\theta)+10^{-5}R_W(\theta),\qquad c_i(\theta)\le0.
 
 ## 5. 本轮完成的本地实现和合成检查
 
-`source/irreversibility_constraints.py`：独立 PHR、detached dual update、box投影梯度；严格输入shape/dtype/device、非有限和算术溢出拒绝。不是求解器/runner，没有历史提交、mesh、checkpoint或训练依赖。
+`source/irreversibility_constraints.py`：独立 PHR、detached dual update、box投影梯度；检查shape/dtype/device及已检测的非有限中间量/局部导数，rho限定在dtype的保守正常范围（sqrt(tiny)至sqrt(max)/2）。这不是推荐rho范围，也不替代集成后的完整反传/数值精度检查。不是求解器/runner，没有历史提交、mesh、checkpoint或训练依赖。
 
 `tests/test_irreversibility_constraints.py`：12项单测（含多个边界子例），只在CPU对小张量作代数/autograd。曾因历史source/__init__导入布局失败，改为只加载独立模块；独立审查发现极大有限输入溢出，已增加中间量/局部导数拒绝和回归测试。最终12项全部通过。
 
