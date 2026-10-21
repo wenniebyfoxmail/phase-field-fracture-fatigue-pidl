@@ -249,7 +249,7 @@ def main():
 
 ## Question and data provenance
 
-Compare saved FEM {a.fem} and PIDL {a.pidl}, same U and post_solve_pre_history_update. Script scripts/shear/analyze_manav_static_pair.py, ../matched_states.csv and ../summary.json. No solve, training or smoothing.
+Compare saved FEM {a.fem} and PIDL {a.pidl}, same U and post_solve_pre_history_update. Script scripts/shear/analyze_manav_static_pair_box.py, ../matched_states.csv and ../summary.json. No solve, training or smoothing.
 
 ## How to read
 

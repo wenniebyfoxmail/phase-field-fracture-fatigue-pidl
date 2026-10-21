@@ -1,0 +1,17 @@
+{
+  "status": "PREPARATION_SOURCE_REVIEW_PASS_NOT_EXECUTED",
+  "reviewer": "/root/shear_review",
+  "no_reviewer_arrays": true,
+  "claim": "directional curvature formula and saved13trial reconstruction reviewed; not fulltrajectory proof",
+  "candidate_source_hashes": {
+    "scripts/shear/proposals/box_phase_curvature.m": "3736165ca5b82617c52f23e441a80db61fcca44a0ce74cae705cb71c070f8338",
+    "scripts/shear/proposals/box_q4_ray_curvature.m": "7061f5894d0cc540c81aa2737d4057f4ce044fb2ac58f98b6c7574a2771a1308",
+    "scripts/shear/proposals/run_manav_static_fem_box_curvature.m": "fcf4a241a70115da70620805cbd37d0bdd21bff1c02bd9a1bca46c5c17d4631c",
+    "scripts/shear/proposals/test_box_phase_curvature.m": "88645518be90f7926ec05a0bbb60c1f5e6e7d67308d85537e99d016cda4d6d7f"
+  },
+  "postreview_only_change": "Exhaustion error text now names curvature-controlled initial step; exact originalhash recovered by reverse literal replacement",
+  "new_execution_authority": false,
+  "science_start_count": 1,
+  "science_attempt_status": "R015 consumed; no newrunID/retry/PIDL/45",
+  "fixture_source_review": "PASS soft history and Q0 linear ray; NOT EXECUTED"
+}
