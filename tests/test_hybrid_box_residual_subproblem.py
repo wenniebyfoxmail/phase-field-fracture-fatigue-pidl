@@ -31,7 +31,7 @@ def test_actual_step_inside_TR_after_rounding_and_precrack_fixed():
     y=np.array([radius,radius,-radius]);p=feasible_candidate(y,base,D,np.array([1]),np.array([0]),np.array([0.]),np.array([.8,1.]),np.array([False,True]),radius)
     assert np.max(abs(D*p['p']))<=radius
     assert p['d'][1]==1 and p['u'][0]==0
-    assert p['inward_ulp_corrections']>0
+    assert p['interval_projected_components']>0
 
 
 def test_zero_projected_gradient_nonzero_F_is_not_a_root():
@@ -160,7 +160,7 @@ def test_exact_real_TR_bound_does_not_accept_rounded_product(scale):
     c=feasible_candidate(np.array([radius,0.]),base,D,np.array([1]),np.array([0]),np.array([0.]),np.array([.2]),np.array([False]),radius)
     exact=Q(float(D[0]))*(Q(float(c['u'][1]))-Q(float(base['u'][1])))
     assert abs(exact)<=Q(radius)and c['actual_TR_norm']<=radius
-    assert c['inward_ulp_corrections']>0
+    assert c['interval_projected_components']>0
 
 
 def test_two_difference_tail_in_actual_model_and_Cauchy_bound():

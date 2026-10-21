@@ -71,7 +71,7 @@ def marker(out, **values):
 
 
 def trajectory_storage_check(card,out,archive,headroom=False):
-    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9','hybrid-cpu-trajectory-v10'):return
+    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9','hybrid-cpu-trajectory-v10','hybrid-cpu-trajectory-v11'):return
     # One scan at step boundaries, not every element/operator call. The live
     # supervisor also scans and final completion has an independent last check.
     from run_hybrid_producer import bytes_under
@@ -141,7 +141,8 @@ def trajectory(card, spec, inputs, out, archive):
                             classification='UNACCEPTED_JOINT_TRIAL_BEFORE_EVALUATION_NOT_LABEL'),allow_nan=False)))
                         f.flush();os.fsync(f.fileno())
                     target=('last_mechanical_before_qualification.npz' if metadata.get('kind')=='pivot_qualification' else
-                        'last_box_trial_before.npz' if metadata.get('event')=='box_trial_before' else 'last_joint_trial_before.npz')
+                        'last_box_trial_before.npz' if metadata.get('event')=='box_trial_before' else
+                        ('last_box_stage_candidate_before_model.npz' if metadata['stage'].endswith('_before_model') else 'last_box_stage_'+metadata['stage']+'.npz') if metadata.get('event')=='box_stage' else 'last_joint_trial_before.npz')
                     os.replace(name,folder/target)
                 finally:
                     if os.path.exists(name):os.unlink(name)

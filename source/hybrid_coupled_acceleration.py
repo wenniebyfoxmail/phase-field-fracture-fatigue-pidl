@@ -35,8 +35,10 @@ class CouplingSettings:
     subproblem_action_limit: int = 100
     subproblem_update_limit: int = 16
     subspace_steps: int = 2
+    box_domain_policy: str = 'representable_inner_binary64_v1'
 
     def __post_init__(self):
+        if self.box_domain_policy!='representable_inner_binary64_v1':raise ValueError('unknown representable box policy')
         if self.mode not in ('none','projected_anderson','projected_anderson_monotone','guarded_vi_newton','guarded_block_newton','joint_projected_trust','box_residual_trust'):raise ValueError('unknown coupling policy')
         if self.mechanics_solver not in ('direct','recycled_gmres'):raise ValueError('unknown mechanics solver')
         for k in ('depth','max_proposals','max_rejections'):

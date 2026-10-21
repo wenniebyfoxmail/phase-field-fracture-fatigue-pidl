@@ -74,6 +74,7 @@ class Budget:
         if type(actions)is not int or not 1<=actions<=100 or type(updates)is not int or not 1<=updates<=16:
             raise ValueError('unbounded box subproblem budget')
         self.limit=actions;self.update_limit=updates;self.updates=0
+        self.exact_comparisons=0;self.exact_CPU_seconds=0.
         self.counts=dict(J=0,JT=0,abs_J=0,abs_JT=0,norm_scans=0,metric_scan=0,legacy_Newton_action_upper=12)
         if self.used>actions:raise RuntimeError('subproblem action budget exhausted')
     @property
@@ -184,24 +185,8 @@ def scaled_abs_upper(D,p,tail):
 
 
 def feasible_candidate(y,base,D,free,dofs,values,lower,crack,radius):
-    nu=len(free);u0=base['u'];d0=base['d'];x0=np.r_[u0[free],d0]
-    normal(y,'projected coordinates');increment=divide(y,D,'coordinate conversion')
-    x=x0+increment;lo=np.r_[np.full(nu,-np.inf),lower];hi=np.r_[np.full(nu,np.inf),np.ones(len(d0))]
-    x=np.clip(x,lo,hi);x[nu:][crack]=1.
-    # Strict actual TR feasibility after floating add/clip. At most two ulp
-    # moves towards the base; no adjustable feasibility atol.
-    for correction in range(3):
-        p,tail=exact_difference(x,x0);actual_upper=scaled_abs_upper(D,p,tail)
-        actual=D*p+D*tail;normal(actual,'actual scaled coordinate')
-        bad=actual_upper>radius
-        if not bad.any():break
-        if correction==2:raise RuntimeError('cannot represent feasible actual trust step')
-        x[bad]=np.nextafter(x[bad],x0[bad])
-    if np.any(x<lo)or np.any(x>hi):raise RuntimeError('original candidate box violation')
-    u=u0.copy();u[free]=x[:nu];u[dofs]=values;d=x[nu:].copy()
-    if not np.array_equal(u[dofs],values)or np.any(d[crack]!=1):raise RuntimeError('original fixed domain violation')
-    return dict(u=u,d=d,p=p,p_tail=tail,y=actual,inward_ulp_corrections=correction,
-        actual_TR_norm=float(np.max(actual_upper,initial=0.)))
+    from hybrid_representable_box import representable_candidate
+    return representable_candidate(y,base,D,free,dofs,values,lower,crack,radius)
 
 
 def box_bounds(base,D,nu,lower,radius):
@@ -211,31 +196,64 @@ def box_bounds(base,D,nu,lower,radius):
     return lo,hi
 
 
-def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subspace_steps=2):
+def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subspace_steps=2,stage_observer=None):
+    from hybrid_representable_box import CandidateUncertified
     b=model.budget;lo,hi=box_bounds(base,model.D,len(free),lower,radius)
+    exact_total=b.exact_comparisons;exact_cpu=b.exact_CPU_seconds;certificate={};best=None
+    def stage(name,point=None,**extra):
+        if stage_observer is not None:stage_observer(name,point,best,dict(certificate,
+            exact_comparisons_cumulative=exact_total,exact_CPU_seconds_cumulative=exact_cpu,**extra))
+    def feasible(name,y):
+        nonlocal exact_total,exact_cpu
+        stage(name+'_start')
+        try:
+            point=feasible_candidate(y,base,model.D,free,dofs,values,lower,crack,radius)
+        except CandidateUncertified as exc:
+            exact_total+=exc.diagnostics['exact_comparisons'];exact_cpu+=exc.diagnostics['exact_CPU_seconds']
+            b.exact_comparisons=exact_total;b.exact_CPU_seconds=exact_cpu
+            stage(name+'_unqualified',qualification=exc.diagnostics,failure_vectors=exc.vectors)
+            raise
+        exact_total+=point['feasibility']['exact_comparisons'];exact_cpu+=point['feasibility']['exact_CPU_seconds']
+        b.exact_comparisons=exact_total;b.exact_CPU_seconds=exact_cpu
+        return point
     if b.updates>=b.update_limit-1:raise RuntimeError('subproblem update budget exhausted')
-    b.update();yc=np.clip(divide(-model.g,model.L,'Cauchy scaled step'),lo,hi)
+    b.update();stage('Cauchy_scaling_start');yc=np.clip(divide(-model.g,model.L,'Cauchy scaled step'),lo,hi)
     if not np.any(yc):raise RuntimeError('zero projected model gradient with nonzero physical residual')
-    best=feasible_candidate(yc,base,model.D,free,dofs,values,lower,crack,radius)
+    best=feasible('Cauchy',yc)
     if not np.any(best['p']):raise RuntimeError('Cauchy step lost to represented-state rounding')
-    best.update(model.evaluate(best['p'],best['p_tail']));certificate=model.cauchy_certificate(best['p'],best,best['p_tail'])
+    stage('Cauchy_before_model',best)
+    best.update(model.evaluate(best['p'],best['p_tail']));stage('Cauchy_model_evaluated',best)
+    certificate=model.cauchy_certificate(best['p'],best,best['p_tail'])
     cauchy_p=best['p'].copy();cauchy_tail=best['p_tail'].copy();cauchy_lower=best['pred_lower'];best['selection']='certified_projected_Cauchy'
-    for _ in range(subspace_steps):
+    stage('Cauchy_certified',best)
+    for i in range(subspace_steps):
         if b.updates>=b.update_limit-1:break
-        b.update();gradient=model.gradient(best['residual'])
+        b.update();stage('PG'+str(i+1)+'_gradient_start');gradient=model.gradient(best['residual'])
         y=np.clip(best['y']-divide(gradient,model.L,'projected LS gradient step'),lo,hi)
-        candidate=feasible_candidate(y,base,model.D,free,dofs,values,lower,crack,radius)
+        candidate=feasible('PG'+str(i+1),y)
+        stage('PG'+str(i+1)+'_before_model',candidate)
         candidate.update(model.evaluate(candidate['p'],candidate['p_tail']))
-        if candidate['pred_lower']>=best['pred_upper']:
-            best=candidate;best['selection']='projected_LS_gradient_improvement'
+        improved=candidate['pred_lower']>=best['pred_upper']
+        if improved:best=candidate;best['selection']='projected_LS_gradient_improvement'
+        stage('PG'+str(i+1)+'_complete',candidate,retained_as_best=improved)
+    optional_status='not_attempted_finite_update_budget'
     if b.updates<b.update_limit-1:
-        b.update();yn=np.clip(multiply(model.D,newton_p,'Newton scaled step'),lo,hi)
-        candidate=feasible_candidate(yn,base,model.D,free,dofs,values,lower,crack,radius)
-        candidate.update(model.evaluate(candidate['p'],candidate['p_tail']))
-        if candidate['pred_lower']>=best['pred_upper']:
-            best=candidate;best['selection']='qualified_Newton_model_comparison'
+        b.update();stage('optional_Newton_scaling_start');yn=np.clip(multiply(model.D,newton_p,'Newton scaled step'),lo,hi)
+        try:candidate=feasible('optional_Newton',yn)
+        except CandidateUncertified:
+            # Only typed finite qualification failure is optional. Range,
+            # data/identity, model, direction-quality and IO errors propagate.
+            optional_status='finite_feasibility_qualification_not_obtained'
+        else:
+            stage('optional_Newton_before_model',candidate)
+            candidate.update(model.evaluate(candidate['p'],candidate['p_tail']))
+            improved=candidate['pred_lower']>=best['pred_upper']
+            if improved:best=candidate;best['selection']='qualified_Newton_model_comparison'
+            optional_status='selected'if improved else'model_not_proven_better'
+            stage('optional_Newton_complete',candidate,retained_as_best=improved)
     if best['pred_lower']<cauchy_lower:raise RuntimeError('subproblem worse than certified Cauchy point')
     best.update(certificate,cauchy_p=cauchy_p,cauchy_tail=cauchy_tail,cauchy_pred_lower=cauchy_lower,
         subproblem_updates=b.updates,action_counts=dict(b.counts),action_count_upper=b.used,
-        original_nonlinear_acceptance=False)
+        exact_comparisons_cumulative=exact_total,exact_CPU_seconds_cumulative=exact_cpu,
+        optional_Newton_status=optional_status,original_nonlinear_acceptance=False)
     return best

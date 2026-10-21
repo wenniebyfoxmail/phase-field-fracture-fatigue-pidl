@@ -196,16 +196,35 @@ def solve_joint_trust(backend,old,dofs,values,load_id,settings,policy,initial_da
             model_hook=getattr(backend,'box_model_observer',None)
             if model_hook is not None:call('box_model_evidence',lambda:model_hook(current,J,row_weights,box_D,ls.L))
             newton_p=np.r_[model['du'],dd];kept=False
+            def stage_observer(stage,point,best,details):
+                details=dict(details);failure_vectors=details.pop('failure_vectors',{})
+                metadata=dict(event='box_stage',stage=stage,outer=current['outer'],
+                    direction=counts['newton_directions'],radius=radius,model_L_upper=ls.L,
+                    model_outer=current['outer'],model_r0_id=array_id(ls.r),D_id=array_id(box_D),
+                    row_weights_id=array_id(row_weights),subproblem_updates=budget.updates,
+                    action_count_upper=budget.used,action_counts=dict(budget.counts),**details)
+                if point is not None:
+                    metadata.update(pred_lower=point.get('pred_lower'),pred_upper=point.get('pred_upper'),
+                        model_value=point.get('model_value'),actual_TR_norm=point['actual_TR_norm'],
+                        raw_TR_upper=point['raw_TR_upper'],feasibility=point['feasibility'])
+                raw=getattr(backend,'joint_trial_observer',None)
+                if raw is not None and(point is not None or failure_vectors):
+                    vectors=dict(base_u=current['u'],base_d=current['d'],free_dofs=free,**failure_vectors)
+                    if point is not None:vectors.update(u=point['u'],d=point['d'],p=point['p'],p_tail=point['p_tail'])
+                    if best is not None:vectors.update(best_p=best['p'],best_p_tail=best['p_tail'])
+                    call('box_stage_evidence',lambda:raw(dict(metadata,parent_id=previous_id,load_id=load_id),vectors))
+                emit(metadata)
             while budget.updates<budget.update_limit-1:
                 room()
                 if radius<policy.trust_min_radius:raise RuntimeError('box trust radius collapsed')
                 try:
                     candidate=call('box_LS_subproblem',lambda:solve_box_model(ls,current,free,dofs,values,
-                        lower,backend.crack,radius,newton_p,policy.subspace_steps))
+                        lower,backend.crack,radius,newton_p,policy.subspace_steps,stage_observer))
                 except Exception as exc:
                     emit(dict(event='box_subproblem_failure',outer=current['outer'],direction=counts['newton_directions'],
                         radius=radius,subproblem_updates=budget.updates,action_count_upper=budget.used,
-                        action_counts=dict(budget.counts),reason=type(exc).__name__+': '+str(exc)))
+                        action_counts=dict(budget.counts),exact_comparisons_cumulative=budget.exact_comparisons,
+                        exact_CPU_seconds_cumulative=budget.exact_CPU_seconds,reason=type(exc).__name__+': '+str(exc)))
                     raise
                 counts['model_trials']+=1
                 meta=dict(event='box_trial_before',outer=current['outer'],direction=counts['newton_directions'],
@@ -216,6 +235,10 @@ def solve_joint_trust(backend,old,dofs,values,load_id,settings,policy,initial_da
                     cauchy_pred_lower=candidate['cauchy_pred_lower'],selection=candidate['selection'],
                     model_L_upper=ls.L,model_definition=candidate['certificate_object'],rho=None,rho_status='pending actual nonlinear evaluation',actual_TR_norm=candidate['actual_TR_norm'],
                     inward_ulp_corrections=candidate['inward_ulp_corrections'],
+                    raw_TR_upper=candidate['raw_TR_upper'],feasibility=candidate['feasibility'],
+                    optional_Newton_status=candidate['optional_Newton_status'],
+                    exact_comparisons_cumulative=candidate['exact_comparisons_cumulative'],
+                    exact_CPU_seconds_cumulative=candidate['exact_CPU_seconds_cumulative'],
                     subproblem_updates=budget.updates,action_count_upper=budget.used,action_counts=dict(budget.counts),
                     D_id=array_id(box_D),row_weights_id=array_id(row_weights),base_inactive_id=array_id(model['inactive']))
                 raw=getattr(backend,'joint_trial_observer',None)
