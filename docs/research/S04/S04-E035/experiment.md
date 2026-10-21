@@ -176,3 +176,7 @@ R007 crossed the previousU=.21stop and verified12/30states throughU=.28. U=.29 e
 Frozenlastcall's rawoktrue/exception contradiction and capturedcounterlabels are retained; localstatus/livecounterrepairs are preparationonly,11thfixtureunexecuted. Earlier12states independently require clean mechanics reports and unchangedfinalchecks. D2 nowneeds a new design/authority for outercoupledconvergence and damageovershoot; increasing inneriterations or clippingfields is not an establishedrepair. Existingfailedattempts/costs remain. D3pairedcomparison remains pending, and firstscientificfailure prohibits a newproducer or PIDL under this package.
 
 Independentoutcomereview is complete; see code_review.md. The options, result and bounded next-decision plan are consolidated in [r007_outcome_and_next_decision.md](r007_outcome_and_next_decision.md). This plan creates no newattempt or training authority.
+
+## Saved outer-coupling decision package — stopped before analysis
+
+HQ-SHEAR-SAVED-OUTER-COUPLING-DECISION-20261021 authorised read-only existing arrays/source only. The first CPU guard failed during childpreexec before data analysis/RSSsampling; per explicit condition no repair/retry followed. A-vs-B mechanism and newintervention remainundetermined; no newscience or newfigure. See [failure record](saved_outer_coupling_decision_20261021.md). R007results/costs and no-R008/PIDL boundary unchanged.

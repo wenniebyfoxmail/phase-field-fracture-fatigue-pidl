@@ -1,0 +1,7 @@
+# Saved outer-coupling decision package — no analysis result
+
+Authority HQ-SHEAR-SAVED-OUTER-COUPLING-DECISION-20261021 requested existing-array/source analysis only, no new FEM/PIDL/operator execution or remote reading. Conservative inclusive deadline01:44Z from01:14Z; totaltoolCPU≤180s/≤4threads, owned-treeRSS≤2GiB via≤.2ssampling, newoutput≤100MiB. OriginalR007costs and results remain unchanged.
+
+The first guard failed before the array script executed: subprocesspreexec exception. Static cause: parentCPUhard5s inherited by child, whosepreexec tried to raisehardlimitto15s. Exactnestedexception notexported. Owned-treeRSSsampling neverbegan; actualCPU/peakRSS/VM areUNKNOWN, notzero. No RLIMIT_AS or memory-guarantee success is claimed. Resource control therefore was not reliable, and the package stopped at its explicit pre-analysis stop condition. No guardrepair/retry, array/source mechanism analysis, newfigure, nativeassembly, linear solve, model loading or network operation.
+
+Requested distinction between incomplete outerfixedpoint and a phasepenalty/root/constraint discrepancy remainsUNDETERMINED. No same-equation nextintervention is selected or advertised executable from this package. OriginalR007postrunfixes are not newMATLABvalidation. Rawfailure/guardpayload and costs are retained in local_archive/experiments/S04-E035/mechanism_decision_20261021. FreshHQauthority is required before resuming resource-control preparation or saved-data analysis; this report grants no R008/PIDL execution.
