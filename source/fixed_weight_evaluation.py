@@ -159,6 +159,13 @@ def _check_tensile_boundary(state, mesh):
         raise ValueError("source does not satisfy clamped top/bottom scalar tensile boundary")
 
 
+def _with_tensile_boundary(u, mesh, load):
+    # An admitted source may contain a few ulps of boundary roundoff. Removing
+    # the load by subtraction does not remove that error, so write the prescribed
+    # rows exactly at every step while leaving every free displacement untouched.
+    return torch.where(_free_dofs(mesh), u, _tensile_lift(mesh, load))
+
+
 def persistence(source, target_key, mesh):
     """Persist internal fields while adding the prescribed tensile load lift.
 
@@ -168,6 +175,7 @@ def persistence(source, target_key, mesh):
     _transition(source, target_key)
     _check_tensile_boundary(source, mesh)
     u = source.u + _tensile_lift(mesh, target_key.load - source.key.load)
+    u = _with_tensile_boundary(u, mesh, target_key.load)
     return replace(source, key=target_key, u=u, d=source.d.clone(),
                    d_lower=source.d_lower.clone(), history=source.history.clone())
 
@@ -175,8 +183,9 @@ def persistence(source, target_key, mesh):
 def secant(previous, source, target_key, mesh):
     """Raw load-secant extrapolation within one nonzero signed loading branch.
 
-    No clipping or physical projection is applied. Score its violations beside
-    its field errors. Across reversal/zero increment this baseline is undefined.
+    Fixed displacement rows are reimposed exactly. Damage/history are not
+    clipped and no equilibrium correction is applied; score violations beside
+    field errors. Across reversal/zero increment this baseline is undefined.
     """
     _transition(previous, source.key)
     _transition(source, target_key)
@@ -192,6 +201,7 @@ def secant(previous, source, target_key, mesh):
         raise ValueError("secant baseline is undefined across a load-branch change")
     ratio = new_delta / old_delta
     u = source.u + ratio * (source.u - previous.u)
+    u = _with_tensile_boundary(u, mesh, target_key.load)
     d = source.d + ratio * (source.d - previous.d)
     history = source.history + ratio * (source.history - previous.history)
     return replace(source, key=target_key, u=u, d=d,

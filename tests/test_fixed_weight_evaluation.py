@@ -210,3 +210,47 @@ def test_tiny_mesh_interior_is_not_a_fixed_boundary_row():
     result = physics_diagnostics(state, source, mesh, material(), semantics=PHYSICS_SEMANTICS)
     assert result["equilibrium"]["n_free_dofs"] == 4
     assert result["equilibrium"]["status"] == "computed"
+
+
+def test_rounded_loaded_origin_unloads_reloads_and_evaluates_without_boundary_drift():
+    from fixed_weight_models import FixedWeightFieldModel, ModelConfig
+    from fixed_weight_inference import FrozenPredictor
+    xy = torch.tensor([[0., 0.], [1., 0.], [0., .5], [1., .5],
+                       [0., 1.], [1., 1.]], dtype=torch.float64)
+    mesh = Mesh(xy, torch.tensor([[0, 1, 3, 2], [2, 3, 5, 4]]), "rounded-boundary")
+    key = StateKey("t", "c", "synthetic", mesh.mesh_id, 1, 1, 1, "load", .3)
+    u = torch.stack((torch.zeros_like(xy[:, 1]), .3 * xy[:, 1]), -1)
+    u[4:, 1] = torch.nextafter(u[4:, 1], torch.full_like(u[4:, 1], float("inf")))
+    u[2:4] += u.new_tensor([.02, .03])  # Free displacement must be preserved.
+    source = State(key, u, torch.zeros(6, dtype=xy.dtype), torch.zeros(6, dtype=xy.dtype),
+                   torch.zeros((2, 4, 3), dtype=xy.dtype))
+    source.validate(mesh, material())  # One-ulp error is explicitly admitted.
+    original = source.u.clone()
+    unloaded = persistence(source, next_key(source, 0.), mesh)
+    unloaded.validate(mesh, material())
+    assert torch.equal(unloaded.u[[0, 1, 4, 5]], torch.zeros_like(unloaded.u[[0, 1, 4, 5]]))
+    torch.testing.assert_close(unloaded.u[2:4], source.u[2:4] + u.new_tensor([0., -.15]), rtol=0, atol=0)
+    reloaded = persistence(unloaded, next_key(unloaded, .2), mesh)
+    reloaded.validate(mesh, material())
+    assert torch.equal(reloaded.u[4:, 1], torch.full_like(reloaded.u[4:, 1], .2))
+    assert torch.equal(source.u, original)
+    predictor = FrozenPredictor(FixedWeightFieldModel(mesh, ModelConfig(width=8, context_width=4)))
+    report = evaluate_continuation(predictor, [source, unloaded, reloaded], mesh, material())
+    assert report["n_horizons"] == 2
+    assert report["persistence"]["trajectory_mean"]["u_y"]["mae"] == 0
+
+
+def test_secant_reimposes_exact_zero_boundary_after_rounded_extrapolation():
+    mesh, initial = fixture()
+    previous = persistence(initial, next_key(initial, .3), mesh)
+    current = persistence(previous, next_key(previous, .15), mesh)
+    rounded = current.u.clone()
+    rounded[2:, 1] = torch.nextafter(rounded[2:, 1], torch.full_like(rounded[2:, 1], float("inf")))
+    current = replace(current, u=rounded)
+    current.validate(mesh, material())
+    predicted = secant(previous, current, next_key(current, 0.), mesh)
+    assert torch.equal(predicted.u, torch.zeros_like(predicted.u))
+    predicted.validate(mesh, material())
+    # The zero-load state remains reusable at the next step.
+    reloaded = persistence(predicted, next_key(predicted, .1), mesh)
+    reloaded.validate(mesh, material())

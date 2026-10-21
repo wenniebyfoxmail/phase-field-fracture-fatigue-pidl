@@ -173,13 +173,14 @@ roundtrip, whole-condition splitting, denied loader callbacks, timing and
 identity mismatches, raw/projected outputs, and history behavior on unloading.
 Gradient-only loss tests do not create an optimizer or enter a training loop.
 
-Local verification on 2026-10-21: **78 tests passed**, including the three new
+Local verification on 2026-10-21: **80 tests passed**, including the three new
 test modules and reused `test_s09_fem_physics.py` /
 `test_s09_stage0a_transition.py`. Both configuration-driven synthetic inference
 checks completed and reported unchanged weights/buffers. No measured model
 accuracy is reported. Independent implementation review found and prompted
-repairs to the committed lower-bound timing, boundary admission, and secant
-branch logic; the regression tests preserve those cases. Exact reviewed code
+repairs to the committed lower-bound timing, boundary admission, secant
+branch logic and roundoff-safe unload/reload boundaries; the regression tests
+preserve those cases. Exact reviewed code
 identity and final review disposition are recorded below after snapshot review.
 
 ## Evaluation and next decision
