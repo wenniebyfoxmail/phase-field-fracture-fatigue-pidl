@@ -33,13 +33,12 @@ save(fullfile(folder,'report.mat'),'report','-v7');
         if any(strcmp(e.kind,{'pre','direction','accepted','converged','failure'}))
             frame=struct('kind',e.kind,'iteration',e.iteration,'trial',e.trial,...
                 'lambda',e.lambda,'slope',e.slope,'linear_residual',e.linear_residual,...
-                'report',e.report,'available_origin_force',~isempty(e.cache));
+                'direction',e.direction,'report',e.report,'available_origin_force',~isempty(e.cache));
             if ~isempty(e.cache)
                 frame.u=e.cache.u;frame.forces=e.cache.force;frame.R=e.cache.R;
                 frame.evaluation_id=e.cache.evaluation_id;frame.driver=e.cache.driver;frame.energy=e.cache.energy;
             end
             if any(strcmp(e.kind,{'pre','direction'}))
-                frame.direction=e.direction;
                 file=fullfile(folder,sprintf('iter_%04d_origin.mat',e.iteration));
             elseif strcmp(e.kind,'accepted')
                 file=fullfile(folder,sprintf('iter_%04d_accepted.mat',e.iteration));
