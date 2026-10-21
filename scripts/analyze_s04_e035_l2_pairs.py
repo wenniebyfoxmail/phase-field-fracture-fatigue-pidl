@@ -118,6 +118,26 @@ def main():
     fig.suptitle(f"S04-E035 · fixed first state: c{row['cycle']} peak, step {row['step']}\n"
                  'Same preceding network and history · finite local solves',fontsize=12)
     fig.savefig(a.output/'damage_first_state.png',dpi=180);plt.close(fig)
+    unloaded=[entry for entry in fields if entry[0]['substep']==5]
+    if unloaded:
+        fig,axes=plt.subplots(len(unloaded),3,figsize=(10.5,3.2*len(unloaded)),
+                              layout='constrained',squeeze=False)
+        lo=min(float(d.min()) for _,ds,_ in unloaded for d in ds)
+        hi=max(float(d.max()) for _,ds,_ in unloaded for d in ds)
+        de=max(float(np.abs(ds[1]-ds[0]).max()) for _,ds,_ in unloaded)
+        for axs,(row,ds,_) in zip(axes,unloaded):
+            stop='240s cap' if row['zero_stop']=='wall_cap' else 'early stop'
+            titles=[f"c{row['cycle']} unloaded · L2 = 1e-5\n{row['control_updates']} updates",
+                    f"L2 = 0 · {row['zero_updates']} updates\n{stop}", 'zero − control']
+            for j,d in enumerate((ds[0],ds[1],ds[1]-ds[0])):
+                im=axs[j].tripcolor(tri,d,shading='gouraud',cmap='viridis' if j<2 else 'RdBu_r',
+                                   vmin=lo if j<2 else -de,vmax=hi if j<2 else de)
+                axs[j].set_aspect('equal');axs[j].set_xlabel('x');axs[j].set_ylabel('y')
+                axs[j].set_title(titles[j],fontsize=10)
+                fig.colorbar(im,ax=axs[j],shrink=.8,label='damage d' if j<2 else 'damage difference')
+        fig.suptitle('S04-E035 · all retrieved preselected unloaded states · synthetic, one seed\n'
+                     'Same preceding network/history · finite endpoints; convergence not established',fontsize=12)
+        fig.savefig(a.output/'damage_unloading_pairs.png',dpi=180);plt.close(fig)
     fig,axes=plt.subplots(len(rows),2,figsize=(11,2.7*len(rows)),layout='constrained',squeeze=False)
     for axs,(row,_,folders) in zip(axes,fields):
         for folder,label,color in zip(folders,['L2 = 1e-5','L2 = 0'],['#0072B2','#D55E00']):
