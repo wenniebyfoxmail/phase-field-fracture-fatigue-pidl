@@ -1,0 +1,17 @@
+{
+  "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]",
+  "torch": "2.7.0+cu126",
+  "numpy": "1.24.4",
+  "GPU_UUID": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+  "CPU_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "RLIMIT_AS": [
+    -1,
+    -1
+  ],
+  "AS_inherited_unchanged": true
+}

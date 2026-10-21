@@ -67,10 +67,18 @@ def main():
     for label,x,y in [('native_target','native_constant','native_zero'),('frozen_target','frozen_constant','frozen_zero'),('constant_branch','native_constant','frozen_constant'),('zero_branch','native_zero','frozen_zero')]:
         if x not in fields or y not in fields:continue
         pairs.append(dict(comparison=label,x=x,y=y,Q_difference=norm(fields[x][0]-fields[y][0]),FD_difference=norm(fields[x][1]-fields[y][1]),error_vector_difference=norm(fields[x][2]-fields[y][2]),source_field_difference=norm((arr(x,'source_q')-arr(y,'source_q'))[free])))
-    for name,items in [('FD_metrics',rows),('spatial',spatial),('pair_differences',pairs),('forward_estimates',forwards)]:
+    terms=[]
+    for kind in ['constant','zero']:
+        x='native_'+kind;y='frozen_'+kind
+        if x not in fields or y not in fields:continue
+        for name in ['Jv','Cv','KJv','BTKJv','U','head_response','H','factor']:
+            xx=arr(x,name);yy=arr(y,name)
+            if not np.isfinite(xx).all() or not np.isfinite(yy).all():raise ValueError('nonfinite derivative term')
+            terms.append(dict(kind=kind,term=name,native_norm=norm(xx),frozen_norm=norm(yy),difference_norm=norm(xx-yy),native_relative_difference=norm(xx-yy)/max(norm(xx),np.finfo(float).tiny)))
+    for name,items in [('derivative_terms',terms),('FD_metrics',rows),('spatial',spatial),('pair_differences',pairs),('forward_estimates',forwards)]:
         with (out/(name+'.csv')).open('w',newline='') as f:
             writer=csv.DictWriter(f,fieldnames=list(dict.fromkeys(k for row in items for k in row)),lineterminator='\n');writer.writeheader();writer.writerows(items)
-    summary=dict(run_id=case.name,result=result,FD=rows,spatial=spatial,pair_differences=pairs,geometry_SHA256=msh,full_forward_bound_trusted=False,verdict=('Four controls from two immutable runs; derivative/branch observation only, unique mechanism unresolved without complete forward bound' if len(arms)==4 else 'Partial native pair only; full2x2 incomplete, frozen branches unavailable, unique mechanism unresolved without complete forward bound'),new_field_or_energy_evaluations=0,new_NN_AD_SVD_solve=0)
+    summary=dict(run_id=case.name,result=result,FD=rows,spatial=spatial,pair_differences=pairs,derivative_terms=terms,geometry_SHA256=msh,full_forward_bound_trusted=False,verdict=('Four controls from two immutable runs; derivative/branch observation only, unique mechanism unresolved without complete forward bound' if len(arms)==4 else 'Partial native pair only; full2x2 incomplete, frozen branches unavailable, unique mechanism unresolved without complete forward bound'),new_field_or_energy_evaluations=0,new_NN_AD_SVD_solve=0)
     (out/'saved_analysis.json').write_text(json.dumps(summary,indent=2,allow_nan=False)+'\n')
     fig,ax=plt.subplots(figsize=(8.6,4.4),layout='constrained');colors=['#D55E00','#E69F00','#0072B2','#56B4E9'][:len(rows)];xs=np.arange(len(rows));ratios=[r['recomputed_ratio'] for r in rows]
     ax.bar(xs,ratios,color=colors);ax.axhline(1,color='#222222',linestyle='--',label='original FD threshold');ax.set_yscale('log');ax.set_xticks(np.arange(4),['Native\ng=g0','Native\ng=0 root','Frozen branch\ng=g0','Frozen branch\ng=0 root']);ax.set_ylabel('||Q - FD||2 / original tolerance');ax.set_title('c20 chart controls: derivative mismatch, not FEM/PIDL solution error');ax.legend()
@@ -87,7 +95,7 @@ def main():
     fig.colorbar(pc,ax=axes,label='Cell RMS of nodal |Q - FD|\nUV per scaled-hidden unit; shared symlog',shrink=.9);fig.savefig(out/'FD_four_arm_fields.png',dpi=170);plt.close(fig)
     provenance=f'Run {case.name}; native run {None if args.native_run is None else args.native_run.name}; native sourcefa9ce259 and new frozen source per verified run manifest, fixedc20s4/FEMdamage/sourcePIDLhistory/Phi/T0/UV/B0, seed173/h1e-6. Selected remote arrays retrieved with SHA/size checks; local mirror partial (three large shared Phi maps remain remote). Geometry SHA {msh}. Source/side fields/Q/FD/differences used without NN, AD, force, energy, tangent, SVD or solve. Native controls come from original partial R1; frozen controls, when present, come from the separately hash-verified completion run. Missing controls are labelled NOT RUN. These chart controls are not installed NN endpoints.'
     for stem,desc in [('FD_four_arm','Bars are original abs1e-10+rel1e-4 L2 gate ratios, not physical residual or FEM/PIDL error. Log y; threshold1 unchanged. A smaller bar is a more consistent derivative check, not a better solution.'),('FD_four_arm_fields','Common full-mesh symlog color scale; free-field error vectors placed into original u/v nodal slots with prescribed increments zero. Each Q4 shows RMS nodal vector magnitude; no smoothing or clipping. This visualization is not the scalar unweighted L2 test.')]:
-        (out/(stem+'.md')).write_text('# '+stem+'\n\n'+desc+'\n\n'+provenance+'\n\nComplete forward arithmetic/nonlinear root error is not certified. Even an FD pass is not a unique-cause, architecture-capacity, optimization, FEM qualification or physical validation result.\n')
+        (out/(stem+'.md')).write_text('# '+stem+'\n\n## How to read\n\n'+desc+'\n\n## Data provenance\n\n'+provenance+'\n\n## Limitations\n\nComplete forward arithmetic/nonlinear root error is not certified. Even an FD pass is not a unique-cause, architecture-capacity, optimization, FEM qualification or physical validation result.\n')
     (out/'analysis_cost.json').write_text(json.dumps(dict(wall_seconds=time.monotonic()-start,CPU_seconds=time.process_time()-cpu,new_field_or_energy_evaluations=0,NN_AD_SVD_solve=0),indent=2)+'\n')
     print(json.dumps(dict(FD=rows,pairs=pairs,spatial=spatial),indent=2))
 if __name__=='__main__':main()

@@ -1,0 +1,79 @@
+{
+  "files": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/FD_four_arm.md",
+      "bytes": 1525,
+      "sha256": "99a68a143172812a6bcfdf218eb0d16fe5cffce59f38e4d44a8e3ea543a6d2f3"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/FD_four_arm.png",
+      "bytes": 58603,
+      "sha256": "e0c862f9e4b37cb8535de2ff9f38d8df7b5e55959570480938250d17a5981e5a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/FD_four_arm_fields.md",
+      "bytes": 1592,
+      "sha256": "982fe556605118d4a460401f4c373f5cf28ec9c9cb413a4274eca13c63ab3cfa"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/FD_four_arm_fields.png",
+      "bytes": 471295,
+      "sha256": "b99255734f34a8b96c8c9bee0a0876f4c4e5425aa71d9dfc24808ab6c033c9af"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/FD_metrics.csv",
+      "bytes": 1581,
+      "sha256": "ec6aa7c5d870651ece6c9e9521cec6aedc1bfca21d32e30bf224625ce3d7dcc5"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/README_analysis.md",
+      "bytes": 902,
+      "sha256": "a53cedfacccde9813eb79ed12399a4b1a431f505ff489067947c754c003feebf"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/analysis_cost.json",
+      "bytes": 132,
+      "sha256": "16b11fc2b640eb680f7666dea3f2cdc503cd827c59175d3cbbde3dc454524d92"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/decision.md",
+      "bytes": 383,
+      "sha256": "80d410ecaedb9ec3669156f364572346722318ab6f05e78d3c140c9331e70ee4"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/derivative_terms.csv",
+      "bytes": 1391,
+      "sha256": "194f2a742432e28d125a53ac0abca88a13004923b266ddd73f4bef4ad820a437"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/forward_estimates.csv",
+      "bytes": 4052,
+      "sha256": "67db73ab88e3f40401b0d00e2e87958a815b80a91378d5847d475162bdbf3d44"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/pair_differences.csv",
+      "bytes": 597,
+      "sha256": "1c275ba34bbfce224eb1a59439ed6d00b9f60d7ff4f7b69ffcf0a3cabc579a87"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/saved_analysis.json",
+      "bytes": 16582,
+      "sha256": "34ba576ed8c2fea9d38f3ff909e41ac0ba26746b6f1362c1c4bd3f0fe80369e3"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021/analysis/spatial.csv",
+      "bytes": 654,
+      "sha256": "d7f73acf0c21fdb5b96c2689ec286c3d1618e5f53fc4403cf5481f10e04f6aea"
+    }
+  ],
+  "analyzer_path": "tools/s04_e011_analysis/analyze_residual_branch_measurement.py",
+  "analyzer_sha256": "95ff85e21375edc3c1346fa41bc9c712d3c5b04a8f3981e96c00ce2b0cf3c3cf",
+  "failed_local_analysis_import": {
+    "interpreter": "python3",
+    "error": "ModuleNotFoundError: numpy",
+    "numerical_arrays_loaded": false,
+    "wall_CPU_seconds": "UNKNOWN"
+  },
+  "successful_interpreter": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "sidecar_validation": "pass after headings correction; no plot or numerical recomputation"
+}

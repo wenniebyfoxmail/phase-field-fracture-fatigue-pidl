@@ -1,0 +1,34 @@
+{
+  "whole_started_UTC": "2026-10-21T00:02:23+00:00",
+  "precommit_closed_UTC": "2026-10-21T00:22:22.566547+00:00",
+  "whole_wall_seconds_through_precommit": 1199.566547,
+  "whole_wall_cap_seconds": 1800,
+  "absolute_deadline_UTC": "2026-10-21T00:32:23Z",
+  "science_seconds": 31.53257597051561,
+  "mechanical_remote_conservative_seconds": 43.49280002247542,
+  "mechanical_client_through_response_seconds": 41.00015664100647,
+  "retrieval_wall_seconds": 272.15647433290724,
+  "retrieval_remote_hash_seconds": 0.9699495192617178,
+  "analysis": {
+    "wall_seconds": 1.0839995419373736,
+    "CPU_seconds": 1.080954,
+    "new_field_or_energy_evaluations": 0,
+    "NN_AD_SVD_solve": 0
+  },
+  "stdin_fixture_wall_seconds": [
+    0.018981041037477553,
+    0.01903929200489074
+  ],
+  "whole_CPU_seconds": "UNKNOWN_not_zero",
+  "GPU_kernel_seconds": "UNKNOWN_not_zero",
+  "all_disk_reads": "UNKNOWN",
+  "monetary_cost": "UNKNOWN",
+  "previous_costs_reference": "../../frozen_completion_stdin_r2_20261021/prior_costs.json",
+  "no_new_run_after_completion": true,
+  "figure_QA": {
+    "new_case_sidecars": "pass after heading correction",
+    "both_figures_viewed": true,
+    "broader_attachment_directory_check": "Found missing headings in two immutable older R1 sidecars; new R2 sidecars passed, older artifacts not modified"
+  },
+  "previous_precommit_checkpoint_wall_seconds": 1050.851409
+}

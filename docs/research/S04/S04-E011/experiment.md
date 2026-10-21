@@ -310,3 +310,8 @@ Run pf_s04e011_frozen_completion_r1_hq_20261021/source7401442f/packagee41bafe9 s
 ### 2026-10-21 prospective stdin frozen completion R002
 
 HQ-MESH-FROZEN-STDIN-R002-20261021, sourcehuman_delegated_hq under prior verified human nighttime delegation, explicitly authorizes one fresh missing-frozen-pair run only. Original science/card identity bindings and caps retained; minimal stdin repair, <=16KiB eachargv/64KiB total, mechanical2batches90s; whole1800s00:02:23–00:32:23UTC/science300. Old failures/costs/UNKNOWN retained. See[frozen_completion_stdin_r2_20261021](frozen_completion_stdin_r2_20261021/README.md); no claim of actual admission until receipt.
+
+
+### 2026-10-21 frozen stdin R002 completed, derivative gate negative
+
+Newf5972efd/cbc29861 worker3997835 completed only frozen pair31.5326s, source/cache/physical identity intact, live[]. Combined immutable native R1 ratios7.233244 vs newfrozen7.280360; target/root changes negligible, branch change does not remove mismatch. Full forward bound still incomplete/conditional4619xgate; causal and capacity conclusions unresolved, no optimization/history/rollout. Retrieval599remote/241local partial verified. See[runs/pidl_frozen_completion_r2_result_20261021.md](runs/pidl_frozen_completion_r2_result_20261021.md).

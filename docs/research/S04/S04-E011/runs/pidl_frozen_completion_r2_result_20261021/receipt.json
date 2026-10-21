@@ -1,0 +1,357 @@
+{
+  "status": "MEASUREMENT_COMPLETE",
+  "run_id": "pf_s04e011_frozen_completion_r2_hq_20261021",
+  "source_branch": "codex/hard5-q4-t3-2x2-20261005",
+  "whole_task_started_UTC": "2026-10-21T00:02:23Z",
+  "absolute_deadline_epoch": 1792542743.0,
+  "mechanical_checks": 2,
+  "producer_started": true,
+  "package": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_frozen_completion_stdin_r2_package_20261021",
+  "case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021",
+  "source_commit": "f5972efd9b9bb8bba9ba42b13fc0af7174c980f4",
+  "package_sha256": "cbc2986100e206576a3e229f08094c9620227f0c3f5980e0b1019d515d317bb1",
+  "authority_source": "human_delegated_hq",
+  "authority_ref": "HQ-MESH-FROZEN-STDIN-R002-20261021; human_delegated_hq under verified nighttime authority01a15b4c-2e3a-7772-b74b-46f4ab752766; fresh frozen pair only, same science, no optimization",
+  "authority_sha256": "f1306ecd2f7967fc733ddebeafc35bd25478c9d87a3c5d32e991dbc95bf7f108",
+  "delta_bytes": 109662,
+  "stage_returncode": 0,
+  "bootstrap_started": true,
+  "launch": {
+    "confirmation_failed": false,
+    "bootstrap_exit": null,
+    "bootstrap_pid": 3997764,
+    "root": "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021",
+    "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_frozen_completion_r2_hq_20261021",
+    "command": [
+      "/usr/bin/python3",
+      "-B",
+      "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021/code/tools/s04_e011_execution/frozen_completion_launch.py",
+      "--package",
+      "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021",
+      "--authority",
+      "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021/authority.approved.json",
+      "--authority-sha256",
+      "f1306ecd2f7967fc733ddebeafc35bd25478c9d87a3c5d32e991dbc95bf7f108",
+      "--envelope-deadline",
+      "1792542743.0"
+    ],
+    "log": "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021/worker.log",
+    "stdout": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/pf_s04e011_frozen_completion_r2_hq_20261021.bootstrap.stdout",
+    "stderr": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/pf_s04e011_frozen_completion_r2_hq_20261021.bootstrap.stderr",
+    "mechanical_seconds": 43.49280002247542,
+    "launch_receipt": {
+      "run_id": "pf_s04e011_frozen_completion_r2_hq_20261021",
+      "source_commit": "f5972efd9b9bb8bba9ba42b13fc0af7174c980f4",
+      "package_sha256": "cbc2986100e206576a3e229f08094c9620227f0c3f5980e0b1019d515d317bb1",
+      "worker_pid": 3997835,
+      "guardian_pid": 3997837,
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021/code/tools/s04_e011_execution/frozen_completion_launch.py",
+        "--worker",
+        "--package",
+        "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021"
+      ],
+      "started_monotonic": 5563394.374955926,
+      "deadline": 5563694.374955926,
+      "source_branch": "codex/hard5-q4-t3-2x2-20261005",
+      "admission": {
+        "index": 5,
+        "uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+        "free_mib": 24077.0,
+        "utilization": 0.0,
+        "total_mib": 24564.0,
+        "required_initial_free_bytes": 21474836480,
+        "owned": []
+      },
+      "CPU_affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "authority": {
+        "approved_by": "human_delegated_HQ",
+        "execute_one_frozen_pair_completion": true,
+        "family": "S04-E011-PROFILED-HIDDEN-C20-v1",
+        "run_id": "pf_s04e011_frozen_completion_r2_hq_20261021",
+        "package_sha256": "cbc2986100e206576a3e229f08094c9620227f0c3f5980e0b1019d515d317bb1",
+        "authority_ref": "HQ-MESH-FROZEN-STDIN-R002-20261021; human_delegated_hq under verified nighttime authority01a15b4c-2e3a-7772-b74b-46f4ab752766; fresh frozen pair only, same science, no optimization",
+        "verified_direct_human_message": "01a15b4c-2e3a-7772-b74b-46f4ab752766",
+        "source_HQ_thread": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+        "prospective_new_measurement": true,
+        "old_R2_reopened": false,
+        "mechanical_started_monotonic": 5563351.209266043,
+        "mechanical_checks": 2,
+        "mechanical_max_seconds": 90,
+        "mechanical_client_started_epoch": 1792541271.2169433,
+        "absolute_deadline_epoch": 1792542743.0
+      },
+      "log": "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021/worker.log"
+    },
+    "controller_terminal": null
+  },
+  "worker_pid": 3997835,
+  "guardian_pid": 3997837,
+  "outer_return": {
+    "run_id": "pf_s04e011_frozen_completion_r2_hq_20261021",
+    "status": "MEASUREMENT_COMPLETE",
+    "outer_error": null,
+    "controller_pid": 3997775,
+    "reason": null,
+    "gate_opened": true,
+    "usage": {
+      "peak_tree_rss": 1710415872,
+      "latest": {
+        "peak_tree_rss": 1624928256,
+        "task_bytes": 1162557473,
+        "telemetry": {
+          "monotonic": 5563425.937132054,
+          "cuda_state": "active",
+          "peak_rss_bytes": 1639301120,
+          "peak_task_bytes": 1162557348,
+          "peak_cuda_allocated": 11298841600,
+          "peak_cuda_reserved": 12108955648,
+          "error": null
+        },
+        "outer_tree_rss": 1710415872,
+        "owned_external_bytes": 228
+      },
+      "gpu": {
+        "index": 5,
+        "uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+        "free_mib": 21588.0,
+        "utilization": 39.0,
+        "total_mib": 24564.0,
+        "required_initial_free_bytes": 21474836480,
+        "owned": [
+          {
+            "pid": 3997835,
+            "used_mib": 2484.0
+          }
+        ]
+      }
+    },
+    "worker_exit": 0,
+    "guardian_exit": 0,
+    "export_manifest_sha256": "964c92eec66a5edce6da3d87623db5a04c67864711dbc8b2317f91d2105dee8b",
+    "postexit_files": [
+      {
+        "root": "run",
+        "path": "outer_guard.json",
+        "bytes": 348,
+        "sha256": "0bdd05e01629e19488727e23f5cc6833e03f45cbf1c212aeadaecfb621c29aef"
+      },
+      {
+        "root": "run",
+        "path": "outer_guard.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "root": "run",
+        "path": "outer_controller.log",
+        "bytes": 724,
+        "sha256": "35d57870f9aa66ffd1267f21a63b44f75c818aef981c7e5b04d45c3a56efc99d"
+      }
+    ]
+  },
+  "mechanical1_summary": {
+    "started": 5563351.209266043,
+    "UTC": 1792541291.8400617,
+    "host": "GPUServer8",
+    "user": "drtao",
+    "mount": true,
+    "root_exists": false,
+    "archive_exists": false,
+    "claim_exists": false,
+    "old_return_exists": false,
+    "free_disk": 616622436352,
+    "matching_live": [],
+    "GPU": "5, GPU-5622bd47-1050-3003-246d-3cabe2b4791b, 24564, 24077, 0",
+    "apps": [],
+    "MemAvailable_kb": 383830136,
+    "old_R2_manifest_sha256": "6b5b2bf65640c02eac6b3a67834e2a3baf53d517748eff128341a4e761870d3b",
+    "finished": 5563375.707328502,
+    "remote_probe_started_original": 5563374.34704604
+  },
+  "input_hashes_verified": 377,
+  "new_science_terminal": {
+    "completed": true,
+    "source_network_B0_physics_unchanged": true,
+    "state_error": null,
+    "primary_error": null,
+    "counts": {
+      "energy_force_field": 25,
+      "hidden_jvp": 4,
+      "hidden_vjp": 0,
+      "C": 0,
+      "CT": 0,
+      "head_assembly": 11,
+      "head_factor": 11,
+      "head_triangular_solve": 30,
+      "raw_feature_forward": 9,
+      "explicit_head_products": 4,
+      "Qv": 2,
+      "frozen_tangent": 2,
+      "svd": 0
+    },
+    "elapsed_seconds": 31.53523786459118,
+    "optimization_updates": 0,
+    "history_commits": 0,
+    "rollout": 0
+  },
+  "new_science_result": {
+    "status": "FROZEN_PAIR_COMPLETE_NO_OPTIMIZATION",
+    "arms": [
+      {
+        "error_L2": 0.009506254089002063,
+        "scale": 13.057395248181114,
+        "tolerance": 0.0013057396248181115,
+        "ratio": 7.280359658478065,
+        "passed": false,
+        "arm": "frozen_constant",
+        "internal_head_tol": 1e-13,
+        "source_z_L2": 0.0,
+        "source_defect_inf": 2.662800535624399e-16,
+        "source_physical_gradient_inf": 3.366567658327768e-11,
+        "side_linear_defect_FD_triangle": 1.9657247420925065e-09,
+        "full_forward_bound_trusted": false,
+        "causal_verdict": "numerically_unresolved_even_if_FD_passes"
+      },
+      {
+        "error_L2": 0.009506254020437952,
+        "scale": 13.057395237123725,
+        "tolerance": 0.0013057396237123725,
+        "ratio": 7.280359612133501,
+        "passed": false,
+        "arm": "frozen_zero",
+        "internal_head_tol": 1e-13,
+        "source_z_L2": 2.795874806674337e-14,
+        "source_defect_inf": 1.7420960507497085e-15,
+        "source_physical_gradient_inf": 1.7420960507497085e-15,
+        "side_linear_defect_FD_triangle": 2.7727143183409832e-09,
+        "full_forward_bound_trusted": false,
+        "causal_verdict": "numerically_unresolved_even_if_FD_passes"
+      }
+    ],
+    "counts": {
+      "energy_force_field": 25,
+      "hidden_jvp": 4,
+      "hidden_vjp": 0,
+      "C": 0,
+      "CT": 0,
+      "head_assembly": 11,
+      "head_factor": 11,
+      "head_triangular_solve": 30,
+      "raw_feature_forward": 9,
+      "explicit_head_products": 4,
+      "Qv": 2,
+      "frozen_tangent": 2,
+      "svd": 0
+    },
+    "scientific_elapsed_seconds": 31.53257597051561,
+    "original_head_limit": 1e-10,
+    "internal_head_tol": 1e-13,
+    "FD_abs": 1e-10,
+    "FD_rel": 0.0001,
+    "h": 1e-06,
+    "source_identity": "599c9b2d12dbcc66b558a750bc46e1463b1243b90bc6fbee2a72755e0f80e592",
+    "rank": 386,
+    "reused_native_run": "pf_s04e011_residual_branch_c20_r1_hq_20261021",
+    "original_boundary_fixed": true,
+    "source_restored": true,
+    "all_arms_are_chart_controls": true,
+    "optimization_updates": 0,
+    "history_commits": 0,
+    "rollout": 0,
+    "full_forward_bound_trusted": false,
+    "causal_decision": "unresolved_without_full_forward_error_control"
+  },
+  "terminal": {
+    "run_id": "pf_s04e011_frozen_completion_r2_hq_20261021",
+    "status": "MEASUREMENT_COMPLETE",
+    "outer_error": null,
+    "controller_pid": 3997775,
+    "reason": null,
+    "gate_opened": true,
+    "usage": {
+      "peak_tree_rss": 1710415872,
+      "latest": {
+        "peak_tree_rss": 1624928256,
+        "task_bytes": 1162557473,
+        "telemetry": {
+          "monotonic": 5563425.937132054,
+          "cuda_state": "active",
+          "peak_rss_bytes": 1639301120,
+          "peak_task_bytes": 1162557348,
+          "peak_cuda_allocated": 11298841600,
+          "peak_cuda_reserved": 12108955648,
+          "error": null
+        },
+        "outer_tree_rss": 1710415872,
+        "owned_external_bytes": 228
+      },
+      "gpu": {
+        "index": 5,
+        "uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+        "free_mib": 21588.0,
+        "utilization": 39.0,
+        "total_mib": 24564.0,
+        "required_initial_free_bytes": 21474836480,
+        "owned": [
+          {
+            "pid": 3997835,
+            "used_mib": 2484.0
+          }
+        ]
+      }
+    },
+    "worker_exit": 0,
+    "guardian_exit": 0,
+    "export_manifest_sha256": "964c92eec66a5edce6da3d87623db5a04c67864711dbc8b2317f91d2105dee8b",
+    "postexit_files": [
+      {
+        "root": "run",
+        "path": "outer_guard.json",
+        "bytes": 348,
+        "sha256": "0bdd05e01629e19488727e23f5cc6833e03f45cbf1c212aeadaecfb621c29aef"
+      },
+      {
+        "root": "run",
+        "path": "outer_guard.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "root": "run",
+        "path": "outer_controller.log",
+        "bytes": 724,
+        "sha256": "35d57870f9aa66ffd1267f21a63b44f75c818aef981c7e5b04d45c3a56efc99d"
+      }
+    ]
+  },
+  "live": [],
+  "retrieval_status": "verified_partial_local",
+  "retrieval": {
+    "verified": {
+      "verified_entries": 599,
+      "run_id": "pf_s04e011_frozen_completion_r2_hq_20261021",
+      "transfer_complete": true,
+      "scientific_success_inferred": false
+    },
+    "remote_entries": 599,
+    "remote_bytes": 1162558770,
+    "hash_seconds": 0.9699495192617178,
+    "selected_entries": 241,
+    "selected_bytes": 354238769,
+    "local_full_mirror": false,
+    "outer_return_sha256": "b725c8426d8f548ee666eff63e5d857b815e17408b0040225bb2b6f7e0ada4a0",
+    "manifest_sha256": "964c92eec66a5edce6da3d87623db5a04c67864711dbc8b2317f91d2105dee8b",
+    "local_selected_hashes_verified": true,
+    "compressed_network_bytes": 260211402,
+    "transport_wall_seconds": 272.15647433290724,
+    "partial_local_policy": "All remote hashes/coverage verified; Three large shared Phi maps remain remote; all selected matrices, factors, vectors/fields verified locally, no full-local mirror claim"
+  }
+}

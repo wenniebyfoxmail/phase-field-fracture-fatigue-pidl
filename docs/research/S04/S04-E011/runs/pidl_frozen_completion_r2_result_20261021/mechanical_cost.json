@@ -1,0 +1,8 @@
+{
+  "client_connection_start_epoch": 1792541271.2169433,
+  "local_stage_stdout_saved_epoch": 1792541312.2171,
+  "mechanical_wall_through_local_stage_response": 41.00015664100647,
+  "remote_reported_through_launch_confirmation": 43.49280002247542,
+  "method": "Task local stage.stdout mtime captured immediately after subprocess return; includes both SSH batches and local preparation between. Not precise CPU or GPU time.",
+  "cap_seconds": 90
+}

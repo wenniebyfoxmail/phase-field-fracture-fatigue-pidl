@@ -1,0 +1,125 @@
+{
+  "status": "passed_saved_array_and_figure_review",
+  "scope": "Saved finite vectors and selected metadata only; no new NN/AD/physics/Gram/SVD/solve/SSH/test",
+  "cross_run_sources": {
+    "native": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_residual_branch_c20_r1_hq_20261021",
+    "frozen": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_frozen_completion_r2_hq_20261021",
+    "native_R1_status": "Failed at aggregate recording; complete saved native vectors retained. Not retroactively completed.",
+    "frozen_R2_status": "Frozen pair producer complete; no accepted optimization update."
+  },
+  "verified_unique_arrays": 22,
+  "rows": [
+    {
+      "arm": "native_constant",
+      "error": 0.00944473326282036,
+      "ratio": 7.233243966330284
+    },
+    {
+      "arm": "native_zero",
+      "error": 0.009444733342351403,
+      "ratio": 7.2332440333713715
+    },
+    {
+      "arm": "frozen_constant",
+      "error": 0.009506254089002067,
+      "ratio": 7.280359658478074
+    },
+    {
+      "arm": "frozen_zero",
+      "error": 0.009506254020437954,
+      "ratio": 7.2803596121335
+    }
+  ],
+  "pair_comparisons": [
+    {
+      "comparison": "native_target",
+      "Q_difference": 1.7922498655432623e-07,
+      "FD_difference": 1.7937810448277015e-07,
+      "error_vector_difference": 1.819313829622663e-09,
+      "relative_to_native_error": null
+    },
+    {
+      "comparison": "frozen_target",
+      "Q_difference": 1.792419815530292e-07,
+      "FD_difference": 1.7887599198689073e-07,
+      "error_vector_difference": 1.6416890572205568e-09,
+      "relative_to_native_error": null
+    },
+    {
+      "comparison": "constant_branch",
+      "Q_difference": 6.17306341110319e-11,
+      "FD_difference": 0.00047667138885359165,
+      "error_vector_difference": 0.0004766713760246675,
+      "relative_to_native_error": 0.05046954347573869
+    },
+    {
+      "comparison": "zero_branch",
+      "Q_difference": 7.203900718164507e-11,
+      "FD_difference": 0.00047667069628795926,
+      "error_vector_difference": 0.0004766706831384416,
+      "relative_to_native_error": 0.05046946968857117
+    }
+  ],
+  "constant_branch_bit_exact_saved_files": {
+    "Jv.npy": true,
+    "H.npy": true,
+    "factor.npy": true
+  },
+  "checks": [
+    "FD and difference arrays reconstructed bit-exactly from saved endpoint free fields and Q for all4arms; reported norms/ratios reproduce to floating readout precision.",
+    "Three derived cache equivalence receipts phi/qraw true; identical free-DOF order; source E/R and g0 difference are explicit rather than claiming unsaved features equality.",
+    "Constant source J/H/factor old-native versus new-frozen saved files are byte-identical. No new Gram or SVD computed.",
+    "Frozen pair terminal completed/source state true with no error;15started15finished linear calls/incomplete empty.",
+    "Counts include25energy+2frozen tangent,4JVP,9raw forwards,2Q,11H,SVD0, no optimization/history/rollout.",
+    "Remote599/1162558770bytes full SHA coverage versus local241/354238769bytes selected subset are distinguished; large Phi remains remote."
+  ],
+  "figure_review": {
+    "actually_viewed": [
+      "FD_four_arm.png",
+      "FD_four_arm_fields.png"
+    ],
+    "result": "Readable four-arm and original-threshold labels, chart-error rather than FEM/PIDL-error title, common positive symlog spatial scale, no cropped labels; similarity is not treated as exact equality.",
+    "bindings": {
+      "FD_four_arm.png": "e0c862f9e4b37cb8535de2ff9f38d8df7b5e55959570480938250d17a5981e5a",
+      "FD_four_arm_fields.png": "b99255734f34a8b96c8c9bee0a0876f4c4e5425aa71d9dfc24808ab6c033c9af"
+    }
+  },
+  "interpretation": [
+    "Changing source target/reanchoring leaves near-identical observed mismatch in each branch for this direction/h; not a global proof that stationarity/roundoff issues are absent.",
+    "Freezing Amor source signs does not remove the dominant observed mismatch. Native-versus-frozen mismatch-vector difference is about5.05percent of native mismatch, not5.05percent of FEM/PIDL field error.",
+    "Nearly identical Q with differing finite FD is descriptive evidence about this finite-step comparison, not proof all AD formulas or exact derivative are valid.",
+    "Conditional FD estimate about6.03 or4619times gate is incomplete and uninformative for a full forward certificate; unique numerical/finite-h/formula cause remains unresolved.",
+    "No capacity conclusion, new actual NN endpoint, convergence claim or FEM/PIDL improvement."
+  ],
+  "final_report_status": "passed",
+  "blockers": [],
+  "final_report": {
+    "path": "docs/research/S04/S04-E011/runs/pidl_frozen_completion_r2_result_20261021.md",
+    "sha256": "4e6d82e9a44fe3c10d6405497e29d230692ffe6d44013913db349a57a66e711d"
+  },
+  "cost_binding": {
+    "cost.json": "55593fb661a5929c5eb3781b761e5851c450e7a081c8a7be0dc7a17a5d4b32dd",
+    "analysis_cost.json": "16b11fc2b640eb680f7666dea3f2cdc503cd827c59175d3cbbde3dc454524d92",
+    "frozen_source_equivalence.json": "b7660995afa233782e8972df125b8e0ff57c69e46ab983736fe3a130cdc52906"
+  },
+  "final_report_checks": [
+    "Native values explicitly reuse old failed-but-saved R1; new R002 supplies only missing frozen pair. No old-run success backfill.",
+    "Four original FD gates fail. Reanchoring and source-sign freezing weaken those standalone explanations at this direction/h; neither proves unique cause, full derivative validity, numerical-error elimination or network capacity.",
+    "5.05percent denominator is old native mismatch vector norm, not error reduction and not FEM/PIDL solution gap. Derivative maps and trace counts are not damage/active/crack improvements.",
+    "Frozen energy stays on source mask despite field trace sign changes; constant J/H/factor equality and tiny other term differences are observed readouts, not a proved rounding floor.",
+    "Conditional bound6.03/4619times gate remains incomplete. Matrix/force/global path qualifications are explicit; no restored3000second optimization.",
+    "Source FEM damage versus retained source PIDL history distinguished. B0/constraint Q4 route and fixed committed-f versus trial-f / joint versus staggered full-evolution limits retained.",
+    "New diagnostic NN/raw-forward/JVP costs distinguished from zero optimization/history updates.",
+    "Mechanical43.4928/client41.0002, science31.5326, retrieval272.1565, offline analysis1.084seconds and prior failed-attempt costs separately stated. Whole1199.566547seconds is explicitly through this final precommit checkpoint, not future commit/reply completion; wholeCPU/GPU-kernel/disk/monetary values remain UNKNOWN.",
+    "New R2 figures actually viewed and sidecars corrected without numerical change; legacy R1 sidecar issue is retained rather than overwritten. Partial-local storage versus full remote coverage explicit."
+  ],
+  "report_wording_issue_resolved": "Imprecise near-floating-precision wording replaced with constant Cv relative difference5.9e-12 and explicit no proved rounding-floor claim.",
+  "final_cost_binding": {
+    "path": "docs/research/S04/S04-E011/runs/pidl_frozen_completion_r2_result_20261021/cost.json",
+    "sha256": "55593fb661a5929c5eb3781b761e5851c450e7a081c8a7be0dc7a17a5d4b32dd",
+    "precommit_closed_UTC": "2026-10-21T00:22:22.566547+00:00",
+    "whole_wall_seconds_through_precommit": 1199.566547,
+    "previous_precommit_checkpoint_wall_seconds": 1050.851409,
+    "scope": "Metadata closure includes review through this write. Subsequent git checks/commit/reply excluded; no new science/analysis/remote action."
+  }
+}
