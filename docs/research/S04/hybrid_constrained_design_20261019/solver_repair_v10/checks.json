@@ -13,8 +13,8 @@
     "tests/test_hybrid_guarded_coupling.py"
   ],
   "returncode": 0,
-  "wall_seconds": 1.206701916991733,
-  "child_cpu_seconds": 1.1692580000000001,
+  "wall_seconds": 1.2153308750130236,
+  "child_cpu_seconds": 1.173907,
   "stdout": "........................................................................ [ 66%]\n....................................                                     [100%]\n108 passed in 0.98s\n",
   "stderr": "",
   "scope": "Artificial arrays and one-element/unit control checks only; no project mesh/data/FEM/training/network",
@@ -41,5 +41,6 @@
   },
   "additional_check_history": [
     "One pytest collection invocation omitted PYTHONPATH and failed before tests; corrected environment returned19pass. Subsequent reviewer regression sets23/25pass. No science run."
-  ]
+  ],
+  "final_exception_count_evidence_delta_checked": true
 }

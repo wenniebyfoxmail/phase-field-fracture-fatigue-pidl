@@ -199,8 +199,14 @@ def solve_joint_trust(backend,old,dofs,values,load_id,settings,policy,initial_da
             while budget.updates<budget.update_limit-1:
                 room()
                 if radius<policy.trust_min_radius:raise RuntimeError('box trust radius collapsed')
-                candidate=call('box_LS_subproblem',lambda:solve_box_model(ls,current,free,dofs,values,
-                    lower,backend.crack,radius,newton_p,policy.subspace_steps))
+                try:
+                    candidate=call('box_LS_subproblem',lambda:solve_box_model(ls,current,free,dofs,values,
+                        lower,backend.crack,radius,newton_p,policy.subspace_steps))
+                except Exception as exc:
+                    emit(dict(event='box_subproblem_failure',outer=current['outer'],direction=counts['newton_directions'],
+                        radius=radius,subproblem_updates=budget.updates,action_count_upper=budget.used,
+                        action_counts=dict(budget.counts),reason=type(exc).__name__+': '+str(exc)))
+                    raise
                 counts['model_trials']+=1
                 meta=dict(event='box_trial_before',outer=current['outer'],direction=counts['newton_directions'],
                     radius=radius,base_phi=current['phi'],model_value=candidate['model_value'],
