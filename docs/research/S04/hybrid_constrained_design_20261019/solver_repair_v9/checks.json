@@ -5,15 +5,13 @@
     "-q",
     "-W",
     "error",
-    "tests/test_hybrid_joint_trust.py",
-    "tests/test_hybrid_cpu_v9.py",
-    "tests/test_hybrid_solver_repair_v6.py"
+    "tests/test_hybrid_joint_trust.py"
   ],
   "returncode": 0,
-  "wall_seconds": 1.153772791964002,
-  "CPU_seconds": 1.117195,
-  "output": "...........................................................              [100%]\n59 passed in 0.92s\n",
-  "scope": "New joint/trust/control limits plus existing relevant workspace mechanics checks after pre-pivot diagnostic change; artificial only, no project mesh/producer",
+  "wall_seconds": 0.7372537079500034,
+  "CPU_seconds": 0.7280960000000001,
+  "output": "...................                                                      [100%]\n19 passed in 0.53s\n",
+  "scope": "Joint-only repeat after nested predictor diagnostic parent-accounting fix; artificial only",
   "prior": {
     "command": [
       "-m",
@@ -22,28 +20,45 @@
       "-W",
       "error",
       "tests/test_hybrid_joint_trust.py",
-      "tests/test_hybrid_cpu_v9.py"
+      "tests/test_hybrid_cpu_v9.py",
+      "tests/test_hybrid_solver_repair_v6.py"
     ],
     "returncode": 0,
-    "wall_seconds": 1.0435477499850094,
-    "CPU_seconds": 1.0111379999999999,
-    "output": "..........................................                               [100%]\n42 passed in 0.81s\n",
-    "scope": "Only new joint/control checks repeated after test scalar warning repair and new zero-support/radius coverage; old block/AA results retained",
+    "wall_seconds": 1.153772791964002,
+    "CPU_seconds": 1.117195,
+    "output": "...........................................................              [100%]\n59 passed in 0.92s\n",
+    "scope": "New joint/trust/control limits plus existing relevant workspace mechanics checks after pre-pivot diagnostic change; artificial only, no project mesh/producer",
     "prior": {
       "command": [
         "-m",
         "pytest",
         "-q",
+        "-W",
+        "error",
         "tests/test_hybrid_joint_trust.py",
-        "tests/test_hybrid_coupled_block.py",
-        "tests/test_hybrid_guarded_coupling.py",
         "tests/test_hybrid_cpu_v9.py"
       ],
       "returncode": 0,
-      "wall_seconds": 1.357060500071384,
-      "CPU_seconds": 1.117833,
-      "output": "........................................................................ [100%]\n=============================== warnings summary ===============================\ntests/test_hybrid_joint_trust.py::test_severe_projection_model_uses_actual_B_cross_term_and_active_rows\n  /Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/tests/test_hybrid_joint_trust.py:35: DeprecationWarning: Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)\n    assert abs(ru[0]-(.1+2*su[0]+float(model['B']@dd)))>.1\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n72 passed, 1 warning in 1.09s\n",
-      "scope": "Artificial arrays/one-element derivative and mocked controller/resource checks only; no project data/remote/training"
+      "wall_seconds": 1.0435477499850094,
+      "CPU_seconds": 1.0111379999999999,
+      "output": "..........................................                               [100%]\n42 passed in 0.81s\n",
+      "scope": "Only new joint/control checks repeated after test scalar warning repair and new zero-support/radius coverage; old block/AA results retained",
+      "prior": {
+        "command": [
+          "-m",
+          "pytest",
+          "-q",
+          "tests/test_hybrid_joint_trust.py",
+          "tests/test_hybrid_coupled_block.py",
+          "tests/test_hybrid_guarded_coupling.py",
+          "tests/test_hybrid_cpu_v9.py"
+        ],
+        "returncode": 0,
+        "wall_seconds": 1.357060500071384,
+        "CPU_seconds": 1.117833,
+        "output": "........................................................................ [100%]\n=============================== warnings summary ===============================\ntests/test_hybrid_joint_trust.py::test_severe_projection_model_uses_actual_B_cross_term_and_active_rows\n  /Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/tests/test_hybrid_joint_trust.py:35: DeprecationWarning: Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)\n    assert abs(ru[0]-(.1+2*su[0]+float(model['B']@dd)))>.1\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n72 passed, 1 warning in 1.09s\n",
+        "scope": "Artificial arrays/one-element derivative and mocked controller/resource checks only; no project data/remote/training"
+      }
     }
   }
 }

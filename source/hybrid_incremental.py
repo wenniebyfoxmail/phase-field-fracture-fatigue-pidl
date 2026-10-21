@@ -224,9 +224,10 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             raise ValueError("invalid prescribed displacement contract")
         dofs = dofs.astype(np.int64)
         lower = old.damage
+        predictor_row=len(work)
         u_pred, info = call("common_mechanics_predictor",
                             lambda: mechanics(lower,old.displacement))
-        work[-1]["solver"] = info
+        work[predictor_row]["solver"] = info
         d = lower.copy() if classical_initial is None else np.asarray(classical_initial, float).copy()
         initialization_source = "previous_state" if classical_initial is None else "classical"
         neural_used = False

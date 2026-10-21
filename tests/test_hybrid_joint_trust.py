@@ -115,6 +115,18 @@ def test_final_pivot_failure_is_stop_not_more_work(monkeypatch):
     assert b.mechanics_calls==2 and old.fingerprint()==before
 
 
+def test_nested_pivot_diagnostics_do_not_steal_parent_solver_accounting(monkeypatch):
+    b,old=controller(monkeypatch);real=b.mechanics;rows=[]
+    def observed(*a,**kw):
+        if b.mechanics_diagnostics:b.mechanics_diagnostics(dict(kind='artificial_pivot'))
+        return real(*a,**kw)
+    monkeypatch.setattr(b,'mechanics',observed)
+    p=run(b,old,rows)
+    parents=[x for x in p.work if x['kind']in ('common_mechanics_predictor','mechanics_re_equilibration')]
+    assert len(parents)==2 and all('solver'in x for x in parents)
+    assert all('solver'not in x for x in p.work if x['kind']=='iteration_evidence')
+
+
 def test_failed_final_physical_audit_is_not_accepted_or_retried(monkeypatch):
     b,old=controller(monkeypatch);before=old.fingerprint();real=b.mechanics
     def badfinal(*a,**kw):

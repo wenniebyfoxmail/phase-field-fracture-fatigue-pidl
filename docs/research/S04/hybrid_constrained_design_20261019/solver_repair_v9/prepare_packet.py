@@ -26,7 +26,7 @@ def make_card():
         prior_R4_conservative_package_charge_seconds=4390.,
         prior_R5_conservative_package_charge_seconds=3056.,
         prior_R5_charge_basis='Conservative calendar from previous package23:32:46Z through newreceipt00:23:42Z; includes closure/idle/padding, notCPU; no extra producer addition.',
-        prior_R4_charge_basis="Conservative elapsed22:19:36Z through new receipt00:23:42Z; includes idle/padding, not actual CPU or producer time; covers former3689.498 snapshot and later closure without overlap with this package.",
+        prior_R4_charge_basis="Conservative elapsed22:19:36Z through previous R5 receipt23:32:46Z (4390s); includes idle/padding, not actual CPU or producer time; covers former3689.498 snapshot and later closure without overlap with R5 or this package.",
         historical_unknown_control_reserve_seconds=600.,
         execution_enabled=True,snapshot_storage='lossless_npz_deflate1',
         snapshot_policy='Every accepted state and all D13 arrays/metadata retained byte-for-byte in uncompressed NPY members; no NN features or training. Max8GiB remote plus8GiB local retrieval.',
