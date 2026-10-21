@@ -15,6 +15,14 @@ from hybrid_history import AcceptedState,frozen_array
 from hybrid_reduced_tangent import natural_residual
 
 
+def merge_stage_metadata(context,details):
+    result=dict(details)
+    for key,value in context.items():
+        if key in result and result[key]!=value:raise RuntimeError('stage metadata identity mismatch: '+key)
+        result[key]=value
+    return result
+
+
 def frozen_weights(mechanics_diagonal,damage_diagonal,gradient_scale):
     a=np.asarray(mechanics_diagonal);h=np.asarray(damage_diagonal)
     if (not np.isfinite(a).all() or not np.isfinite(h).all() or np.any(a<=0) or np.any(h<=0)
@@ -198,11 +206,11 @@ def solve_joint_trust(backend,old,dofs,values,load_id,settings,policy,initial_da
             newton_p=np.r_[model['du'],dd];kept=False
             def stage_observer(stage,point,best,details):
                 details=dict(details);failure_vectors=details.pop('failure_vectors',{})
-                metadata=dict(event='box_stage',stage=stage,outer=current['outer'],
+                metadata=merge_stage_metadata(dict(event='box_stage',stage=stage,outer=current['outer'],
                     direction=counts['newton_directions'],radius=radius,model_L_upper=ls.L,
                     model_outer=current['outer'],model_r0_id=array_id(ls.r),D_id=array_id(box_D),
                     row_weights_id=array_id(row_weights),subproblem_updates=budget.updates,
-                    action_count_upper=budget.used,action_counts=dict(budget.counts),**details)
+                    action_count_upper=budget.used,action_counts=dict(budget.counts)),details)
                 if point is not None:
                     metadata.update(pred_lower=point.get('pred_lower'),pred_upper=point.get('pred_upper'),
                         model_value=point.get('model_value'),actual_TR_norm=point['actual_TR_norm'],

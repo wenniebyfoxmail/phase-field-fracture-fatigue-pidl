@@ -13,9 +13,9 @@
     "not original_natural_J_and_JT_from_native and not box_route_original_final and not rejected_subproblem_reuses"
   ],
   "returncode": 0,
-  "wall_seconds": 1.2419659160077572,
-  "CPU_seconds": 1.2052779999999998,
-  "stdout": "........................................................................ [100%]\n72 passed, 6 deselected in 1.01s\n",
+  "wall_seconds": 1.2598603339865804,
+  "CPU_seconds": 1.213935,
+  "stdout": "........................................................................ [ 98%]\n.                                                                        [100%]\n73 passed, 6 deselected in 1.03s\n",
   "stderr": "",
   "scope": "Only given small-array/control and saved R007 arrays; native assembly/factor/controller tests intentionally deselected, unchanged prior native findings carried forward",
   "first_focused_tests": "15passed0.23s",
@@ -23,5 +23,6 @@
   "exact_budget_retry_accumulation_check_added": true,
   "reviewer_CPU_zero_ambiguity_and_post_comparison_issue_fixed": true,
   "base_BC_precrack_identity_guard_added": true,
-  "focused19tests": "19passed0.21s"
+  "focused19tests": "19passed0.21s",
+  "stage_bridge_duplicate_L_keyword_fixed_with_pure_helper_test": true
 }

@@ -159,3 +159,10 @@ def test_invalid_base_BC_is_identity_error_not_optional_ineligibility():
     with pytest.raises(RuntimeError,match='identity')as exc:
         rb.representable_candidate(np.zeros(2),base,np.ones(2),np.array([1]),np.array([0]),np.array([0.]),np.array([.2]),np.array([False]),.1)
     assert not isinstance(exc.value,rb.CandidateUncertified)
+
+
+def test_stage_bridge_merges_certificate_L_once_and_rejects_identity_conflict():
+    from hybrid_joint_trust import merge_stage_metadata
+    x=merge_stage_metadata(dict(event='box_stage',model_L_upper=2.),dict(model_L_upper=2.,cauchy_required_bound=.01))
+    assert x['model_L_upper']==2 and x['cauchy_required_bound']==.01
+    with pytest.raises(RuntimeError,match='metadata identity'):merge_stage_metadata(dict(model_L_upper=2.),dict(model_L_upper=3.))
