@@ -71,7 +71,7 @@ def marker(out, **values):
 
 
 def trajectory_storage_check(card,out,archive,headroom=False):
-    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9','hybrid-cpu-trajectory-v10','hybrid-cpu-trajectory-v11'):return
+    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9','hybrid-cpu-trajectory-v10','hybrid-cpu-trajectory-v11','hybrid-cpu-trajectory-v12'):return
     # One scan at step boundaries, not every element/operator call. The live
     # supervisor also scans and final completion has an independent last check.
     from run_hybrid_producer import bytes_under

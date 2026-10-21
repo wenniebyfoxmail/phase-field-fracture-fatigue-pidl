@@ -1,0 +1,16 @@
+{
+  "authority_type": "direct_user_preparation_only",
+  "user_text": "推进下一步",
+  "scope_interpretation": "Advance the previously proposed box-constrained coupled LS direction: local implementation, relevant given-matrix tests, existing independent Codex review, exact disabled execution template and budget for approval.",
+  "execution_authorized": false,
+  "scientific_attempts_consumed_in_this_preparation": 0,
+  "previous_R008_attempt_closed": true,
+  "prior_R008_clocks_and_costs_unchanged": true,
+  "allowed": ["local code and documentation", "given small-matrix and card-control tests", "same selected independent reviewer", "existing Obsidian report and Roadmap update"],
+  "not_authorized": ["SSH or source dispatch", "new real FEM or native assembly/factor", "project saved-large-J optimization/action trials", "training", "R008 resume", "new scientific attempt before specific approval"],
+  "proposal_id": "FEM-BOX-KRYLOV-D21-20261021",
+  "proposed_package_start_utc": "2026-10-21T10:44:03Z",
+  "proposed_absolute_end_utc": "2026-10-21T14:44:03Z",
+  "proposal_includes_preparation_waiting_execution_and_closure": true,
+  "expiry_action": "park; do not silently reset clock"
+}

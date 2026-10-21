@@ -1,0 +1,35 @@
+{
+  "command": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "-W",
+    "error",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_hybrid_box_krylov.py",
+    "tests/test_hybrid_cpu_v12.py",
+    "tests/test_hybrid_representable_box.py",
+    "tests/test_hybrid_box_residual_subproblem.py",
+    "tests/test_hybrid_cpu_v11.py",
+    "-k",
+    "not original_natural_J_and_JT_from_native and not box_route_original_final and not rejected_subproblem_reuses and not saved_R007"
+  ],
+  "returncode": 0,
+  "wall_seconds": 1.2286202090326697,
+  "CPU_seconds": 1.178319,
+  "stdout": "........................................................................ [ 75%]\n.......................                                                  [100%]\n95 passed, 7 deselected in 0.97s\n",
+  "stderr": "",
+  "scope": "Given small matrices, independent exhaustive-face oracle and simulated cards only; native6 and saved_R007 large-array1 deselected. No SSH/native FEM/project large-J action/optimization or training.",
+  "source_files_compile_checked": [
+    "source/hybrid_box_krylov.py",
+    "source/hybrid_box_residual_subproblem.py",
+    "source/hybrid_coupled_acceleration.py",
+    "source/hybrid_joint_trust.py",
+    "tools/hybrid_producer_worker.py",
+    "tools/run_hybrid_cpu_v12_budgeted.py",
+    "tools/receive_hybrid_cpu_v12.py",
+    "tools/preflight_hybrid_cpu_v12.py"
+  ],
+  "prepared_execution_enabled": false,
+  "local_implementation_and_test_repairs": "Initial budget fixture expected zero steps at35actions but one legal step fit; fixture cap changed30 to test zero-step reserve. Worst-case extra descent restart scan charged explicitly and initial interval-scan reserve guarded. These are preparation checks, no scientific attempt."
+}

@@ -149,6 +149,13 @@ class Model:
         lo=down(pred-err);hi=up(pred+err)
         if not np.isfinite([pred,q,lo,hi]).all():raise RuntimeError('nonfinite model decrease interval')
         return dict(p=p,residual=res,model_value=q,predicted_reduction=pred,pred_lower=lo,pred_upper=hi,pred_error=err)
+    def scaled_action(self,v):
+        """A*v for A=diag(w)Jdiag(1/D); counted, no normal matrix."""
+        p=divide(np.asarray(v),self.D,'Krylov scaled direction')
+        product_range(self.J.data,p,'Krylov Jacobian action');self.budget.action('J')
+        raw=np.asarray(self.J@p);normal(raw,'Krylov Jacobian result')
+        return multiply(self.w,raw,'Krylov weighted action')
+
     def cauchy_certificate(self,p,evaluation,tail=None):
         tail=np.zeros_like(p)if tail is None else tail
         y=scaled_abs_upper(self.D,p,tail)
@@ -196,12 +203,13 @@ def box_bounds(base,D,nu,lower,radius):
     return lo,hi
 
 
-def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subspace_steps=2,stage_observer=None):
+def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subspace_steps=2,stage_observer=None,*,solver='pg2_optional',krylov_steps=8):
     from hybrid_representable_box import CandidateUncertified
+    if solver not in ('pg2_optional','active_face_cg'):raise ValueError('unknown box subproblem solver')
     b=model.budget;lo,hi=box_bounds(base,model.D,len(free),lower,radius)
     exact_total=b.exact_comparisons;exact_cpu=b.exact_CPU_seconds;certificate={};best=None
-    def stage(name,point=None,**extra):
-        if stage_observer is not None:stage_observer(name,point,best,dict(certificate,
+    def stage(name,point=None,_best_point=None,**extra):
+        if stage_observer is not None:stage_observer(name,point,best if _best_point is None else _best_point,dict(certificate,
             exact_comparisons_cumulative=exact_total,exact_CPU_seconds_cumulative=exact_cpu,**extra))
     def feasible(name,y):
         nonlocal exact_total,exact_cpu
@@ -226,7 +234,10 @@ def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subs
     certificate=model.cauchy_certificate(best['p'],best,best['p_tail'])
     cauchy_p=best['p'].copy();cauchy_tail=best['p_tail'].copy();cauchy_lower=best['pred_lower'];best['selection']='certified_projected_Cauchy'
     stage('Cauchy_certified',best)
-    for i in range(subspace_steps):
+    if solver=='active_face_cg':
+        from hybrid_box_krylov import refine_box_krylov
+        best=refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,krylov_steps)
+    for i in range(subspace_steps if solver=='pg2_optional' else 0):
         if b.updates>=b.update_limit-1:break
         b.update();stage('PG'+str(i+1)+'_gradient_start');gradient=model.gradient(best['residual'])
         y=np.clip(best['y']-divide(gradient,model.L,'projected LS gradient step'),lo,hi)
@@ -236,8 +247,9 @@ def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subs
         improved=candidate['pred_lower']>=best['pred_upper']
         if improved:best=candidate;best['selection']='projected_LS_gradient_improvement'
         stage('PG'+str(i+1)+'_complete',candidate,retained_as_best=improved)
+    refinement={k:best[k] for k in ('krylov_status','krylov_iterations','subproblem_optimality_certified')if k in best}
     optional_status='not_attempted_finite_update_budget'
-    if b.updates<b.update_limit-1:
+    if b.updates<b.update_limit-1 and (solver=='pg2_optional' or b.used+4<=b.limit):
         b.update();stage('optional_Newton_scaling_start');yn=np.clip(multiply(model.D,newton_p,'Newton scaled step'),lo,hi)
         try:candidate=feasible('optional_Newton',yn)
         except CandidateUncertified:
@@ -252,8 +264,9 @@ def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subs
             optional_status='selected'if improved else'model_not_proven_better'
             stage('optional_Newton_complete',candidate,retained_as_best=improved)
     if best['pred_lower']<cauchy_lower:raise RuntimeError('subproblem worse than certified Cauchy point')
+    best.update(refinement)
     best.update(certificate,cauchy_p=cauchy_p,cauchy_tail=cauchy_tail,cauchy_pred_lower=cauchy_lower,
         subproblem_updates=b.updates,action_counts=dict(b.counts),action_count_upper=b.used,
         exact_comparisons_cumulative=exact_total,exact_CPU_seconds_cumulative=exact_cpu,
-        optional_Newton_status=optional_status,original_nonlinear_acceptance=False)
+        optional_Newton_status=optional_status,box_subproblem_solver=solver,original_nonlinear_acceptance=False)
     return best

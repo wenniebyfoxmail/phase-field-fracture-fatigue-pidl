@@ -227,7 +227,8 @@ def solve_joint_trust(backend,old,dofs,values,load_id,settings,policy,initial_da
                 if radius<policy.trust_min_radius:raise RuntimeError('box trust radius collapsed')
                 try:
                     candidate=call('box_LS_subproblem',lambda:solve_box_model(ls,current,free,dofs,values,
-                        lower,backend.crack,radius,newton_p,policy.subspace_steps,stage_observer))
+                        lower,backend.crack,radius,newton_p,policy.subspace_steps,stage_observer,
+                        solver=policy.box_subproblem_solver,krylov_steps=policy.krylov_steps))
                 except Exception as exc:
                     emit(dict(event='box_subproblem_failure',outer=current['outer'],direction=counts['newton_directions'],
                         radius=radius,subproblem_updates=budget.updates,action_count_upper=budget.used,
@@ -245,6 +246,9 @@ def solve_joint_trust(backend,old,dofs,values,load_id,settings,policy,initial_da
                     inward_ulp_corrections=candidate['inward_ulp_corrections'],
                     raw_TR_upper=candidate['raw_TR_upper'],feasibility=candidate['feasibility'],
                     optional_Newton_status=candidate['optional_Newton_status'],
+                    box_subproblem_solver=candidate['box_subproblem_solver'],
+                    krylov_status=candidate.get('krylov_status'),krylov_iterations=candidate.get('krylov_iterations'),
+                    subproblem_optimality_certified=False,
                     exact_comparisons_cumulative=candidate['exact_comparisons_cumulative'],
                     exact_CPU_seconds_cumulative=candidate['exact_CPU_seconds_cumulative'],
                     subproblem_updates=budget.updates,action_count_upper=budget.used,action_counts=dict(budget.counts),
