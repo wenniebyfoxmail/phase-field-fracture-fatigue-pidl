@@ -43,5 +43,6 @@
     "peak_owned_output_bytes": 0,
     "Mac_AS_limit_required": false,
     "RSS_monitor_kind": "user-space sampled, not kernel hard RSS guarantee"
-  }
+  },
+  "CSV_format_correction": "Initial staged whitespace check found CSV CRLF line endings; normalized to LF without changing scalar values. A final staged diff check follows this correction."
 }
