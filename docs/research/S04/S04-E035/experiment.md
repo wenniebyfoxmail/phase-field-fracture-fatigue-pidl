@@ -293,3 +293,10 @@ Private consistent-return PF candidate prepared only; no newRunID or solve. Orig
 ## 2026-10-21 19:15Z — direct human consistent-return and45degree authority
 
 Human explicitly approves correcting PF return timing, full shear FEM toU=.4 then originalPIDL comparison, afterwards equal-magnitude45degree without per-step questions. R012 uses reviewed helper250ac033a6593b749427e493a30615c7a44ecdbaf7e7fc20fada96ba2894bd71 / runner35ee6acea3c828f3e5ecf51dc663b7677e876389ae064d43be31590f03fc1c14 from initial state, no changed model/tols/history/BC/mechanics. New conservative FEM9500s cap shares original3h cumulative; original6GPUh cumulative,4CPU/16GiBhost/20GiBCUDA/10GiBroot,00:20Zdeadline retained. PIDL must finish before totalend−1800s.45degree follows0degree comparison within those same remaining budgets, not an extra window. Per-run first-failure stop remains; no silent scientific retry. Authority receipt consistent_pf_and_45_authority.json.
+
+
+### R012 active and shared comparison implementation
+
+CITPC12 MATLAB30120/supervisor13424 started19:16:24.9783305Z with9500s cap; reviewed consistent-return scientific source unchanged.12loaded states throughU=.28 observed accepted in producer log, U=.29coupling still active, not yet a verified full reference. NoPIDL launched.
+
+Independent Q4/T3 comparison now uses Q4 2x2GP/Jacobian area weights and T3 barycentric interpolation with no extrapolation; all345632points covered on actual geometry, both areas1, affine reconstruction passed in1.48s. All saved-state bounds/history/BC/force/energy identities checked; rejected NN candidate retained in diagnostics; exit0 required for full completion. Formal preparation review passed SHA f3e98f3184bcbffdd93beda97510203379e4ff4c11945fd6d63c6ddb846f9d70. This mapping is a stated quadrature approximation, not exact integration or mesh-convergence evidence.
