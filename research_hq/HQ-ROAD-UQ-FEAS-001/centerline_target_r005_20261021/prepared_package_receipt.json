@@ -1,0 +1,22 @@
+{
+  "status": "REVIEWED_CODE_READY_FOR_SINGLE_R005_ADMISSION",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R005",
+  "code_snapshot": "bb8b7d330812f1c834008c3d38484b5e27d33aeb2e0b6d3a36138ec3c3b62d8f",
+  "data_lock_sha256": "44acdf7ef254091e24fffa3d470efe4ec0abe2f32a50a9f4d807a878f0574b2a",
+  "scientific_protocol_fingerprint_sha256": "a30121cc43bc1572e946baa56f70a993202076a1fdbf2ca388307cd024e1e83a",
+  "independent_review": "REVIEW_PASS",
+  "review_receipt_sha256": "1ba134fa494fa2068eb86e2b6ea9db1398abb4fdd528b980b93605c2da7be52f",
+  "prepared_utc": "2026-10-21T00:27:18.091324+00:00",
+  "local_checks": [
+    "PASS_R005_LAUNCHER_AWARE",
+    "PASS_R005_OWNED_SUBPROCESS",
+    "PASS_R005_CONTROL_DELTA",
+    "PASS target/scale/tolerance/component/empty-reference/pairing",
+    "PASS_LOCAL_ZERO_STEP reused unchanged scientific source/data",
+    "PASS_PY_COMPILE",
+    "PASS_GIT_DIFF_CHECK"
+  ],
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "road420_access": false
+}

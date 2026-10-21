@@ -1,0 +1,16 @@
+{
+  "status": "R005_PRE_REVIEW_CLOCK_CHECKPOINT",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R005",
+  "package_clock_start_utc": "2026-10-20T21:59:35Z",
+  "package_deadline_utc": "2026-10-21T01:59:35Z",
+  "clock_reset": false,
+  "r001_checks_preserved": 3,
+  "r002_checks_preserved": 1,
+  "r003_checks_preserved": 1,
+  "r003_scientific_attempts_preserved": 1,
+  "r004_admission_checks_preserved": 1,
+  "r004_admission_seconds_preserved": 8.25,
+  "r004_scientific_attempts_preserved": 0,
+  "r005_admission_checks_remaining": 1,
+  "r005_scientific_attempts_remaining": 1
+}
