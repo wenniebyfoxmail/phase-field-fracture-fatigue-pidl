@@ -1,0 +1,140 @@
+{
+  "schema": "hybrid-independent-code-template-review-v1",
+  "verdict": "CODE_TEMPLATE_REVIEW_PASS_ONLY",
+  "scope": "EXACT_LOCAL_CODE_AND_DISABLED_TEMPLATE_ONLY_NOT_EXECUTION_AUTHORITY",
+  "reviewer": "independent Codex reviewer /root/hybrid_readiness_review",
+  "reviewed_at_utc": "2026-10-21T11:05:32.120247+00:00",
+  "source_commit": "fee87bacf098b11def908397d8c02dc6858713ce",
+  "artifact_id": "776361f5b57fecffcc8a42930c1a26ea1e28f7c8b43b579b1d724522bbda24ec",
+  "template_id": "00e06a6b4c497122a9a10a8825903df6b20689d28e58c6ed20946e059b5e7c30",
+  "card_sha256": "353578c5e05c675b3cdf681079661e94d034dd2b59961f5423568542d8566946",
+  "source_manifest_sha256": "be36da690251ab448d014fcb646baa854ec39967d6e1a8a4e04642929179d238",
+  "source_files_verified": 38,
+  "bindings": {
+    "authority.json": "3a1913ed11fa1894646d0eacfd7ccde889862f53cad54f825e83611782d9ff0f",
+    "plan.md": "82b31038f4a52481259eab7b68b0a1f679c067e888204adfc53efc5a4c161dbb",
+    "checks.json": "4bc60126512136f0184acaa84cf0c556ec5b92cbc4db848d883ff05fd89f4530",
+    "retained_deps_manifest.json": "167da1530d3a864d70d7a8ebe6e5aef870598657895af924373b6b41aff07bf4",
+    "approval_request.md": "2939577654db94a43ca717ecd9c84cde0fda10df4154ae17ee7aa87a2683db8a"
+  },
+  "test_source_bindings": {
+    "tests/test_hybrid_box_krylov.py": "a889ea20a5ba40d63bf0b803ee1e817e62a9ab00e1cbc2811f3372b346c6b69b",
+    "tests/test_hybrid_cpu_v12.py": "480603d1d3252ae717f224de5d788ad5e6a3cb0c799315ab5eb706da758a8828"
+  },
+  "inherited_scope": [
+    "Unchanged R008 represented residual-LS model r0=fl(wG), original sparse J/w/D and model pred error intervals, strictly representable box/TR/high+tail certification and actual Cauchy sufficient decrease.",
+    "Original nonzeroRu coupled block direction and separate row quality checks, natural VI/history/fatigue derivatives, original physical thresholds, immutable accepted lower/history.",
+    "Actual final frozen-fatigue QP f_solve, final trial f_commit, mechanical re-equilibration, current-K pivot and fresh physical m_accept before singleCAS. No working best is a label.",
+    "Original exclusive producer reservations, worker/pidfd/guardian owned-tree resources, dependencies/inputs/runtime gates, complete accepted-state storage and first-failure/no-retry behavior. Prior failures are not resumed."
+  ],
+  "new_algorithm_review": {
+    "model": "A=diag(w)Jdiag(1/D) actions and existing gradient/A-transpose, without forming A.T A, dense Gram, new FEM matrices or new factorization in the refinement. Original block factor/direction remains separately unchanged.",
+    "active_face": "Only fixed or outward-KKT-bound components are blocked; inward computed gradient releases a bound. Same face and prior nontruncated step permit Fletcher-Reeves recurrence; face changes, truncation or outward recurrence restart at projected negative gradient.",
+    "finite_search_guards": "Computed gradient and computed Jv dot-product bounds are finite search guards only. They omit full gradient/Jv forward error and are not true directional-derivative, exact curvature or exact one-dimensional minimizer certificates. Zero/unresolved computed quantities return certified best and explicitly do not establish stationarity or an optimal subproblem solution.",
+    "actual_domain": "First represented state-bound intersection limits the proposed scaled step; candidate construction re-certifies original box/TR/BC/precrack with actual high+tail and the inherited inner interval. Floating intersection or recurrence approximations never replace domain certification.",
+    "acceptance": "Only an original full Model pred interval with candidate.pred_lower>=best.pred_upper replaces best. No certified improvement retains best and terminates finite enhancement. Original Cauchy remains the baseline. Optional original-Newton comparison is tried only with its reserved evaluation budget and cannot replace a better certified point.",
+    "limits": "At most8 refinement iterations; each iteration pre-reserves11 actions: JT1+scaledJ1+candidate high/tail J/absJ<=4+four charged scans/dots+one possible descent-restart scan. Initial interval scan1 and optional evaluation4 are reserved separately. Per-outer100 actions/16 updates remain shared across radius retries; each attempt checks remaining reserve before partially using it.",
+    "errors": "Range/nonfinite/identity/IO and primary domain qualification errors propagate. No broad exception turns a real error into a search rejection. Stage IO failure prevents later optional work.",
+    "evidence": "Every refinement stage and feasible start/unqualified path now receives current best override. Completed/improving candidate and best vectors agree; failed second candidate after an improvement preserves the actual latest best, not old Cauchy. Files remain stage-latest, JSON binds iteration/outer/parent/load/model and counters. No all-iteration-vector retention or optimality certificate is claimed.",
+    "legacy": "Default pg2_optional code path remains available. New solver/krylov settings enter coupling identity; this is not an identical complete policy to R008."
+  },
+  "controls_and_disabled_template": {
+    "current_execution_enabled": false,
+    "current_execution_authority": null,
+    "authority_type": "direct_user_preparation_only",
+    "execution_authorized": false,
+    "template_normalization": "Only execution_enabled and execution_authority normalize to false/null. Every source_commit/science/data/budget/clock/other metadata change changes canonical template ID and fails exact bound verification.",
+    "disabled_validate": "Actual disabled card rejected before launch. A synthetic in-memory test approval under a mocked in-window clock validated the schema and retained template ID; test strings are not authority and no active card was saved.",
+    "future_requirement": "Specific direct-user approval of this producer, source/template and budget must precede any SSH/preflight/dispatch/scientific attempt. Exact activated cardSHA, source/artifact/template/approval provenance and unchanged clock must then be mechanically rechecked. This reviewer grants no such permission.",
+    "source_closure": "All38 source bytes equal final manifest hashes and git show of reviewed commit; Python files compiled without execution. Template/source commit/authority/dependency binding checked. Local prepare_packet was read but not executed; it refuses activation and does not overwrite a reviewed template.",
+    "producer": "Proposed original GPUServer8 drtao@172.16.100.2; fresh pf_hybrid_solver_v12_20261021_r9. Private R3 inputs remain same-host read-only; only98 pinned public OSQP files copied same-host after any future approval. No install/new private data/holdout/GPU probe.",
+    "previous_attempts": "Preflight adds saved R008 failed terminal and four attributable PID identities. No old attempt may resume; a consumed attempt or unknown dispatch is reconciled through owned reservations, not resent.",
+    "runtime": "Remote host/account/mount/current resource/version/dependency/input/guardian/resource/time/storage checks remain future mandatory admission. No present remote availability or runtime import pass was observed in preparation."
+  },
+  "proposed_envelope_not_authorized": {
+    "proposal_id": "FEM-BOX-KRYLOV-D21-20261021",
+    "package_start_epoch": 1792579443.0,
+    "absolute_package_end_epoch": 1792593843.0,
+    "package_start_utc": "2026-10-21T10:44:03Z",
+    "absolute_end_utc": "2026-10-21T14:44:03Z",
+    "total_wall_seconds": 14400,
+    "includes": "Local preparation, waiting for approval, future admission/one scientific attempt if approved, retrieval/review/figures/archive.",
+    "post_execution_reserve_seconds": 1800,
+    "termination_reserve_seconds": 45,
+    "numerical_stop_epoch_before_bounded_cleanup": 1792591998.0,
+    "expiry_action": "park; no automatic start reset",
+    "cpu_cores": 4,
+    "gpu_count": 0,
+    "aggregate_RSS_VMS_bytes": 34359738368,
+    "worker_AS_bytes": 32212254720,
+    "supervisor_soft_AS_bytes": 1610612736,
+    "guardian_AS_bytes": 134217728,
+    "primary_archive_local_retrieval_GiB": [
+      1,
+      7,
+      8
+    ],
+    "mechanical_actions": 2,
+    "mechanical_total_seconds": 120,
+    "scientific_attempts_if_later_approved": 1,
+    "original_train_A_steps": 600,
+    "physical_step_seconds": 300,
+    "fresh_slots": [
+      99,
+      1
+    ],
+    "outer_subproblems": 8,
+    "charged_actions_per_outer": 100,
+    "updates_per_outer": 16,
+    "refinement_steps": 8,
+    "automatic_retry": false,
+    "training_fits": 0,
+    "old_known_conservative_wall_seconds": 19079.39567373949,
+    "old_charge_basis": "Closed R008 cumulative with120s conservative closure allowance, not all measured CPU; old components are subsets and not re-added. New proposal does not reopen old clocks.",
+    "budget_interpretation": "New proposed4h is not an existing approval or old remaining allowance. Preparation/waiting consume it. 1800s closure reserve is not a guarantee all output fits/returns; any incomplete closure must remain partial. Whole-packageCPU/local memory peaks remain unknown."
+  },
+  "independent_checks": {
+    "tests": "97 passed,7 deselected in1.08s; same bounded given-matrix/card-control selection, no native6 or saved-large-array1.",
+    "python_absolute_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=source:tools:tests MPLCONFIGDIR=/private/tmp/r3_diagnosis_mpl <python> -W error -m pytest -q -p no:cacheprovider --tb=short tests/test_hybrid_box_krylov.py tests/test_hybrid_cpu_v12.py tests/test_hybrid_representable_box.py tests/test_hybrid_box_residual_subproblem.py tests/test_hybrid_cpu_v11.py -k \"not original_natural_J_and_JT_from_native and not box_route_original_final and not rejected_subproblem_reuses and not saved_R007\"",
+    "additional_metric_examples": "Three given2x2 coupled models with non-unitD/non-unitw independently compared to exhaustive face-enumeration oracle; original model interval/Cauchy protection, strict actualTR and counters passed. Each example used53charged actions/6updates; no project field/native model used. These finite examples establish no FEM gain.",
+    "all38_final_hashes_git_and_syntax": true,
+    "actual_disabled_card_rejected": true,
+    "synthetic_in_memory_schema_and_template_check": true,
+    "no_prepare_packet_execution": true,
+    "closed_findings": [
+      "Old outer-stage best closure could retain Cauchy after Krylov improvement, including typed-failure vector evidence. Fixed by explicit current-best overrides for all stages and feasible start/unqualified, covered by two regressions.",
+      "CG computed gradient/Jv dot guards were initially described too strongly. Module/plan now explicitly limit them to finite search guards; original full pred interval remains sole replacement certificate."
+    ]
+  },
+  "current_source_permission": "Preparation only: no SSH, native assembly/factorization, saved-project-large-J optimization or science authorized.",
+  "reviewer_SSH_actions": 0,
+  "reviewer_project_native_FEM_assembly_factor_solve": 0,
+  "reviewer_project_large_J_actions_or_optimization": 0,
+  "reviewer_training_runs": 0,
+  "runtime_admission_verified": false,
+  "scientific_convergence_verified": false,
+  "teacher_qualified": false,
+  "neural_comparison_verified": false,
+  "execution_authority_granted": false,
+  "findings": [],
+  "blocking_findings": [],
+  "limitations": [
+    "Finite active-face CG is an inexact subproblem improvement, not PETSc GPCG reproduction or inherited convergence theory.",
+    "Representable projection and floating recurrence can destroy exact CG conjugacy; only feasible certified model improvement is claimed, with finite stopping and original final physical gates.",
+    "Matrix-free normal-operator actions still inherit squared conditioning/near-dependence; no actual condition number or model optimality gap was measured.",
+    "Tiny oracle matches do not establish project-scale convergence, runtime, memory,600-step completeness, neural benefit or physical/road validity.",
+    "Original 300s/resources and expanded evidence IO remain genuine possible stopping conditions; no tolerance relaxation or automatic retry follows."
+  ],
+  "approval_display_consistency": {
+    "scope": "Local approval-display mechanical agreement only; not authorization or external transmission.",
+    "checked": true,
+    "producer_account_and_host_match": true,
+    "exact_source38_and_three_script_paths_match": true,
+    "same_host_public_deps_copy_and_readonly_private_inputs_match": true,
+    "fresh_roots_one_train_A600_first_failure_stop_match": true,
+    "clock4h_including_waiting_1800reserve_45termination_and_resource_limits_match": true,
+    "only_two_activation_metadata_fields_match": true,
+    "artifact_and_template_unchanged": true
+  }
+}
