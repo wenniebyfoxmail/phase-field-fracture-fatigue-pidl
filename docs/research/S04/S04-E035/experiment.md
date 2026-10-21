@@ -302,7 +302,7 @@ CITPC12 MATLAB30120/supervisor13424 started19:16:24.9783305Z with9500s cap; revi
 Independent Q4/T3 comparison now uses Q4 2x2GP/Jacobian area weights and T3 barycentric interpolation with no extrapolation; all345632points covered on actual geometry, both areas1, affine reconstruction passed in1.48s. All saved-state bounds/history/BC/force/energy identities checked; rejected NN candidate retained in diagnostics; exit0 required for full completion. Formal preparation review passed SHA f3e98f3184bcbffdd93beda97510203379e4ff4c11945fd6d63c6ddb846f9d70. This mapping is a stated quadrature approximation, not exact integration or mesh-convergence evidence.
 
 
-## R012结果与范围机制决定 — 2026-10-21 20:10Z
+## R012结果与范围机制决定 — 2026-10-21 20:05Z
 
 修正PF停止/返回点后完整重跑：12/24态至U=.28有效；U=.29同点耦合和9.925185e-5已达标，9个节点alpha>1.005，max1.006614。66文件全量核验，自有进程退出，PIDL与45°未启动。实际AT1源码没有上界罚项；Gauss最大1.002144不能解除节点条件。未发现可据以启动的同方程修复；仍有离散超调与有限精度两种解释。见[R012完整结果](runs/S04-E035-R012.md)。
 
