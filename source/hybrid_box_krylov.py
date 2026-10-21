@@ -4,6 +4,8 @@ Uses A=diag(w) J diag(1/D) actions, never forms A.T A. Actual represented
 states are re-certified/evaluated; only disjointly proven model improvements
 replace best. This is a finite inexact subproblem enhancement, not a root or
 subproblem-optimality certificate, and not a reproduction of PETSc GPCG.
+CG gradient/Jv guards use computed vectors; only original evaluate() intervals
+certify model improvement, not these search-direction dot products.
 """
 import hashlib
 import numpy as np
@@ -39,7 +41,7 @@ def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps
     if type(max_steps)is not int or not 1<=max_steps<=8:raise ValueError('unbounded Krylov refinement')
     b=model.budget;nu=len(free);x0=np.r_[base['u'][free],base['d']]
     if b.used+1+OPTIONAL_ACTION_RESERVE>b.limit:
-        stage('Krylov_end',iterations_completed=0,stop_reason='initial_action_reserve',
+        stage('Krylov_end',_best_point=best,iterations_completed=0,stop_reason='initial_action_reserve',
             last_projected_gradient_inf=None,subproblem_optimality_certified=False)
         best.update(krylov_status='initial_action_reserve',krylov_iterations=0,subproblem_optimality_certified=False)
         return best
@@ -56,7 +58,7 @@ def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps
         if b.updates>=b.update_limit-2:
             reason='update_reserve';break
         b.update();b.action('norm_scans',4)
-        stage('Krylov_gradient_start',iteration=index)
+        stage('Krylov_gradient_start',_best_point=best,iteration=index)
         gradient=model.gradient(best['residual'])
         x=np.r_[best['u'][free],best['d']];mask=face_mask(x,gradient,il,iu)
         pg=np.where(mask,gradient,0.);g2,eg2=dot_bound(pg,pg);last_pg=float(np.max(abs(pg),initial=0.))
@@ -79,10 +81,10 @@ def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps
             b.action('norm_scans')
             v=-pg;restart=True;gd,egd=dot_bound(gradient,v)
         if gd+egd>=0:
-            reason='descent_not_certified';break
+            reason='computed_descent_dot_unresolved';break
         Av=model.scaled_action(v);curvature,ecurvature=dot_bound(Av,Av)
         if curvature-ecurvature<=0:
-            reason='positive_curvature_not_certified';break
+            reason='computed_curvature_unresolved';break
         alpha_cg=float(divide(-gd,curvature,'Krylov quadratic step'))
         alpha_bound=boundary_step(x,v,model.D,il,iu)
         if alpha_bound is None or alpha_bound<=0:
@@ -90,7 +92,7 @@ def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps
         alpha=min(alpha_cg,alpha_bound)
         if not np.isfinite(alpha)or alpha<=0:raise RuntimeError('invalid Krylov step length')
         y=best['y']+multiply(alpha,v,'Krylov feasible line step');normal(y,'Krylov proposed coordinate')
-        candidate=feasible('Krylov',y)
+        candidate=feasible('Krylov',y,_best_point=best)
         stage('Krylov_before_model',candidate,_best_point=best,iteration=index,alpha=alpha,
             alpha_cg=alpha_cg,alpha_bound=alpha_bound,restart=restart,
             free_components=int(mask.sum()),free_mask_id=hashlib.sha256(mask.tobytes()).hexdigest(),
@@ -106,7 +108,7 @@ def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps
             reason='model_improvement_not_certified';break
         previous_mask=mask.copy();previous_g2=g2;previous_v=v.copy()
         full_step=alpha_cg<alpha_bound
-    stage('Krylov_end',iterations_completed=completed,stop_reason=reason,
+    stage('Krylov_end',_best_point=best,iterations_completed=completed,stop_reason=reason,
         last_projected_gradient_inf=last_pg,subproblem_optimality_certified=False)
     best['krylov_status']=reason;best['krylov_iterations']=completed
     best['subproblem_optimality_certified']=False

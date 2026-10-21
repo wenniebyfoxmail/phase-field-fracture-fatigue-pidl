@@ -15,9 +15,9 @@
     "not original_natural_J_and_JT_from_native and not box_route_original_final and not rejected_subproblem_reuses and not saved_R007"
   ],
   "returncode": 0,
-  "wall_seconds": 1.2286202090326697,
-  "CPU_seconds": 1.178319,
-  "stdout": "........................................................................ [ 75%]\n.......................                                                  [100%]\n95 passed, 7 deselected in 0.97s\n",
+  "wall_seconds": 1.3471359580289572,
+  "CPU_seconds": 1.2888279999999999,
+  "stdout": "........................................................................ [ 74%]\n.........................                                                [100%]\n97 passed, 7 deselected in 1.08s\n",
   "stderr": "",
   "scope": "Given small matrices, independent exhaustive-face oracle and simulated cards only; native6 and saved_R007 large-array1 deselected. No SSH/native FEM/project large-J action/optimization or training.",
   "source_files_compile_checked": [
@@ -31,5 +31,15 @@
     "tools/preflight_hybrid_cpu_v12.py"
   ],
   "prepared_execution_enabled": false,
-  "local_implementation_and_test_repairs": "Initial budget fixture expected zero steps at35actions but one legal step fit; fixture cap changed30 to test zero-step reserve. Worst-case extra descent restart scan charged explicitly and initial interval-scan reserve guarded. These are preparation checks, no scientific attempt."
+  "local_implementation_and_test_repairs": "Initial budget fixture expected zero steps at35actions but one legal step fit; fixture cap changed30 to test zero-step reserve. Worst-case extra descent restart scan charged explicitly and initial interval-scan reserve guarded. These are preparation checks, no scientific attempt.",
+  "review_amendments": [
+    {
+      "issue": "CURRENT_BEST_STAGE_BINDING",
+      "fix": "All Krylov stage callbacks and feasible start/typed-failure propagate latest best, including normal end; regression improves once then fails next finite qualification, and verifies end matches final best."
+    },
+    {
+      "issue": "COMPUTED_SEARCH_GUARD_VS_CERTIFICATE",
+      "fix": "Computed gradient/Av dot checks are finite search guards only; exact model-improvement certificate remains original full pred interval. No full derivative, curvature or subproblem-optimality certificate claimed."
+    }
+  ]
 }

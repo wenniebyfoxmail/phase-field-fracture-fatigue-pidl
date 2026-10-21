@@ -96,7 +96,7 @@ def test_invalid_solver_and_krylov_caps_and_policy_identity():
 def test_no_certified_curvature_returns_best_not_root(monkeypatch):
     monkeypatch.setattr(Model,'scaled_action',lambda self,v:np.zeros(len(self.F)))
     p,m,_=run_case([[1.,10.],[0.,1.]],[0.,-1.])
-    assert p['krylov_status']=='positive_curvature_not_certified'
+    assert p['krylov_status']=='computed_curvature_unresolved'
     assert p['pred_lower']>=p['cauchy_pred_lower']>0 and not p['subproblem_optimality_certified']
 
 
@@ -107,3 +107,31 @@ def test_shared_budget_not_reset_between_radius_attempts():
         solve_box_model(m,base,np.array([1]),np.array([0]),np.zeros(1),np.array([.2]),np.zeros(1,bool),.025,pn,solver='active_face_cg')
     except RuntimeError as e:assert 'budget'in str(e)
     assert used<=m.budget.used<=100 and updates<=m.budget.updates<=16
+
+
+def test_all_refinement_stages_and_typed_failure_use_latest_best(monkeypatch):
+    import hybrid_box_residual_subproblem as sub
+    from hybrid_representable_box import CandidateUncertified
+    real=sub.feasible_candidate;calls=[];last=[None];cauchy=[None];failed=[]
+    def candidate(*a,**kw):
+        calls.append(1)
+        if len(calls)==3:raise CandidateUncertified('finite qualification',dict(exact_comparisons=0,exact_CPU_seconds=0.),dict(candidate_x=np.zeros(2)))
+        return real(*a,**kw)
+    def observe(name,p,best,meta):
+        if name=='Cauchy_certified':cauchy[0]=best['p'].copy()
+        if name=='Krylov_complete'and meta['retained_as_best']:last[0]=best['p'].copy()
+        if name in ['Krylov_gradient_start','Krylov_start','Krylov_unqualified','Krylov_end']and last[0]is not None:
+            assert np.array_equal(best['p'],last[0])
+        if name=='Krylov_unqualified':failed.append(best['p'].copy())
+    monkeypatch.setattr(sub,'feasible_candidate',candidate)
+    with pytest.raises(CandidateUncertified):run_case([[1.,10.],[0.,1.]],[0.,-1.],observe=observe)
+    assert failed and last[0]is not None and not np.array_equal(cauchy[0],failed[0])
+
+
+def test_normal_end_stage_uses_final_improved_best():
+    last=[None];end=[None]
+    def observe(name,p,best,meta):
+        if name=='Krylov_complete'and meta['retained_as_best']:last[0]=best['p'].copy()
+        if name=='Krylov_end':end[0]=best['p'].copy()
+    run_case([[1.,10.],[0.,1.]],[0.,-1.],observe=observe)
+    assert last[0]is not None and np.array_equal(last[0],end[0])

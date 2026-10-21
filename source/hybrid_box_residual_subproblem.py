@@ -211,15 +211,15 @@ def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subs
     def stage(name,point=None,_best_point=None,**extra):
         if stage_observer is not None:stage_observer(name,point,best if _best_point is None else _best_point,dict(certificate,
             exact_comparisons_cumulative=exact_total,exact_CPU_seconds_cumulative=exact_cpu,**extra))
-    def feasible(name,y):
+    def feasible(name,y,_best_point=None):
         nonlocal exact_total,exact_cpu
-        stage(name+'_start')
+        stage(name+'_start',_best_point=_best_point)
         try:
             point=feasible_candidate(y,base,model.D,free,dofs,values,lower,crack,radius)
         except CandidateUncertified as exc:
             exact_total+=exc.diagnostics['exact_comparisons'];exact_cpu+=exc.diagnostics['exact_CPU_seconds']
             b.exact_comparisons=exact_total;b.exact_CPU_seconds=exact_cpu
-            stage(name+'_unqualified',qualification=exc.diagnostics,failure_vectors=exc.vectors)
+            stage(name+'_unqualified',_best_point=_best_point,qualification=exc.diagnostics,failure_vectors=exc.vectors)
             raise
         exact_total+=point['feasibility']['exact_comparisons'];exact_cpu+=point['feasibility']['exact_CPU_seconds']
         b.exact_comparisons=exact_total;b.exact_CPU_seconds=exact_cpu
