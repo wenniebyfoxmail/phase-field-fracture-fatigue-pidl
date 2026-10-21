@@ -71,6 +71,8 @@ def main():
         dict(PFF_model='AT1',se_split='volumetric',tol_ir=5e-3,residual_stiffness=0.),
         dict(mat_E=1.,mat_nu=.3,w1=1.,l0=.01),
         dict(hidden_layers=8,neurons=400,seed=1,activation='TrainableReLU',init_coeff=1.,compile=False),ext,'cuda')
+    net=net.to('cuda')
+    assert all(p.is_cuda for p in net.parameters())
     field=FieldComputation(net,ext,torch.tensor(0.,device='cuda'),torch.tensor([np.pi/2],device='cuda'),l0=.01)
     inp,conn,area,_=prep_input_data(mat,pff,dict(x_init=[-.5],y_init=[0],L_crack=[.5],angle_crack=[0]),dict(gradient_type='numerical'),str(ROOT/'SENS_tensile/meshed_geom_fem_soft_hist0.msh'),'cuda')
     assert inp.shape==(45591,2) and conn.shape==(90000,3)
