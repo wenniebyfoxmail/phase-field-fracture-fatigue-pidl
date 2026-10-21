@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "run_id": "HQ-ROAD-CENTERLINE-001-R006",
+  "audit_status": "VERIFIED_MECHANICAL_ADMISSION_STOP_NO_SCIENCE",
+  "clock": {
+    "run_id": "HQ-ROAD-CENTERLINE-001-R006",
+    "started_utc": "2026-10-21T00:54:56.1800215+00:00",
+    "cap_seconds": 90,
+    "archive_sha256": "78637a08d96fa1cf69ec6edfb8a3186124a2fe0fa1d8f4b7f0df76a8ab3ac891",
+    "code_snapshot": "7d5fd0f3867b94cad7b33406d6c3a74c55e867d6858912547fd3911dc6adcf88",
+    "producer": "D-26-09",
+    "gpu": "0"
+  },
+  "mechanical_status": "MECHANICAL_WINDOW_FAILED",
+  "mechanical_elapsed_seconds": 34.57,
+  "admission_status": "FAIL_ADMISSION",
+  "admission_error": "existing HQ/D5 runner claim detected: [{\"ProcessId\":39584,\"Name\":\"cmd.exe\",\"ExecutablePath\":\"c:\\\\windows\\\\system32\\\\cmd.exe\",\"CommandLine\":\"\\\"c:\\\\windows\\\\system32\\\\cmd.exe\\\" /c \\\"powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\\\Users\\\\xw436\\\\jobs\\\\hq_road_centerline_001_r006_stage_20261021\\\\HQ-ROAD-UQ-FEAS-001\\\\runs\\\\HQ-ROAD-CENTERLINE-001-R006\\\\execute_r006_once.ps1\\\"\"},{\"ProcessId\":37336,\"Name\":\"powershell.exe\",\"ExecutablePath\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\"CommandLine\":\"powershell.exe  -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\\\Users\\\\xw436\\\\jobs\\\\hq_road_centerline_001_r006_stage_20261021\\\\HQ-ROAD-UQ-FEAS-001\\\\runs\\\\HQ-ROAD-CENTERLINE-001-R006\\\\execute_r006_once.ps1\"}]",
+  "admission_wrapper_status": "FAIL_ADMISSION_WATCHDOG",
+  "owned_child_status": "COMPLETE_NONZERO",
+  "owned_child_exit_code": 2,
+  "code_snapshot": "7d5fd0f3867b94cad7b33406d6c3a74c55e867d6858912547fd3911dc6adcf88",
+  "data_lock_sha256": "a9a50e087be12ba5711d1cf87e640a97b6f06e155d4ef1e42d5b2a29e4b86934",
+  "scientific_execution_started": false,
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "road420_access": false,
+  "registration_started": false,
+  "launch_started": false,
+  "canonical_output_remote_observed": false,
+  "scheduled_task_remote_observed": false,
+  "absent_expected_evidence": {
+    "environment.context.json": true,
+    "environment.exit.json": true,
+    "preflight.context.json": true,
+    "preflight.exit.json": true,
+    "scientific_worker.context.json": true,
+    "scientific_worker.exit.json": true,
+    "launch_receipt_remote.json": true
+  },
+  "interpretation": "Admission self-claim filter matched the enclosing execute_r006_once cmd.exe and powershell.exe parent processes because both command lines contained the R006 Run ID. The package-entry environment/preflight and scientific worker were never entered. The outer watchdog also serialized a null child exit_code, but the inner owned admission receipts independently establish exit code 2 and FAIL_ADMISSION.",
+  "blocked_claims": [
+    "no D5 model result",
+    "no 40-epoch training result",
+    "no remote validation of explicit skimage package entry",
+    "no uncertainty or centerline scientific conclusion"
+  ],
+  "remote_originals_preserved": true,
+  "post_stop_remote_observation": {
+    "observed_utc": "2026-10-21T00:58:29.7435543+00:00",
+    "hostname": "D-26-09",
+    "task_exists": false,
+    "canonical_output_exists": false,
+    "matching_process_count": 0,
+    "matching_processes": []
+  }
+}

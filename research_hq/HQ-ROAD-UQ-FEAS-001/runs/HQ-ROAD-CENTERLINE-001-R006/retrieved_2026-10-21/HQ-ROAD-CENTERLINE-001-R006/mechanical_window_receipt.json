@@ -1,0 +1,26 @@
+{
+    "status":  "MECHANICAL_WINDOW_FAILED",
+    "run_id":  "HQ-ROAD-CENTERLINE-001-R006",
+    "clock":  {
+                  "run_id":  "HQ-ROAD-CENTERLINE-001-R006",
+                  "started_utc":  "2026-10-21T00:54:56.1800215+00:00",
+                  "cap_seconds":  90,
+                  "archive_sha256":  "78637a08d96fa1cf69ec6edfb8a3186124a2fe0fa1d8f4b7f0df76a8ab3ac891",
+                  "code_snapshot":  "7d5fd0f3867b94cad7b33406d6c3a74c55e867d6858912547fd3911dc6adcf88",
+                  "producer":  "D-26-09",
+                  "gpu":  "0"
+              },
+    "admission":  {
+                      "phase":  "admission",
+                      "pid":  20816,
+                      "exit_code":  null,
+                      "stdout":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R006\\mechanical_admission.stdout.log",
+                      "stderr":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R006\\mechanical_admission.stderr.log",
+                      "remaining_milliseconds_at_start":  59942
+                  },
+    "registration":  null,
+    "launch":  null,
+    "error":  "R006 admission failed: ",
+    "ended_utc":  "2026-10-21T00:55:30.7483965+00:00",
+    "elapsed_seconds":  34.57
+}

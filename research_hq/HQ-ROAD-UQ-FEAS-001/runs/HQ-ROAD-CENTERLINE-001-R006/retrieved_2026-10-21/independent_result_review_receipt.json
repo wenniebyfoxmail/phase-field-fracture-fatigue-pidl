@@ -1,0 +1,25 @@
+{
+  "status": "VERIFIED_MECHANICAL_ADMISSION_STOP_NO_SCIENCE",
+  "reviewer": "independent Codex /root/d5_readonly_review",
+  "reviewed_utc": "2026-10-21T00:58:07.193586+00:00",
+  "scope": "R006 retrieved evidence and claim boundary; read-only; no SSH; no edits by reviewer",
+  "remote_original_count": 19,
+  "root_cause": "d5_admission.ps1 RunID substring process guard matched the enclosing execute_r006_once cmd.exe and powershell.exe processes",
+  "first_determinative_status": "FAIL_ADMISSION",
+  "owned_child_exit_code": 2,
+  "secondary_issue": "outer mechanical receipt serialized exit_code null; inner owned receipts establish exit 2",
+  "environment_preflight_scientific_launch_evidence_present": false,
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "road420_access": false,
+  "package_entry_producer_validated": false,
+  "scientific_result": false,
+  "r006_reuse_authorized": false,
+  "review_findings": [
+    "19 retrieved originals match size/SHA manifest",
+    "claim/child/wrapper hash chain consistent",
+    "registration and launch not started",
+    "scheduled task and canonical output absent in read-only observations",
+    "explicit package entry not executed on producer"
+  ]
+}

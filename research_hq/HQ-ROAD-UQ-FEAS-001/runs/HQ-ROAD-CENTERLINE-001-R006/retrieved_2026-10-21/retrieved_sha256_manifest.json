@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "run_id": "HQ-ROAD-CENTERLINE-001-R006",
+  "retrieval_status": "VERIFIED_REMOTE_ORIGINALS_PRESERVED",
+  "file_count": 19,
+  "total_bytes": 52631,
+  "files": [
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/00_AUTHORITY_AND_INTENT.md",
+      "bytes": 1091,
+      "sha256": "0d89dcec4ae67c1037ba7aa6db3758c54c50d9360412aa3bf7efac776eb9ad21"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission.child.exit.json",
+      "bytes": 1194,
+      "sha256": "ede040a623a867cd4907f32dac80280612791c51627ce01b902a249cdc243584"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission.child.exit.json.claim",
+      "bytes": 183,
+      "sha256": "a10eec02eb1576d8502099de879ad4d5be72686d45c3b6fc7efa28304511d90e"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission.child.exitcode.txt",
+      "bytes": 2,
+      "sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission.child.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission.child.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission.controller.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission.controller.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission_receipt_remote.json",
+      "bytes": 17265,
+      "sha256": "ecf73b04953d52e386fc962323b1d09fe631ac83b74e418d4d29c293ef0fef3d"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/admission_wrapper_receipt_remote.json",
+      "bytes": 3993,
+      "sha256": "dbd0641242b477cc0427eb5ff7f4f38841cfe0badc2ce026f8a1c4f387ca54f3"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/approval_hq.json",
+      "bytes": 4795,
+      "sha256": "bb0f0d88f2eebacf42eedfe8eb0c1b4af9d2e941cc2694a511176212acbd6366"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/execute_r006_once.ps1",
+      "bytes": 4874,
+      "sha256": "e42fa1d1d65fe1cae73a2e091e4480a198a85d35859fc738344ea49df5fb3780"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/launch_gpu_server.cmd",
+      "bytes": 659,
+      "sha256": "4c885edd52dd8635e9d1a8f3218bba9bfb5382f6850bb14f73e5f04421c36f6d"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/mechanical_admission.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/mechanical_admission.stdout.log",
+      "bytes": 3995,
+      "sha256": "253eb647ddba33d1a91ecbf3c25f417f56ee34c99c149bfbeaa9eafce69cdbfd"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/mechanical_window_receipt.json",
+      "bytes": 1387,
+      "sha256": "5a46e5f378a97c451724ea6cea267efdc0a7c8e5cc4734e1ad34e99473894c52"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/package_clock_ledger.json",
+      "bytes": 606,
+      "sha256": "c011157065621dd8a2a98180bce649c1d3b15d2b66163879262b4947c5ab7aa2"
+    },
+    {
+      "path": "HQ-ROAD-CENTERLINE-001-R006/register_and_start.ps1",
+      "bytes": 12282,
+      "sha256": "78998719d2ca204f575ea6e4c8cb63f722453bfb4cfa2b94b456014b8ba98442"
+    },
+    {
+      "path": "mechanical_clock_remote.json",
+      "bytes": 305,
+      "sha256": "5e2970cbc0dbe1fb6140a064316672d31f34fc0dbcdcaeb00bf916e4bfbce2bd"
+    }
+  ]
+}
