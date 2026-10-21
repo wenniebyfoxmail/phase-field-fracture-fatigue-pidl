@@ -4,6 +4,7 @@ import csv
 import json
 from pathlib import Path
 import numpy as np
+import torch
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -19,6 +20,7 @@ def main():
     a.output.mkdir(parents=True, exist_ok=True)
     results = json.loads((a.raw / 'results.json').read_text())
     rows = []
+    param_rows = []
     fields = []
     for step in sorted({r['step'] for r in results}):
         group = {r['arm']: r for r in results if r['step'] == step}
@@ -49,8 +51,16 @@ def main():
         row['energy_change_percent'] = 100*(
             sum(zero['final'][k] for k in ('E_el','E_d','E_irr')) /
             sum(control['final'][k] for k in ('E_el','E_d','E_irr'))-1)
+        checkpoints=[torch.load(f/'final.pt',map_location='cpu',weights_only=False) for f in folders]
+        for prefix,checkpoint in zip(('control','zero'),checkpoints):
+            square_sum=sum(float(v.double().square().sum()) for k,v in checkpoint.items() if 'weight' in k)
+            row[f'{prefix}_weight_norm']=float(np.sqrt(square_sum))
+            row[f'{prefix}_weight_maxabs']=max(float(v.abs().max()) for k,v in checkpoint.items() if 'weight' in k)
+            for name,v in checkpoint.items():
+                param_rows.append(dict(step=step,arm=prefix,parameter=name,
+                                       norm=float(v.double().norm()),maxabs=float(v.abs().max())))
+        row['weight_norm_ratio']=row['zero_weight_norm']/row['control_weight_norm']
         if a.baseline:
-            import torch
             best=a.baseline/'best_models'
             archived=np.load(best/'energy_gradient_terms_vs_cycle.npy')
             reference=archived[archived[:,0]==step][0,1:4]
@@ -58,7 +68,7 @@ def main():
             row['control_replay_energy_max_relerr']=float(np.max(
                 np.abs(replay-reference)/np.maximum(np.abs(reference),1e-30)))
             old=torch.load(best/f'trained_1NN_{step}.pt',map_location='cpu',weights_only=False)
-            new=torch.load(folders[0]/'final.pt',map_location='cpu',weights_only=False)
+            new=checkpoints[0]
             row['control_replay_weights_maxabs']=max(
                 float((new[k]-old[k]).abs().max()) for k in old)
             row['control_replay_update_diff']=control['updates']-len(
@@ -69,6 +79,9 @@ def main():
     with (a.output / 'paired_metrics.csv').open('w') as f:
         writer = csv.DictWriter(f, fieldnames=list(rows[0]))
         writer.writeheader(); writer.writerows(rows)
+    with (a.output / 'parameter_scales.csv').open('w') as f:
+        writer=csv.DictWriter(f,fieldnames=list(param_rows[0]))
+        writer.writeheader();writer.writerows(param_rows)
     (a.output / 'summary.json').write_text(json.dumps(rows, indent=2)+'\n')
     mesh = np.load(a.raw / 'mesh.npz')
     tri = Triangulation(mesh['xy'][:,0], mesh['xy'][:,1], mesh['triangles'])
@@ -88,8 +101,23 @@ def main():
                              ['L2 = 1e-5','L2 = 0','zero − control'][j],fontsize=10)
             fig.colorbar(im,ax=axs[j],shrink=.8,label='damage d' if j<2 else 'damage difference')
     fig.suptitle('S04-E035 · synthetic · one seed · frozen-history local solves\n'
-                 'All six preselected states; common scales; endpoints are finite solves',fontsize=13)
+                 f'All {len(rows)} retrieved matched states; common scales; endpoints are finite solves',fontsize=13)
     fig.savefig(a.output / 'damage_pairs.png',dpi=170);plt.close(fig)
+    # Fixed example rule: lowest preselected raw step (c1 peak), irrespective
+    # of observed differences. Full six-state maps above remain authoritative.
+    row,ds,_=fields[0]
+    fig,axes=plt.subplots(1,3,figsize=(10.5,3.6),layout='constrained')
+    limits=(min(float(d.min()) for d in ds),max(float(d.max()) for d in ds))
+    de=float(np.abs(ds[1]-ds[0]).max())
+    for j,d in enumerate((ds[0],ds[1],ds[1]-ds[0])):
+        im=axes[j].tripcolor(tri,d,shading='gouraud',cmap='viridis' if j<2 else 'RdBu_r',
+                            vmin=limits[0] if j<2 else -de,vmax=limits[1] if j<2 else de)
+        axes[j].set_aspect('equal');axes[j].set_xlabel('x (normalized)');axes[j].set_ylabel('y (normalized)')
+        axes[j].set_title(['L2 = 1e-5','L2 = 0','zero − control'][j])
+        fig.colorbar(im,ax=axes[j],shrink=.85,label='damage d' if j<2 else 'damage difference')
+    fig.suptitle(f"S04-E035 · fixed first state: c{row['cycle']} peak, step {row['step']}\n"
+                 'Same preceding network and history · finite local solves',fontsize=12)
+    fig.savefig(a.output/'damage_first_state.png',dpi=180);plt.close(fig)
     fig,axes=plt.subplots(len(rows),2,figsize=(11,2.7*len(rows)),layout='constrained',squeeze=False)
     for axs,(row,_,folders) in zip(axes,fields):
         for folder,label,color in zip(folders,['L2 = 1e-5','L2 = 0'],['#0072B2','#D55E00']):
@@ -112,13 +140,24 @@ def main():
     for offset,prefix,label,color in [(-.17,'control','L2 = 1e-5','#0072B2'),(.17,'zero','L2 = 0','#D55E00')]:
         axes[1].bar(x+offset,[100*r[f'{prefix}_nonzero_opposite_fraction'] for r in rows],width=.32,label=label,color=color)
         axes[2].bar(x+offset,[r[f'{prefix}_gp_retreat_max'] for r in rows],width=.32,label=label,color=color)
-    axes[1].set_ylabel('nonzero physical coordinates with opposite sign (%)')
+    axes[1].set_ylabel('opposite nonzero signs (% of all coordinates)')
     axes[2].set_ylabel('maximum tri3 damage retreat')
     for ax in axes:
         ax.set_xticks(x,labels);ax.grid(axis='y',alpha=.2)
     axes[1].legend(fontsize=9);axes[2].legend(fontsize=9)
-    fig.suptitle('S04-E035 · final local states · six correlated states, one trajectory',fontsize=12)
+    fig.suptitle(f'S04-E035 · final local states · {len(rows)} correlated states, one trajectory',fontsize=12)
     fig.savefig(a.output/'decision_overview.png',dpi=180);plt.close(fig)
+    fig,axes=plt.subplots(1,2,figsize=(10,4),layout='constrained')
+    for offset,prefix,label,color in [(-.17,'control','L2 = 1e-5','#0072B2'),(.17,'zero','L2 = 0','#D55E00')]:
+        axes[0].bar(x+offset,[r[f'{prefix}_weight_norm'] for r in rows],width=.32,label=label,color=color)
+        axes[1].bar(x+offset,[r[f'{prefix}_weight_maxabs'] for r in rows],width=.32,label=label,color=color)
+    axes[0].set_ylabel('Euclidean norm of regularized weights')
+    axes[1].set_ylabel('maximum absolute weight')
+    for ax in axes:
+        ax.set_yscale('log');ax.set_xticks(x,labels);ax.grid(axis='y',alpha=.2);ax.legend(fontsize=9)
+    fig.suptitle('S04-E035 · weight-scale response to L2 removal\n'
+                 'Final parameter scales; not physical residuals or an added loss in the zero arm',fontsize=12)
+    fig.savefig(a.output/'parameter_scales.png',dpi=180);plt.close(fig)
     print(json.dumps(rows,indent=2))
 
 
