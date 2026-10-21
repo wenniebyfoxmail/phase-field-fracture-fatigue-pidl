@@ -78,7 +78,7 @@ for step=1:max_steps
         assert(toc(start)<7200,'Two-hour FEM budget reached');
         failure_stage='mechanics_globalization';
         [displ,driver,forces,res_u,E_el,mechanics_detail]=shear_mechanics_newton(...
-            eq,sys,displ,p_field,D_RHS_tract,@check_step,out_root,step,it,U,@()equilibrium_evaluations);
+            eq,sys,displ,p_field,D_RHS_tract,@check_step,out_root,step,it,U,@current_equilibrium_count);
         assert(mechanics_detail.ok && all(isfinite(displ)),...
             ['Displacement globalization failed: ',mechanics_detail.reason,' ',mechanics_detail.message]);
         failure_stage='native_phase_newton';
@@ -163,6 +163,9 @@ diary off;
     function varargout=counted_equilibrium(varargin)
         check_step();equilibrium_evaluations=equilibrium_evaluations+1;
         [varargout{1:nargout}]=eq_native(varargin{:});check_step();
+    end
+    function value=current_equilibrium_count()
+        value=equilibrium_evaluations;
     end
     function varargout=counted_phase(varargin)
         check_step();phase_evaluations=phase_evaluations+1;
