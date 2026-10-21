@@ -1,0 +1,29 @@
+{
+  "status": "REVIEWED_CODE_READY_FOR_SINGLE_R006_MECHANICAL_WINDOW_AND_SCIENTIFIC_ATTEMPT",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R006",
+  "code_snapshot": "7d5fd0f3867b94cad7b33406d6c3a74c55e867d6858912547fd3911dc6adcf88",
+  "data_lock_sha256": "a9a50e087be12ba5711d1cf87e640a97b6f06e155d4ef1e42d5b2a29e4b86934",
+  "scientific_protocol_fingerprint_sha256": "a30121cc43bc1572e946baa56f70a993202076a1fdbf2ca388307cd024e1e83a",
+  "independent_review": "REVIEW_PASS",
+  "review_receipt_sha256": "68f66d93b38f6c2e0071bf2a25c2ed5b144d4b87bdf020c6f49b8a68cf5a3aea",
+  "prepared_utc": "2026-10-21T00:53:59.030134+00:00",
+  "local_checks": [
+    "PASS_R006_EXPLICIT_PACKAGE_ENTRY",
+    "PASS_R006_OWNED_SUBPROCESS",
+    "PASS_R006_CONTROL_DELTA",
+    "PASS target/scale/tolerance/component/empty-reference/pairing",
+    "PASS_LOCAL_ZERO_STEP",
+    "PASS_PY_COMPILE",
+    "PASS_GIT_DIFF_CHECK"
+  ],
+  "remote_read_only_precheck": [
+    "hostname D-26-09",
+    "R005 task Ready LastResult 125",
+    "R006 clock/stage/output absent",
+    "GPU0 UUID match and free memory >16GiB",
+    "C drive free >25GiB"
+  ],
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "road420_access": false
+}

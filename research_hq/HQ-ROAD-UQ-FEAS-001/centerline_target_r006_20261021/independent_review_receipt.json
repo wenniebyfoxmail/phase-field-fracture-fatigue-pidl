@@ -1,0 +1,25 @@
+{
+  "status": "REVIEW_PASS",
+  "scope": "R006 explicit standard package entry and hard cumulative mechanical watchdog delta",
+  "reviewer": "independent Codex /root/d5_readonly_review",
+  "reviewed_utc": "2026-10-21T00:53:59.030134+00:00",
+  "edits": false,
+  "ssh": false,
+  "training": false,
+  "road420_access": false,
+  "code_snapshot": "7d5fd0f3867b94cad7b33406d6c3a74c55e867d6858912547fd3911dc6adcf88",
+  "data_lock_sha256": "a9a50e087be12ba5711d1cf87e640a97b6f06e155d4ef1e42d5b2a29e4b86934",
+  "scientific_protocol_fingerprint_sha256": "a30121cc43bc1572e946baa56f70a993202076a1fdbf2ca388307cd024e1e83a",
+  "dependency_binding": {
+    "skimage_version": "0.25.2",
+    "skeletonize_module": "skimage.morphology._skeletonize",
+    "skeletonize_source_sha256": "90ccca5327c613caeaea27f205b6d96178d27e9449c7d2eea93b837bd47af0ba"
+  },
+  "findings": [
+    "exact package __file__/spec.origin/SourceFileLoader/singleton __path__ enforced",
+    "exact skimage version and skeletonize implementation path/hash enforced",
+    "negative fixtures cover version/hash/spec/path/pollution/missing/initializer/shadow drift",
+    "shared-clock remaining-time watchdog terminates only its owned child PID tree on timeout",
+    "40 epochs, scientific deadline, retrieval reserve, sealed data and no-retry boundaries preserved"
+  ]
+}

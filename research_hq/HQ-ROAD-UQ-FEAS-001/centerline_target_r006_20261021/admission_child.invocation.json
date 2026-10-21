@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "run_id": "HQ-ROAD-CENTERLINE-001-R006",
+  "approval_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R006\\approval_hq.json",
+  "lock_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r006_20261021\\d5_data_lock.json",
+  "cwd": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r006_20261021",
+  "role": "admission_child",
+  "command": [
+    "powershell.exe",
+    "-NoProfile",
+    "-NonInteractive",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r006_20261021\\d5_admission.ps1"
+  ],
+  "receipt_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R006\\admission.child.exit.json",
+  "exitcode_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R006\\admission.child.exitcode.txt",
+  "stdout_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R006\\admission.child.stdout.log",
+  "stderr_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r006_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R006\\admission.child.stderr.log",
+  "timeout_seconds": 83
+}
