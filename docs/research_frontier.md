@@ -71,3 +71,5 @@ Common-box prospective revision explicitly human-approved20:52Z; sameowner prepa
 R015 common-box FEM active onCITPC12 MATLAB40592 since21:08:11Z; mandatoryarrayfixturespassed, frozenend22:47:49Z. Full24-statequalificationpending; noNN/45°. [Run](research/S04/S04-E035/runs/S04-E035-R015.md).
 
 R015 terminal:7/24 common-box states throughU.21 verified; U.24phase energyline search exhaustedfull+12halvings.55fileshashverified,ownPIDsexited,189.667s; noPIDL/45. Saved13trialenergy reconstruction locates insufficient finite-step schedule; curvature-controlled initial-step candidate reviewed/prepared, neverexecuted. Originaloneattemptconsumed, freshsame-modelrerunapprovalrequired. [Result](research/S04/S04-E035/runs/S04-E035-R015.md), [proposal](research/S04/S04-E035/common_box_curvature_proposal_20261021.md).
+
+Directhuman21:42Zapprovedonecurvature-controlledfullFEMretry withinoriginalcumulativebudget/deadline; R017adapterprepared, no launchyet. Alloriginalnegatives/costsretained; conditionalR016NNnowrequiresfullR017reference. [Run](research/S04/S04-E035/runs/S04-E035-R017.md).
