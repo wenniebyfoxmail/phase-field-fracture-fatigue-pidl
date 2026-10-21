@@ -1,0 +1,109 @@
+{
+  "status": "PASS_ZERO_STEP_PREFLIGHT",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R005",
+  "hostname": "D-26-09",
+  "gpu": "0",
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "numpy": "2.5.2",
+    "pillow": "11.3.0",
+    "scipy": "1.18.1",
+    "skimage": "0.25.2",
+    "skimage_file": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+    "matplotlib": "3.11.2",
+    "psutil": "7.0.0",
+    "cuda": "12.8"
+  },
+  "code_snapshot": "bb8b7d330812f1c834008c3d38484b5e27d33aeb2e0b6d3a36138ec3c3b62d8f",
+  "data_lock_sha256": "44acdf7ef254091e24fffa3d470efe4ec0abe2f32a50a9f4d807a878f0574b2a",
+  "identities": {
+    "trainzip": {
+      "bytes": 115224706,
+      "sha256": "d5e9eb4bbb27163ef9778e63c7d743080d3b4458d069652f4285f07f5d02cbac"
+    },
+    "valzip": {
+      "bytes": 20836950,
+      "sha256": "78974e47e7499aa2d40829e5171c87c8001055731aaa4a92aed5d8d67073718c"
+    },
+    "gapszip": {
+      "bytes": 158730287,
+      "sha256": "e40e8eec77d09cb76896a4fa5bdb28f1a4df9d14602b13dbd998c5d361f0a2a6"
+    },
+    "weights": {
+      "bytes": 46830571,
+      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+    },
+    "d1_checkpoint": {
+      "bytes": 7872385,
+      "sha256": "43423f84e3f56325821000c8b6845063df2e4472424cd80f612e225c04a0205d"
+    },
+    "d2_checkpoint": {
+      "bytes": 57735403,
+      "sha256": "92cd93741021ecdf63768f8885325d804eb1a595fff8af9ae4ba43c2686027e2"
+    },
+    "d3_old_cfd_csv": {
+      "bytes": 26702,
+      "sha256": "61b22b603fb09003561609ff4e8c33202387b9d59eadf594e156fa83a839b6bc"
+    },
+    "d3_old_gaps_csv": {
+      "bytes": 110837,
+      "sha256": "8e6308f9ec527422d2011dbbd3fe0ffe5ae010c927243d121d15b1f59f588c63"
+    },
+    "d3_repair_cfd_csv": {
+      "bytes": 24703,
+      "sha256": "df82289ebd4f5bbb19deeef6538500ce8175ff5b13daa0bf50778f47931671b9"
+    },
+    "d3_repair_gaps_csv": {
+      "bytes": 112183,
+      "sha256": "75577a03c79970aae831de9f9788a3a4c2756af5708bdb3f1fb32bf1f90fed75"
+    }
+  },
+  "counts": {
+    "train_pairs": 1860,
+    "train_groups": 245,
+    "val_pairs": 341,
+    "val_groups": 49,
+    "cfd_labeled": 118,
+    "gaps_labeled": 384,
+    "gaps_nonempty": 382,
+    "gaps_empty": 2
+  },
+  "launch_identity": "HQ-ROAD-CENTERLINE-001-R005-20261021",
+  "task_dependency_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+  "thread_environment": {
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4",
+    "OPENBLAS_NUM_THREADS": "4",
+    "NUMEXPR_NUM_THREADS": "4",
+    "VECLIB_MAXIMUM_THREADS": "4",
+    "BLIS_NUM_THREADS": "4"
+  },
+  "synthetic_metrics": {
+    "target_empty": false,
+    "pred_empty": false,
+    "target_band_fraction": 0.055689817994505494,
+    "pred_band_fraction": 0.01031722184065934,
+    "reference_centreline_pixels": 1244,
+    "predicted_centreline_pixels": 1043,
+    "cl1_precision": 0.9923298178331735,
+    "cl1_recall": 0.8536977491961415,
+    "cl1_f1": 0.9178083221234417,
+    "cl2_precision": 0.9990412272291467,
+    "cl2_recall": 0.8737942122186495,
+    "cl2_f1": 0.9322297343732832,
+    "cl4_precision": 1.0,
+    "cl4_recall": 0.907556270096463,
+    "cl4_f1": 0.9515381373788453,
+    "reference_components": 1,
+    "predicted_components": 1,
+    "reference_components_hit": 1,
+    "reference_components_omitted": 0,
+    "predicted_components_matched": 1,
+    "predicted_components_extra": 0
+  },
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "road420_access": false
+}
