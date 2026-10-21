@@ -15,11 +15,13 @@ def ps_command(s):
 
 def mechanical_remaining():
     paths=list(RUN.glob('identity_cost*.json'))+list(RUN.glob('status_*.json'))
-    paths += [RUN/'upload.json',RUN/'launch_transport.json']
+    paths += [RUN/'upload.json',RUN/'approved_upload.json',RUN/'launch_transport.json']
     spent=sum(json.loads(p.read_text())['seconds'] for p in paths if p.exists())
     left=180-spent
-    if (RUN/'invocation.json').exists():
-        end=json.loads((RUN/'invocation.json').read_text())['mechanical_end_utc']
+    admission=RUN/'approved_admission.json'
+    if not admission.exists(): admission=RUN/'invocation.json'
+    if admission.exists():
+        end=json.loads(admission.read_text())['mechanical_end_utc']
         left=min(left,datetime.datetime.fromisoformat(end).timestamp()-time.time())
     return left
 
@@ -106,6 +108,32 @@ def launch():
     print(p.stdout,p.stderr[-500:]);assert p.returncode==0,'Unknown launch state; inspect receipt before any further action'
 
 
+def approved_resume():
+    """Resume proven zero-start transport only after the exact human approval."""
+    approval=json.loads((RUN/'direct_user_approval.json').read_text())
+    assert approval['authority']=='direct_user_specific_R011_approval'
+    assert approval['FEM_cap_seconds']==9750 and approval['original_deadline_utc']==DEADLINE
+    assert json.loads((RUN/'upload.json').read_text())['returncode']==255
+    assert 'Could not resolve hostname' in (RUN/'upload.log').read_text()
+    assert not (RUN/'launch_transport.json').exists(),'Unknown or consumed start; inspect only'
+    remaining=180-json.loads((RUN/'upload.json').read_text())['seconds']
+    full_end=datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(seconds=remaining)
+    with (RUN/'approved_admission.json').open('x') as f:
+        json.dump(dict(mechanical_end_utc=full_end.isoformat(),authority=approval['authority'],prior_invocation_preserved=True,scientific_starts_allowed=1),f)
+    end=full_end-datetime.timedelta(seconds=45)
+    script=(RUN/'stage_and_launch.template.ps1').read_text().replace('MECHANICAL_DEADLINE',end.isoformat())
+    local=RUN/'approved_stage_and_launch.ps1';local.write_text(script)
+    remote='C:/q4staging/S04E035_R011_approved_'+uuid.uuid4().hex+'.ps1'
+    with (RUN/'approved_staging_identity.json').open('x') as f:
+        json.dump(dict(remote_outer_path=remote,outer_sha256=hashlib.sha256(script.encode()).hexdigest(),mechanical_deadline_utc=end.isoformat()),f,indent=2)
+    p=call(['scp','-q','-o','BatchMode=yes','-o','ConnectTimeout=25',str(local),HOST+':'+remote],min(30,mechanical_remaining()-75),'approved_upload',mechanical=True)
+    assert p.returncode==0,'Second zero-start transport failed; stop'
+    assert mechanical_remaining()>=75,'No start budget'
+    cmd="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';if((Get-FileHash '"+remote+"').Hash.ToLower() -ne '"+hashlib.sha256(script.encode()).hexdigest()+"'){throw 'Outer transfer mismatch'};& '"+remote+"'"
+    p=call(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=25',HOST,ps_command(cmd)],min(30,mechanical_remaining()-45),'launch_transport',mechanical=True)
+    print(p.stdout,p.stderr[-500:]);assert p.returncode==0,'Unknown launch; inspect own receipt, never repeat start'
+
+
 def status():
     s="$ProgressPreference='SilentlyContinue';$r='"+REMOTE+"';$o=@{root_exists=(Test-Path $r)};foreach($n in @('launch.json','exit.json','supervisor_submission.json')){if(Test-Path ($r+'/'+$n)){$o[$n]=Get-Content ($r+'/'+$n) -Raw|ConvertFrom-Json}};$o['states']=@(Get-ChildItem ($r+'/fem/state_*.mat') -ErrorAction SilentlyContinue).Count;$o['stdout_tail']=[string]::Join([Environment]::NewLine,[string[]]@(Get-Content ($r+'/stdout.log') -Tail 4 -ErrorAction SilentlyContinue));$o['stderr_tail']=[string]::Join([Environment]::NewLine,[string[]]@(Get-Content ($r+'/stderr.log') -Tail 12 -ErrorAction SilentlyContinue));$o|ConvertTo-Json -Depth 4 -Compress"
     label='status_'+datetime.datetime.now(datetime.timezone.utc).strftime('%H%M%S')
@@ -137,4 +165,4 @@ def retrieve():
     (RUN/'retrieval_verification.json').write_text(json.dumps(record,indent=2));print(json.dumps(record,indent=2))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['prepare','launch','status','retrieve'],default='prepare',nargs='?');a=p.parse_args();globals()[a.action]()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['prepare','launch','approved_resume','status','retrieve'],default='prepare',nargs='?');a=p.parse_args();globals()[a.action]()

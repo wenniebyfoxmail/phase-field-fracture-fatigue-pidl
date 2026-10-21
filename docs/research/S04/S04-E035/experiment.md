@@ -269,3 +269,8 @@ Original deadline00:20Z unchanged. Prior process593.211723s plus conservative ol
 ### R011 remote admission stopped before scientific start
 
 First SCP DNS resolution failed before upload (0.017989083s), no SSH launch command issued. The next transport required sandbox escalation; automatic approval review rejected it before command creation, stating consumed R009 permission and no accepted explicit permission for new remote FEM submission/code transfer. No workaround attempted. R011 remains prepared, scientific starts0/PID none; PIDL not started. Invocation retained without resetting its180s clock. See archive runs/S04-E035-R011/approval_review_stop.json. Explicit human approval for one new remote upload/FEM submission is now required by auto-review; original00:20Z deadline and cumulative costs still apply.
+
+
+### 2026-10-21 18:59Z — direct human approves exact R011 submission
+
+Human annotated the explicit R011 upload/FEM request with “批准”. This supersedes the auto-review authority block prospectively; no prior attempt is reclassified. Resume same R011 with one scientific start, no scientific retry, original9750s cap/deadline/resources and conditional PIDL unchanged. Old admission expired while awaiting required human approval; preserve original invocation and renew only remaining180s remote-operation allowance, keeping its prior0.017989083s charge. Record direct_user_approval.json and a separate approved admission receipt. No second zero-start transport has yet executed.
