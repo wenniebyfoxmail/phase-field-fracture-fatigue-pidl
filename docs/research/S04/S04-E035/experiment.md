@@ -69,4 +69,10 @@ scales, common-energy/gradient convergence and sign/retreat diagnostics.
 Interpretation: detectable effects establish local finite-path sensitivity only;
 small effects do not prove global redundancy. Capped arms remain capped, not converged.
 
-Status: prepared; review and producer execution pending. No scientific result yet.
+Status: completed bounded exploration; all12 arms succeeded, two zero-L2 arms wall-capped; retrieval verified. See result.md and evidence_review.md.
+
+## 2026-10-21 outcome and S04 claim impact
+
+D2/D3 completed. Six controls reproduce original weights/losses/energies/update counts exactly; local L2 removal shows state-dependent finite-path sensitivity and large weight growth, particularly two capped early/middle unloading states. No full rollout or changed-pretraining claim. Retain standard L2; bounded exploration ends.
+Results/figures/raw inventory and independent evidence review are linked from result.md. No scientific retry or new trajectory was started.
+Administrative clarification: zero-start recheck cap concerns failed admission needing another start attempt; successful read-only baseline/resource inspections were not scientific attempts. One scientific dispatcher was launched exactly once.
