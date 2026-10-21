@@ -1,0 +1,42 @@
+{
+  "status": "passed_static_saved_algebra_code_ready",
+  "scope": "Single saved-array coefficient attribution code/card/client review only; no analysis execution or scientific result",
+  "bindings": {
+    "source_script": {
+      "path": "tools/s04_e011_analysis/saved_coefficient_attribution.py",
+      "sha256": "ad17cf246fff617b6f9e1129aef7a941ad9707c4c2fb5699a7f7658d1c6b52e1",
+      "git_blob": "a030f3c0e63cd7410d7f8fde92746b5268fc6b0e"
+    },
+    "card": {
+      "path": "docs/research/S04/S04-E011/saved_coefficient_attribution_20261021/card.json",
+      "sha256": "ab9991c6452eb52a1887a09a50dd7a99b1e91a37cb4897b57b49fa2687ea301c"
+    },
+    "client": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/saved_coefficient_attribution_20261021/execute_once.py",
+      "sha256": "905f313f4e85def367fd1f6b3b09eeafb831aa97caaeeb5bfe9c0f4037b000ce"
+    }
+  },
+  "mathematics": [
+    "Product secant identity Hbar*delta_w+delta_H*wbar=delta_a+delta_e and resulting FD/Q-minus-FD signs are correct.",
+    "Zero-arm source z0 is loaded, so Jsec contains delta_B*z0; all B maps use original freeDOF unweighted block order.",
+    "a=-actual saved initial-defect RHS, not manufactured endpoint H*z. Side accepted length1/alpha1, journal vector-solve role, H/L equality and exact z_end=z0-stored_solution bind the RHS using the known immutable original update sequence. Original initial defect is not separately saved; that limitation remains explicit.",
+    "e=H*w-a is independent of saved endpoint defect; eta=e-enddefect is observed affine-consistency residual, not pure rounding.",
+    "Finite_B and coefficient_H terms retain both product contributions; endpoints include offline reconstruction residual. Each arm5vector solves reuses source L, total10vector/20tri and0factor, below12/2 caps.",
+    "Per-component vectors, signed projections, sum and closure are stored; norms are not an exclusive percentage allocation."
+  ],
+  "execution_checks": [
+    "74unique immutable input rows and parent manifests are hash/size checked; path root/absolute/.. restrictions and terminal state qualification precede output. Only fresh OUT is written; source maps read-only mmap, no original payload writes.",
+    "Mechanical host/user/hash/state plus NumPy/SciPy import/version gate remain under initial60-second alarm. Post-gate wall alarm is remaining total480 since START, bounded also by absolute deadline reserve.",
+    "RLIMIT_CPU220 and AS16GiB, BLAS threads1; no producer imports, Torch/NN/AD/physical operator/SVD/GPU code.",
+    "Client sends CONFIG+exact-SHA source once through stdin using a short fixed ssh command, single connection/timeout and no retry; fresh local receipt prevents silent reuse.",
+    "CPU allocation is220remote+50local(client15+SSH10+postprocess25)+10review+20metadata=300, not an additional50 on top of client25.",
+    "Tar output remains bounded and verified by returned SHA/size manifest. Final stderr provides total process CPU/wall through tarstream; raw ru_inblock is not claimed as bytes and physical disk reads stay UNKNOWN."
+  ],
+  "limitations": [
+    "No arrays/models/tests/SSH/new solves or physical work executed by reviewer; all judgments static.",
+    "Decomposition describes saved coefficient/field arithmetic and its offline reconstruction, not true parameter-endpoint equality, derivative validity, capacity, causality or FEM/PIDL improvement.",
+    "No full forward bound or rounding-floor claim follows from small residual or coefficient closures.",
+    "Input runtime/source state must actually pass during the one authorized attempt; static readiness is not execution permission beyond the explicitly supplied HQ scope."
+  ],
+  "blockers": []
+}

@@ -315,3 +315,7 @@ HQ-MESH-FROZEN-STDIN-R002-20261021, sourcehuman_delegated_hq under prior verifie
 ### 2026-10-21 frozen stdin R002 completed, derivative gate negative
 
 Newf5972efd/cbc29861 worker3997835 completed only frozen pair31.5326s, source/cache/physical identity intact, live[]. Combined immutable native R1 ratios7.233244 vs newfrozen7.280360; target/root changes negligible, branch change does not remove mismatch. Full forward bound still incomplete/conditional4619xgate; causal and capacity conclusions unresolved, no optimization/history/rollout. Retrieval599remote/241local partial verified. See[runs/pidl_frozen_completion_r2_result_20261021.md](runs/pidl_frozen_completion_r2_result_20261021.md).
+
+### 2026-10-21 prospective saved coefficient attribution
+
+HQ-MESH-SAVED-COEFFICIENT-ATTRIBUTION-20261021, sourcehuman_delegated_hq, authorizes one complete saved-only decomposition of frozen R002 coefficient secants/AD terms/finite-step products and authentic-RHS residuals. Whole1200s00:35–00:55UTC/CPU300s/0GPU;10vector solves0factor planned,12/2maximum. No new model/checkpoint/AD/physics/FEM/SVD/h/direction/optimization. Old endpoints/costs preserved. Large oldPhi only read remotely by one CPU-only SSH, hard60s admission and no retry. See[saved_coefficient_attribution_20261021](saved_coefficient_attribution_20261021/README.md).
