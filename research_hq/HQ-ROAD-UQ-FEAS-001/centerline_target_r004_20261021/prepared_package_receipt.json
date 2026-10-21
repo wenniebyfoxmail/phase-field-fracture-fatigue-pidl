@@ -1,0 +1,22 @@
+{
+  "status": "REVIEWED_CODE_READY_FOR_SINGLE_R004_ADMISSION",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R004",
+  "code_snapshot": "64108b2d8248011219b3638489bf5d33ff2e912227d9d627044bc211917a1a0c",
+  "data_lock_sha256": "bae2dd2405877b0116b4cf126c72ea9b77c0b75401dccc7e2f3ff33d91474288",
+  "scientific_protocol_fingerprint_sha256": "a30121cc43bc1572e946baa56f70a993202076a1fdbf2ca388307cd024e1e83a",
+  "local_checks": [
+    "PASS_R004_SCHEDULED_CONTEXT frozen-priority success failure-receipt",
+    "PASS_R004_OWNED_SUBPROCESS success context-pid invalid-context valid-json-nonzero missing malformed malformed-numeric timeout duplicate truncated unknown-launch-no-repeat",
+    "PASS_R004_CONTROL_DELTA",
+    "PASS target/scale/tolerance/component/empty-reference/pairing",
+    "PASS_LOCAL_ZERO_STEP real CRACK500/CFD/GAPS masks",
+    "PASS_PY_COMPILE",
+    "PASS_GIT_DIFF_CHECK"
+  ],
+  "training_steps": 0,
+  "optimizer_steps": 0,
+  "road420_access": false,
+  "prepared_utc": "2026-10-21T00:03:56.578758+00:00",
+  "independent_review": "REVIEW_PASS",
+  "review_receipt_sha256": "86fad4fa7c00c76bb22471646db481263665adad86e0cda3e0af8b598eac2000"
+}

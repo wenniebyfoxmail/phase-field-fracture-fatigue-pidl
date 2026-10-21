@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "run_id": "HQ-ROAD-CENTERLINE-001-R004",
+  "approval_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R004\\approval_hq.json",
+  "lock_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021\\d5_data_lock.json",
+  "cwd": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021",
+  "role": "environment",
+  "command": [
+    "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021\\scheduled_context_bootstrap.py",
+    "--context-receipt",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R004\\environment.context.json",
+    "--dependency-root",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+    "--expected-skimage-sha256",
+    "7aab19d6e977cd0e8cb6febcc224231e547efbe0e254b2e2d6c4036c01fdd3b2",
+    "--expected-morphology-sha256",
+    "313e28fe7d04adcdaee46b97931ebe29928b1057a6493747f49f51891191224f",
+    "--target",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r004_20261021\\environment_probe.py",
+    "--"
+  ],
+  "receipt_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R004\\environment.exit.json",
+  "exitcode_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R004\\environment.exitcode.txt",
+  "stdout_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R004\\environment.stdout.log",
+  "stderr_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R004\\environment.stderr.log",
+  "timeout_seconds": 25,
+  "context_receipt_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r004_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R004\\environment.context.json"
+}

@@ -1,0 +1,13 @@
+{
+  "status": "R004_PRE_REVIEW_CLOCK_CHECKPOINT",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R004",
+  "observed_utc": "2026-10-20T23:55:36.568966+00:00",
+  "package_clock_start_utc": "2026-10-20T21:59:35Z",
+  "package_deadline_utc": "2026-10-21T01:59:35Z",
+  "r001_checks_preserved": 3,
+  "r002_checks_preserved": 1,
+  "r003_checks_preserved": 1,
+  "r003_scientific_attempts_preserved": 1,
+  "r004_admission_checks_remaining": 1,
+  "r004_scientific_attempts_remaining": 1
+}
