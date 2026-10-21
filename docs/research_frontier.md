@@ -51,3 +51,7 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 - 不把 generative video 视觉逼真度当物理预测；headline metrics 必须是未来 registered mask/tip/area、event timing、CRPS/coverage 与决策效用。
 - 若公开数据无法对齐图像—荷载—天气—维修时间轴，立即转为最小 prospective pilot；若 world model 不优于 persistence 和 observation-only state-space baseline，则停止扩大架构。
 - 暂停新的 PIDL loss/architecture sweep、Freeze-Then-Select 阈值调节、未合格 FEM corpus 和单轨迹 foundation-model 宣称。
+
+## 2026-10-21 — S04-E035 published static shear
+
+Published Manav21-page paper and code links verified. New R008 stopped in initial recovery at the added residual Armijo rule; no accepted state and no PIDL. All24remote files verified. Native-recovery repair is prepared and independently reviewed, unexecuted. Prior results/costs retained; see [owner](research/S04/S04-E035/experiment.md) and [R008](research/S04/S04-E035/runs/S04-E035-R008.md).

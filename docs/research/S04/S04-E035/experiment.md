@@ -215,3 +215,16 @@ Onlyseed1 is included, not the paper's8-seed statistics. Public repository
 links verified; exact current upstream code bytes not fetched due anti-bot
 response. Localsource and mesh identities recorded. This permits necessary
 checks/review and one fresh paired attempt; no silent retry/change of model.
+
+### R008 execution result
+
+FEM actually started onCITPC12 PID47368,11fixtures passed, then initial
+recovery first PF direction exhausted the task-local residual Armijo trials.
+Process15.3017841s/peakRSS1,717,030,912bytes; solver5.4858461s. No accepted
+state, no loaded step, no PIDL. All24remote files/SHA256 verified locally.
+This is failure of the added step-acceptance rule on this trajectory, not
+evidence that the paper's native recovery or static shear physics fails.
+See [R008 receipt and prepared recovery-only repair](runs/S04-E035-R008.md).
+The one attempt is consumed; the prepared native-recovery alternative is
+not deployed/run, and no newRunID has been minted. Original12hdeadline and
+all old costs/results remain; no automatic scientific retry.
