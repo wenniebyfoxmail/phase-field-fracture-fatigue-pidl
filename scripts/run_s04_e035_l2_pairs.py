@@ -35,22 +35,29 @@ def dump(path, obj):
     path.write_text(json.dumps(obj, indent=2, allow_nan=False) + '\n')
 
 
-def flat_grads(named, coefficient):
+def flat_grads(named, coefficient, physical_grads):
     """Full-coordinate gradients, including biases and activation parameters.
 
-    Subtract only the L2 actually used, then add canonical 1e-5 L2 to
-    compare signs at this SAME parameter vector, even in the zero-L2 arm.
+    Use independently differentiated physical gradients (never subtraction
+    from a rounded float32 total). Compare canonical 1e-5 L2 signs at the
+    SAME parameter vector, even in the zero-L2 arm. Actual optimizer .grad
+    buffers are read only and are also reported separately.
     """
-    phys, reg = [], []
-    for name, p in named:
+    phys, reg, actual = [], [], []
+    for (name, p), physical in zip(named, physical_grads, strict=True):
         g = torch.zeros_like(p) if p.grad is None else p.grad.detach()
         r = 2e-5 * p.detach() if 'weight' in name else torch.zeros_like(p)
-        phys.append((g - (coefficient / 1e-5) * r).reshape(-1))
+        physical = torch.zeros_like(p) if physical is None else physical.detach()
+        phys.append(physical.reshape(-1))
         reg.append(r.reshape(-1))
+        actual.append(g.reshape(-1))
     gp, gr = torch.cat(phys), torch.cat(reg)
     gt = gp + gr
+    ga = torch.cat(actual)
     return dict(grad_logE_l2=float(gp.norm()), grad_L2_l2=float(gr.norm()),
                 grad_regularized_l2=float(gt.norm()),
+                grad_actual_objective_l2=float(ga.norm()),
+                actual_sign_change_fraction=float((gp.sign() != ga.sign()).float().mean()),
                 sign_change_fraction=float((gp.sign() != gt.sign()).float().mean()),
                 nonzero_opposite_fraction=float(((gp * gt) < 0).float().mean()),
                 physical_zero_fraction=float((gp == 0).float().mean()))
@@ -101,7 +108,8 @@ def main():
         baseline=str(args.baseline), steps=STEPS, torch=torch.__version__,
         device=torch.cuda.get_device_name(0), arm_seconds=args.arm_seconds,
         total_seconds=args.total_seconds, initialization='shared archived previous-step network',
-        history='frozen previous-step postcommit; no trajectory rollout'))
+        history='frozen previous-step postcommit; no trajectory rollout',
+        run_ids=[f'S04-E035-R{i:03d}' for i in range(1,13)]))
     np.savez_compressed(args.output / 'mesh.npz', xy=inp.cpu().numpy(),
                         triangles=conn.cpu().numpy(), area=area.cpu().numpy())
     results = []
@@ -124,8 +132,10 @@ def main():
                                       fatigue, irreversibility_penalty_cfg=IRR)
             loge = torch.log10(sum(energies))
             reg = sum((p.square().sum() for n, p in named if 'weight' in n))
+            physical_grads = torch.autograd.grad(
+                loge, [p for _,p in named], allow_unused=True, retain_graph=True)
             (loge + coefficient * reg).backward()
-            metrics = flat_grads(named, coefficient)
+            metrics = flat_grads(named, coefficient, physical_grads)
             metrics.update(dict(E_el=float(energies[0].detach()),
                                 E_d=float(energies[1].detach()),
                                 E_irr=float(energies[2].detach()), logE=float(loge.detach()),
@@ -170,8 +180,16 @@ def main():
 
             def instrumented_step(*a, **kw):
                 if updates[0] % 50 == 0:
+                    # Independent same-vector graph; autograd.grad preserves
+                    # the actual .grad buffers that RPROP will consume.
+                    u_probe, v_probe, d_probe = field.fieldCalculation(inp)
+                    terms = compute_energy(inp, u_probe, v_probe, d_probe,
+                        history, mat, pff, area, conn, fatigue,
+                        irreversibility_penalty_cfg=IRR)
+                    physical = torch.autograd.grad(torch.log10(sum(terms)),
+                        [p for _,p in named], allow_unused=True)
                     trace.append(dict(update=updates[0], seconds=time.monotonic()-armstart,
-                                      **flat_grads(named, coefficient)))
+                                      **flat_grads(named, coefficient, physical)))
                 result = original_step(*a, **kw)
                 updates[0] += 1
                 if time.monotonic() >= deadline:
@@ -199,7 +217,8 @@ def main():
             elapsed = time.monotonic() - armstart
             final = evaluate(folder, 'final', coefficient)
             torch.save(net.state_dict(), folder / 'final.pt')
-            receipt = dict(step=step, cycle=(step-1)//5+1,
+            receipt = dict(run_id=f'S04-E035-R{len(results)+1:03d}',
+                           step=step, cycle=(step-1)//5+1,
                            substep=(step-1)%5+1, load=float(field.lmbda), arm=arm,
                            coefficient=coefficient, updates=updates[0],
                            optimization_seconds=elapsed, stop_reason=reason,
