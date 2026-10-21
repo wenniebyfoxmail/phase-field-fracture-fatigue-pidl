@@ -63,7 +63,7 @@ for step=1:max_steps
     assert(toc(start)<7200,'Two-hour FEM budget reached');
     step_start=tic; U=schedule(step);
     timing='unaccepted_in_progress';
-    driver=[]; forces=[]; pf_force=[]; res_u=NaN; res_pf=NaN; mechanics_detail=[];
+    driver=[]; forces=[]; pf_force=[]; res_u=NaN; res_pf=NaN; E_el=NaN;E_d=NaN;mechanics_detail=[];
     failure_stage='step_initialization';step_eval0=equilibrium_evaluations;step_pf0=phase_evaluations;
     try
     previous_alpha=p_field_old;write_step_guard();
@@ -74,7 +74,7 @@ for step=1:max_steps
     for it=1:SOL_STAG_PAR.max_iter
         assert(toc(start)<7200,'Two-hour FEM budget reached');
         failure_stage='mechanics_globalization';
-        [displ,driver,forces,res_u,~,mechanics_detail]=shear_mechanics_newton(...
+        [displ,driver,forces,res_u,E_el,mechanics_detail]=shear_mechanics_newton(...
             eq,sys,displ,p_field,D_RHS_tract,@check_step,out_root,step,it,U,@()equilibrium_evaluations);
         assert(mechanics_detail.ok && all(isfinite(displ)),...
             ['Displacement globalization failed: ',mechanics_detail.reason,' ',mechanics_detail.message]);
@@ -83,7 +83,7 @@ for step=1:max_steps
             pf,sys,p_field,p_field_old,driver,history_vars_old,DOFS.active_dof_pf,...
             sys.STIFFNESS_MATRIX.i_row_pf,sys.STIFFNESS_MATRIX.j_col_pf,...
             'max_iter',500,'res_tol',1e-6,'regularize_pf_only',true,'verbose',false);
-        forces=[];res_u=NaN;check_step();
+        forces=[];res_u=NaN;E_el=NaN;check_step();
         assert(~bad_pf && all(isfinite(p_field)),'Phase-field Newton failed');
         failure_stage='native_stagger_postupdate';
         if it==1, res_pf_0=rpf0; end
@@ -143,7 +143,7 @@ for step=1:max_steps
         save(fullfile(out_root,sprintf('failed_state_%03d.mat',step)),...
             'p_field','p_field_old','displ','U','step','timing','driver','forces',...
             'res_u','res_pf','alpha_min','alpha_max','max_healing',...
-            'elapsed_seconds','step_seconds','rejection_reason','failure_stage','pf_force',...
+            'elapsed_seconds','step_seconds','rejection_reason','failure_stage','pf_force','E_el','E_d',...
             'equilibrium_evaluations','phase_evaluations','mechanics_detail','-v7');
         rethrow(failure);
     end

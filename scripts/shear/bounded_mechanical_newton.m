@@ -10,6 +10,7 @@ try
     for i=1:opts.max_iter
         opts.check();
         r=cache.R(active); ru0=norm(r); phi0=0.5*(r'*r);
+        assert(isfinite(ru0) && isfinite(phi0),'SHEAR:Nonfinite','Nonfinite residual merit');
         report.last_residual=ru0;
         % Current fresh residual is checked before solving or requiring descent.
         if ru0<=opts.res_tol
@@ -22,6 +23,7 @@ try
         assert(numel(p)==numel(active) && all(isfinite(p)), 'SHEAR:Direction', 'Invalid Newton direction');
         p=p(:); Kp=Kaa*p;
         linear_residual=norm(Kp+r); slope=r'*Kp;
+        assert(isfinite(linear_residual),'SHEAR:Nonfinite','Nonfinite linear residual');
         emit('direction');
         assert(isfinite(slope) && slope<0, 'SHEAR:NonDescent', 'Non-descent residual-merit direction');
         accepted=false;
@@ -31,6 +33,7 @@ try
             trial_cache=[]; report.trials=report.trials+1;
             trial_cache=evaluate(trial_u);
             rt=trial_cache.R(active); phit=0.5*(rt'*rt);
+            assert(isfinite(phit),'SHEAR:Nonfinite','Nonfinite trial merit');
             emit('trial');
             if phit<=phi0+opts.c1*t*slope
                 % All accepted fields/force/tangent/driver come from THIS assembly.
