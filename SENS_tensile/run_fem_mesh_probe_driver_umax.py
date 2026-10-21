@@ -27,6 +27,8 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
+from functools import partial
 import os
 import subprocess
 import sys
@@ -172,6 +174,20 @@ def main() -> None:
                         help=("Require a native T3 .inp mesh, use order-2 three-point "
                               "integration, and store alpha_bar, f and previous driver "
                               "at all three GP."))
+    parser.add_argument("--trial-fatigue-coupling", action="store_true",
+                        help="Use bounded within-substep trial-fatigue fixed points with mandatory fresh physical acceptance.")
+    parser.add_argument("--common-problem-config", type=Path, default=None,
+                        help="Explicit FEM material, fixed phase boundary and acceptance JSON; also usable in frozen-f controls.")
+    parser.add_argument("--coupling-max-outer", type=int, default=None)
+    parser.add_argument("--coupling-epochs-per-outer", type=int, default=None)
+    parser.add_argument("--coupling-total-rprop-epochs", type=int, default=None)
+    parser.add_argument("--coupling-f-atol", type=float, default=None)
+    parser.add_argument("--coupling-f-rtol", type=float, default=None)
+    parser.add_argument("--coupling-relaxation", type=float, default=1.0)
+    parser.add_argument("--coupling-recovery-lbfgs-max-iter", type=int, default=None)
+    parser.add_argument("--coupling-recovery-lbfgs-max-eval", type=int, default=None)
+    parser.add_argument("--coupling-initial-network-sha256", default=None,
+                        help="Required SHA-256 of staged trained_1NN_initTraining.pt for strict fresh runs.")
     parser.add_argument("--paired-initial-state", default=None,
                         help="Load the exact shared pre-step0 network/nodal state.")
     parser.add_argument("--paired-initial-state-sha256", default=None,
@@ -410,6 +426,24 @@ def main() -> None:
         if (args.native_q4_gp_state or args.native_tri3_gp_state)
         else "running_nodal_max"
     )
+    if args.trial_fatigue_coupling:
+        if not (args.native_q4_gp_state or args.native_tri3_gp_state):
+            parser.error("--trial-fatigue-coupling requires a native GP state mode")
+        _required_coupling = {
+            "max_outer": args.coupling_max_outer,
+            "epochs_per_outer": args.coupling_epochs_per_outer,
+            "max_total_rprop_epochs": args.coupling_total_rprop_epochs,
+            "f_atol": args.coupling_f_atol, "f_rtol": args.coupling_f_rtol,
+            "recovery_lbfgs_max_iter": args.coupling_recovery_lbfgs_max_iter,
+            "recovery_lbfgs_max_eval": args.coupling_recovery_lbfgs_max_eval,
+            "initial_network_sha256": args.coupling_initial_network_sha256,
+        }
+        if any(value is None for value in _required_coupling.values()):
+            parser.error("trial fatigue coupling requires explicit outer, optimizer and coefficient tolerances/budgets")
+        config.fatigue_dict["trial_fatigue_coupling"] = {
+            "enable": True, "relaxation": args.coupling_relaxation,
+            **_required_coupling,
+        }
     config.fatigue_dict["initial_alpha_protocol"] = {
         "enable": bool(args.hard_alpha_recovery_step),
         "mode": "uniform_current_alpha",
@@ -426,6 +460,26 @@ def main() -> None:
             else "legacy"
         ),
     }
+    if args.common_problem_config is not None:
+        from cyclic_acceptance import AcceptancePolicy, make_sent_final_residual_check
+        common = json.loads(args.common_problem_config.read_text(encoding="utf-8"))
+        if not (args.native_q4_gp_state or args.native_tri3_gp_state) or not args.fem_irr_penalty:
+            parser.error("common problem requires native GP and --fem-irr-penalty")
+        if common["tol_ir"] != 0.001 or common["recovery_penalty_coefficient"] != 13781.25:
+            parser.error("common problem requires the audited FEM penalty coefficients")
+        AcceptancePolicy.from_dict(common["acceptance_config"])
+        config.PFF_model_dict["tol_ir"] = common["tol_ir"]
+        config.numr_dict["irreversibility_penalty"]["recovery_penalty_coefficient"] = common["recovery_penalty_coefficient"]
+        config.fatigue_dict["common_problem"] = common
+        if args.trial_fatigue_coupling:
+            coupling = config.fatigue_dict["trial_fatigue_coupling"]
+            coupling["acceptance_config"] = common["acceptance_config"]
+            coupling["final_residual_check_factory"] = partial(
+                make_sent_final_residual_check, config=common["acceptance_config"],
+                fatigue_dict=config.fatigue_dict,
+            )
+    elif args.trial_fatigue_coupling:
+        parser.error("--trial-fatigue-coupling requires --common-problem-config")
     config.fatigue_dict["paired_initial_state"] = {
         "load_path": args.paired_initial_state,
         "save_path": args.write_paired_initial_state,
@@ -490,6 +544,7 @@ def main() -> None:
         f"_Ncyc{fat['n_cycles']}_Nstep{total_steps}"
         f"_U{fat['disp_max']}"
         f"_{mesh_tag}"
+        f"{'_commonProblem_' + fat['common_problem']['ordered_mesh_sha256_f32_i64'][:12] if fat.get('common_problem') else ''}"
         f"{'_graphPIDL_' + args.graph_mode if args.graph_pidl else ''}"
         f"{graph_variant_tag}"
         f"_current_active_{history_reduction_tag}"
@@ -499,6 +554,8 @@ def main() -> None:
         f"_{step_tag}"
         f"{'_compile' if args.compile else ''}"
     )
+    if args.trial_fatigue_coupling:
+        dir_name += "_trialFatigueStrict"
     config.model_path = config.resolve_archive_dir(here, dir_name)
     config.trainedModel_path = config.model_path / Path("best_models/")
     config.intermediateModel_path = config.model_path / Path("intermediate_models/")
@@ -563,9 +620,15 @@ def main() -> None:
         )
         handle.write("Edegrade_formula: (1-alpha)^2 + residual_stiffness\n")
         handle.write("history_driver_mode: current_active\n")
+        handle.write(f"common_problem: {fat.get('common_problem')}\n")
+        handle.write(f"tol_ir: {config.PFF_model_dict['tol_ir']}\n")
         handle.write(f"history_driver_reduction: {fat['history_driver_reduction']}\n")
         handle.write(f"history_storage: {fat['history_storage']}\n")
         handle.write(f"damage_history_storage: {fat['damage_history_storage']}\n")
+        handle.write("trial_fatigue_coupling: " + str({
+            key: value for key, value in fat.get("trial_fatigue_coupling", {}).items()
+            if not callable(value)
+        }) + "\n")
         handle.write(
             "spatial_discretization: native_Q4_2x2_GP\n"
             if args.native_q4_gp_state
@@ -597,9 +660,9 @@ def main() -> None:
         handle.write("element_diagnostics_fields: mechanics+energy+driver\n")
         handle.write(
             "diagnostic_raw_export_semantics: "
-            "psi_raw_elem=psi_active/g_alpha legacy alias; "
-            "psi_raw_from_g_alpha_elem=psi_active/g_alpha; "
-            "psi_raw_from_g_solver_elem=psi_active/g_solver; "
+            "raw computed directly from strain, independent of damage/eta; "
+            "native psi_raw_gp preserves all GP values; psi_raw_elem=arithmetic GP mean; "
+            "psi_raw_area_mean_elem=quadrature-weighted mean; old from_g names are direct-raw aliases; "
             "g_solver_override_active records whether solver override was active\n"
         )
         handle.write("gradient_diagnostics: pre_history_refresh_every_step\n")

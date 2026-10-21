@@ -1,0 +1,94 @@
+# S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
+
+目的：解释原生 GP PIDL 在循环加载下与 FEM 的差距。2026-10-21 用户明确要求先修复步内疲劳、最终残差与 raw 导出，再进行同设置对照，最后区分优化与网络表达。此记录继续 mesh 对齐目标；旧 E011/E035 结果和权限不变。
+
+本轮：修复代码、人工单元检查、独立交叉复核、拟定有预算上限的成组验证。尚无新项目 NN 优化或 FEM 求解，也未修改 CITPC12。**现状是 D2 代码与验证设计完成；不是已缩小场误差。**
+
+## 复用与决策路径
+
+复用上一轮 `local_archive/pidl_cyclic_audit_20261021/` 的源码核验与 19 态保存应变审计；原生 GP 代码来自 d1edbeed（ad749c8 的同源分支），独立分支 codex/s04-cyclic-alignment-20261021。复用 E011 fresh assembly、commit_once、phase tangent、已有 precrack 对齐输入及 frozen-state 诊断，避免重做旧 head-fit/优化试验。查阅 E011 precrack preparation 后确认：固定裂纹边界与罚系数差异不能遗漏。
+
+| 阶段 | 要解决的问题 | 证据与转向条件 |
+|---|---|---|
+| D1 已完成 | 存在什么离散差异 | 源码与存档审计；不把诊断 bug 当训练机制 |
+| D2 本轮 | 修复是否实现了声明的方程与接受语义 | 人工 Q4/T3 弱式、历史、边界、预算测试和跨作者复核；MATLAB 运行检查仍需 producer |
+| D3 待预算授权 | 共同设置后差距能减少多少 | 成组共同前态和短连续窗口；不合格末态只作诊断，不能填补或续接成轨迹 |
+| D4 D3 的条件分支 | 剩余是优化、表达还是未匹配的目标 | 同结构继续优化与同结构场拟合；不能由一次拟合失败证明容量不足 |
+
+## 本轮实现
+
+1. `source/trial_fatigue_coupling.py` 与 `model_train.py`：每个 physical substep 固定旧 A/r/d；冻结 f 求解，然后从同一旧状态重建 `A_trial=A_old+relu(g(d)psi_raw-r_old)`，更新 f，检查固定点和当前末态残差。f 从计算图 detach。只有全部通过才提交一次；失败保存原因与实际工作量。禁止 strict 自动预训练、续跑和失败目录覆盖，初始网络需 SHA 校验。
+2. `source/cyclic_acceptance.py`：同一个最终 u/v/d、旧 lower/history 上重新装配 float64 原生节点力；检查自由位移、损伤约束残差、规定边界及历史重算一致性。不靠 loss plateau 或参数梯度认定平衡。
+3. `tools/s04_e036_fem/`：在已核实 live FEM 字节上构建隔离 overlay。当前 eq→pf 新装配，接受后从原始旧 history 生成单次提交；原默认路径不变。MATLAB selftest、checkcode 和原生同状态 admission 尚未执行。
+4. raw 从应变直接计算；原生 GP 全保存，再显式给出算术/面积加权均值。旧 `from_g` 名称保留为标明语义的兼容别名。**raw 修复没有进入训练损失或 current_active 历史驱动，单独能改变的物理训练轨迹为零。**
+5. 可选共同设置包还包括：固定 251 个预裂纹节点 d=1；tol_ir=.001，对应 gamma=421875（原 PIDL .005→16875，差25倍）；负损伤恢复罚13781.25（原 PIDL无此项）。这些是另外的目标/边界修正，不能把它们产生的收益全部叫作疲劳更新收益。默认不启用，free 节点原映射不变。
+
+## 共同离散问题与接受规则
+
+采用原生 Q4 四 GP、同一个 ordered mesh（86756 nodes /86408 elements）、同一节点和 GP 顺序、同一积分权重。T3 仅作为本轮实现检查，不额外开启 T3 科学试验。
+
+E=1, nu=.3, Gc=.01, ell=.01, eta=0, AT1/Amor/plane strain, alpha_T=.5, asymptotic p=2。top/bottom ux=0、bottom uy=0、top uy=U；显式 crack DOFs d=1。`common_problem_q4.json` 绑定 mesh digest、原始 boundary mask 来源与 251 节点，未安装任何加载后的 FEM 目标到训练中。
+
+每圈 U=[.02999988,.05999988,.08999988,.11999988,0]，名义 Umax=.12。状态键包括 trajectory/Umax、cycle、substep、U、pre/post commit、旧前态来源；不得按文件 step 号直接配对。
+
+主验收明确为 **nodal_box_kkt**：在 d_old 下界上保留 min(Rd,0)，在1上界保留max(Rd,0)，内部保留Rd；仅确实重合的上下界无可行方向。BC反力排除但规定值仍检查。要求物理 0<=d<=1 严格，d>=old 的误差容差1e-8；不隐藏 clipping。`max((||Ru||+||Rkkt||)/4e-4,||Ru||/1e-6)<=1`。所有 raw residual 同时保存。
+
+这是把 FEM 已有投影输出域明确为共同约束问题的**接受规则变更**，不是声称旧 penalty+projection 已解决该问题。fresh机械1e-6的最终联合要求也比旧外层仅sum stop更严格。`soft_penalty_equations` 只作明确的另一个诊断规则，不能见结果后切换。AT1 完好下界的正反力不应误判为失衡。
+
+PIDL GP历史 float32→float64 重算容差 abs/rel各2e-6；FEM double commit identity1e-10，分别记录，不混作残差精度。PIDL `f_solve`指最后optimizer实际冻结系数，FEM `f_solve`指fresh装配系数；FEM另存`f_last_inner_return`。比较时使用明确对应字段。
+
+## 成组验证设计（尚未执行）
+
+### 固定内容与比较结构
+
+保持同一 8×400 coordinate MLP、seed1、相同初始参数、float32求解、同一网格/载荷/能量项及原 weight_decay=1e-5。FEM场只用于指定的前态传入、最终评分及后述明确标记的表达探针；不能用待评分终态选 checkpoint、调整停止阈值或学习率。
+
+保留三个层次，**不输出一个无法辨识的“疲劳修复贡献百分比”**：
+
+- P0/F0：既有原设置存档，raw重算为独立 sidecar，不覆盖原文件。
+- P1/F1：共同 material/BC/predecessor；PIDL仍使用旧 f 作为冻结系数；FEM用fresh最终接受。这个差分同时包含设置与参考末态变化，分开报告 P0–F0、P0–F1、P1–F1。
+- P2/F1：与P1相同，但PIDL使用本轮trial-f/末态接受。P1与P2的比较才用于评价耦合修复包。
+
+在同一末态诊断中保存：首次旧loss plateau快照、首次f固定点快照、最终fresh验收/耗尽快照，以及每200次更新快照。以相同累计更新次数比较P1/P2；残差验收造成的额外计算另报。冻结-f控制使用相同200步分块和优化器重建安排，避免把重启优化器本身混入f更新效应。首次固定点快照只是诊断，不自动commit，也不虚构一条第三轨迹。P1也必须通过共同trial-f末态残差才能commit；冻结f解可能因此拒绝。拒绝末态的等预算J仍报告为diagnostic，不能纳入accepted改善率或按旧loss stop续接。
+
+### 状态覆盖与初始化
+
+采用两个各完整5个substep的短窗口 c1、c83，覆盖加载、峰值、卸载；另做 c20s4、c60s4 两个冻结前态端点。早期、稳定累积、晚期都有覆盖。c83窗口及独立端点均是**给定存档前态的局部条件试验**，不是从c1连续预测到c83。
+
+每个窗口两臂从同一已保存FEM前态的lower/A/r开始，使用同一已有PIDL参数作优化初值；这些是前态输入，不是该窗口未来终态监督。窗口内各自提交自己的接受历史；从第二步起两臂不再拥有共同前态，窗口差分明确为耦合与历史传播包的综合效应；一臂未通过时立即停止该臂窗口，保留失败，不把另一臂前态接进去。端点试验无后续历史传播。取出前态时核验哈希、物理键、节点/GP顺序及原生装配；缺失或不合格则标 unavailable，不能换一个容易状态。
+
+当前通用strict runner只支持全新U0起步；**不能用它伪装late-window resume**。D3须复用E011 frozen-state harness，将本轮controller接入显式前态调用，并独立检查；该配套harness与producer admission属于下面同一条件授权链，尚未完成/执行。现有json仅锁mesh/BC/材料，不等于完整初始化。
+
+### 测量与归因
+
+主量采用固定尺度 primitive field gap：`J=sqrt(sum_i m_i*((du/.12)^2+(dv/.12)^2+dd^2)/(3*sum_i m_i))`；m_i为原生Q4积分得到的节点集中面积；分别列u/v/d贡献。次量包括nativeGP active-driver加权L2、raw、A、f、相场耗散、反力、自由残差、bounds、实际工作量与时间。卸载零reference范数时报告绝对误差，不偷偷加epsilon。
+
+改善量报告`1-J(P2,F1)/J(P1,F1)`，分状态及固定等权聚合；若分母0则undefined，未通过验收的点不得加入“已解释比例”。同时给同设置FEM tightening/replay变化作为参考数值误差；若改善同该变化相当，则不声称可辨识收益。没有预设任意“必须提高x%”阈值，不把单轨迹多个状态当独立样本或泛化证据。两窗口不足以评价疲劳寿命。
+
+### 优化与表达的条件鉴别
+
+仅在共同BC/材料/历史/接受规则已匹配、FEM端点合格后进入。预定 c1s2,c1s4,c83s2,c83s4，不按误差挑点。D4每一对诊断都重新绑定同一个明确的F1旧前态，不沿用P1/P2各自演化历史却称为同问题：
+
+1. 同网络、同前态，继续物理优化（RPROP/LBFGS的明确有界比较）并记录自由残差随工作量变化。若同结构可同时降低残差和场误差，支持优化受限。
+2. 同结构拟合该FEM的u/v/d与nativeGP梯度，单独标记为seen-target表达探针，不并入physics-only成绩。达到FEM数值误差尺度说明这些离散场可表达；若physics-only仍差，不能再归咎于该状态的容量。
+3. 拟合失败只能说明当前拟合程序未找到表达，不能证明网络表达上限。必要时用已有E011/E035结果区分L2正则、激活饱和、约束不可行和优化条件数；扩大网络或修改损失应另列待决分支，不能用本轮有限失败直接下结论。
+
+raw单独修复贡献0物理轨迹；共同设置包、耦合/停止包的效应只按上述嵌套差分报告，不当互相独立、可相加的因果百分比。
+
+## 建议的一次性执行上限（未获本轮预算批准）
+
+目标生产端：gpu-taobo（PIDL），citpc12-ssh（FEM）。不启用CSD3或其它新机器。先检查资源和已有进程；零启动连接/环境检查合计最多30分钟，不能重启共享服务。
+
+- 总上限：**48 GPU-hours + 8 CITPC12 CPU wall-hours**；不是完成保证。达到任何上限即停止，保留未解决结果。
+- 主比较24个PIDL physical substeps：2臂×(2窗口×5步+2独立峰值)，每步最多2000次RPROP，至多10个200-step外层，总48000次。两臂相同总预算；较早合格可停，额外预算不得转移给某一失败状态。
+- 条件优化/表达探针：4预定态×2种诊断×最多2000次更新，总16000次；合计最大64000次RPROP更新。LBFGS仅用于4个继续物理优化探针，每态最多200迭代/400closure，合计最多800迭代/1600closure，独立计数且计入同一总墙钟；表达探针不额外调用LBFGS。不能无限line search。
+- 该条件前态设计不运行新的U0 recovery；只加载已有零载荷/窗口前态。通用strict runner的U0起步不属于这24步预算，不得为了绕开harness限制额外启动。
+- f固定点abs/rel各2e-6，relaxation=1，数值阈值不按结果放宽。原生FEM每步max_outer=1500、同MAT_CHAR，墙钟上限优先；失败不自动扩大上限、换seed或重新开始。
+- 同一冻结末态最多一次紧容差FEM check（joint4e-6/u1e-8）用于参考误差估计，计入8h；不得用它掩盖主参考未验收。
+- 明确停止：非有限、能量log域错误、BC/状态identity失败、资源冲突、任一总/步预算耗尽。出现科学失败后不重跑该臂；可以完成预先列出的其它独立状态。结果未知先核查进程/receipt，不重复spawn。
+
+本预算决定是新的计算资源授权，不是为已授权的修复、单元检查重复请示。依据已安装 research-decision-core 的 Bounded Task Authority，一次批准覆盖配套harness实现→必要复核→隔离部署→admission→这一组运行→归档，不逐步再问。
+
+## 本轮结论与限制
+
+代码层已处理步内f滞后、最终同状态残差与raw除法bug，并将新发现的硬裂纹BC和25倍罚系数差异显式纳入共同设置。全部科学收益目前仍未知；不能报告“已解释x%差距”，也不能判断剩余为网络表达不足。实际MATLAB、producer端原生残差一致性与完整对照执行尚未完成。

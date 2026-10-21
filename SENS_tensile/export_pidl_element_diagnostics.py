@@ -22,7 +22,8 @@ _saved_argv = sys.argv
 sys.argv = ["export_pidl_element_diagnostics", "8", "400", "1", "TrainableReLU", "1.0"]
 import config
 from compute_energy import (compute_energy_per_elem, get_psi_plus_per_elem,
-                            gradients, stress as effective_stress)
+                            gradients, raw_strain_energy_density,
+                            stress as effective_stress)
 from construct_model import construct_model
 from fatigue_history import compute_fatigue_degrad
 from field_computation import FieldComputation
@@ -197,6 +198,13 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
     field_comp.net.load_state_dict(safe_torch_load(model_path, device))
     field_comp.net.eval()
     ckpt = safe_torch_load(ckpt_path, device)
+    if (t_conn.shape[1] != 3
+            or ckpt.get("history_storage") in {"q4_gp4", "tri3_gp3"}
+            or (torch.is_tensor(ckpt.get("hist_fat")) and ckpt["hist_fat"].ndim == 2)):
+        raise ValueError(
+            "This post-hoc exporter supports legacy element-history T3 archives only; "
+            "native Q4/T3 GP archives require the native model_train diagnostic writer."
+        )
     hist_alpha = ckpt["hist_alpha"].to(device)
     hist_fat = ckpt.get("hist_fat")
     if hist_fat is None:
@@ -217,13 +225,15 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
             inp, u, v, alpha, matprop, pffmodel, area_t, t_conn,
         )
         g_alpha, _ = pffmodel.Edegrade(alpha_elem)
-        psi_raw = psi_plus / torch.clamp(g_alpha, min=1e-30)
         e_el, e_d, e_hist = compute_energy_per_elem(
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_t, t_conn,
             f_fatigue=f_fatigue,
         )
         eps_xx, eps_yy, eps_xy, _, _ = gradients(
             inp, u, v, alpha, area_t, t_conn
+        )
+        psi_raw = raw_strain_energy_density(
+            eps_xx, eps_yy, eps_xy, matprop, pffmodel,
         )
         eps_trace = eps_xx + eps_yy
         eps_eq = torch.sqrt(eps_xx**2 + eps_yy**2 + 2.0 * eps_xy**2)
@@ -272,6 +282,9 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
             psi_plus_elem=psi_np.astype(np.float32),  # backward-compatible active driver
             psi_active_elem=psi_np.astype(np.float32),
             psi_raw_elem=psi_raw_np.astype(np.float32),
+            psi_raw_definition=np.array("direct_undegraded_energy_from_strain"),
+            psi_raw_support=np.array("tri3_centroid"),
+            psi_raw_element_reduction=np.array("none"),
             g_alpha_elem=g_alpha_np.astype(np.float32),
             psi_plus_prev_elem=tensor_np(psi_prev).reshape(-1).astype(np.float32),
             E_el_elem=e_el_np.astype(np.float32),

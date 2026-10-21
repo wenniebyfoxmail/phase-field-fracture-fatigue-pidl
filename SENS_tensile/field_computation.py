@@ -378,7 +378,27 @@ class FieldComputation:
             v = ((inp[:, -1]-y0)*(yL-inp[:, -1])*disp_v +
                  (inp[:, -1]-y0)/(yL-y0)*torch.sin(self.theta)) * self.lmbda
 
+        if hasattr(self, '_fixed_damage_boundary'):
+            coordinates, mask, values = self._fixed_damage_boundary
+            if inp.shape != coordinates.shape or not torch.equal(inp, coordinates.to(inp)):
+                raise ValueError('fixed damage boundary requires the exact ordered full mesh')
+            alpha = torch.where(mask.to(device=alpha.device), values.to(alpha), alpha)
         return u, v, alpha
+
+    def set_fixed_damage_boundary(self, coordinates, mask, values):
+        """Opt-in essential phase BC; free-node mapping stays unchanged.
+
+        The caller must reconstruct these fixed buffers from the immutable
+        common-problem contract before loading a run checkpoint.
+        """
+        mask = torch.as_tensor(mask, dtype=torch.bool, device=coordinates.device)
+        values = torch.as_tensor(values, dtype=coordinates.dtype, device=coordinates.device)
+        values = values.expand(coordinates.shape[0]).clone()
+        if mask.shape != (coordinates.shape[0],) or not torch.isfinite(values).all():
+            raise ValueError('invalid fixed damage boundary arrays')
+        if not bool(((values[mask] >= 0) & (values[mask] <= 1)).all()):
+            raise ValueError('fixed damage values must be within [0,1]')
+        self._fixed_damage_boundary = (coordinates.detach().clone(), mask.clone(), values.detach())
 
     def update_hist_alpha(self, inp):
         _, _, pred_alpha = self.fieldCalculation(inp)

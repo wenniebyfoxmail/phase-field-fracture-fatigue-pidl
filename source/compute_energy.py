@@ -30,6 +30,8 @@ compute_energy.py - 能量计算 ⭐ 最核心的文件
    3. get_psi_plus_per_elem()  → ★ 全新函数，供 model_train.py 计算疲劳累积量 ψ⁺
 """
 
+import math
+
 import torch
 import torch.nn as nn
 
@@ -47,6 +49,14 @@ def _is_tri3(T_conn):
 
 def _native_tri3_enabled(cfg):
     return isinstance(cfg, dict) and cfg.get("spatial_integration") == "native_tri3_gp3"
+
+
+def _native_recovery_penalty_coefficient(cfg):
+    """Full supplied coefficient of 0.5*c*<d>_-²; opt-in native only."""
+    coefficient = float(cfg.get('recovery_penalty_coefficient', 0.0)) if isinstance(cfg, dict) else 0.0
+    if not math.isfinite(coefficient) or coefficient < 0.0:
+        raise ValueError('recovery_penalty_coefficient must be finite and non-negative')
+    return coefficient
 
 
 def _q4_gp_kinematics(inp, u, v, alpha, T_conn):
@@ -86,6 +96,7 @@ def _tri3_gp_kinematics(inp, u, v, alpha, T_conn):
 def _compute_tri3_gp3_energy_per_elem(
     inp, u, v, alpha, hist_alpha, matprop, pffmodel, T_conn,
     f_fatigue=1.0, g_stiffness_override=None,
+    irreversibility_penalty_cfg=None,
 ):
     shape, weights, alpha_gp, e11, e22, e12, grad_alpha = _tri3_gp_kinematics(
         inp, u, v, alpha, T_conn
@@ -106,6 +117,9 @@ def _compute_tri3_gp3_energy_per_elem(
     hist_gp = tri3_interpolate(hist_alpha, T_conn, shape)
     penalty_sq = torch.relu(-(alpha_gp - hist_gp))**2
     penalty_density = 0.5 * matprop.w1 * pffmodel.irrPenalty() * penalty_sq
+    recovery_coefficient = _native_recovery_penalty_coefficient(irreversibility_penalty_cfg)
+    if recovery_coefficient:
+        penalty_density = penalty_density + 0.5 * recovery_coefficient * torch.relu(-alpha_gp)**2
     return (
         (elastic_density * weights).sum(dim=1),
         (damage_density * weights).sum(dim=1),
@@ -145,6 +159,9 @@ def _compute_q4_energy_per_elem(
         hist_mean = hist_alpha[T_conn].mean(dim=1, keepdim=True)
         penalty_sq = torch.relu(-(alpha_gp - hist_mean))**2
     penalty_density = 0.5 * matprop.w1 * pffmodel.irrPenalty() * penalty_sq
+    recovery_coefficient = _native_recovery_penalty_coefficient(irreversibility_penalty_cfg)
+    if recovery_coefficient:
+        penalty_density = penalty_density + 0.5 * recovery_coefficient * torch.relu(-alpha_gp)**2
     return (
         (elastic_density * det_j).sum(dim=1),
         (damage_density * det_j).sum(dim=1),
@@ -301,6 +318,7 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, T_conn,
             f_fatigue=f_fatigue,
             g_stiffness_override=g_stiffness_override,
+            irreversibility_penalty_cfg=irreversibility_penalty_cfg,
         )
 
     # =========================================================================
@@ -591,6 +609,34 @@ def field_grads(inp, field, area_elem, T=None):
         grad_y = grad_y / area_elem / 2
 
     return grad_x, grad_y
+
+
+def raw_strain_energy_density(strain_11, strain_22, strain_12, matprop, pffmodel):
+    """Undegraded driving energy at the supplied strain support, for diagnostics.
+
+    No damage/degradation input is used. In particular, this remains defined at
+    full damage and when a fatigue driver uses a different quadrature reduction.
+    ``strain_12`` is tensor shear (half the engineering shear). Native callers
+    must pass each Gauss-point strain before reducing the resulting energy.
+
+    This helper does not change ``strain_energy_with_split`` or the training
+    driver's historical unsplit return semantics.
+    """
+    if pffmodel.se_split == 'volumetric':
+        mat_K = matprop.mat_lmbda + 2.0 / 3.0 * matprop.mat_mu
+        strain_k = (strain_11 + strain_22) / 3.0
+        dev_11 = strain_11 - strain_k
+        dev_22 = strain_22 - strain_k
+        dev_33 = -strain_k
+        return (
+            0.5 * mat_K * torch.relu(3.0 * strain_k)**2
+            + matprop.mat_mu * (dev_11**2 + dev_22**2 + dev_33**2
+                                + 2.0 * strain_12**2)
+        )
+    return (
+        0.5 * matprop.mat_lmbda * (strain_11 + strain_22)**2
+        + matprop.mat_mu * (strain_11**2 + strain_22**2 + 2.0 * strain_12**2)
+    )
 
 
 # Computes the element-wise strain energy density after applying the prescribed split

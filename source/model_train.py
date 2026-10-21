@@ -36,7 +36,7 @@ from plotting import plot_field
 # ★ 新增：疲劳相关函数（仅在 fatigue_on=True 时实际调用）
 from compute_energy import (get_psi_plus_per_elem, compute_energy,
                             compute_energy_per_elem, gradients,
-                            strain_energy_with_split,
+                            raw_strain_energy_density,
                             stress as effective_stress)
 from fatigue_history import (update_fatigue_history, compute_fatigue_degrad,
                               mirror_y_indices, mirror_alpha_y)
@@ -575,7 +575,7 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         )
         if _is_native_tri3:
             from tri3_quadrature import tri3_gradient, tri3_interpolate, tri3_shape_data
-            _tri_shape, _tri_dshape, _ = tri3_shape_data(inp, T_conn)
+            _tri_shape, _tri_dshape, _diagnostic_gp_weights = tri3_shape_data(inp, T_conn)
             _grad_u = tri3_gradient(u, T_conn, _tri_dshape)
             _grad_v = tri3_gradient(v, T_conn, _tri_dshape)
             eps_xx = _grad_u[:, :, 0]
@@ -590,7 +590,7 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         sig_raw_1, sig_raw_2 = _principal_2d(sig_raw_xx, sig_raw_yy, sig_raw_xy)
         if _is_native_q4:
             from q4_quadrature import q4_interpolate, q4_shape_data
-            _q4_shape, _, _ = q4_shape_data(inp, T_conn)
+            _q4_shape, _, _diagnostic_gp_weights = q4_shape_data(inp, T_conn)
             _alpha_for_stress = q4_interpolate(alpha, T_conn, _q4_shape)
             _g_override_for_stress = g_stiffness_override_elem
             if (torch.is_tensor(_g_override_for_stress)
@@ -686,9 +686,9 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         oracle_mask_np = _tensor_to_numpy(
             oracle_mask_elem, like_tensor=alpha_elem
         ).reshape(-1).astype(np.float32)
-    # `psi_plus_elem` is the active fatigue driver g(alpha)*psi0.  Save both
-    # the active value and the raw undegraded psi0 approximation to avoid the
-    # recurring FEM/PIDL comparison ambiguity.
+    # The supplied active/history driver can use GP-mean g, an override or an
+    # oracle. It is not invertible by dividing by centroid g. Export raw energy
+    # directly from strain, before any GP-to-element reduction.
     with torch.no_grad():
         g_alpha_state, _ = pffmodel.Edegrade(_alpha_for_stress)
     g_alpha_state_np = _tensor_to_numpy(g_alpha_state)
@@ -703,27 +703,35 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         g_override_state_np = g_solver_state_np.astype(np.float32)
     if _is_native_gp:
         with torch.no_grad():
-            _, psi_raw_state = strain_energy_with_split(
-                eps_xx_gp, eps_yy_gp, eps_xy_gp, _alpha_for_stress,
-                matprop, pffmodel,
+            psi_raw_state = raw_strain_energy_density(
+                eps_xx_gp, eps_yy_gp, eps_xy_gp, matprop, pffmodel,
             )
         psi_raw_gp_np = _tensor_to_numpy(psi_raw_state)
-        psi_raw_solver_gp_np = psi_raw_gp_np
+        diagnostic_gp_weights_np = _tensor_to_numpy(_diagnostic_gp_weights)
+        psi_raw_area_mean_np = (
+            (psi_raw_gp_np * diagnostic_gp_weights_np).sum(axis=1)
+            / diagnostic_gp_weights_np.sum(axis=1)
+        )
+        psi_raw_support = "native_q4_gp4" if _is_native_q4 else "native_tri3_gp3"
     else:
-        psi_raw_gp_np = psi_plus_gp_np / np.maximum(g_alpha_state_np, 1e-30)
-        psi_raw_solver_gp_np = psi_plus_gp_np / np.maximum(g_solver_state_np, 1e-30)
+        with torch.no_grad():
+            psi_raw_state = raw_strain_energy_density(
+                eps_xx, eps_yy, eps_xy, matprop, pffmodel,
+            )
+        psi_raw_gp_np = _tensor_to_numpy(psi_raw_state)
+        psi_raw_area_mean_np = psi_raw_gp_np.reshape(-1)
+        diagnostic_gp_weights_np = np.empty((0, 0), dtype=np.float32)
+        psi_raw_support = "tri3_centroid" if T_conn is not None else "autodiff_points"
     if _is_native_gp:
         g_alpha_np = g_alpha_state_np.mean(axis=1)
         g_solver_np = g_solver_state_np.mean(axis=1)
         g_override_np = g_override_state_np.mean(axis=1)
-        psi_raw_from_g_alpha_np = psi_raw_gp_np.mean(axis=1)
-        psi_raw_from_g_solver_np = psi_raw_solver_gp_np.mean(axis=1)
+        psi_raw_elem_np = psi_raw_gp_np.mean(axis=1)
     else:
         g_alpha_np = g_alpha_state_np.reshape(-1)
         g_solver_np = g_solver_state_np.reshape(-1)
         g_override_np = g_override_state_np.reshape(-1)
-        psi_raw_from_g_alpha_np = psi_raw_gp_np.reshape(-1)
-        psi_raw_from_g_solver_np = psi_raw_solver_gp_np.reshape(-1)
+        psi_raw_elem_np = psi_raw_gp_np.reshape(-1)
 
     np.savez_compressed(
         out_dir / f"element_fields_cycle_{cycle:04d}.npz",
@@ -750,9 +758,18 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         psi_active_elem=psi_plus_np.astype(np.float32),
         psi_history_driver_elem=psi_history_np.astype(np.float32),
         delta_alpha_bar_input_elem=history_increment_np.astype(np.float32),
-        psi_raw_elem=psi_raw_from_g_alpha_np.astype(np.float32),
-        psi_raw_from_g_alpha_elem=psi_raw_from_g_alpha_np.astype(np.float32),
-        psi_raw_from_g_solver_elem=psi_raw_from_g_solver_np.astype(np.float32),
+        psi_raw_elem=psi_raw_elem_np.astype(np.float32),
+        psi_raw_area_mean_elem=psi_raw_area_mean_np.astype(np.float32),
+        quadrature_weights_gp=diagnostic_gp_weights_np.astype(np.float32),
+        psi_raw_definition=np.array("direct_undegraded_energy_from_strain"),
+        psi_raw_support=np.array(psi_raw_support),
+        psi_raw_element_reduction=np.array(
+            "arithmetic_mean_of_native_gp_energy" if _is_native_gp else "none"
+        ),
+        # Deprecated names are compatibility aliases, never active/g quotients.
+        psi_raw_from_g_alpha_elem=psi_raw_elem_np.astype(np.float32),
+        psi_raw_from_g_solver_elem=psi_raw_elem_np.astype(np.float32),
+        psi_raw_alias_semantics=np.array("direct_raw_compatibility_aliases_not_quotients"),
         g_alpha_elem=g_alpha_np.astype(np.float32),
         g_alpha_gp=g_alpha_state_np.astype(np.float32),
         g_solver_elem=g_solver_np.astype(np.float32),
@@ -1011,11 +1028,61 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             "runner compatibility, but does not implement sidecar sampling."
         )
 
+    # Opt-in controller admission is checked before any pretraining work.
+    # The geometry-bound residual factory is resolved after loading the fine mesh.
+    from trial_fatigue_coupling import (
+        validate_trial_fatigue_config, solve_trial_fatigue_step,
+        TrialFatigueNotConverged, PhysicalStepOptimizerBudget,
+        trial_fatigue_checkpoint_contract,
+        require_fresh_trial_run_directory,
+        verify_initial_network, track_optimizer_work,
+    )
+    import json
+    _coupling_cfg = fatigue_dict.get("trial_fatigue_coupling", {}) or {}
+    _coupling_enabled = bool(_coupling_cfg.get("enable", False))
+    validate_trial_fatigue_config(fatigue_dict, _coupling_cfg)
+    if fatigue_dict.get("common_problem") and not _coupling_enabled:
+        # Mesh-bound phase mapping also changes frozen-f controls. Never
+        # silently resume an old checkpoint with this new interpretation.
+        require_fresh_trial_run_directory(trainedModel_path)
+    if _coupling_enabled:
+        require_fresh_trial_run_directory(trainedModel_path)
+        if len(disp) == 0 or abs(float(disp[0])) > 1.0e-12:
+            raise ValueError("strict fatigue coupling requires a zero-displacement recovery first step")
+        for _name, _feature in (
+            ("inverse", inverse_dict), ("MIT8", mit8_dict),
+            ("adaptive_sampling", adaptive_sampling_dict), ("delta1", delta1_dict),
+            ("j_path", j_path_dict),
+        ):
+            if (_feature or {}).get("enable", False):
+                raise ValueError(f"trial fatigue coupling does not support {_name}")
+        if (grad_annealing_state or {}).get("enable", False):
+            raise ValueError("trial fatigue coupling does not support gradient annealing")
+        if getattr(field_comp, "williams_enabled", False):
+            raise ValueError("trial fatigue coupling does not support mutable Williams crack-tip features")
+        if getattr(field_comp, "ansatz_enabled", False):
+            raise ValueError("trial fatigue coupling does not support enriched ansatz state")
+    _coupling_checkpoint_contract = (
+        trial_fatigue_checkpoint_contract(
+            _coupling_cfg, _irreversibility_penalty_cfg,
+            common_problem=fatigue_dict.get("common_problem"), fatigue_dict=fatigue_dict)
+        if _coupling_enabled else None
+    )
+
     # =========================================================================
     # 阶段1：预训练（粗网格，fatigue 始终关闭，与 Manav 原始完全一致）
     # ★ 若已有预训练权重（中断续训），直接加载并跳过预训练
     # =========================================================================
     _init_ckpt = trainedModel_path / Path('trained_1NN_initTraining.pt')
+    if _coupling_enabled and not _init_ckpt.is_file():
+        raise RuntimeError(
+            "strict fatigue coupling forbids automatic pretraining; stage the "
+            "approved common initial-network checkpoint in the fresh run first")
+    if _coupling_enabled:
+        verify_initial_network(_init_ckpt, _coupling_cfg.get("initial_network_sha256"))
+        _paired_admission = fatigue_dict.get("paired_initial_state", {}) or {}
+        if _paired_admission.get("load_path") and not _paired_admission.get("expected_sha256"):
+            raise ValueError("strict paired initial-state loading requires an explicit SHA-256")
     if _init_ckpt.exists():
         # ── 断点续训：跳过预训练 ──────────────────────────────────────────────
         print(f"[Checkpoint] 检测到预训练权重，跳过预训练")
@@ -1088,6 +1155,22 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     validate_history_storage_for_connectivity(
         fatigue_dict, T_conn, "fine training mesh"
     )
+    if fatigue_dict.get("common_problem"):
+        from cyclic_acceptance import install_sent_common_problem
+        install_sent_common_problem(
+            inp=inp, T_conn=T_conn, field_comp=field_comp, matprop=matprop,
+            pffmodel=pffmodel, irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+            config=fatigue_dict["common_problem"], fatigue_dict=fatigue_dict,
+        )
+    _final_residual_check = _coupling_cfg.get("final_residual_check")
+    if _coupling_enabled and _final_residual_check is None:
+        _final_residual_check = _coupling_cfg["final_residual_check_factory"](
+            inp=inp, T_conn=T_conn, area_T=area_T, matprop=matprop,
+            pffmodel=pffmodel, field_comp=field_comp,
+            irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+        )
+        if not callable(_final_residual_check):
+            raise ValueError("final_residual_check_factory did not return a callable")
     _runtime_mesh_signature = _mesh_state_signature(inp, T_conn)
     _runtime_mesh_arity = int(T_conn.shape[1]) if T_conn is not None else 0
     _runtime_history_storage = fatigue_dict.get("history_storage", "element")
@@ -1467,6 +1550,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _net_file = trainedModel_path / Path(f'trained_1NN_{_last_j}.pt')
         if _net_file.exists():
             _ckpt = torch.load(_latest, map_location=device)
+            _saved_coupling = bool(_ckpt.get("trial_fatigue_coupling_enabled", False))
+            if _saved_coupling != _coupling_enabled:
+                raise RuntimeError("checkpoint fatigue coupling mode differs; use an explicit fresh-run initial-state transfer")
+            if _coupling_enabled and _ckpt.get("trial_fatigue_contract") != _coupling_checkpoint_contract:
+                raise RuntimeError("checkpoint coupling/acceptance/penalty policy differs; strict resume refused")
+
             _saved_signature = _ckpt.get('representation_signature')
             if (
                 _representation_signature is not None
@@ -2029,140 +2118,207 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # ------------------------------------------------------------------
         # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
         # ------------------------------------------------------------------
-        if j == 0 or optimizer_dict["n_epochs_LBFGS"] > 0:
-            n_epochs = max(optimizer_dict["n_epochs_LBFGS"], 1)
-            NNparams  = field_comp.parameters()
-            optimizer = get_optimizer(NNparams, "LBFGS")
-            # ★ 2026-05-07 Soft mirror-symmetry penalty (B path) — read from fatigue_dict
-            _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
-            # ★ 2026-05-08 Soft side-traction penalty — read from fatigue_dict
-            _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
-            loss_data1 = fit(
-                field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
-                optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
-                intermediateModel_path=None, writer=writer, training_dict=training_dict,
-                f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
-                crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into LBFGS
-                supervised_dict=_supervised_dict,       # ★ MIT-8
-                symmetry_dict=_symmetry_dict,           # ★ B path soft sym
-                side_traction_dict=_side_traction_dict, # ★ side-traction penalty
-                grad_annealing_state=grad_annealing_state,  # ★ Algo1 (applies pre-computed λ; no update in LBFGS)
-                element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
-                j_path_dict=j_path_dict,                # ★ J path-independence reg
-                hist_loss_weight=_lambda_hist_weight,
-                g_stiffness_override=_g_stiffness_override_current,
-                irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
-            )
-            loss_data = loss_data + loss_data1
-
-        if _staged_alpha:
-            _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
-            _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
-            _d1_active_cycle = (
-                _d1_dataset is not None and j >= _d1_start_cycle
-            )
-            _stage_min_delta = float(_staged_cfg.get(
-                'optim_rel_tol', optimizer_dict["optim_rel_tol"]
-            ))
-
-            def _run_staged_head(_label, _rows, _epochs):
-                if int(_epochs) <= 0:
-                    return []
-                with _head_only_phase(field_comp, _rows, _label) as _params:
-                    _optim = get_optimizer(_params, "RPROP")
-                    return fit_with_early_stopping(
-                        field_comp, training_set, T_conn, area_T, hist_alpha,
-                        matprop, pffmodel,
-                        optimizer_dict["weight_decay"], num_epochs=int(_epochs),
-                        optimizer=_optim, min_delta=_stage_min_delta,
-                        intermediateModel_path=None, writer=writer,
-                        training_dict=training_dict,
-                        f_fatigue=f_fatigue,
-                        crack_tip_weights=crack_tip_weights,
-                        supervised_dict=_supervised_dict,
-                        symmetry_dict=_symmetry_dict,
-                        side_traction_dict=_side_traction_dict,
-                        grad_annealing_state=grad_annealing_state,
-                        delta1_dataset=_d1_dataset if _d1_active_cycle else None,
-                        element_mask=_void_energy_mask,
-                        j_path_dict=j_path_dict,
+        _coupling_result = None
+        _optimizer_work = {"lbfgs_closure_calls": 0, "lbfgs_func_evals": 0,
+                           "lbfgs_iterations": 0}
+        _step_budget = (
+            PhysicalStepOptimizerBudget(
+                int(_coupling_cfg["epochs_per_outer"]),
+                int(_coupling_cfg["max_total_rprop_epochs"]))
+            if _coupling_enabled else None
+        )
+        def _fit_current_coefficient(f_fatigue, outer=1):
+            _pass_optimizer = dict(optimizer_dict)
+            loss_data = []
+            if _coupling_enabled:
+                _pass_optimizer["n_epochs_RPROP"] = _step_budget.next_rprop_epochs()
+                # The only L-BFGS exception is the original zero-load recovery.
+                _pass_optimizer["n_epochs_LBFGS"] = 0
+            if (j == 0 and outer == 1) or _pass_optimizer["n_epochs_LBFGS"] > 0:
+                n_epochs = max(_pass_optimizer["n_epochs_LBFGS"], 1)
+                NNparams  = field_comp.parameters()
+                optimizer = get_optimizer(NNparams, "LBFGS")
+                if _coupling_enabled:
+                    optimizer.param_groups[0]["max_iter"] = int(_coupling_cfg["recovery_lbfgs_max_iter"])
+                    optimizer.param_groups[0]["max_eval"] = int(_coupling_cfg["recovery_lbfgs_max_eval"])
+                # ★ 2026-05-07 Soft mirror-symmetry penalty (B path) — read from fatigue_dict
+                _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
+                # ★ 2026-05-08 Soft side-traction penalty — read from fatigue_dict
+                _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
+                with track_optimizer_work(
+                    optimizer, _step_budget, _optimizer_work, "LBFGS",
+                    max_eval=_coupling_cfg.get("recovery_lbfgs_max_eval"),
+                ):
+                    loss_data1 = fit(
+                        field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
+                        _pass_optimizer["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
+                        intermediateModel_path=None, writer=writer, training_dict=training_dict,
+                        f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
+                        crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into LBFGS
+                        supervised_dict=_supervised_dict,       # ★ MIT-8
+                        symmetry_dict=_symmetry_dict,           # ★ B path soft sym
+                        side_traction_dict=_side_traction_dict, # ★ side-traction penalty
+                        grad_annealing_state=grad_annealing_state,  # ★ Algo1 (applies pre-computed λ; no update in LBFGS)
+                        element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
+                        j_path_dict=j_path_dict,                # ★ J path-independence reg
                         hist_loss_weight=_lambda_hist_weight,
                         g_stiffness_override=_g_stiffness_override_current,
                         irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
                     )
+                loss_data = loss_data + loss_data1
 
-            loss_data = loss_data + _run_staged_head(
-                "uv-head stage", (0, 1), _staged_cfg.get('uv_head_epochs', 0)
-            )
-            loss_data = loss_data + _run_staged_head(
-                "alpha-head stage", (2,), _staged_cfg.get('alpha_head_epochs', 0)
-            )
-
-        if _local_patch_training:
-            _patch_epochs = int(_patch_train_cfg.get('warm_epochs', 0))
-            if _patch_epochs > 0:
+            if _staged_alpha:
                 _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
                 _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
                 _d1_active_cycle = (
                     _d1_dataset is not None and j >= _d1_start_cycle
                 )
-                _patch_min_delta = float(_patch_train_cfg.get(
-                    'optim_rel_tol', optimizer_dict["optim_rel_tol"]
+                _stage_min_delta = float(_staged_cfg.get(
+                    'optim_rel_tol', _pass_optimizer["optim_rel_tol"]
                 ))
-                with _local_patch_only_phase(field_comp) as _patch_params:
-                    _patch_optim = get_optimizer(_patch_params, "RPROP")
-                    loss_data_patch = fit_with_early_stopping(
-                        field_comp, training_set, T_conn, area_T, hist_alpha,
-                        matprop, pffmodel,
-                        optimizer_dict["weight_decay"], num_epochs=_patch_epochs,
-                        optimizer=_patch_optim, min_delta=_patch_min_delta,
-                        intermediateModel_path=None, writer=writer,
-                        training_dict=training_dict,
-                        f_fatigue=f_fatigue,
-                        crack_tip_weights=crack_tip_weights,
-                        supervised_dict=_supervised_dict,
-                        symmetry_dict=_symmetry_dict,
-                        side_traction_dict=_side_traction_dict,
-                        grad_annealing_state=grad_annealing_state,
-                        delta1_dataset=_d1_dataset if _d1_active_cycle else None,
-                        element_mask=_void_energy_mask,
-                        j_path_dict=j_path_dict,
+
+                def _run_staged_head(_label, _rows, _epochs):
+                    if int(_epochs) <= 0:
+                        return []
+                    with _head_only_phase(field_comp, _rows, _label) as _params:
+                        _optim = get_optimizer(_params, "RPROP")
+                        return fit_with_early_stopping(
+                            field_comp, training_set, T_conn, area_T, hist_alpha,
+                            matprop, pffmodel,
+                            _pass_optimizer["weight_decay"], num_epochs=int(_epochs),
+                            optimizer=_optim, min_delta=_stage_min_delta,
+                            intermediateModel_path=None, writer=writer,
+                            training_dict=training_dict,
+                            f_fatigue=f_fatigue,
+                            crack_tip_weights=crack_tip_weights,
+                            supervised_dict=_supervised_dict,
+                            symmetry_dict=_symmetry_dict,
+                            side_traction_dict=_side_traction_dict,
+                            grad_annealing_state=grad_annealing_state,
+                            delta1_dataset=_d1_dataset if _d1_active_cycle else None,
+                            element_mask=_void_energy_mask,
+                            j_path_dict=j_path_dict,
+                            hist_loss_weight=_lambda_hist_weight,
+                            g_stiffness_override=_g_stiffness_override_current,
+                            irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+                        )
+
+                loss_data = loss_data + _run_staged_head(
+                    "uv-head stage", (0, 1), _staged_cfg.get('uv_head_epochs', 0)
+                )
+                loss_data = loss_data + _run_staged_head(
+                    "alpha-head stage", (2,), _staged_cfg.get('alpha_head_epochs', 0)
+                )
+
+            if _local_patch_training:
+                _patch_epochs = int(_patch_train_cfg.get('warm_epochs', 0))
+                if _patch_epochs > 0:
+                    _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
+                    _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
+                    _d1_active_cycle = (
+                        _d1_dataset is not None and j >= _d1_start_cycle
+                    )
+                    _patch_min_delta = float(_patch_train_cfg.get(
+                        'optim_rel_tol', _pass_optimizer["optim_rel_tol"]
+                    ))
+                    with _local_patch_only_phase(field_comp) as _patch_params:
+                        _patch_optim = get_optimizer(_patch_params, "RPROP")
+                        loss_data_patch = fit_with_early_stopping(
+                            field_comp, training_set, T_conn, area_T, hist_alpha,
+                            matprop, pffmodel,
+                            _pass_optimizer["weight_decay"], num_epochs=_patch_epochs,
+                            optimizer=_patch_optim, min_delta=_patch_min_delta,
+                            intermediateModel_path=None, writer=writer,
+                            training_dict=training_dict,
+                            f_fatigue=f_fatigue,
+                            crack_tip_weights=crack_tip_weights,
+                            supervised_dict=_supervised_dict,
+                            symmetry_dict=_symmetry_dict,
+                            side_traction_dict=_side_traction_dict,
+                            grad_annealing_state=grad_annealing_state,
+                            delta1_dataset=_d1_dataset if _d1_active_cycle else None,
+                            element_mask=_void_energy_mask,
+                            j_path_dict=j_path_dict,
+                            hist_loss_weight=_lambda_hist_weight,
+                            g_stiffness_override=_g_stiffness_override_current,
+                            irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+                        )
+                    loss_data = loss_data + loss_data_patch
+
+            if _pass_optimizer["n_epochs_RPROP"] > 0:
+                n_epochs  = _pass_optimizer["n_epochs_RPROP"]
+                NNparams  = field_comp.parameters()
+                optimizer = get_optimizer(NNparams, "RPROP")
+                _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
+                _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
+                # ★ δ-1: pass ElementDataset when IS is active for this cycle
+                _d1_active_cycle = (
+                    _d1_dataset is not None and j >= _d1_start_cycle
+                )
+                with track_optimizer_work(
+                    optimizer, _step_budget, _optimizer_work, "RPROP",
+                    max_eval=_coupling_cfg.get("recovery_lbfgs_max_eval"),
+                ):
+                    loss_data2 = fit_with_early_stopping(
+                        field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
+                        _pass_optimizer["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
+                        min_delta=_pass_optimizer["optim_rel_tol"],
+                        intermediateModel_path=None if _coupling_enabled else intermediateModel_path,
+                        writer=writer, training_dict=training_dict,
+                        f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
+                        crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into RPROP
+                        supervised_dict=_supervised_dict,       # ★ MIT-8
+                        symmetry_dict=_symmetry_dict,           # ★ B path soft sym
+                        side_traction_dict=_side_traction_dict, # ★ side-traction penalty
+                        grad_annealing_state=grad_annealing_state,  # ★ Algo1 (updates λ every update_every epochs)
+                        delta1_dataset=_d1_dataset if _d1_active_cycle else None,  # ★ δ-1
+                        element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
+                        j_path_dict=j_path_dict,                # ★ J path-independence reg
                         hist_loss_weight=_lambda_hist_weight,
                         g_stiffness_override=_g_stiffness_override_current,
                         irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
                     )
-                loss_data = loss_data + loss_data_patch
+                loss_data = loss_data + loss_data2
 
-        if optimizer_dict["n_epochs_RPROP"] > 0:
-            n_epochs  = optimizer_dict["n_epochs_RPROP"]
-            NNparams  = field_comp.parameters()
-            optimizer = get_optimizer(NNparams, "RPROP")
-            _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
-            _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
-            # ★ δ-1: pass ElementDataset when IS is active for this cycle
-            _d1_active_cycle = (
-                _d1_dataset is not None and j >= _d1_start_cycle
-            )
-            loss_data2 = fit_with_early_stopping(
-                field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
-                optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
-                min_delta=optimizer_dict["optim_rel_tol"],
-                intermediateModel_path=intermediateModel_path,
-                writer=writer, training_dict=training_dict,
-                f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
-                crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into RPROP
-                supervised_dict=_supervised_dict,       # ★ MIT-8
-                symmetry_dict=_symmetry_dict,           # ★ B path soft sym
-                side_traction_dict=_side_traction_dict, # ★ side-traction penalty
-                grad_annealing_state=grad_annealing_state,  # ★ Algo1 (updates λ every update_every epochs)
-                delta1_dataset=_d1_dataset if _d1_active_cycle else None,  # ★ δ-1
-                element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
-                j_path_dict=j_path_dict,                # ★ J path-independence reg
-                hist_loss_weight=_lambda_hist_weight,
-                g_stiffness_override=_g_stiffness_override_current,
-                irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
-            )
-            loss_data = loss_data + loss_data2
+            return loss_data
+
+        if _coupling_enabled:
+            _coupling_dir = trainedModel_path.parent / "trial_fatigue_acceptance"
+            _coupling_dir.mkdir(parents=True, exist_ok=True)
+            def _coupling_fit(coefficient, outer):
+                loss_data.extend(_fit_current_coefficient(coefficient, outer))
+            def _fresh_coupling_state():
+                with torch.no_grad():
+                    _u, _v, _d = field_comp.fieldCalculation(inp)
+                    _active = get_psi_plus_per_elem(
+                        inp, _u, _v, _d, matprop, pffmodel, area_T, T_conn,
+                        history_driver_reduction_dict=_history_driver_reduction,
+                    )
+                return {"u": _u, "v": _v, "d": _d,
+                        "active_driver": _active, "displacement": field_comp.lmbda}
+            try:
+                _coupling_result = solve_trial_fatigue_step(
+                    old_history=hist_fat, old_active_driver=psi_plus_prev,
+                    old_damage=hist_alpha, initial_f=_resolve_f_fatigue(f_fatigue),
+                    fatigue_dict=fatigue_dict, config=_coupling_cfg,
+                    solve_for_coefficient=_coupling_fit,
+                    evaluate_state=_fresh_coupling_state,
+                    final_residual_check=_final_residual_check, step=j,
+                )
+            except Exception as _coupling_error:
+                (_coupling_dir / f"step_{j:06d}_rejected.json").write_text(json.dumps({
+                    "step": int(j), "accepted": False, "history_committed": False,
+                    "rprop_updates": _step_budget.rprop_updates,
+                    "optimizer_work": _optimizer_work,
+                    "error": str(_coupling_error),
+                    "outer_records": getattr(_coupling_error, "records", []),
+                }, indent=2) + "\n")
+                raise
+            # Preserve the final coefficient actually used by the optimizer.
+            # The new coefficient is installed only in the once-only commit below.
+            f_fatigue = _coupling_result.f_solve
+        else:
+            loss_data = _fit_current_coefficient(f_fatigue)
 
         end = time.time()
         _cycle_seconds = end - start
@@ -2236,7 +2392,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f"grad_E_d={_lambda_stats['grad_E_d']:.6e} "
                 f"grad_E_hist={_lambda_stats['grad_E_hist']:.6e}"
             )
-        hist_alpha_new = field_comp.update_hist_alpha(inp)
+        hist_alpha_new = (
+            _coupling_result.state["d"] if _coupling_result is not None
+            else field_comp.update_hist_alpha(inp)
+        )
         hist_alpha = commit_damage_history(
             hist_alpha,
             hist_alpha_new,
@@ -2527,7 +2686,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _Kt_history.append(_Kt)
 
             # 更新疲劳历史变量 ᾱ（Carrara Eq.39 或 Golahmar Eq.31）
-            if (_hist_inc_oracle_cfg is not None
+            if _coupling_result is not None:
+                # Commit the accepted proposal once; never re-add its increment.
+                hist_fat = _coupling_result.history.clone()
+                psi_history_elem = _coupling_result.active_driver.clone()
+                psi_plus_elem = psi_history_elem.clone()
+            elif (_hist_inc_oracle_cfg is not None
                     and _hist_inc_oracle_cfg.get('enable', False)):
                 hist_fat = (hist_fat + history_increment_elem).detach()
             else:
@@ -2627,7 +2791,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     else _fatigue_for_fit(hist_fat)
                 )
             else:
-                f_fatigue = _fatigue_for_fit(hist_fat)
+                f_fatigue = (
+                    _coupling_result.f_commit.clone() if _coupling_result is not None
+                    else _fatigue_for_fit(hist_fat)
+                )
 
             # ★ 重置 psi_plus_prev，正确模拟循环加载的卸载阶段
             # 原因：NN 只求解峰值状态，不显式模拟卸载。
@@ -2831,6 +2998,21 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 if _frac_confirm_remaining <= 0 and _frac_confirmed_cycle is None:
                     _frac_confirmed_cycle = _event_label
 
+        if _coupling_result is not None:
+            np.savez_compressed(
+                _coupling_dir / f"step_{j:06d}_coefficients.npz",
+                f_solve=_tensor_to_numpy(_coupling_result.f_solve),
+                f_commit=_tensor_to_numpy(_coupling_result.f_commit),
+            )
+            (_coupling_dir / f"step_{j:06d}_accepted.json").write_text(json.dumps({
+                "step": int(j), "accepted": True, "history_committed": True,
+                "commit_scope": "in_memory_before_checkpoint_persistence",
+                "history_commit_count": 1, "rprop_updates": _step_budget.rprop_updates,
+                "optimizer_work": _optimizer_work,
+                "outer_records": _coupling_result.records,
+                "final_residual": _coupling_result.residual_receipt,
+            }, indent=2) + "\n")
+
         # ------------------------------------------------------------------
         # 保存模型和损失（与 Manav 完全相同）
         # ------------------------------------------------------------------
@@ -2841,6 +3023,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
         # ★ 保存断点续训 checkpoint（含 hist_alpha 及疲劳变量）
         _ckpt_data = {'hist_alpha': hist_alpha}
+        if fatigue_dict.get("common_problem"):
+            _ckpt_data["common_problem"] = fatigue_dict["common_problem"]
+            _ckpt_data["field_mapping_requires_common_problem"] = True
+        _ckpt_data["trial_fatigue_coupling_enabled"] = _coupling_enabled
+        if _coupling_result is not None:
+            _ckpt_data["trial_fatigue_contract"] = _coupling_checkpoint_contract
+            _ckpt_data["f_solve"] = _coupling_result.f_solve
+            _ckpt_data["f_commit"] = _coupling_result.f_commit
+            _ckpt_data["final_residual_receipt"] = _coupling_result.residual_receipt
+
         _ckpt_data['mesh_state_signature'] = _runtime_mesh_signature
         _ckpt_data['mesh_connectivity_arity'] = _runtime_mesh_arity
         _ckpt_data['history_storage'] = _runtime_history_storage
