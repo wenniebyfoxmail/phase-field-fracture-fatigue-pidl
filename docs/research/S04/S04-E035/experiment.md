@@ -228,3 +228,17 @@ See [R008 receipt and prepared recovery-only repair](runs/S04-E035-R008.md).
 The one attempt is consumed; the prepared native-recovery alternative is
 not deployed/run, and no newRunID has been minted. Original12hdeadline and
 all old costs/results remain; no automatic scientific retry.
+
+### User-authorised recovery repair — 2026-10-21
+
+User explicitly approved exactly one recovery repair rerun within the original
+remaining window, followed by PIDL and comparison only if FEM passes through
+U=.4. New FEM R009 uses the reviewed recovery-only source SHA256
+707ee43448a362b90b68484ec24c40fd79b1a8e485e1dcc021d351eab4313873.
+Original deadline00:20Z October22 remains. Deduct prior15.301784 FEM seconds
+from3h (new cap10784.698216s), carry prior9.18602854 admission seconds into
+the same180s cumulative ceiling, preserve R008 and all older costs. PIDL R010
+is conditional, capped by6GPUh and actual remaining time with retrieval reserve.
+No new physics, clipping, load schedule, or loaded-solver change. Metadata-only
+deployment adaptation carries forward the preparation review; no repeated
+human confirmation is required for checks, submission or conditional PIDL.
