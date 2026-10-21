@@ -45,6 +45,12 @@ def main():
             row.update({f'{key}_diff_rms': float(np.sqrt(np.mean(delta**2))),
                         f'{key}_diff_maxabs': float(np.max(np.abs(delta))),
                         f'{key}_diff_relL2': float(np.linalg.norm(delta)/max(np.linalg.norm(x),1e-30))})
+        # Deterministic standard damage-history commit, derived offline only.
+        committed=[np.maximum(f['hist_alpha'].astype(np.float64),f['d'].astype(np.float64)) for f in finals]
+        hist_delta=committed[1]-committed[0]
+        row['trial_histalpha_diff_rms']=float(np.sqrt(np.mean(hist_delta**2)))
+        row['trial_histalpha_diff_maxabs']=float(np.max(np.abs(hist_delta)))
+        row['zero_only_history_gt0p5_node_fraction']=float(np.mean((committed[1]>.5)&(committed[0]<=.5)))
         for label, r in (('control', control), ('zero', zero)):
             for key, val in r['final'].items():
                 row[f'{label}_{key}'] = val
