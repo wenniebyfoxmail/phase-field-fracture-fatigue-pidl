@@ -180,8 +180,12 @@ checks completed and reported unchanged weights/buffers. No measured model
 accuracy is reported. Independent implementation review found and prompted
 repairs to the committed lower-bound timing, boundary admission, secant
 branch logic and roundoff-safe unload/reload boundaries; the regression tests
-preserve those cases. Exact reviewed code
-identity and final review disposition are recorded below after snapshot review.
+preserve those cases. Final independent read-only review is bound to code
+`440d4f7dea60175d2ce36deba99692a49e1332ee`, both committed configurations,
+and the synthetic/component test scope. It found no blocking implementation
+issues; its own rerun also passed all 80 tests. This is not experiment approval,
+data qualification, or evidence of scientific predictive performance. The
+subsequent documentation-only commit records this review without changing code.
 
 ## Evaluation and next decision
 
