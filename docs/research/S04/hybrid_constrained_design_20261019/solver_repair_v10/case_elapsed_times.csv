@@ -1,0 +1,2 @@
+case,planned_steps,accepted_steps,phase_seconds,failed_step,failed_step_marker_to_last_trace_seconds,status,reason
+train_A,600,0,41.215751060284674,1,37.95056996587664,FAILED,cannot represent feasible actual trust step

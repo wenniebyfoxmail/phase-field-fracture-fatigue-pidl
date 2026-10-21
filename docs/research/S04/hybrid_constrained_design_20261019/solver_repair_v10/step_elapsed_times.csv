@@ -1,0 +1,2 @@
+case,step,status,accepted,marker_to_last_trace_seconds,last_failure_event_elapsed_seconds,elapsed_scope
+train_A,1,FAILED,false,37.95056996587664,37.94942832831293,failed_step_trace_not_success_event

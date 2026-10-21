@@ -1,0 +1,224 @@
+{
+  "schema": "hybrid-independent-saved-evidence-review-v1",
+  "verdict": "SAVED_EVIDENCE_AND_PROPOSAL_REVIEW_PASS_ONLY",
+  "scope": "SAVED_RESULTS_TERMINAL_COSTS_AND_PROPOSAL_BOUNDARIES_ONLY_NO_NEW_EXECUTION_AUTHORITY",
+  "reviewer": "independent Codex reviewer /root/hybrid_readiness_review",
+  "reviewed_at_utc": "2026-10-21T02:19:16.298695+00:00",
+  "run_id": "pf_hybrid_solver_v10_20261021_r7",
+  "source_commit": "ff2deeb533cba22789170d5f4b8efa8d01c00398",
+  "artifact_id": "c29026a40d521d3435cce85c77e94af9feb457b6fc6eb246d1babc82254d13b3",
+  "card_sha256": "8de496aebc5d8a7bdc0a2f6f4c39b25006dc8dfb1eb26ceb8d72d2f907f7bb0f",
+  "bindings": {
+    "result.md": "d466578f2c10fe53839936615a3fdfd7a0c40e5e3a9a6248f679d42eaca0ac48",
+    "analysis_manifest.json": "d2bcb0ad6b24d569c83b67be706a57d1eefda105160b637613a6fd88c1cf9ba8",
+    "execution_review.json": "b6ef5981a731e74abe00d8bb20cf003322d853c279fe1151800080a48708e6bc",
+    "execution_card.json": "8de496aebc5d8a7bdc0a2f6f4c39b25006dc8dfb1eb26ceb8d72d2f907f7bb0f",
+    "source_manifest.json": "0163702d7759a1b711de9604ba741f2bedee4f7491300a60fee9651103c0c627",
+    "authority.json": "ac3d4e2149c65099fb33c0b99559de6ff44679df07a4ddb58769009177c5e25b"
+  },
+  "evidence_bindings": {
+    "full_remote_inventory.json": "a9596596db74971061184ee85938599ae1f592b2a5af523f7b56803326d8d13b",
+    "complete_return_verification.json": "fbef2843a16a8b43d41753f1b3a3a53d13ca1cd2f50c911a8066511513283acf",
+    "status_snapshot2.json": "0ae2feae05bc3fccf8462283411b6aab761efa5cbcd77855105933ffa23feabd",
+    "control_actions.json": "01925c0703e59865b30fc3f84724e3660de67bbb284ac2cf4b8e249e76e64b2f"
+  },
+  "analysis_script_sha256": "97dbf591fd3471eebde0b411385596cba37b3161e9319f006a65b37cb71b8c69",
+  "analysis_summary_sha256": "19fc69ab288b4f7eb2ee3a11990d96bcbe20dadc23d7e82bb813676870dcf85c",
+  "offline_candidate_arithmetic_sha256": "4122a0345bac630fbb8242b6e0b85b66202a8e305b930412e2a4af099b55adea",
+  "analysis_files_verified": 21,
+  "analysis_files": {
+    "analyse_saved.py": {
+      "bytes": 16536,
+      "sha256": "97dbf591fd3471eebde0b411385596cba37b3161e9319f006a65b37cb71b8c69"
+    },
+    "analysis_run_receipt.json": {
+      "bytes": 3115,
+      "sha256": "2d61405ec84c743745d7e73f44e233916a2c34502c9c57c4f8e23d6db61bfcc3"
+    },
+    "analysis_summary.json": {
+      "bytes": 12651,
+      "sha256": "19fc69ab288b4f7eb2ee3a11990d96bcbe20dadc23d7e82bb813676870dcf85c"
+    },
+    "case_elapsed_times.csv": {
+      "bytes": 219,
+      "sha256": "d73b13795180dc466716a77ab5383060c5f98bb572e0c3d25654b99a363708d1"
+    },
+    "figure_check.json": {
+      "bytes": 387,
+      "sha256": "e2144548c8366d253f27808da7d97aefa42c51414590257a4338c06557f44c1a"
+    },
+    "offline_candidate_arithmetic.json": {
+      "bytes": 1346,
+      "sha256": "4122a0345bac630fbb8242b6e0b85b66202a8e305b930412e2a4af099b55adea"
+    },
+    "r7_accepted_prefix_fields.md": {
+      "bytes": 1426,
+      "sha256": "50daaa36afa24566b0147da2073de718e669db5f54332d9bc32fe51cd73e9c3e"
+    },
+    "r7_accepted_prefix_fields.pdf": {
+      "bytes": 30836,
+      "sha256": "c7b294f58558bad78cd32c8ce8451e81fcf92a8b7c1e04ab2ac0f2a847b9e560"
+    },
+    "r7_accepted_prefix_fields.png": {
+      "bytes": 42831,
+      "sha256": "dcbcc3721debad6b54ba36bb4113a017b749145fee525d4c471c46101bb15eb2"
+    },
+    "r7_available_prefix_evolution.md": {
+      "bytes": 1432,
+      "sha256": "6aeaa11aaedeb4307196890ed8de1eb0e9a9b93870192acecbbf8722f1828bb0"
+    },
+    "r7_available_prefix_evolution.pdf": {
+      "bytes": 16362,
+      "sha256": "48d72fb15b0c7aee271c64b60bb97ee9f4502616a78db84aadf0aabf8e3bb8ba"
+    },
+    "r7_available_prefix_evolution.png": {
+      "bytes": 86297,
+      "sha256": "8241380fcd359fa4457786801bfe957aa0840790cf15b5adf1227b92c53347ed"
+    },
+    "r7_fresh.csv": {
+      "bytes": 287,
+      "sha256": "f5595bb18f62d7ce69b2192621adb39af5b59c9f47c79c17b8b60a360ffb80ee"
+    },
+    "r7_globalization_trace.md": {
+      "bytes": 1443,
+      "sha256": "499eca25c7cf635012d18048c07f6e17be302d60948189589e46b8218e58f667"
+    },
+    "r7_globalization_trace.pdf": {
+      "bytes": 20854,
+      "sha256": "37daa883737ca6abbc2363818629d8e2e78994fbcf841b81dd1264664a91555e"
+    },
+    "r7_globalization_trace.png": {
+      "bytes": 129493,
+      "sha256": "7556325c3682749024fe8b86c9635cf0fa57cd8c97d67e9126f1bf9cda90c486"
+    },
+    "r7_last_joint_fields.md": {
+      "bytes": 1422,
+      "sha256": "998ac7948d4100c7c0e568312d498a932ddf1290bea6914ba89f55ae9889fdc8"
+    },
+    "r7_last_joint_fields.pdf": {
+      "bytes": 170542,
+      "sha256": "f0fa6eb1797e936704808e8f9c7d271cf3786ae1a28d4f6bc79803fde6c357db"
+    },
+    "r7_last_joint_fields.png": {
+      "bytes": 343819,
+      "sha256": "21bb4311a43e1bc493dc2e02be25f6f11203ec673ea142206ceec51ff6ba0877"
+    },
+    "r7_root_work.csv": {
+      "bytes": 4423,
+      "sha256": "a4b6ff58704b8bad9ca20ab8f65b25363560d04f3a83a2572b94c32b10e7cec5"
+    },
+    "r7_trials.csv": {
+      "bytes": 339,
+      "sha256": "9871bf9b8df92acf13189e482947058032d3d92cda9920d281deb6af199fe666"
+    }
+  },
+  "static_vs_scientific": "Original exact static REVIEW_PASS remains scope-limited and is separate from this real first scientific failure. It did not certify real-mesh feasibility, convergence, or absence of implementation limitations.",
+  "terminal": {
+    "status": "failed",
+    "accepted_steps": 0,
+    "planned_steps": 600,
+    "scientific_attempts": 1,
+    "scientific_retries": 0,
+    "failed_step": 1,
+    "root_failure": "Optional qualified Newton-comparison feasible_candidate exceeded the prospectively fixed2 inward-ULP repair allowance while its conservative TR upper still exceededradius. Traceback at frozen solve_box_model line233/feasible_candidate line198 proves this stage.",
+    "secondary_guardian": "Incomplete step at worker exit, after Python exception; not an earlier300s deadline.",
+    "not_root": "No observed time/OOM,100fresh,8outer,16update or100action exhaustion; no final-QP/current-K/pivot attempt failed.",
+    "owned_PIDs_absent_at_saved_terminal_read": [
+      48885,
+      48886,
+      48903,
+      48904
+    ],
+    "outer": 2,
+    "block_directions": 2,
+    "fresh_evaluations": 2,
+    "completed_real_trial_decisions": 1,
+    "kept_working_points": 1,
+    "final_QP_calls": 0,
+    "history_commits": 0,
+    "working_mechanical_eliminations": 0,
+    "GPU_seconds": 0,
+    "training_fits": 0,
+    "failing_outer_counters": {
+      "updates": 4,
+      "action_upper": 24,
+      "J": 3,
+      "JT": 3,
+      "abs_J": 3,
+      "abs_JT": 1,
+      "norm_scans": 2,
+      "legacy_Newton_action_upper": 12
+    }
+  },
+  "independent_evidence_checks": {
+    "return_integrity": "All162files/112,061,131B independently size/SHA verified. Runroot150files/1,384,123B,archive12files/110,677,008B. All36 executed sources match frozenff2 manifest and reviewed source.",
+    "initial_history": "Onlystates/state0000 exists; latest and state0 areversion0, original fingerprintfdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1. No acceptedStepProposal/CAS/history update or training label.",
+    "completed_first_outer": "Saved first-outer Cauchy scalar lower2.7766223095372085e-8,required1.3883111554090189e-8,directCauchypred_lower5.3347887648539176e-8 confirmed in actual log. Final selected qualifiedNewton comparison haspred_lower4.833261032682769e-7. Actualtrialrho.9663843324688709 andPhi4.833261034356823e-7->1.6247329602209977e-8; Cauchy was not itself the actual evaluated candidate.",
+    "physical_quality": "Kept fresh working point stillm_work218.18464830891944,forceL2~2.1818464831e-6 anddamageKKTinf~1.8151024744e-6. No final physical gate triggered. Two completed freshs havef1; no realf<1/unloading/step2 coverage.",
+    "linear_rows": "Both block directions pass original effective separate-row and absolute gates. First mechanical strict relative.007667902>.001 uses pre-existing own-row roundoff allowance; second relative~3.33e-13. Not a claim that both pass strictrelative.001.",
+    "stage_and_missing_data": "Frozen traceback/control flow andupdates4/action pattern establish that second-outer Cauchy certificate returned and twoPG model evaluations completed before optionalNewton mapping failed. Their second-outer numeric Cauchy certificate/best candidate and failing internalNewton vectors did not reach before-fresh snapshot hook, and no failed-candidate nonlinear residual exists.",
+    "tag_domains": "LatestJ/base/D/r0/branch and direction belong toouter2. Persisted last_box_trial_before belongs toouter1 and its output is the current fresh2 workpoint. Do not combine latestouter2J with outer1 trial/Cauchy to retrospectively recompute the older model.",
+    "offline_reconstruction": "Independently replayed only approved candidate arithmetic from savedbase/D/Newton vector/original lower, with no J assembly/action or physical solve. Upper-failing counts6->5->1. Final jointindex204978/damagenode32062,base5.38802338346719e-6,D70.32458386204867,reconstructedx.001427365865387676,upper.10000000000000002>representedradius.1. Fraction exactD*(x-base) is inside by3.7205071373019344e-17. Other components pass valid upperbounds. These are OFFLINE_RECONSTRUCTION values, not a persisted actual failed candidate or physical mechanism location.",
+    "interpretation": "The finite conservative certifier could not establish feasibility within its repair allowance for a candidate that is feasible in the deterministic saved-array replay. This does not prove actualTR violation, no representable feasible point, a failed Cauchy descent bound, subproblem infeasibility, or no original-equation root.",
+    "trace_and_elapsed": "Complete trace stacks close, including failedbox_LS_subproblem. Root-only36.28854106925428s; step1marker->lasttrace37.95056996587664s; difference1.6620288966223598s remains unitemized/UNKNOWN, not zero. No acceptedstepwall event exists. Nested children are not re-added.",
+    "figures": "All4PNG visually checked: onlytwo actually evaluated unaccepted freshworkpoints1->2; acceptedarchive onlystate0; reactionrecord explicitly missing and no invented evolution curve. Constantfield colorbars repaired. PDF bytes verified by manifest, not separately rendered.",
+    "derived_files": "All21script/JSON/CSV/PNG/PDF/sidecar/check-record files independently size/SHA verified against analysis_manifest. Case/failedstepCSV range matches savedraw evidence. Analysis source reviewed as saved-only; no rerender rerun by reviewer.",
+    "python_absolute_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python"
+  },
+  "cost_scope": {
+    "case_wall_seconds": 41.215751060284674,
+    "producer_wall_seconds": 41.21725011244416,
+    "worker_guardian_measured_CPU_seconds": 48.73038,
+    "whole_package_CPU_seconds": null,
+    "GPU_seconds": 0,
+    "preflight_localwall_seconds": 4.305491040926427,
+    "dispatch_localwall_seconds": 9.075141374953091,
+    "zero_start_action_wall_seconds": 13.380632415879518,
+    "producer_terminal_calendar_charge_seconds": 3782.5557108381763,
+    "terminal_prelaunch_calendar_charge_seconds": 3741.338460445404,
+    "old_known_plus_charged_calendar_at_terminal_seconds": 14906.018338475144,
+    "old_known_research_wall_seconds": 1232.4626276369672,
+    "prior_R4_conservative_calendar_seconds": 4390,
+    "prior_R5_conservative_calendar_seconds": 3056,
+    "prior_R006_conservative_calendar_seconds": 2445,
+    "historical_unknown_control_reserve_seconds_not_actual": 600,
+    "interpretation": "Phase is contained inproducer; producer andcontrol work are contained in calendar since original01:04:27Z start, not added again. Measuredworker+guardian CPU is separate; wholepackageCPU remains unknown. Old calendar/reserve amounts are not measuredCPU.",
+    "full_package_cost_closure_verified": false,
+    "pending": "Post-terminal full retrieval/analysis/Obsidian/track/final closure calendar, CPUunknowns and storage are to be recorded independently in a later dated closure. This review does not claim those completed or audited."
+  },
+  "proposal_review": {
+    "scope": "Design suggestion only, not implementation or execution readiness",
+    "assessment": "Directed representable endpoints plus prospectively bounded exact binary checks for ambiguous interval components are a plausible future feasibility design. Optional comparison eligibility may be defined so an ineligible enhancement does not replace qualifiedCauchy/best, while actual nonfinite/originalNewton-quality/finalphysical failures remain hard stops. Early minimal certificate/stage persistence addresses current evidence gap.",
+    "limits": "Future exact-comparison cost/bounds, complete candidate composition and every unchanged physical/history/resource gate require prospective implementation/tests/independent review and fresh explicit authority. No parameters, source, run, comparison rule or failure policy is changed here.",
+    "new_authority": false,
+    "automatic_R008": false
+  },
+  "conclusions": {
+    "saved_result_supported": true,
+    "first_scientific_failure_stopped_no_retry_verified": true,
+    "scientific_goal_achieved": false,
+    "full600_convergence": false,
+    "teacher_qualified": false,
+    "neural_comparison": false,
+    "loading_property_generalization": false,
+    "physical_or_road_validation": false
+  },
+  "reviewer_actions": {
+    "SSH": 0,
+    "new_remote_transfers": 0,
+    "new_FEM_assemblies": 0,
+    "new_factorizations": 0,
+    "new_FEM_solves": 0,
+    "training": 0,
+    "scientific_source_or_card_changes": 0,
+    "saved_array_decodes": "Authorized returnedknown-case state0/latest/modelbase/D/direction and trial domains for integrity/state/algebra only; no holdout.",
+    "algebra_replay": "Only the original finite0/1/2ULP candidate arithmetic with exactFraction comparisons; no continued physical trial or future repair implementation."
+  },
+  "limitations": [
+    "Second-outer internal Cauchy/best/failingNewton actual vectors and certificate numbers were not persisted; offline replay does not erase this gap.",
+    "First-outer scalar certificate is logged but latestfullJ isouter2, so no independent recomputation of outer1 model from a mismatchedJ is claimed.",
+    "Terminal costs and resource samples are verified at saved time; post-terminal closure/storage and every unsampled instantaneous peak are outside this scoped approval.",
+    "The scientific attempt remains consumed and frozen; saved-result pass cannot authorize rerun or convert working-model decrease into physical qualification."
+  ],
+  "blocking_findings": []
+}

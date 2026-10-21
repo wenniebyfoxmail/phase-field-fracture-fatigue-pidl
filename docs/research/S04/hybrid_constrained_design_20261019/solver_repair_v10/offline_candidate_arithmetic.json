@@ -1,0 +1,44 @@
+{
+  "classification": "OFFLINE_SAVED_ARRAY_ARITHMETIC_REPLAY_NOT_PERSISTED_FAILED_CANDIDATE",
+  "stage": "optional qualified Newton comparison feasible_candidate; traceback and updates4 confirm stage",
+  "checks": [
+    {
+      "inward_corrections": 0,
+      "failed_upper_components": 6,
+      "maximum_upper": 0.10000000000000005,
+      "radius": 0.1,
+      "max_upper_excess": 4.163336342344337e-17
+    },
+    {
+      "inward_corrections": 1,
+      "failed_upper_components": 5,
+      "maximum_upper": 0.10000000000000003,
+      "radius": 0.1,
+      "max_upper_excess": 2.7755575615628914e-17
+    },
+    {
+      "inward_corrections": 2,
+      "failed_upper_components": 1,
+      "maximum_upper": 0.10000000000000002,
+      "radius": 0.1,
+      "max_upper_excess": 1.3877787807814457e-17
+    }
+  ],
+  "samples": [
+    {
+      "variable": 204978,
+      "field": "d",
+      "mesh_node": 32062,
+      "component": null,
+      "base": 5.38802338346719e-06,
+      "candidate_after_two_corrections": 0.001427365865387676,
+      "D": 70.32458386204867,
+      "upper": 0.10000000000000002,
+      "exact_product_exceeds_radius": false,
+      "exact_excess": -3.7205071373019344e-17
+    }
+  ],
+  "failed_candidate_vectors_persisted": false,
+  "failed_candidate_nonlinear_evaluation": false,
+  "second_outer_Cauchy_numeric_certificate_persisted": false
+}

@@ -1,0 +1,30 @@
+{
+  "run_id": "pf_hybrid_solver_v10_20261021_r7",
+  "source_commit": "ff2deeb533cba22789170d5f4b8efa8d01c00398",
+  "artifact_id": "c29026a40d521d3435cce85c77e94af9feb457b6fc6eb246d1babc82254d13b3",
+  "card_sha256": "8de496aebc5d8a7bdc0a2f6f4c39b25006dc8dfb1eb26ceb8d72d2f907f7bb0f",
+  "epoch": 1792548408.0180671,
+  "pid": 48885,
+  "command": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=20s",
+    "10013.982444s",
+    "/usr/bin/python3",
+    "-u",
+    "/mnt/data2/drtao/wennie/pf_hybrid_solver_v10_20261021_r7/code/tools/run_hybrid_cpu_v10_budgeted.py",
+    "--supervise"
+  ],
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "gpu_seconds": 0,
+  "prelaunch_package_wall_charge": 3741.017555952072,
+  "mechanical_total_wall_seconds": 13.380632415879518,
+  "scientific_attempt": 1,
+  "automatic_retry": false,
+  "local_evidence": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v10_20261021"
+}
