@@ -84,16 +84,16 @@ def prepare():
 
 def launch():
     # All identity/failed-transport costs remain counted; the guard never resets them.
-    verification=CASE/'runs/S04-E035-R011/analysis/reference_verification.json'
+    verification=CASE/'runs/S04-E035-R012/analysis/reference_verification.json'
     qualified=json.loads(verification.read_text())
     assert qualified['complete_valid_reference'] and qualified['accepted_prefix']==24
-    reference=json.dumps(dict(reference=qualified,authority='DIRECT-USER-SPECIFIC-R011-AND-CONDITIONAL-PIDL-20261021',reservation='Prior D5 route closed, explicitly no future reservation; direct human conditional PIDL authority; fresh admission enforced by supervisor'),indent=2).encode()
+    reference=json.dumps(dict(reference=qualified,authority='DIRECT-USER-CONSISTENT-PF-AND-45DEG-20261021',reservation='Prior D5 route closed, explicitly no future reservation; direct human conditional PIDL authority; fresh admission enforced by supervisor'),indent=2).encode()
     (RUN/'GPU_RELEASED.json').write_bytes(reference)
     remaining=mechanical_remaining()
     prior=180-remaining
     assert remaining>=100, 'Require staging plus start and45s attribution reserve'
     mechanical_full_end=datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(seconds=remaining)
-    with (RUN/'invocation.json').open('x') as f:json.dump(dict(prior_identity_seconds=prior,remaining_mechanical_seconds=remaining,no_retry=True,deadline_utc=DEADLINE,mechanical_end_utc=mechanical_full_end.isoformat(),attribution_reserve_seconds=45,authority='DIRECT-USER-SPECIFIC-R011-AND-CONDITIONAL-PIDL-20261021'),f)
+    with (RUN/'invocation.json').open('x') as f:json.dump(dict(prior_identity_seconds=prior,remaining_mechanical_seconds=remaining,no_retry=True,deadline_utc=DEADLINE,mechanical_end_utc=mechanical_full_end.isoformat(),attribution_reserve_seconds=45,authority='DIRECT-USER-CONSISTENT-PF-AND-45DEG-20261021'),f)
     end=time.monotonic()+remaining
     mechanical_end=mechanical_full_end-datetime.timedelta(seconds=45)
     script=(RUN/'stage_and_launch.template.ps1').read_text().replace('MECHANICAL_DEADLINE',mechanical_end.isoformat())
