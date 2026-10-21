@@ -1,0 +1,11 @@
+{
+  "status": "SOURCE_REVIEW_PASS_NOT_EXECUTED",
+  "reviewer": "/root/shear_review",
+  "new_runner_sha256": "10649a7be407245b8970aeb3be679c22c65652be83e5e2110ab0f75ac4217bb3",
+  "old_R017_runner_sha256": "fcf4a241a70115da70620805cbd37d0bdd21bff1c02bd9a1bca46c5c17d4631c",
+  "numeric_delta": "none; inverse namespace renaming exactly recovers old frozen sourcehash",
+  "fix": "outer phase_opts and nested mechanics_opts no longer share MATLAB workspace symbol",
+  "review_limitation": "Previous source review missed collision; passed arrayfixtures did not exercise fullrecovery-mechanics-loadedPF integration",
+  "no_new_run": true,
+  "no_new_fixture_execution": true
+}

@@ -34,8 +34,8 @@ stage='recovery';stag=0;kind='phase';U=0;res_u=NaN;res_pf=NaN;certificate_valid=
 native_return_residual_timing='native PF returned point, fixed input driver and history';
 write_guard(600);
 try
-    opts=struct('max_iter',500,'res_tol',1e-6,'check',@check,'curvature',@phase_curvature);
-    [alpha,~,pr]=box_phase_curvature(@phase_assembly,@(K,b)cholmod2(K,b),alpha,dofs.active_dof_pf,opts);
+    phase_opts=struct('max_iter',500,'res_tol',1e-6,'check',@check,'curvature',@phase_curvature);
+    [alpha,~,pr]=box_phase_curvature(@phase_assembly,@(K,b)cholmod2(K,b),alpha,dofs.active_dof_pf,phase_opts);
     assert(pr.ok,'Box recovery PF failed');
     pc=phase_assembly(alpha);[pf_kkt,res_pf]=box_kkt_residual(alpha,pc.R,dofs.active_dof_pf);native_return_pf_residual=res_pf;
     assert(res_pf<=1e-6 && all(alpha(crack)==1));
@@ -59,7 +59,7 @@ try
             [u,ec,er]=solve_field(@equilibrium_assembly,u,dofs.active_dof);
             assert(er.ok,['Mechanics failed: ',er.reason,' ',er.message]);driver=ec.driver;
             stage='phase';kind='phase';
-            [alpha,~,pr]=box_phase_curvature(@phase_assembly,@(K,b)cholmod2(K,b),alpha,dofs.active_dof_pf,opts);
+            [alpha,~,pr]=box_phase_curvature(@phase_assembly,@(K,b)cholmod2(K,b),alpha,dofs.active_dof_pf,phase_opts);
             assert(pr.ok,'Box loaded PF failed');
             pc=phase_assembly(alpha);
             [~,native_return_pf_residual]=box_kkt_residual(alpha,pc.R,dofs.active_dof_pf);
@@ -147,8 +147,8 @@ diary off;
         [~,E]=box_q4_pf_energy(a,h,driver,mat,energy_geom);
     end
     function [value,c,report]=solve_field(assembler,value,active)
-        opts=struct('max_iter',500,'max_backtracks',12,'beta',.5,'c1',1e-4,'res_tol',1e-6,'check',@check,'observe',@observe);
-        [value,c,report]=bounded_mechanical_newton(assembler,@(K,b)cholmod2(K,b),value,active,opts);
+        mechanics_opts=struct('max_iter',500,'max_backtracks',12,'beta',.5,'c1',1e-4,'res_tol',1e-6,'check',@check,'observe',@observe);
+        [value,c,report]=bounded_mechanical_newton(assembler,@(K,b)cholmod2(K,b),value,active,mechanics_opts);
     end
     function observe(e)
         active=dofs.active_dof_pf;if strcmp(kind,'mechanics'),active=dofs.active_dof;end
