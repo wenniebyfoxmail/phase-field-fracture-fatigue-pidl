@@ -120,8 +120,13 @@ It derives the next damage bound from committed damage only under this declared
 strict FEM convention. Existing s00 pre-cycle records and FYR histories are
 not silently converted.
 
-No currently inspected metadata establishes a complete approved multi-condition
-corpus for **this** contract. The known S09 exact producer and state adapters
+The [2026-10-21 existing-data audit](fixed_weight_data_audit_20261021.md) found
+two complete native Hard5 substep indexes (U0.115 and U0.125), both already
+exposed to development, but no fully admitted multi-condition corpus or matching
+untouched test set for **this** contract. It records reusable assets, missing
+fields, local versus historical remote availability and whole-condition splits.
+Other real multi-condition carriers have cadence/support/semantics mismatches.
+The known S09 exact producer and state adapters
 are useful precedents, but one fixed trajectory, a source/export check or
 numerical convergence does not qualify new parameter transfer or autonomous
 rollout. FEM is a numerical reference, not experimental truth.
