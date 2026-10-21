@@ -180,3 +180,38 @@ Independentoutcomereview is complete; see code_review.md. The options, result an
 ## Saved outer-coupling decision package — stopped before analysis
 
 HQ-SHEAR-SAVED-OUTER-COUPLING-DECISION-20261021 authorised read-only existing arrays/source only. The first CPU guard failed during childpreexec before data analysis/RSSsampling; per explicit condition no repair/retry followed. A-vs-B mechanism and newintervention remainundetermined; no newscience or newfigure. See [failure record](saved_outer_coupling_decision_20261021.md). R007results/costs and no-R008/PIDL boundary unchanged.
+
+## Saved mechanism analysis complete
+
+Fresh user30min/120CPU approval: saved arrays/source analysed, same-equation PFglobalization/freshcertificate design reviewed, NOT executed. See [decision](saved_phase_mechanism_decision_20261021.md). Original failures/costs retained; noR008/PIDLauthority.
+
+## Manav static-loading comparison — 2026-10-21
+
+User requested the paper comparison before further computation. Complete local
+arXiv v1 checked, including Fig.8/11/12 and Appendix G/I; see
+[comparison and prospective recommendation](manav_static_shear_comparison_20261021.md)
+and its single JSON reading record. Static shear is an appropriate benchmark;
+current initial-condition handling, FEM penalty and NN setup differ from the paper.
+The paper compares at Up=.4, explicitly reports FEM convergence issues above .4,
+and shows NN-only extension at .47. A future contract should distinguish the
+common reference range from an NN extension; this is a recommendation, not an
+amendment of the stopped30-state package or its launch preconditions. Current
+12 valid states, U=.29 failure and absence of PIDL results remain unchanged.
+Literature/source review only; no producer operation or new execution authority.
+
+## Direct user authorisation — published Manav static reproduction to U=.4
+
+On2026-10-21 user requested the published article, alignment to its static
+shear settings, a concrete budget and continued execution. This is fresh
+authority for a new paper-setting protocol, not a revival of R007. The actual
+published21-page PDF is present in project root (DOI10.1016/j.cma.2024.117104).
+See [plan and budget](manav_static_reproduction_plan_20261021.md).
+R008 FEM uses .001 irreversibility penalty and initial unloaded recovery;
+prepared R009 NN uses .005,8x400/m0=3/seed1, analytic history without hard
+crack mask, independent retained author T3 mesh and centroid quadrature.
+Both use24common loads ending.4. Total12h ceiling ends00:20Z October22;
+FEM3h, NN6singleGPUh,4threads/16GiBhost/20GiBCUDA/10GiBoutput each.
+Onlyseed1 is included, not the paper's8-seed statistics. Public repository
+links verified; exact current upstream code bytes not fetched due anti-bot
+response. Localsource and mesh identities recorded. This permits necessary
+checks/review and one fresh paired attempt; no silent retry/change of model.
