@@ -75,7 +75,7 @@ def main():
     inp,conn,area,_=prep_input_data(mat,pff,dict(x_init=[-.5],y_init=[0],L_crack=[.5],angle_crack=[0]),dict(gradient_type='numerical'),str(ROOT/'SENS_tensile/meshed_geom_fem_soft_hist0.msh'),'cuda')
     assert inp.shape==(45591,2) and conn.shape==(90000,3)
     named=list(net.named_parameters());params=[p for _,p in named]
-    groups={name:dict(start=sum(p.numel() for _,p in named[:i]),count=p.numel()) for i,(name,_) in enumerate(named)}
+    groups={name:dict(start=sum(p.numel() for _,p in named[:i]),count=param.numel()) for i,(name,param) in enumerate(named)}
     best=args.baseline/'best_models'
     archived=np.load(best/'energy_gradient_terms_vs_cycle.npy')
     results=[]
