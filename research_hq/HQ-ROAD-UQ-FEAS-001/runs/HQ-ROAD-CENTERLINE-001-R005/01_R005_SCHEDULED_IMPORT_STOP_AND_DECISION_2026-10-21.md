@@ -30,6 +30,8 @@ No canonical output directory, model forward, training step, optimiser step, che
 - Training steps: `0`; optimiser steps: `0`; completed epochs: `0`
 - Road420 access: `false`; CRACK500 test remained sealed
 
+Before the admission, one SSH caller attempted to invoke the script inside an encoded PowerShell wrapper without `-ExecutionPolicy Bypass`; Windows rejected the script before entry. A read-only check immediately confirmed that no admission receipt, claim, controller log, process, task or canonical output existed. The reviewed script was then invoked once through its specified `powershell.exe -ExecutionPolicy Bypass -File` entrypoint. Thus the package consumed one admission check, while preserving the rejected pre-entry caller event in this audit.
+
 ## Decisive evidence
 
 1. `admission_receipt_remote.json` and `admission_wrapper_receipt_remote.json` bind the positive admission to R005, the reviewed snapshot/data lock, the exact GPU UUID and check `1/1`. Both environment and preflight context receipts passed with the frozen `skimage` 0.25.2 and morphology initializer hashes.

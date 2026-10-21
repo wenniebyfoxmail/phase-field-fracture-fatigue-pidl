@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "recorded_utc": "2026-10-21T00:34:38.477935+00:00",
+  "recorded_utc": "2026-10-21T00:35:26.499238+00:00",
   "run_id": "HQ-ROAD-CENTERLINE-001-R005",
   "authority": "HQ-D5-LAUNCHER-AWARE-R005-20261021",
   "admission_checks_consumed": 1,
@@ -21,8 +21,13 @@
   "remote_manifest_records": 34,
   "remote_manifest_matches": 34,
   "report_path": "research_hq/HQ-ROAD-UQ-FEAS-001/runs/HQ-ROAD-CENTERLINE-001-R005/01_R005_SCHEDULED_IMPORT_STOP_AND_DECISION_2026-10-21.md",
-  "report_sha256": "3350296db7482c40d807e260713b8d3da6b91f543f15944306960fefedd809d6",
+  "report_sha256": "29a1858990737a75602270e3cbbb104c75498de91fac7f50f2be3383509c6534",
   "independent_recomputation_path": "research_hq/HQ-ROAD-UQ-FEAS-001/runs/HQ-ROAD-CENTERLINE-001-R005/retrieved_2026-10-21/independent_recomputation_2026-10-21.json",
   "independent_recomputation_sha256": "7c628cf045c019bcc682ca5c5d0e83dfb5c36c091b3db735988f543c6b3ad6d2",
-  "successor_execution_authorized": false
+  "successor_execution_authorized": false,
+  "pre_entry_shell_refusal": {
+    "consumed_admission_check": false,
+    "verified_no_receipt_claim_process_task_or_output": true,
+    "reason": "PowerShell execution policy rejected wrapper before script entry"
+  }
 }
