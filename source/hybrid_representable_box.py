@@ -87,7 +87,9 @@ def certify_state(x,x0,D,radius,lo,hi,*,intervals=None,exact_limit=EXACT_COMPONE
         if process_time()-started>.1:fail('exact CPU qualification budget exhausted',i)
         if margin<0:fail('finite candidate exactly outside trust domain',i)
         certified[i]=min(certified[i],radius)
-    diag.update(exact_comparisons=used,exact_CPU_seconds=process_time()-started,
+    spent=process_time()-started
+    if spent>.1:fail('exact CPU qualification budget exhausted')
+    diag.update(exact_comparisons=used,exact_CPU_seconds=spent,
         certified_max_upper=float(certified.max(initial=0.)),certification='directed representable inner interval or sparse-action upper or exact binary64 comparison')
     if np.any(certified>radius):raise RuntimeError('unresolved representable trust certification')
     return p,tail,certified,diag
@@ -96,6 +98,7 @@ def certify_state(x,x0,D,radius,lo,hi,*,intervals=None,exact_limit=EXACT_COMPONE
 def representable_candidate(y,base,D,free,dofs,values,lower,crack,radius):
     from hybrid_box_residual_subproblem import divide,normal
     nu=len(free);u0=base['u'];d0=base['d'];x0=np.r_[u0[free],d0]
+    if not np.array_equal(u0[dofs],values)or np.any(d0[crack]!=1)or np.any(lower[crack]!=1):raise RuntimeError('original base BC/precrack identity')
     lo=np.r_[np.full(nu,-np.inf),lower];hi=np.r_[np.full(nu,np.inf),np.ones(len(d0))]
     intervals=state_intervals(x0,D,radius,lo,hi);il,iu,_,_=intervals
     normal(y,'projected candidate coordinate');increment=divide(y,D,'candidate coordinate conversion')

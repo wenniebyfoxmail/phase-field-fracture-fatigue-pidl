@@ -10,7 +10,7 @@
 2. 可表示**内端点**为Linner=succ(fl(x0-qminus))、Uinner=pred(fl(x0+qminus))。若和为零，normal表示数的精确相消保留零；每个端点再保留base：Linner=min(Linner,x0)、Uinner=max(Uinner,x0)，最后与原精确表示box相交。因此不会用向内舍入删去永远合法的零步。上述端点分别位于真实端点内侧；这是一条有证明的端点构造，不是固定多挪几ULP的经验循环。
 3. **外端点**用qplus与相反有向舍入，包围真实合法状态区间，同原box相交。主/可选点先按给定scaled proposal生成表示状态，再投影到内区间；恢复原u Dirichlet/precrack，得到严格可行可表示x，不改原d_n下界或物理方程。collapsed interval只保留base；若主Cauchy实际步丢失仍按原非零残差停，不能当根。
 4. 验证函数保留旧raw abs(D*high)+abs(D*tail)向上界。位于已证明内区间，或原向上界<=R的分量可直接认证；只有其余重叠项才用stdlib Fraction.from_float对原浮点**精确二进制值**判abs(D*(x-x0))<=representedR，绝不经str/decimal/rounded D*p。真实box外/外包络外/精确TR外不能通过。
-5. 单候选合计最多**64项精确比较、CPU0.1s**，整个认证上下文不按分量/内部尝试重置。每次Fraction原子操作前后process_time检查；原子调用的超调只能后采样观察并停止，**不声称严格零CPU超调**。binary64有界位数，不能任意精度全扫描；64/65与CPU耗尽人工检查。原J/JT100、16updates/8outer和step300不变；精确比较单列计费/计数，按Budget跨同outer回溯累计，不混成J动作或重置counter。
+5. 单候选合计最多**64项精确比较、CPU0.1s**，该候选精确判定分支（含其有限域预检，timer在向量区间/上界构造后开始）不按分量/内部尝试重置；向量构造仍计原step300s。无ambiguous时及返回前也检查已记录CPU。每次Fraction原子操作前后process_time检查；原子调用的超调只能后采样观察并停止，**不声称严格零CPU超调**。binary64有界位数，不能任意精度全扫描；64/65与CPU耗尽人工检查。原J/JT100、16updates/8outer和step300不变；精确比较单列计费/计数，按Budget跨同outer回溯累计，不混成J动作或重置counter。
 6. 记录raw松上界与**certified upper**及来源分开。仅在内区间证明或精确不等式证明后，才可把R作为该分量有效上界，与原raw上界取min；不是无证据clip误差。保存dtype、D/base/x/radius hex、exact margin整数分子/分母、触发索引和内/外/box区间、比较used/CPU/budget。
 
 所有原模型r0=fl(wG)、J/JT、w/D step初冻结、Lbar、Cauchy充分下降、PG与Newton比较的模型区间和actual high+tail完整交叉项保持R007。D尺度与R006几何radius不同。新增box_domain_policy='representable_inner_binary64_v1'进入coupling policy ID，避免把新组合与R007假称完整同策略状态键；原合法state0 fields不拼旧prefix。

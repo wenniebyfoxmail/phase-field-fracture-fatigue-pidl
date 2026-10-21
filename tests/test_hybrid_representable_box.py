@@ -143,3 +143,19 @@ def test_exact_accounting_survives_radius_retry_with_same_outer_budget(monkeypat
     c=sub.solve_box_model(m,base,free,dofs,values,lower,crack,r/4,np.zeros(2))
     assert a['exact_comparisons_cumulative']==4 and c['exact_comparisons_cumulative']==8
     assert m.budget.exact_comparisons==8 and m.budget.updates==8
+
+
+@pytest.mark.parametrize('boundary',[False,True])
+def test_final_CPU_check_covers_no_ambiguity_and_post_comparison(monkeypatch,boundary):
+    base,D,lo,hi=plain();times=iter([0.,0.,0.,.2,.2]if boundary else[0.,.2,.2])
+    monkeypatch.setattr(rb,'process_time',lambda:next(times))
+    with pytest.raises(rb.CandidateUncertified,match='CPU qualification budget')as exc:
+        rb.certify_state(np.array([.1 if boundary else 0.]),base,D,.1,lo,hi)
+    assert exc.value.diagnostics['exact_comparisons']==int(boundary)
+
+
+def test_invalid_base_BC_is_identity_error_not_optional_ineligibility():
+    base=dict(u=np.array([1.,0.]),d=np.array([.4]))
+    with pytest.raises(RuntimeError,match='identity')as exc:
+        rb.representable_candidate(np.zeros(2),base,np.ones(2),np.array([1]),np.array([0]),np.array([0.]),np.array([.2]),np.array([False]),.1)
+    assert not isinstance(exc.value,rb.CandidateUncertified)
