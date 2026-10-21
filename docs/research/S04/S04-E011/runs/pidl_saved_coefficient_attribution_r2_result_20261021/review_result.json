@@ -1,0 +1,54 @@
+{
+  "status": "passed",
+  "reviewed_UTC": "2026-10-21T01:07:24.051501+00:00",
+  "review_scope": "Lightweight saved scalar/receipt/figure interpretation review; no array arithmetic or repeated original data audit.",
+  "input_sha256": {
+    "retrieved/result.json": "f9997871d755d087310ea33a9f39695e326e83e158911a16f28b98cc6ac87427",
+    "execution_receipt.json": "1278f7556d30f80f28968b1bc8f58666d98e12ac15bbb48db5cc983e3d9251f9",
+    "analysis/README_analysis.md": "eae0c5203a7f9b1ceefba43d3f5f46157eeabe5e431bdf0335c2f4e1a0141d82",
+    "analysis/coefficient_decomposition.md": "22f24458ee098ff0541bd38c26e7125719943777aee04df1ffc6045ade3bd4ce",
+    "analysis/coefficient_fields.md": "baab7a5acc1898595be003c21d28425de59152f0e9ca28b42a7e06ef07e11179",
+    "analysis/coefficient_decomposition.png": "91642ba041e71540f0c3189210bc17ab8175e8456114692a37f67e7ff321826f",
+    "analysis/coefficient_fields.png": "69c19b4428920e47b42f1d1e97be3f57cee91c0579672969758222ac2ceb05cc",
+    "analysis/plot_cost.json": "b6ba59784bbe552726bc91b837412b866732dda9548a2650ddd76eae05b9910a"
+  },
+  "checks": [
+    "The completed receipt reports one SSH, unchanged ad17 remote scientific script, guard failure null and selected return SHA verification; full Phi was not transferred.",
+    "Authentic initial-gradient RHS labels 0004/0010 constant and 0007/0013 zero, one alpha=1 update each, are explicitly identified; no directly saved global b or actual parameter endpoint arrays are claimed.",
+    "98.97% refers to the sum of the two AD-versus-secant terms signed dot products with the original mismatch divided by its squared norm. It is not a causal fraction, norm fraction, independent additive variance attribution, or physical improvement.",
+    "Small Q reconstruction and full decomposition closure establish consistency of this saved-array algebra; they do not prove an AD implementation bug or provide an independent arithmetic forward certificate.",
+    "Endpoint defect and affine-consistency terms can nearly cancel. Individual norm ratios do not add and large component norms do not establish unique causes.",
+    "The two remaining broad explanations are finite-h nonlinear/secant effects and numerical arithmetic/path amplification; neither is uniquely resolved by this saved decomposition.",
+    "Both actual PNGs inspected: component norm versus signed-projection axes are distinguished, cancelling signed finite-H term visible; field panels share one color scale and magnitude panels are not asserted to add.",
+    "No new accepted PIDL endpoint, FEM/PIDL improvement, architecture capacity result, model/physical solve or new derivative experiment is established."
+  ],
+  "receipt_cost_readout": {
+    "remote_total_process_CPU_seconds": 17.6429,
+    "remote_wall_through_completed_stream_seconds": 23.918653617613018,
+    "local_client_CPU_seconds": 6.881136000000001,
+    "local_child_CPU_seconds": 0.36658999999999997,
+    "plot_CPU_seconds": 1.624057
+  },
+  "limitations": [
+    "The original immutable input arrays and ten saved-system solves were not independently rerun by this reviewer.",
+    "Bounded local metadata hash/writing costs are recorded below; static reading is not described as CPU zero."
+  ],
+  "blocking_issues": [],
+  "review_metadata_monitor": {
+    "failure": null,
+    "samples": 1,
+    "interval_seconds": 0.1,
+    "max_sample_gap_seconds": 0.0,
+    "max_delay_above_interval_seconds": 0,
+    "peak_owned_RSS_bytes": 25231360,
+    "peak_owned_VM_bytes": 420172840960,
+    "peak_sampled_owned_CPU_seconds": 0.051804206000000005,
+    "child_bindings": [],
+    "identity_refusals": [],
+    "peak_owned_output_bytes": 0,
+    "Mac_AS_limit_required": false,
+    "RSS_monitor_kind": "user-space sampled, not kernel hard RSS guarantee"
+  },
+  "review_metadata_CPU_seconds": 0.030119000000000003,
+  "review_metadata_wall_seconds": 0.03016008296981454
+}

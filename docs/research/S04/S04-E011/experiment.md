@@ -328,3 +328,7 @@ Sourcefeef73bd completed derivation/static review only. Mac client RLIMIT_AS16Gi
 ### 2026-10-21 prospective saved attribution transport R002
 
 HQ-MESH-SAVED-COEFFICIENT-TRANSPORT-R002-20261021 explicitly authorizes Mac sampled owned-tree RSS512MiB with AS exemption for transport; scientific remote CPU220/AS16GiB and ad17 mathematics unchanged. Whole1200s00:53:54–01:13:54UTC/CPU300 total(220remote+25transport+25postprocess+10review+20metadata). One .1s guard RSS/timeout local fixture completed0.758wall/.194CPU; no model/arrays/SSH. One exact newcase then one SSH only/no third attempt. Prior793.67wall/CPUUNKNOWN preserved. See[saved_coefficient_transport_r2_20261021](saved_coefficient_transport_r2_20261021/README.md).
+
+### 2026-10-21 saved coefficient transport R002 completed
+
+Exact496638e9/ad17 math; one CPU-only SSH,10vector20tri0factor,74input and48return hashes verified. Independent Q reconstruction4.46–6.38e-11; full mismatch decomposition closure4.40–4.43e-10 versus old0.009506. Dominant signed projection is AD versus stored coefficient secants, not endpoint root defect; finite-h curvature versus arithmetic amplification unresolved. No new physical/model/AD/optimization/history or3000 chain. PriorMacAS stop/costs preserved. See[runs/pidl_saved_coefficient_attribution_r2_result_20261021.md](runs/pidl_saved_coefficient_attribution_r2_result_20261021.md).

@@ -1,0 +1,47 @@
+{
+  "UTC": "2026-10-21T01:09:11.715986+00:00",
+  "whole_wall_seconds_through_final_audit": 917.715986,
+  "deadline_UTC": "2026-10-21T01:13:54+00:00",
+  "before_commit": true,
+  "science_status": "SAVED_ATTRIBUTION_COMPLETE_VERIFIED",
+  "review_status": "passed",
+  "checks": [
+    {
+      "command": [
+        "/Users/wenxiaofang/miniconda3/bin/python3",
+        "source/validate_figure_sidecars.py",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/saved_coefficient_transport_r2_20261021/analysis"
+      ],
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"pass\",\n  \"figure_directory\": \"/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/saved_coefficient_transport_r2_20261021/analysis\",\n  \"figure_files\": 2,\n  \"unique_sidecars\": 2,\n  \"errors\": []\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "metadata_resource_exception": "Later stdlib report writing and shell read/check commands were not RSS sampled; CPU/RSS of that metadata segment UNKNOWN. Scientific remote, transport, plot and reviewer records are measured and guarded; do not claim whole-task resource conformity. No array/model/physics computation occurred in unmonitored metadata segment.",
+  "final_audit_CPU_seconds": 0.06662399999999999,
+  "final_audit_monitor": {
+    "failure": null,
+    "samples": 1,
+    "interval_seconds": 0.1,
+    "max_sample_gap_seconds": 0.0,
+    "max_delay_above_interval_seconds": 0,
+    "peak_owned_RSS_bytes": 25460736,
+    "peak_owned_VM_bytes": 420171792384,
+    "peak_sampled_owned_CPU_seconds": 0.063710458,
+    "child_bindings": [],
+    "identity_refusals": [],
+    "peak_owned_output_bytes": 0,
+    "Mac_AS_limit_required": false,
+    "RSS_monitor_kind": "user-space sampled, not kernel hard RSS guarantee"
+  }
+}

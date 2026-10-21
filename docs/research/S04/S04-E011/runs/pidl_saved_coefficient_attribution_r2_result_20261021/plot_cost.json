@@ -1,0 +1,23 @@
+{
+  "wall_seconds": 1.3759693750180304,
+  "total_process_CPU_seconds": 1.624057,
+  "CPU_hard_seconds": 25,
+  "Mac_AS_limit_required": false,
+  "monitor": {
+    "failure": null,
+    "samples": 12,
+    "interval_seconds": 0.1,
+    "max_sample_gap_seconds": 0.1505160410888493,
+    "max_delay_above_interval_seconds": 0.0505160410888493,
+    "peak_owned_RSS_bytes": 297058304,
+    "peak_owned_VM_bytes": 420890034176,
+    "peak_sampled_owned_CPU_seconds": 1.598758304,
+    "child_bindings": [],
+    "identity_refusals": [],
+    "peak_owned_output_bytes": 0,
+    "Mac_AS_limit_required": false,
+    "RSS_monitor_kind": "user-space sampled, not kernel hard RSS guarantee"
+  },
+  "geometry_file_hash_bytes": 15502614,
+  "new_physics_NN_AD_SVD_solve": 0
+}

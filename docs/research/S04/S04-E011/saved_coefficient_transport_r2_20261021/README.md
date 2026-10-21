@@ -11,3 +11,7 @@ Goal/decomposition/provenance/RHS and uncertainty unchanged: see[original deriva
 Fixture completed once: wall0.758184s/CPU0.194354s, RSS mode stopped at99.43MB and timeout mode at0.6s, both bound child PIDs gone. psutil.wait_procs reaps own children before Popen.wait, so fixture child_exit0 is not evidence of normal child exit; controlled duration/guard event/PID disappearance establish stop. Largest sampling gap0.13476s, configured0.1s. No extra fixture or remote action.
 
 Reviewed transport additions: gated CPU wrapper binds PID/create_time/command/cwd before permitting SSH exec; guard failure and close failure force STOPPED even if child reaped by monitor. TERM/KILL recheck direct/descendant identities; refusals/errors recorded without touching unverified processes. Runtime return100MiB/case512MiB checks use same0.1s sampled guard (possible sampling overshoot recorded), plus terminal exact acceptance checks. Original fixture is not rerun after these exception/identity/gate deltas; focused static review covers changes.
+
+## Actual outcome
+
+One SSH completed saved-only attribution and verified retrieval; source496638e9,10vector/0factor. Remote17.6429CPU/23.91865wall; transport6.881136+0.36659CPU/28.47709wall; no guard failure. See[canonical result](../runs/pidl_saved_coefficient_attribution_r2_result_20261021.md), compact receipt and independent result review. EarlierMacAS failure preserved; no optimization resumed.

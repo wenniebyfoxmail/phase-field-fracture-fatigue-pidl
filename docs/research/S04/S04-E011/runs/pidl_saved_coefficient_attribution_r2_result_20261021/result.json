@@ -1,0 +1,374 @@
+{
+  "status": "SAVED_COEFFICIENT_ATTRIBUTION_COMPLETE",
+  "analysis_id": "pf_s04e011_saved_coeff_attr_r2_20261021",
+  "source_run": "pf_s04e011_frozen_completion_r2_hq_20261021",
+  "source_manifest_sha256": "964c92eec66a5edce6da3d87623db5a04c67864711dbc8b2317f91d2105dee8b",
+  "science_state": "c20s4/FEMdamage/sourcePIDLhistory/B0/UV/Phi/T0/seed173/scales/h1e-6 fixed",
+  "arms": [
+    {
+      "arm": "frozen_constant",
+      "source_z_norm": 0.0,
+      "Q_norm": 13.057395248181104,
+      "FD_norm": 13.056646768187882,
+      "mismatch_norm": 0.009506254089002067,
+      "Q_reconstruction_error": 4.4581159752618655e-11,
+      "coefficient_secant_vs_FD": 0.0007882318599994325,
+      "closure_norm": 4.4314179594698575e-10,
+      "head_identity_closure": 2.253322353167521e-11,
+      "bindings": [
+        {
+          "side": "plus",
+          "initial_defect_source": "linear/0004_rhs.npy",
+          "Newton_alpha": 1.0,
+          "accepted_steps": 1,
+          "update_exact": true,
+          "head_e_norm": 1.0008437265974956e-16,
+          "end_defect_norm": 9.956250951117734e-15,
+          "affine_consistency_norm": 9.960323861287722e-15,
+          "field_assembly_norm": 2.1609523088024314e-16,
+          "original_rhs_global_b_saved": false
+        },
+        {
+          "side": "minus",
+          "initial_defect_source": "linear/0010_rhs.npy",
+          "Newton_alpha": 1.0,
+          "accepted_steps": 1,
+          "update_exact": true,
+          "head_e_norm": 7.639008322320027e-17,
+          "end_defect_norm": 1.0333949854272607e-14,
+          "affine_consistency_norm": 1.0334184529397545e-14,
+          "field_assembly_norm": 2.0473705328494237e-16,
+          "original_rhs_global_b_saved": false
+        }
+      ],
+      "nominal_parameter_direction_only": true,
+      "actual_parameter_endpoint_arrays_saved": false,
+      "global_b_directly_saved": false,
+      "coefficient_equation_used": "a_s=-original_initial_defect_s(z0), H_s w_s=a_s+e_s; no Hz_end fabricated RHS",
+      "bounds_are_not_forward_certificates": true
+    },
+    {
+      "arm": "frozen_zero",
+      "source_z_norm": 2.795874806674337e-14,
+      "Q_norm": 13.057395237123728,
+      "FD_norm": 13.056646757200395,
+      "mismatch_norm": 0.009506254020437954,
+      "Q_reconstruction_error": 6.382606981523755e-11,
+      "coefficient_secant_vs_FD": 0.0007882318280992954,
+      "closure_norm": 4.395147920228471e-10,
+      "head_identity_closure": 4.480264299292915e-11,
+      "bindings": [
+        {
+          "side": "plus",
+          "initial_defect_source": "linear/0007_rhs.npy",
+          "Newton_alpha": 1.0,
+          "accepted_steps": 1,
+          "update_exact": true,
+          "head_e_norm": 8.618269831399634e-17,
+          "end_defect_norm": 1.2060170074129779e-14,
+          "affine_consistency_norm": 1.2057352630535933e-14,
+          "field_assembly_norm": 2.1742541862395936e-16,
+          "original_rhs_global_b_saved": false
+        },
+        {
+          "side": "minus",
+          "initial_defect_source": "linear/0013_rhs.npy",
+          "Newton_alpha": 1.0,
+          "accepted_steps": 1,
+          "update_exact": true,
+          "head_e_norm": 5.2282040038290943e-17,
+          "end_defect_norm": 1.2940493126811935e-14,
+          "affine_consistency_norm": 1.2940706968844313e-14,
+          "field_assembly_norm": 2.1360108906300774e-16,
+          "original_rhs_global_b_saved": false
+        }
+      ],
+      "nominal_parameter_direction_only": true,
+      "actual_parameter_endpoint_arrays_saved": false,
+      "global_b_directly_saved": false,
+      "coefficient_equation_used": "a_s=-original_initial_defect_s(z0), H_s w_s=a_s+e_s; no Hz_end fabricated RHS",
+      "bounds_are_not_forward_certificates": true
+    }
+  ],
+  "metrics": [
+    {
+      "arm": "frozen_constant",
+      "component": "AD_reconstruction",
+      "L2": 4.4581159752618655e-11,
+      "relative_to_total_norm": 4.689666332840324e-09,
+      "signed_projection_on_mismatch": 3.545725838222486e-10
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "AD_vs_secant_J",
+      "L2": 0.008109730443612392,
+      "relative_to_total_norm": 0.8530942227806287,
+      "signed_projection_on_mismatch": 0.7256983090422517
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "AD_vs_secant_head",
+      "L2": 0.00487837662680237,
+      "relative_to_total_norm": 0.5131754927996549,
+      "signed_projection_on_mismatch": 0.26397870510506527
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "finite_B",
+      "L2": 0.003926166388358127,
+      "relative_to_total_norm": 0.41300877838941524,
+      "signed_projection_on_mismatch": 0.011370918510866908
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "finite_H",
+      "L2": 0.0039211745966480005,
+      "relative_to_total_norm": 0.4124836723209901,
+      "signed_projection_on_mismatch": -0.0010479329741700234
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "endpoint_defect",
+      "L2": 1.2793901287273787e-09,
+      "relative_to_total_norm": 1.3458404506645e-07,
+      "signed_projection_on_mismatch": 3.85354772345435e-09
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "affine_consistency",
+      "L2": 1.2778734912367995e-09,
+      "relative_to_total_norm": 1.3442450404467846e-07,
+      "signed_projection_on_mismatch": -3.6760861724318713e-09
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "offline_field_reconstruction",
+      "L2": 1.483767232826654e-10,
+      "relative_to_total_norm": 1.5608327096403276e-08,
+      "signed_projection_on_mismatch": 9.888696434472259e-12
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "sum",
+      "L2": 0.009506254091149888,
+      "relative_to_total_norm": 1.0000000002259377,
+      "signed_projection_on_mismatch": 1.0000000002259384
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "closure",
+      "L2": 4.4314179594698575e-10,
+      "relative_to_total_norm": 4.66158164717755e-08,
+      "signed_projection_on_mismatch": -2.2593681756191676e-10
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "mismatch",
+      "L2": 0.009506254089002067,
+      "relative_to_total_norm": 1.0,
+      "signed_projection_on_mismatch": 1.0
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "Qsec",
+      "L2": 13.056681699153598,
+      "relative_to_total_norm": 1373.4833486366704,
+      "signed_projection_on_mismatch": 107.65507837849374
+    },
+    {
+      "arm": "frozen_constant",
+      "component": "Jsec",
+      "L2": 53032.73627597249,
+      "relative_to_total_norm": 5578720.680033883,
+      "signed_projection_on_mismatch": 87555.336058942
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "AD_reconstruction",
+      "L2": 6.382606981523755e-11,
+      "relative_to_total_norm": 6.714113643293647e-09,
+      "signed_projection_on_mismatch": -1.9542050386797917e-10
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "AD_vs_secant_J",
+      "L2": 0.00810973044349051,
+      "relative_to_total_norm": 0.8530942289207726,
+      "signed_projection_on_mismatch": 0.7256983200474695
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "AD_vs_secant_head",
+      "L2": 0.004878376547765168,
+      "relative_to_total_norm": 0.5131754881867149,
+      "signed_projection_on_mismatch": 0.26397869758669884
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "finite_B",
+      "L2": 0.003926166722583963,
+      "relative_to_total_norm": 0.4130088165267736,
+      "signed_projection_on_mismatch": 0.011370870851064132
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "finite_H",
+      "L2": 0.003921174922225725,
+      "relative_to_total_norm": 0.4124837095448325,
+      "signed_projection_on_mismatch": -0.0010478885391157048
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "endpoint_defect",
+      "L2": 1.9458783578519017e-09,
+      "relative_to_total_norm": 2.0469454673400944e-07,
+      "signed_projection_on_mismatch": -7.102095450830573e-09
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "affine_consistency",
+      "L2": 1.930921601923558e-09,
+      "relative_to_total_norm": 2.0312118714397665e-07,
+      "signed_projection_on_mismatch": 7.148972102263944e-09
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "offline_field_reconstruction",
+      "L2": 1.524488464310166e-10,
+      "relative_to_total_norm": 1.60366897521631e-08,
+      "signed_projection_on_mismatch": 3.033837379508147e-11
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "sum",
+      "L2": 0.009506254018802044,
+      "relative_to_total_norm": 0.9999999998279122,
+      "signed_projection_on_mismatch": 0.999999999827911
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "closure",
+      "L2": 4.395147920228471e-10,
+      "relative_to_total_norm": 4.623427809502176e-08,
+      "signed_projection_on_mismatch": 1.7208886548996108e-10
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "mismatch",
+      "L2": 0.009506254020437954,
+      "relative_to_total_norm": 1.0,
+      "signed_projection_on_mismatch": 1.0
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "Qsec",
+      "L2": 13.056681688154852,
+      "relative_to_total_norm": 1373.4833573859548,
+      "signed_projection_on_mismatch": 107.65506974574078
+    },
+    {
+      "arm": "frozen_zero",
+      "component": "Jsec",
+      "L2": 53032.73627613343,
+      "relative_to_total_norm": 5578720.720287486,
+      "signed_projection_on_mismatch": 87555.99886270263
+    }
+  ],
+  "linear_solves": [
+    {
+      "arm": "frozen_constant",
+      "label": "U",
+      "rhs_norm": 17026.020281566558,
+      "residual_norm": 1.128255667021891e-11,
+      "relative": 6.626655250983177e-16
+    },
+    {
+      "arm": "frozen_constant",
+      "label": "secant_a",
+      "rhs_norm": 17026.004931395048,
+      "residual_norm": 1.1887202109073507e-11,
+      "relative": 6.981791769103825e-16
+    },
+    {
+      "arm": "frozen_constant",
+      "label": "coefficient_H",
+      "rhs_norm": 0.012326708356600881,
+      "residual_norm": 1.901382883881157e-17,
+      "relative": 1.542490362289603e-15
+    },
+    {
+      "arm": "frozen_constant",
+      "label": "endpoint_total_residual",
+      "rhs_norm": 7.713882529728925e-11,
+      "residual_norm": 1.567007877086549e-25,
+      "relative": 2.0314126784370614e-15
+    },
+    {
+      "arm": "frozen_constant",
+      "label": "endpoint_defect",
+      "rhs_norm": 7.634104193259488e-09,
+      "residual_norm": 1.1696647671915628e-23,
+      "relative": 1.532157195633137e-15
+    },
+    {
+      "arm": "frozen_zero",
+      "label": "U",
+      "rhs_norm": 17026.02028084936,
+      "residual_norm": 1.174081330169534e-11,
+      "relative": 6.895806012225446e-16
+    },
+    {
+      "arm": "frozen_zero",
+      "label": "secant_a",
+      "rhs_norm": 17026.00493067905,
+      "residual_norm": 1.2544564192809979e-11,
+      "relative": 7.367884740950597e-16
+    },
+    {
+      "arm": "frozen_zero",
+      "label": "coefficient_H",
+      "rhs_norm": 0.01232670794545735,
+      "residual_norm": 1.9707086064029728e-17,
+      "relative": 1.5987306709324773e-15
+    },
+    {
+      "arm": "frozen_zero",
+      "label": "endpoint_total_residual",
+      "rhs_norm": 6.142790062599456e-11,
+      "residual_norm": 1.3103736156661015e-25,
+      "relative": 2.1331896456047663e-15
+    },
+    {
+      "arm": "frozen_zero",
+      "label": "endpoint_defect",
+      "rhs_norm": 9.186357545489342e-09,
+      "residual_norm": 1.3305708558008496e-23,
+      "relative": 1.4484204966027939e-15
+    }
+  ],
+  "vector_solves": 10,
+  "triangular_solves": 20,
+  "new_factors": 0,
+  "new_NN_AD_physics_FEM_SVD_GPU": 0,
+  "parameter_endpoint_direction_check": "Unavailable: actual parameter endpoint arrays not saved; no checkpoint loaded",
+  "original_dtype": "binary64 checked saved arrays; E011Bridge.parameter_state contract float64, endpoints unavailable",
+  "input_hash_bytes": 921517113,
+  "logical_array_read_bytes": 8694697536,
+  "OS_ru_inblock_raw": 113448,
+  "actual_physical_disk_read_bytes": "UNKNOWN",
+  "CPU_seconds": 2.6982401890000003,
+  "wall_seconds": 2.7579885255545378,
+  "mechanical_seconds": 0.9860666319727898,
+  "peak_RSS_bytes": 938250240,
+  "RLIMIT_CPU": [
+    220,
+    220
+  ],
+  "RLIMIT_AS": [
+    17179869184,
+    17179869184
+  ],
+  "numpy": "1.24.4",
+  "all_input_hashes_verified": true,
+  "no_unique_cause_or_capacity_claim": true
+}
