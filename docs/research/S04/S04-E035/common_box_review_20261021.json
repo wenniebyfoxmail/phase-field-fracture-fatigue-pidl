@@ -1,0 +1,34 @@
+{
+  "status": "SOURCE_REVIEW_PASS_RUNTIME_FIXTURES_REQUIRED",
+  "reviewer": "/root/shear_review",
+  "review_scope": "actualenergygradient/box/KKT/boundary/controller/deadline",
+  "no_reviewer_arrays_or_solves": true,
+  "files": {
+    "scripts/shear/box_phase_newton.m": "e511bbc04ef392e6757a3ac2d050dcaf4533195ec8b2b75ff1b2fd7fdf65b49b",
+    "scripts/shear/supervise_manav_pidl_box.ps1": "d612ea303bdc83bf88f0b3798337a4f8081700473eaefc9fe54c65d783daadf9",
+    "scripts/shear/run_manav_static_pidl_box.py": "07da8d53950728584e74aad4dbc118a1eec9a7c56d2541f7818babd0131e691b",
+    "scripts/shear/run_manav_static_fem_box.m": "2ce123faadd7efb9d9cfbad76e968a040b07693f6c1db982ddf4aba054e1331b",
+    "scripts/shear/box_kkt_residual.m": "c6d8fa07c53ce7fcbc3014571838df1179256c47e542a86ac242cb80d013e6c9",
+    "scripts/shear/supervise_manav_static_box.ps1": "423a43d8531fc76f27b32f752cf6742aedbca719c197fa40233d6f6807f07191",
+    "scripts/shear/box_q4_pf_energy.m": "ea89838ab6b8369bd3bd3a8b512078fc57b5f77b8edbb49849f4d9163aa43769",
+    "scripts/shear/execute_manav_static_fem_box.py": "c843a34a56a382defd77527bb4e70270b5bec35ebee7b29c0c3f73624b467c78",
+    "scripts/shear/launch_manav_static_pidl_box.py": "603c886f2fadcd98cfc56e9274de3b433f5c5ef87825675060aae3a2af635ace",
+    "scripts/shear/execute_manav_static_pidl_box.py": "cb683cacfa32c3bea7e7fdbbd8cb533da39adb13b1bd13eb7ed3272446d52553",
+    "scripts/shear/verify_manav_static_reference_box.py": "3cb9f4a30f0509435241f9e7c5ee2a7741a8b9b53e539949338b216ab1a325b4",
+    "scripts/shear/analyze_manav_static_pair_box.py": "8cdab80aac64ccd149e7447c0fd05f4d81cfbe7006faf16222a3d4966ecdcb3e",
+    "scripts/shear/test_box_phase_newton.m": "f791d8987a3e008cd8f0fe27bd81ad4ee7151a80dfc41e90fa59e17bec20e0eb",
+    "scripts/shear/box_q4_geometry.m": "b78f188a0d1ade4368ccdcda860f87373558cc78ca28463f640a29414d262c59"
+  },
+  "final_scientific_hash_assertions": {
+    "box_phase_newton.m": "e511bbc04ef392e6757a3ac2d050dcaf4533195ec8b2b75ff1b2fd7fdf65b49b",
+    "box_q4_geometry.m": "b78f188a0d1ade4368ccdcda860f87373558cc78ca28463f640a29414d262c59",
+    "box_q4_pf_energy.m": "ea89838ab6b8369bd3bd3a8b512078fc57b5f77b8edbb49849f4d9163aa43769",
+    "test_box_phase_newton.m": "f791d8987a3e008cd8f0fe27bd81ad4ee7151a80dfc41e90fa59e17bec20e0eb",
+    "run_manav_static_fem_box.m": "2ce123faadd7efb9d9cfbad76e968a040b07693f6c1db982ddf4aba054e1331b",
+    "execute_manav_static_fem_box.py": "c843a34a56a382defd77527bb4e70270b5bec35ebee7b29c0c3f73624b467c78"
+  },
+  "raw_PDAS_analytical_counterexample": "fixedscalarhistory gamma2 wouldcycle; corrected BEFORE any execution",
+  "globalization": "feasible projected-target energyArmijo; exactpositive native diagonal fallback; unscalednormalconeKKT",
+  "NN_opportunity_floor_seconds": 7200,
+  "NN_runtime_guarantee": false
+}
