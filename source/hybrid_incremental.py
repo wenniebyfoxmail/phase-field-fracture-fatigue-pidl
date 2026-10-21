@@ -201,7 +201,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             return backend.mechanics(d,dofs,values,settings)
         backend.validate_state(old)
         previous_id = old.fingerprint()
-        if coupling.mode=='joint_projected_trust' and iteration_observer is not None:
+        if coupling.mode in ('joint_projected_trust','box_residual_trust') and iteration_observer is not None:
             def initial_mechanics_diagnostic(row):
                 payload=dict(event='mechanics_linear_call',outer=0,previous_id=previous_id,
                     load_id=next_load_id,elapsed_seconds=perf_counter()-start,**row)
@@ -255,7 +255,7 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                 work.append(dict(work_id=len(work), kind="initial_guess_fallback",
                                  reason=str(exc), wall_seconds=0., status="baseline_initial"))
         initial_damage=d.copy()
-        if coupling.mode=='joint_projected_trust':
+        if coupling.mode in ('joint_projected_trust','box_residual_trust'):
             if not isinstance(backend,NativeQ4Backend):raise ValueError('joint native coupling requires NativeQ4Backend')
             from hybrid_joint_trust import solve_joint_trust
             return solve_joint_trust(backend,old,dofs,values,next_load_id,settings,coupling,

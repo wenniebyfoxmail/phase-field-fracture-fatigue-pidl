@@ -139,6 +139,7 @@ def solve_joint_trust(backend,old,dofs,values,load_id,settings,policy,initial_da
         damage_weight_range=[float(np.min(weights[1])),float(np.max(weights[1]))]))
     current['phi'],parts=objective(current['Ru'],current['F'],weights)
     emit(dict(event='joint_initial_objective',phi=current['phi'],mechanics_part=parts[0],damage_part=parts[1]))
+    box_D=None;seen_candidates={(array_id(current['u']),array_id(current['d']))}
     while True:
         room()
         if current['m_work']<=.01 and np.max(abs(current['F']),initial=0.)<=settings.qp_precision:
@@ -182,6 +183,72 @@ def solve_joint_trust(backend,old,dofs,values,load_id,settings,policy,initial_da
         dd,info,model=block_direction(backend,old,current,dofs,settings,policy,call,remaining,emit,return_model=True)
         # Assert free ordering and actual original residual identity before model use.
         if not np.array_equal(model['free_dofs'],free):raise RuntimeError('joint free domain mismatch')
+        if policy.mode=='box_residual_trust':
+            from hybrid_box_residual_subproblem import Budget,Model,original_natural_jacobian,freeze_variable_metric,solve_box_model
+            budget=Budget(policy.subproblem_action_limit,policy.subproblem_update_limit)
+            J=call('box_original_J_assembly',lambda:original_natural_jacobian(model,settings.damage_gradient_scale))
+            row_weights=np.r_[weights[0],weights[1]]
+            if box_D is None:
+                box_D=call('box_freeze_variable_metric',lambda:freeze_variable_metric(J,row_weights,budget))
+                emit(dict(event='box_frozen_variable_metric',D_id=array_id(box_D),
+                    D_range=[float(box_D.min()),float(box_D.max())],norm='||D*p_eff||inf; initial weighted-J column norms, not R006 geometric norm'))
+            ls=call('box_model_setup',lambda:Model(J,np.r_[current['Ru'],current['F']],row_weights,box_D,budget))
+            model_hook=getattr(backend,'box_model_observer',None)
+            if model_hook is not None:call('box_model_evidence',lambda:model_hook(current,J,row_weights,box_D,ls.L))
+            newton_p=np.r_[model['du'],dd];kept=False
+            while budget.updates<budget.update_limit-1:
+                room()
+                if radius<policy.trust_min_radius:raise RuntimeError('box trust radius collapsed')
+                candidate=call('box_LS_subproblem',lambda:solve_box_model(ls,current,free,dofs,values,
+                    lower,backend.crack,radius,newton_p,policy.subspace_steps))
+                counts['model_trials']+=1
+                meta=dict(event='box_trial_before',outer=current['outer'],direction=counts['newton_directions'],
+                    radius=radius,base_phi=current['phi'],model_value=candidate['model_value'],
+                    predicted_reduction=candidate['predicted_reduction'],pred_lower=candidate['pred_lower'],
+                    pred_upper=candidate['pred_upper'],cauchy_required_bound=candidate['cauchy_required_bound'],
+                    cauchy_model_lower_bound=candidate['cauchy_model_lower_bound'],
+                    cauchy_pred_lower=candidate['cauchy_pred_lower'],selection=candidate['selection'],
+                    model_L_upper=ls.L,model_definition=candidate['certificate_object'],rho=None,rho_status='pending actual nonlinear evaluation',actual_TR_norm=candidate['actual_TR_norm'],
+                    inward_ulp_corrections=candidate['inward_ulp_corrections'],
+                    subproblem_updates=budget.updates,action_count_upper=budget.used,action_counts=dict(budget.counts),
+                    D_id=array_id(box_D),row_weights_id=array_id(row_weights),base_inactive_id=array_id(model['inactive']))
+                raw=getattr(backend,'joint_trial_observer',None)
+                if raw is not None:call('box_before_candidate_evidence',lambda:raw(dict(meta,parent_id=previous_id,load_id=load_id),
+                    dict(u=candidate['u'],d=candidate['d'],base_u=current['u'],base_d=current['d'],
+                        base_Ru=current['Ru'],base_F=current['F'],original_Rd=model['Rd'],
+                        original_F=np.r_[current['Ru'],current['F']],inactive=model['inactive'],
+                        row_weights=row_weights,model_r0=ls.r,D=box_D,free_dofs=free,cauchy_p=candidate['cauchy_p'],cauchy_tail=candidate['cauchy_tail'],actual_p=candidate['p'],actual_p_tail=candidate['p_tail'])))
+                emit(meta)
+                key=(array_id(candidate['u']),array_id(candidate['d']))
+                if key in seen_candidates:
+                    budget.update();radius*=.25;counts['rejections']+=1
+                    emit(dict(event='box_duplicate_candidate_skipped',next_radius=radius,subproblem_updates=budget.updates))
+                    continue
+                seen_candidates.add(key)
+                trial=audit(candidate['u'],candidate['d'],'box_projected_trial')
+                trial['phi'],parts=objective(trial['Ru'],trial['F'],weights)
+                pred=candidate['predicted_reduction'];ared=current['phi']-trial['phi'];rho=ared/pred
+                if not np.isfinite([ared,rho]).all():raise RuntimeError('nonfinite box trust ratio')
+                kept=bool(ared>0 and rho>=.1);next_radius=radius
+                if not kept or rho<.25:next_radius=radius*.25
+                elif rho>.75 and candidate['actual_TR_norm']>=.9*radius:next_radius=min(policy.trust_max_radius,2*radius)
+                emit(dict(event='box_trial_decision',outer=trial['outer'],direction=counts['newton_directions'],
+                    radius=radius,next_radius=next_radius,phi=trial['phi'],mechanics_part=parts[0],damage_part=parts[1],
+                    actual_reduction=ared,predicted_reduction=pred,rho=rho,kept=kept,
+                    selection=candidate['selection'],actual_TR_norm=candidate['actual_TR_norm'],
+                    cauchy_required_bound=candidate['cauchy_required_bound'],model_bound_ratio=candidate['pred_lower']/candidate['cauchy_required_bound'],
+                    subproblem_updates=budget.updates,action_count_upper=budget.used,action_counts=dict(budget.counts)))
+                if next_radius!=radius:budget.update()
+                radius=next_radius;trial['alpha']=None
+                point_snapshot('candidate_after_newton'if kept else'last_rejected_candidate',trial)
+                if kept:current=trial;break
+                counts['rejections']+=1
+                emit(dict(event='work_point_rollback',outer=trial['outer'],restored_outer=current['outer'],restored_phi=current['phi']))
+            emit(dict(event='box_subproblem_end',outer=current['outer'],kept=kept,
+                updates=budget.updates,action_count_upper=budget.used,action_counts=dict(budget.counts)))
+            del ls,J,model
+            if not kept:raise RuntimeError('box subproblem finite update budget exhausted')
+            continue
         kept=False
         for attempt in range(1,policy.trust_trials+1):
             room()

@@ -71,7 +71,7 @@ def marker(out, **values):
 
 
 def trajectory_storage_check(card,out,archive,headroom=False):
-    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9'):return
+    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9','hybrid-cpu-trajectory-v10'):return
     # One scan at step boundaries, not every element/operator call. The live
     # supervisor also scans and final completion has an independent last check.
     from run_hybrid_producer import bytes_under
@@ -89,7 +89,7 @@ def trajectory(card, spec, inputs, out, archive):
     phase = archive / spec["id"]
     phase.mkdir()
     (phase/"states").mkdir()
-    if coupling.mode in ('guarded_vi_newton','guarded_block_newton','joint_projected_trust'):
+    if coupling.mode in ('guarded_vi_newton','guarded_block_newton','joint_projected_trust','box_residual_trust'):
         def save_work_point(tag,point):
             import tempfile
             folder=phase/'unaccepted_work_points';folder.mkdir(exist_ok=True)
@@ -100,7 +100,7 @@ def trajectory(card, spec, inputs, out, archive):
                     parent_id=point['previous_id'],load_id=point['load_id'],
                     f_solve_operation='NA' if point['f_solve'] is None else 'actual_QP',
                     alpha=point.get('alpha'),full_original_QP_map=point.get('full_original_QP_map'),
-                    damage=point['damage'],force={k:point['force'][k] for k in ('force_inf','force_l2','force_scaled','boundary_inf')})
+                    phi=point.get('phi'),damage=point['damage'],force={k:point['force'][k] for k in ('force_inf','force_l2','force_scaled','boundary_inf')})
                 with os.fdopen(fd,'wb') as f:
                     fields=dict(u=point['u'],d=point['d'],A=point['q'].accumulated,
                         r=point['q'].driver,f=point['q'].fatigue,psi=point['psi'],
@@ -113,7 +113,7 @@ def trajectory(card, spec, inputs, out, archive):
             finally:
                 if os.path.exists(name):os.unlink(name)
         backend.unaccepted_point_observer=save_work_point
-        if coupling.mode in ('guarded_block_newton','joint_projected_trust'):
+        if coupling.mode in ('guarded_block_newton','joint_projected_trust','box_residual_trust'):
             import warnings
             warnings.simplefilter('error')
             def save_direction(point,info,vectors):
@@ -130,7 +130,7 @@ def trajectory(card, spec, inputs, out, archive):
                 finally:
                     if os.path.exists(name):os.unlink(name)
             backend.block_direction_observer=save_direction
-        if coupling.mode=='joint_projected_trust':
+        if coupling.mode in ('joint_projected_trust','box_residual_trust'):
             def save_joint_trial(metadata,vectors):
                 import tempfile
                 folder=phase/'unaccepted_work_points';folder.mkdir(exist_ok=True)
@@ -140,13 +140,40 @@ def trajectory(card, spec, inputs, out, archive):
                         np.savez_compressed(f,**vectors,metadata=np.array(json.dumps(dict(metadata,
                             classification='UNACCEPTED_JOINT_TRIAL_BEFORE_EVALUATION_NOT_LABEL'),allow_nan=False)))
                         f.flush();os.fsync(f.fileno())
-                    target='last_mechanical_before_qualification.npz' if metadata.get('kind')=='pivot_qualification' else 'last_joint_trial_before.npz'
+                    target=('last_mechanical_before_qualification.npz' if metadata.get('kind')=='pivot_qualification' else
+                        'last_box_trial_before.npz' if metadata.get('event')=='box_trial_before' else 'last_joint_trial_before.npz')
                     os.replace(name,folder/target)
                 finally:
                     if os.path.exists(name):os.unlink(name)
             backend.joint_trial_observer=save_joint_trial
             backend.mechanics_workspace.qualification_state_observer=lambda meta,vectors:save_joint_trial(
                 dict(meta,parent_id=old.fingerprint(),next_state_index=old.load_index+1),vectors)
+            if coupling.mode=='box_residual_trust':
+                def save_box_model(point,J,row_weights,D,L):
+                    import tempfile
+                    folder=phase/'unaccepted_work_points';folder.mkdir(exist_ok=True)
+                    fd,name=tempfile.mkstemp(prefix='.box-model-',suffix='.npz',dir=folder)
+                    try:
+                        metadata=dict(classification='UNACCEPTED_LINEARIZED_MODEL_NOT_LABEL',
+                            outer=point['outer'],parent_id=point['previous_id'],load_id=point['load_id'],L_upper=L,
+                            save_scope='once per outer subproblem, never every matvec',
+                            model_definition='q(p)=.5||r0+diag(w)Jp||²; fixed computed r0=fl(w*originalF)')
+                        ue=point['u'][backend.kin.element_dofs]
+                        trace_positive=np.column_stack([(lambda strain:(strain[:,0]+strain[:,1])>=0.)(
+                            np.einsum('eij,ej->ei',backend.kin.b_matrices[:,j],ue))for j in range(4)])
+                        with os.fdopen(fd,'wb')as f:
+                            np.savez_compressed(f,J_data=J.data,J_indices=J.indices,J_indptr=J.indptr,
+                                J_shape=np.array(J.shape),row_weights=row_weights,D=D,
+                                original_F=np.r_[point['Ru'],point['F']],model_r0=row_weights*np.r_[point['Ru'],point['F']],
+                                base_u=point['u'],base_d=point['d'],trace_positive=trace_positive,
+                                history_loading=point['q'].driver>old.driver,fatigue_active=point['q'].accumulated>backend.alpha_t,
+                                trial_A=point['q'].accumulated,trial_driver=point['q'].driver,trial_f=point['q'].fatigue,
+                                metadata=np.array(json.dumps(metadata,allow_nan=False)))
+                            f.flush();os.fsync(f.fileno())
+                        os.replace(name,folder/'last_box_model.npz')
+                    finally:
+                        if os.path.exists(name):os.unlink(name)
+                backend.box_model_observer=save_box_model
     store = StateStore(phase/"latest.npz")
     store.initialize(old, context=step_context(card,spec,old,0,dofs,bc))
     shutil.copy2(store.path, phase/"states/state0000.npz")

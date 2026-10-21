@@ -32,9 +32,12 @@ class CouplingSettings:
     trust_initial_radius: float = .1
     trust_max_radius: float = .25
     trust_min_radius: float = 1.e-8
+    subproblem_action_limit: int = 100
+    subproblem_update_limit: int = 16
+    subspace_steps: int = 2
 
     def __post_init__(self):
-        if self.mode not in ('none','projected_anderson','projected_anderson_monotone','guarded_vi_newton','guarded_block_newton','joint_projected_trust'):raise ValueError('unknown coupling policy')
+        if self.mode not in ('none','projected_anderson','projected_anderson_monotone','guarded_vi_newton','guarded_block_newton','joint_projected_trust','box_residual_trust'):raise ValueError('unknown coupling policy')
         if self.mechanics_solver not in ('direct','recycled_gmres'):raise ValueError('unknown mechanics solver')
         for k in ('depth','max_proposals','max_rejections'):
             if type(getattr(self,k)) is not int or not 1<=getattr(self,k)<=5:raise ValueError('unbounded coupling policy')
@@ -46,6 +49,8 @@ class CouplingSettings:
             if type(value) is not int or not 1<=value<=cap:raise ValueError('unbounded reduced coupling policy')
         if type(self.max_newton_directions)is not int or not 1<=self.max_newton_directions<=8:raise ValueError('unbounded Newton directions')
         if type(self.trust_trials)is not int or not 1<=self.trust_trials<=8:raise ValueError('unbounded trust trials')
+        for key,cap in [('subproblem_action_limit',100),('subproblem_update_limit',16),('subspace_steps',2)]:
+            if type(getattr(self,key))is not int or not 1<=getattr(self,key)<=cap:raise ValueError('unbounded residual LS policy')
         if (not np.isfinite([self.trust_initial_radius,self.trust_max_radius,self.trust_min_radius]).all()
             or not 0<self.trust_min_radius<=self.trust_initial_radius<=self.trust_max_radius<=.25):
             raise ValueError('invalid joint trust radii')

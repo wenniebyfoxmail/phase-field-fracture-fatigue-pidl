@@ -126,5 +126,5 @@ def block_direction(backend,old,point,dofs,settings,policy,call,remaining,emit,*
         settings.damage_gradient_scale,settings,policy.block_relative_tolerance,
         call,remaining,emit,observer)
     if not return_model:return direction,info
-    return direction,info,dict(A=A,B=Bu,C=Cu,D=D,Ru=Ru,F=F,inactive=inactive,
+    return direction,info,dict(A=A,B=Bu,C=Cu,D=D,Ru=Ru,Rd=gradient,F=F,inactive=inactive,
         free_dofs=U,du=saved['delta_u_free'])

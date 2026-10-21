@@ -1,5 +1,7 @@
 # Research Frontier
 
+> S04 current D19 (2026-10-21): one explicit box residual-LS trust subproblem candidate is in implementation/exact review; no R007 run yet. Original physical acceptance/history and all prior negative results remain. [Canonical track](experiments/s04_fem_pidl_field_alignment_track.md).
+
 **规则**：此文件是“一屏决策前线”，不是历史日志。Current Question 只能 1 个，Active Branches 最多 3 个；关闭分支移入日志或 registry。
 **Owner**: Mac-PIDL | **Updated**: 2026-08-06
 
