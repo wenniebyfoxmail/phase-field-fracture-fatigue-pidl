@@ -39,3 +39,5 @@ FEM窗口独立静态复核进一步将Newton调用改为本地已查定义所�
 实际CITPC12函数核对确认Newton声明7输出；新disabled单步入口据此保留原native body的7输出调用，既有6输出调用仍是MATLAB允许的输出前缀。没有执行MATLAB来验证其实际行为。
 
 独立快照命令失败且零启动准备窗口耗尽，原生启动停止。MATLAB checkcode/28 mock、MEX构建、U0 admission、两个disabled控制、四个真实冻结场比较均未运行；全部相关源码仍prepared-only。最终diff格式检查通过，仅证明文本补丁格式。详见[本次结果与精确证据范围](STAGE_A_RESULT_20261022.md)及本次单列源码锁；本次不支持科学改善或进入阶段B。
+
+后续原预算内单次机械续接已修复git快照、核验10输入和36代码文件；首次PowerShell启动包装退出且无attempt/MATLAB/build输出。只读Parser检查watchdog无语法错误，但实际Job/C#执行仍无证据；现场有效策略Restricted，入口策略兼容和进程级错误捕获不足。未重发，未把WMI ReturnValue0算作MATLAB成功。Python110+35结果不变；新增两个driver仅静态复核。[续接记录](STAGE_A_CONTINUATION_20261022.md)。

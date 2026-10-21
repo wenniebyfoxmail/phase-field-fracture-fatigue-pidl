@@ -113,3 +113,7 @@ raw单独修复贡献0物理轨迹；共同设置包、耦合/停止包的效应
 本次case为 `local_archive/experiments/S04-E036/stage_a_20261021_2142`；启动记录21:42:35Z，总截止00:42:35Z，启动前设置零启动准备1200秒上限。现有共同前态及四组s3/s4文件已盘点，实际CITPC12源/MEX/编译器/CHOLMOD路径已只读核对。独立快照命令因PowerShell的git archive参数解析错误退出；后续23:28:07Z读时已越过该零启动上限，因此本次原生启动停止，未延长或重开。23:31:38Z只读复核：新任务目录无文件，MATLAB/Python/ifx进程列表为空。旧source及历史数据未改写。
 
 本地轻量实现检查已运行，具体批次、字节身份与结果见 [阶段A记录](STAGE_A_RESULT_20261022.md)。新MATLAB harness、显式MEX构建与外部超时控制仅完成源码准备/静态复核。实际编译、MATLAB checkcode/mock、U0原生入场、disabled双臂及四组真实冻结场比较均未执行。该结果是启动准备失败/停止，不是FEM数值负结果，也不允许进入阶段B；当前D2仍是实际同状态一致性待核验。
+
+### 同范围机械续接结果
+
+HQ以原直接人方3小时授权为基础，前瞻允许一次≤300秒快照修复，原截止00:42:35Z不变。正确git参数的隔离快照一次成功（producer8.493秒），10输入SHA与36文件代码包逐项匹配。第一次prepare启动只留下WMI创建收据，wrapper已退出，没有watchdog attempt、MATLAB或build输出。后续只读诊断确认PowerShell Restricted、脚本解析无错误；证据支持脚本入口策略阻断，具体进程异常未捕获。按本次首次控制故障停止条件未重发/改策略，无MATLAB/MEX/FEM/训练。D2仍缺真实同状态证据；[续接范围、完整失败链与下一缺项](STAGE_A_CONTINUATION_20261022.md)。

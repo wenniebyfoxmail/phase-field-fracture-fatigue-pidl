@@ -1,5 +1,12 @@
 # Stage A producer harness · prepared 2026-10-21
 
+Subsequent same-budget continuation staged the snapshot and code, but its first
+PowerShell wrapper exited before a watchdog attempt or MATLAB/build output was
+recorded. The producer's effective policy was Restricted; the exact child error
+was not captured. No execution-policy change or relaunch occurred. See
+`docs/research/S04/S04-E036/STAGE_A_CONTINUATION_20261022.md`. The two new drivers
+remain prepared source; neither has MATLAB execution evidence.
+
 **Status update, 2026-10-22:** the root executor stopped this attempt after
 the 1,200-second zero-start preflight limit was exceeded. The source-snapshot
 command failed before any native computation. No MEX compilation, MATLAB

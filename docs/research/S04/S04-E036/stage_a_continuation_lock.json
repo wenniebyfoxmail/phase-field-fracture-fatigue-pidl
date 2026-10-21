@@ -1,0 +1,26 @@
+{
+  "schema": "e036-stage-a-continuation-source-v1",
+  "base_commit": "962f7340120f9deff9c924c0a56675448dc9cd07",
+  "status": "snapshot_verified_first_control_launch_failed_native_unexecuted",
+  "files": {
+    "tools/s04_e036_fem/e036_stage_a_prepare_driver.m": "a00298bef60167bcc20d939245687e05d56ae10d8ffa071df0fdde3b3201eba4",
+    "tools/s04_e036_fem/e036_stage_a_native_driver.m": "f0a57e9a0419bf509b7355c676ea1fb9d46e761768143598b3d316274a686122",
+    "tools/s04_e036_fem/STAGE_A_HARNESS.md": "b7e64cfbbc930b144ccaa6c05c787c84fc174949c903e522f8ea832dfd97074a",
+    "docs/research/S04/S04-E036/STAGE_A_CONTINUATION_20261022.md": "5e29a738d63a643806f6dfc187fe40f1fbdbfa9820c67cd8b0c8b8f5562e6b10"
+  },
+  "deployment_payloads": {
+    "stage_a_code_962f7340.zip": "44349d7b1b8c7f6ec0160d02439ac212bfa5629001980e7f65b452d59c7331f3",
+    "stage_a_code_962f7340_manifest.json": "9d2fe9376324ef98aad0fa19142626dff02095b148c4a149a67f22fc3020b712",
+    "prepare_01_payload.zip": "8ef267e506dba2b307d042dc715bc8736704c2889ba18e7f806a9b61c9c198d5",
+    "prepare_01_payload_receipt.json": "64750d8dcc4f342a5947297037efabd4337074e7e252405cdee07074dcc0394b",
+    "prepare_01_manifest.json": "cdb2c13a37fdfe8222354f73dc37224a9db4304e33e92c5f154f85b4b3bfc95e",
+    "prepare_01_config.json": "d4fbac12ef2b2b0bb117d8174d6cdc3e22310d94a0066231b7bdee6f7e4aa6ea",
+    "prepare_01_entry.m": "2ed5311d8cf03370795ea9cf598bd88019e231ab53ca293847910511fe6f1cbe",
+    "launch_prepare_01.ps1": "0ebb8ed5469ba590a631cec1353b13d153238b53d87ef6acc00c55ecbea2ea39",
+    "stage_snapshot_continuation_01.ps1": "8cdb2a31534d845a6637220eb83c83cf42f6ed03d6d865e03b1927f1c96a0bbe"
+  },
+  "runtime_evidence": "No watchdog attempt; wrapper gone; no native process/output/build. Watchdog parser errors empty; effective policy Restricted. Exact wrapper exception/exit unknown.",
+  "prepared_driver_deployed": true,
+  "native_driver_deployed": false,
+  "native_execution": false
+}
