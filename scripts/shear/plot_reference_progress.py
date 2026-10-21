@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection
 from scipy.io import loadmat
 
-p=argparse.ArgumentParser();p.add_argument('--run',type=Path,required=True);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--run',type=Path,required=True);p.add_argument('--fem',type=Path,required=True);a=p.parse_args()
 r=a.run;v=json.loads((r/'verification/reference_verification.json').read_text())
 with (r/'verification/verified_states.csv').open() as f:
  rows=[{k:float(value) for k,value in x.items() if k!='verified'} for x in csv.DictReader(f)]
@@ -37,7 +37,7 @@ fig.suptitle(f'{r.name}: {status}',fontsize=11)
 for ext in ['png','pdf']:fig.savefig(out/f'shear_reference_progress.{ext}',dpi=180)
 plt.close(fig)
 
-m=loadmat(r/'retrieved/fem/mesh.mat');s=loadmat(r/f'retrieved/fem/state_{n:03d}.mat')
+m=loadmat(a.fem/'mesh.mat');s=loadmat(a.fem/f'state_{n:03d}.mat')
 x=m['nodes'][:,:2];q=m['quads'].astype(int)-1;nn=len(x);uv=s['displ'].ravel()
 fields=[uv[:nn][q].mean(1),uv[nn:][q].mean(1),s['p_field'].ravel()[q].mean(1)]
 fig,axs=plt.subplots(1,3,figsize=(10.8,3.5),constrained_layout=True)
@@ -50,7 +50,7 @@ for ax,values,label in zip(axs,fields,['u_x','u_y','Damage alpha']):
 fig.suptitle(f'Highest accepted shear state: U={u[-1]:.2f}; {status}',fontsize=11)
 for ext in ['png','pdf']:fig.savefig(out/f'last_valid_shear_fields.{ext}',dpi=180)
 plt.close(fig)
-common=f'''Sources: {r.name}/verification/reference_verification.json and verified_states.csv, retrieved/fem/mesh.mat and state_001 through state_{n:03d}.mat. No PIDL output exists in this plot. All quantities use normalized model units; time is wall seconds.
+common=f'''Sources: {r.name}/verification/reference_verification.json and verified_states.csv; {a.fem}/mesh.mat and state_001 through state_{n:03d}.mat. No PIDL output exists in this plot. All quantities use normalized model units; time is wall seconds.
 Selection: every verified loaded state for curves/costs; highest accepted U={u[-1]:.17g} for fields, irrespective of appearance. Status: {status}. Failed states are excluded from response/field panels and separately marked in cost only when a failed-state file supplies elapsed time. A supervisor-only kill may lack such a vector/time; absence of an orange bar is not success.
 Evidence: final residual sum maximum {max(z['res_u']+z['res_pf'] for z in rows):.12g}; maximum nodal damage decrease {max(z['max_healing'] for z in rows):.12g}. Original checks and precrack retained. Force-vector verification does not rerun native assembly. No physical validation or FEM/PIDL agreement follows.
 '''
