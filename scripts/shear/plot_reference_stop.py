@@ -5,11 +5,11 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.collections import PolyCollection
 
 R=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E035/runs/S04-E035-R006')
 V=json.loads((R/'verification/reference_verification.json').read_text())
 with (R/'verification/verified_states.csv').open() as f:rows=[{k:float(v) for k,v in r.items() if k!='verified'} for r in csv.DictReader(f)]
-before=json.loads((R.parent/'S04-E035-R004/analysis/metrics.json').read_text())
 # Read the scalar from the original saved field to avoid ambiguous JSON aliases.
 from scipy.io import loadmat
 s=loadmat(R.parent/'S04-E035-R004/retrieved/fem/failed_state_001.mat');old_healing=float(s['max_healing'].item())
@@ -49,3 +49,27 @@ with (out/'README_analysis.md').open('a') as f:f.write('\n## Reference verificat
 for stem in ['shear_response','shear_energies','shear_damage','shear_displacement']:
  with (out/f'figures/{stem}.md').open('a') as f:f.write(f'\nMeasured result: raw-array verification confirms6/30accepted states throughU=.18; U=.21 rejected at native displacement Newton limit500. AtU=.18 topRx={rows[-1]["Rx_top"]:.12g}, E_el={rows[-1]["E_el"]:.12g}, E_d={rows[-1]["E_d"]:.12g}. All shown accepted states have unchanged residual/bounds/healing checks satisfied and alpha1 on the251-node initial crack. No PIDL state exists; these fields/curves cannot show cross-solver agreement or full-path crack evolution.\n')
 print(json.dumps({'first_state_healing':rows[0]['max_healing'],'accepted_prefix':len(rows),'failed_step_seconds':failed['step_seconds']},indent=2))
+
+# Largest accepted U is a declared diagnostic selection, not the best agreement.
+m=loadmat(R/'retrieved/fem/mesh.mat');last=loadmat(R/'retrieved/fem/state_006.mat')
+x=m['nodes'][:,:2];q=m['quads'].astype(int)-1;n=len(x);u=last['displ'].ravel()
+fields=[u[:n][q].mean(1),u[n:][q].mean(1),last['p_field'].ravel()[q].mean(1)]
+fig,axs=plt.subplots(1,3,figsize=(10.8,3.5),constrained_layout=True)
+for ax,values,label in zip(axs,fields,['u_x','u_y','Damage alpha']):
+    damage=label=='Damage alpha';b=max(float(abs(values).max()),1e-8)
+    art=PolyCollection(x[q],array=values,cmap='viridis' if damage else 'RdBu_r',edgecolors='none',linewidths=0,antialiased=False,rasterized=True)
+    art.set_clim(*( (0,1) if damage else (-b,b) ));ax.add_collection(art)
+    ax.set(xlim=(-.5,.5),ylim=(-.5,.5),aspect='equal',xlabel='x',ylabel='y',title=label)
+    fig.colorbar(art,ax=ax,shrink=.8,extend='both')
+fig.suptitle('Last accepted shear state: U=0.18 (6/30 states); next U=0.21 rejected',fontsize=11)
+for ext in ['png','pdf']:fig.savefig(out/f'figures/last_valid_shear_fields.{ext}',dpi=180)
+plt.close(fig)
+(out/'figures/last_valid_shear_fields.md').write_text("""# Last accepted shear state
+
+Purpose: display actual low-load shear fields, without presenting the failed next point as equilibrated.
+Source: S04-E035-R006/retrieved/fem/state_006.mat and mesh.mat; numerical verification at ../../verification/reference_verification.json.
+Selection: highest accepted U=.18; all6accepted states remain in scalar tables. No PIDL state exists.
+Panels: Q4 nodal means of ux,uy,alpha. Signed displacement ranges symmetric per component; damage range[0,1]. No clipping, smoothing, deformation amplification or polygon edge rendering. Domain/material/load are normalized.
+See: valid horizontal/vertical displacement response with the pre-existing crack maintained.
+Therefore: a6/30numerical prefix exists. This does not show a full crack-growth trajectory or FEM/PIDL agreement. U=.21 failed displacement Newton, and its field is not shown here as a valid reference.
+""")
