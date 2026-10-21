@@ -77,7 +77,10 @@ def main():
             for k,v in metrics(fa,a,area,mask).items():row[f'{region}_{k}']=v
         timeline.append(row);previous_fem,previous_pidl=fa,a
     cyclemax=sio.loadmat(FEM/'psi_fields/cycle_0001.mat')['psi_elem'].ravel()
-    audit=dict(initial_damage=initial,initial_fatigue_both_zero=bool(np.max(p0['hist_fat_elem'])==0),
+    with h5py.File(FEM/'initial_state_metadata.mat') as h:
+        fem_initial_A=float(h['initial_state_metadata/alpha_bar_initial'][0,0])
+    audit=dict(initial_damage=initial,pidl_initial_saved_fatigue_zero=bool(np.max(p0['hist_fat_elem'])==0),
+        fem_initial_fatigue_zero_from_metadata=bool(fem_initial_A==0),
         first_cycle_fatigue_degradation_unity_both=bool(timeline[0]['fem_f_min']==1 and timeline[0]['pidl_f_min']==1),
         fem_cycle_max_raw_vs_exact_c1_peak_relative_l2=float(np.linalg.norm(cyclemax-rawmean)/np.linalg.norm(rawmean)),
         pidl_exported_raw_vs_strain_reconstructed_relative_l2=float(np.linalg.norm(pd['psi_raw_elem']-praw)/np.linalg.norm(praw)),
