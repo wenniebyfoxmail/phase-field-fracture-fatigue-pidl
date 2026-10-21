@@ -1,0 +1,206 @@
+[
+    {
+        "name":  "00_AUTHORITY_AND_INTENT.md",
+        "bytes":  1641,
+        "sha256":  "2fe005e9b67d41ba99f071df974f7448027c9dda6e59840faefe2ab192a4d38b",
+        "last_write_utc":  "2026-10-21T00:24:54.9513250Z"
+    },
+    {
+        "name":  "admission.child.exit.json",
+        "bytes":  1192,
+        "sha256":  "155dcdcb52e842ce4d481ccbcaffe3e23ae6942354d5eb57fe6e114f22c25d42",
+        "last_write_utc":  "2026-10-21T00:29:39.0447869Z"
+    },
+    {
+        "name":  "admission.child.exit.json.claim",
+        "bytes":  183,
+        "sha256":  "9a1e6aa56e81d10af8ec531b06f8e6fd635f5469d717465f3b0bb6f21107e852",
+        "last_write_utc":  "2026-10-21T00:29:13.5412323Z"
+    },
+    {
+        "name":  "admission.child.exitcode.txt",
+        "bytes":  2,
+        "sha256":  "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "last_write_utc":  "2026-10-21T00:29:39.0768111Z"
+    },
+    {
+        "name":  "admission.child.stderr.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "last_write_utc":  "2026-10-21T00:29:13.5412323Z"
+    },
+    {
+        "name":  "admission.child.stdout.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "last_write_utc":  "2026-10-21T00:29:13.5412323Z"
+    },
+    {
+        "name":  "admission.controller.stderr.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "last_write_utc":  "2026-10-21T00:29:13.3990403Z"
+    },
+    {
+        "name":  "admission.controller.stdout.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "last_write_utc":  "2026-10-21T00:29:13.3990403Z"
+    },
+    {
+        "name":  "admission_receipt_remote.json",
+        "bytes":  80603,
+        "sha256":  "3b252adffed58af899052aadce3707bea9a0eff2717a705cb9390adeaa75b5e6",
+        "last_write_utc":  "2026-10-21T00:29:38.9700121Z"
+    },
+    {
+        "name":  "admission_wrapper_receipt_remote.json",
+        "bytes":  3820,
+        "sha256":  "1bdb8d05e0daba2db94bc3a38989890b90c03f674602bacc6f724024836ff1fa",
+        "last_write_utc":  "2026-10-21T00:29:39.2654424Z"
+    },
+    {
+        "name":  "approval_hq.json",
+        "bytes":  4797,
+        "sha256":  "2780df23b453f573493e8f58d0394819a3dceee8f33bb6a70c95934e892dd3e6",
+        "last_write_utc":  "2026-10-21T00:29:21.1996260Z"
+    },
+    {
+        "name":  "environment.context.json",
+        "bytes":  4527,
+        "sha256":  "a2213dd8744bcfd7b017a3b4d3fdca5c073ba5d9405ad6bed17941109e267929",
+        "last_write_utc":  "2026-10-21T00:29:17.8989319Z"
+    },
+    {
+        "name":  "environment.exit.json",
+        "bytes":  5967,
+        "sha256":  "0209a4c39f3c031d7a31eeac77ba9577a9c6a9e28901f4bfc87a63cfd608a8ad",
+        "last_write_utc":  "2026-10-21T00:29:21.0473657Z"
+    },
+    {
+        "name":  "environment.exit.json.claim",
+        "bytes":  179,
+        "sha256":  "3c8c4915a210de6e47c79474f164309d69a18973cac825bf4254bc497f0205d5",
+        "last_write_utc":  "2026-10-21T00:29:16.9819420Z"
+    },
+    {
+        "name":  "environment.exitcode.txt",
+        "bytes":  2,
+        "sha256":  "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "last_write_utc":  "2026-10-21T00:29:21.0570882Z"
+    },
+    {
+        "name":  "environment.stderr.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "last_write_utc":  "2026-10-21T00:29:16.9819420Z"
+    },
+    {
+        "name":  "environment.stdout.log",
+        "bytes":  318,
+        "sha256":  "9759858513955a528d0d8441d56076c0cc8d6d7f7a6a86d93e2805d3a4f8b0d2",
+        "last_write_utc":  "2026-10-21T00:29:20.6155165Z"
+    },
+    {
+        "name":  "final_task_status.json",
+        "bytes":  804,
+        "sha256":  "5ec11be2eebdaf279b672470561387b4605ceb2a10444034a07404e2081ee47b",
+        "last_write_utc":  "2026-10-21T00:32:15.2747293Z"
+    },
+    {
+        "name":  "launch_gpu_server.cmd",
+        "bytes":  659,
+        "sha256":  "74792a2c742171c945564a826cb0adf9280a2db6268bf6ee2f3194cf2abe373c",
+        "last_write_utc":  "2026-10-21T00:23:08.8047867Z"
+    },
+    {
+        "name":  "launch_receipt_remote.json",
+        "bytes":  1658,
+        "sha256":  "53ab5e6274adcb97e32ae7f204358772df09bbdbdc5f16cd96ea7b3945a22a3c",
+        "last_write_utc":  "2026-10-21T00:29:52.7985555Z"
+    },
+    {
+        "name":  "package_clock_ledger.json",
+        "bytes":  564,
+        "sha256":  "0d81e76ae1ed1f92da9ef0d39790310375000ae2a9ad8d84d337f7eaf339a678",
+        "last_write_utc":  "2026-10-21T00:24:54.9472725Z"
+    },
+    {
+        "name":  "preflight.context.json",
+        "bytes":  4517,
+        "sha256":  "f8791bd74b05d5b3435b651ab3f6c611387947339eaa0bba8930b0f397b00d25",
+        "last_write_utc":  "2026-10-21T00:29:22.0596590Z"
+    },
+    {
+        "name":  "preflight.exit.json",
+        "bytes":  5955,
+        "sha256":  "17eabf64fdf62e53899ddd1cef4727c91af276af9dabcb8324164c0cbe7f581d",
+        "last_write_utc":  "2026-10-21T00:29:37.8112185Z"
+    },
+    {
+        "name":  "preflight.exit.json.claim",
+        "bytes":  177,
+        "sha256":  "7e8a15d85e5206eca2c7c57c39e70564cc0968d0afd4d9a91dc0ea8d2e93c3c4",
+        "last_write_utc":  "2026-10-21T00:29:21.3100636Z"
+    },
+    {
+        "name":  "preflight.exitcode.txt",
+        "bytes":  2,
+        "sha256":  "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "last_write_utc":  "2026-10-21T00:29:37.8112185Z"
+    },
+    {
+        "name":  "preflight.stderr.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "last_write_utc":  "2026-10-21T00:29:21.3100636Z"
+    },
+    {
+        "name":  "preflight.stdout.log",
+        "bytes":  3618,
+        "sha256":  "b84b07d0551886156a912ca69525a8a56ca444f9b5a7c8479b0e43d3c899b965",
+        "last_write_utc":  "2026-10-21T00:29:37.2588945Z"
+    },
+    {
+        "name":  "register_and_start.ps1",
+        "bytes":  12044,
+        "sha256":  "15f4dac6e79b213ddd544c8256e43702cd153dc174ee7d8c9ecb6b268cd8ae5f",
+        "last_write_utc":  "2026-10-21T00:24:32.9186494Z"
+    },
+    {
+        "name":  "scientific_worker.context.json",
+        "bytes":  3539,
+        "sha256":  "aa40aef9b8a0f9a2ed0b91939206a6891d73703d49abc87d463757aaaae3a30c",
+        "last_write_utc":  "2026-10-21T00:29:49.4421984Z"
+    },
+    {
+        "name":  "scientific_worker.exit.json",
+        "bytes":  4990,
+        "sha256":  "e1cb077e04468bbcae7c2f3b822358a2bab45e2a245bc2aca79d712460ac6099",
+        "last_write_utc":  "2026-10-21T00:29:49.5046451Z"
+    },
+    {
+        "name":  "scientific_worker.exit.json.claim",
+        "bytes":  185,
+        "sha256":  "7fd79757daa9e5333eaf636a80ce5c5ee64344b0ac0b556437ed908d80250ae2",
+        "last_write_utc":  "2026-10-21T00:29:49.2513621Z"
+    },
+    {
+        "name":  "scientific_worker.exitcode.txt",
+        "bytes":  4,
+        "sha256":  "a5e45837a2959db847f7e67a915d0ecaddd47f943af2af5fa6453be497faabca",
+        "last_write_utc":  "2026-10-21T00:29:49.5968810Z"
+    },
+    {
+        "name":  "scientific_worker.stderr.log",
+        "bytes":  1077,
+        "sha256":  "6d6aa13b3d004d9aa81e23761f65c704af1126c2cad90aea143456482446018a",
+        "last_write_utc":  "2026-10-21T00:29:49.4720642Z"
+    },
+    {
+        "name":  "scientific_worker.stdout.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "last_write_utc":  "2026-10-21T00:29:49.2871305Z"
+    }
+]

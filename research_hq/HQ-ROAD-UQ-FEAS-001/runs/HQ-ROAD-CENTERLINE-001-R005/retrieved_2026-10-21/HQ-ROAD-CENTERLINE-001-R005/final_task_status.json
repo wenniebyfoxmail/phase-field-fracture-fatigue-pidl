@@ -1,0 +1,20 @@
+{
+    "captured_utc":  "2026-10-21T00:32:15.0370512+00:00",
+    "task_name":  "HQ-ROAD-CENTERLINE-001-R005-20261021",
+    "state":  "Ready",
+    "last_run_time":  "2026-10-21T01:29:48.0000000+01:00",
+    "last_task_result":  125,
+    "number_of_missed_runs":  0,
+    "principal":  {
+                      "user_id":  "xw436",
+                      "logon_type":  "Interactive",
+                      "run_level":  "Limited"
+                  },
+    "actions":  [
+                    {
+                        "execute":  "cmd.exe",
+                        "arguments":  "/d /c C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R005\\launch_gpu_server.cmd"
+                    }
+                ],
+    "triggers":  1
+}

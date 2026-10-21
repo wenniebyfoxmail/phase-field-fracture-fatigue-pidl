@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "status": "COMPLETE_ZERO",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R005",
+  "role": "admission_child",
+  "invocation_sha256": "19993ad0df08c5586a6e5ec8e5f8930af63b0767f31d31f3ded2c593fa8b5ee2",
+  "command_sha256": "ac9b2ea1ba6986b20b6e1076eda378beed59847464c4f728b6080dcbe872362d",
+  "code_snapshot": "bb8b7d330812f1c834008c3d38484b5e27d33aeb2e0b6d3a36138ec3c3b62d8f",
+  "data_lock_sha256": "44acdf7ef254091e24fffa3d470efe4ec0abe2f32a50a9f4d807a878f0574b2a",
+  "claim_sha256": "9a1e6aa56e81d10af8ec531b06f8e6fd635f5469d717465f3b0bb6f21107e852",
+  "child_exit_code": 0,
+  "controller_exit_code": 0,
+  "timed_out": false,
+  "timeout_seconds_at_start": 83.0,
+  "pid": 39744,
+  "kill": null,
+  "launch_error": null,
+  "context": null,
+  "context_sha256": null,
+  "context_ownership": null,
+  "context_error": null,
+  "started_utc": "2026-10-21T00:29:13.541232+00:00",
+  "ended_utc": "2026-10-21T00:29:39.029046+00:00",
+  "elapsed_seconds": 25.484,
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "status": "FAIL_SCHEDULED_CONTEXT",
+  "run_id": "HQ-ROAD-CENTERLINE-001-R005",
+  "observed_utc": "2026-10-21T00:29:49.384180+00:00",
+  "sys_executable": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+  "sys_prefix": "C:\\Users\\xw436\\pavetrack_env",
+  "user": "xw436",
+  "pid": 46488,
+  "parent_pid": 33348,
+  "argv_sha256": "cdc3957f00cd73d6a1c506b1dd4d2cd93f73d67b97e62d5c6f4fbd2f35184e84",
+  "context_receipt_path": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R005\\scientific_worker.context.json",
+  "cwd": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+  "pythonpath_before": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+  "sys_path_before": [
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+    "C:\\Users\\xw436\\pavetrack_env",
+    "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+  ],
+  "dependency_root": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+  "target": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_runner.py",
+  "pythonpath_after": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+  "sys_path_after": [
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+    "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+    "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+    "C:\\Users\\xw436\\pavetrack_env",
+    "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+  ],
+  "specs": [
+    {
+      "name": "skimage",
+      "found": true,
+      "origin": null,
+      "submodule_search_locations": [
+        "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage"
+      ]
+    },
+    {
+      "name": "skimage.morphology",
+      "found": false,
+      "origin": null,
+      "submodule_search_locations": null
+    },
+    {
+      "name": "centerline_core",
+      "found": true,
+      "origin": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\centerline_core.py",
+      "submodule_search_locations": null
+    },
+    {
+      "name": "d5_runner",
+      "found": true,
+      "origin": "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_runner.py",
+      "submodule_search_locations": null
+    }
+  ],
+  "error": "ModuleNotFoundError: No module named 'skimage.morphology'"
+}

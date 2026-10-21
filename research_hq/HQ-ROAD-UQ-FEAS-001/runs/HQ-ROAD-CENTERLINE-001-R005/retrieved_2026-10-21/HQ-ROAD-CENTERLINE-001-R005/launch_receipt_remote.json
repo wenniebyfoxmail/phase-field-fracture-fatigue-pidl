@@ -1,0 +1,32 @@
+{
+    "status":  "LAUNCH_STATE_UNKNOWN_NO_REPEAT",
+    "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+    "task_name":  "HQ-ROAD-CENTERLINE-001-R005-20261021",
+    "last_task_result":  125,
+    "task_state":  "Ready",
+    "automatic_trigger_count":  1,
+    "action_execute":  "cmd.exe",
+    "action_arguments":  "/d /c C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R005\\launch_gpu_server.cmd",
+    "task_principal_user_id":  "xw436",
+    "task_principal_logon_type":  "Interactive",
+    "task_principal_run_level":  "Limited",
+    "launch_sha256":  "74792a2c742171c945564a826cb0adf9280a2db6268bf6ee2f3194cf2abe373c",
+    "admission_receipt_sha256":  "3b252adffed58af899052aadce3707bea9a0eff2717a705cb9390adeaa75b5e6",
+    "admission_watchdog_receipt_sha256":  "1bdb8d05e0daba2db94bc3a38989890b90c03f674602bacc6f724024836ff1fa",
+    "scientific_worker_invocation_sha256":  "8b9f61903cfce888291691db8f03b05805c252a86b66a4b1e53a81fa16f44f9a",
+    "processes":  [
+
+                  ],
+    "output_exists":  false,
+    "runner_receipt_exists":  false,
+    "launched_iso":  "2026-10-21T01:29:52.7899175+01:00",
+    "package_clock_start_utc":  "2026-10-20T21:59:35.0000000+00:00",
+    "package_deadline_utc":  "2026-10-21T01:59:35.0000000+00:00",
+    "package_elapsed_seconds_at_launch":  9017.79,
+    "package_remaining_seconds_at_launch":  5382.206,
+    "task_limit_safety_seconds":  120,
+    "task_execution_limit_seconds":  5268,
+    "task_limit_configured_utc":  "2026-10-21T00:29:52.7943730+00:00",
+    "scientific_attempt":  1,
+    "road420_access":  false
+}

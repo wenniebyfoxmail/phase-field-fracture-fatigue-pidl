@@ -1,0 +1,779 @@
+{
+    "status":  "PASS_ADMISSION_READY_TO_LAUNCH",
+    "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+    "started_iso":  "2026-10-21T01:29:13.9220079+01:00",
+    "r005_check_number":  1,
+    "r005_check_cap":  1,
+    "r001_checks_preserved":  3,
+    "r001_approx_seconds_preserved":  45.544,
+    "r002_checks_preserved":  1,
+    "r002_approx_seconds_preserved":  12.359,
+    "r003_checks_preserved":  1,
+    "r003_scientific_attempts_preserved":  1,
+    "r003_worker_seconds_preserved":  4.313,
+    "r004_admission_checks_preserved":  1,
+    "r004_admission_seconds_preserved":  8.25,
+    "r004_scientific_attempts_preserved":  0,
+    "check_limit_seconds":  90,
+    "package_clock_start_utc":  "2026-10-20T21:59:35.0000000+00:00",
+    "package_deadline_utc":  "2026-10-21T01:59:35.0000000+00:00",
+    "package_elapsed_seconds_at_check_start":  8978.969,
+    "package_remaining_seconds_at_check_start":  5421.031,
+    "scientific_execution_started":  false,
+    "training_steps":  0,
+    "optimizer_steps":  0,
+    "road420_access":  false,
+    "task_name":  "HQ-ROAD-CENTERLINE-001-R005-20261021",
+    "gpu_query_raw":  "0, GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7, NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition, 97887, 97269, 0",
+    "gpu_compute_rows_raw":  [
+                                 "41688, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                 "12948, C:\\Windows\\System32\\dwm.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                 "10144, C:\\Windows\\explorer.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                 "37696, C:\\Windows\\System32\\LogonUI.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                 "37784, C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                 "13992, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                 "52308, C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                 "23540, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7"
+                             ],
+    "gpu_process_classification":  [
+                                       {
+                                           "raw":  "41688, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "pid":  41688,
+                                           "nvidia_process_path":  "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+                                           "used_gpu_memory":  "[N/A]",
+                                           "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "observed_name":  "ChatGPT.exe",
+                                           "observed_executable_path":  "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+                                           "observed_command_line":  "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe\" --type=utility --utility-sub-type=on_device_model.mojom.OnDeviceModelService --lang=en-GB --service-sandbox-type=on_device_model_execution --video-capture-use-gpu-memory-buffer --standard-schemes=app,codex-sandbox --service-worker-schemes=codex-sandbox --secure-schemes=app,codex-sandbox --fetch-schemes=app,codex-sandbox --cors-schemes=codex-sandbox --streaming-schemes=app,codex-sandbox --no-pre-read-main-dll --metrics-shmem-handle=8404,i,4976103046745307030,16007858044405259040,524288 --field-trial-handle=2292,i,14548207567445739071,15570621355463243648,262144 --enable-features=ReportStuckThrottle --disable-features=DropInputEventsWhilePaintHolding,WebUIOmniboxAimPopup,WebUIOmniboxPopup --variations-seed-version --pseudonymization-salt-handle=2304,i,5173299815727068363,3116719476200994042,4 --trace-process-track-uuid=3190709020982419907 --mojo-platform-channel-handle=6580 /prefetch:14",
+                                           "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                       },
+                                       {
+                                           "raw":  "12948, C:\\Windows\\System32\\dwm.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "pid":  12948,
+                                           "nvidia_process_path":  "C:\\Windows\\System32\\dwm.exe",
+                                           "used_gpu_memory":  "[N/A]",
+                                           "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "observed_name":  "dwm.exe",
+                                           "observed_executable_path":  "C:\\Windows\\system32\\dwm.exe",
+                                           "observed_command_line":  "\"dwm.exe\"",
+                                           "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                       },
+                                       {
+                                           "raw":  "10144, C:\\Windows\\explorer.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "pid":  10144,
+                                           "nvidia_process_path":  "C:\\Windows\\explorer.exe",
+                                           "used_gpu_memory":  "[N/A]",
+                                           "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "observed_name":  "explorer.exe",
+                                           "observed_executable_path":  "C:\\Windows\\Explorer.EXE",
+                                           "observed_command_line":  "C:\\Windows\\Explorer.EXE",
+                                           "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                       },
+                                       {
+                                           "raw":  "37696, C:\\Windows\\System32\\LogonUI.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "pid":  37696,
+                                           "nvidia_process_path":  "C:\\Windows\\System32\\LogonUI.exe",
+                                           "used_gpu_memory":  "[N/A]",
+                                           "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "observed_name":  "LogonUI.exe",
+                                           "observed_executable_path":  "C:\\Windows\\system32\\LogonUI.exe",
+                                           "observed_command_line":  "\"LogonUI.exe\" /flags:0x0 /state0:0x86313055 /state1:0x41c64e6d",
+                                           "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                       },
+                                       {
+                                           "raw":  "37784, C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "pid":  37784,
+                                           "nvidia_process_path":  "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+                                           "used_gpu_memory":  "[N/A]",
+                                           "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "observed_name":  "ShellExperienceHost.exe",
+                                           "observed_executable_path":  "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+                                           "observed_command_line":  "\"C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe\" -ServerName:App.AppXtk181tbxbce2qsex02s8tw7hfxa9xb3t.mca",
+                                           "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                       },
+                                       {
+                                           "raw":  "13992, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "pid":  13992,
+                                           "nvidia_process_path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe",
+                                           "used_gpu_memory":  "[N/A]",
+                                           "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "observed_name":  "msedgewebview2.exe",
+                                           "observed_executable_path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe",
+                                           "observed_command_line":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe\" --type=gpu-process --gpu-recent-crash-count=0 --noerrdialogs --user-data-dir=\"C:\\Users\\xw436\\AppData\\Local\\Packages\\MicrosoftWindows.Client.WebExperience_cw5n1h2txyewy\\LocalState\\EBWebView\" --webview-exe-name=Widgets.exe --webview-exe-version=526.21100.10.0 --embedded-browser-webview=1 --gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --startup-read-main-dll --metrics-shmem-handle=1824,i,9485275606638652650,4179444008175639333,262144 --field-trial-handle=1908,i,4250843593300012648,11939050183669061180,262144 --variations-seed-version --pseudonymization-salt-handle=1912,i,2694328131451698760,2256369778985189599,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=1896 /prefetch:2 /pfhostedapp:53eb0394466f78787d875e87e736f51058cb7883",
+                                           "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                       },
+                                       {
+                                           "raw":  "52308, C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "pid":  52308,
+                                           "nvidia_process_path":  "C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe",
+                                           "used_gpu_memory":  "[N/A]",
+                                           "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "observed_name":  "ms-teams.exe",
+                                           "observed_executable_path":  "C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe",
+                                           "observed_command_line":  "\"C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe\" \"C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe\" --previous-app-version=26246.1604.5133.838 --previous-web-client-state=2 --restart-reason=6 --restart-count=3 --previous-app-version=26260.1701.5139.3736 --previous-web-client-state=2",
+                                           "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                       },
+                                       {
+                                           "raw":  "23540, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "pid":  23540,
+                                           "nvidia_process_path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe",
+                                           "used_gpu_memory":  "[N/A]",
+                                           "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                           "observed_name":  "msedgewebview2.exe",
+                                           "observed_executable_path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe",
+                                           "observed_command_line":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe\" --type=gpu-process --gpu-recent-crash-count=0 --gpu-watchdog-timeout-seconds=15 --noerrdialogs --user-data-dir=\"C:\\Users\\xw436\\AppData\\Local\\Packages\\MSTeams_8wekyb3d8bbwe\\LocalCache\\Microsoft\\MSTeams\\EBWebView\" --webview-exe-name=ms-teams.exe --webview-exe-version=26260.1701.5139.3736 --embedded-browser-webview=1 --embedded-browser-webview-dpi-awareness=2 --gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --startup-read-main-dll --metrics-shmem-handle=1800,i,13364549621237584958,12086902224115822915,262144 --field-trial-handle=1904,i,3280044179847944842,4536973500482866880,262144 --enable-features=AutofillReplaceCachedWebElementsByRendererIds,DocumentPolicyIncludeJSCallStacksInCrashReports,PartitionedCookies,PreferredAudioOutputDevices,SharedArrayBuffer,ThirdPartyStoragePartitioning,msAbydos,msAbydosGestureSupport,msAbydosHandwritingAttr,msPageInteractionManagerWebview2,msSingleSignOnOSForPrimaryAccountIsShared,msWebView2EnableDraggableRegions,msWebView2GranularProcessFailedReason,msWebView2SetUserAgentOverrideOnIframes,msWebView2TerminateServiceWorkerWhenIdleIgnoringCdpSessions,msWebView2TextureStream --disable-features=BlockCrossPartitionBlobUrlFetching,BreakoutBoxPreferCaptureTimestampInVideoFrames,UseTerminationStatusMemoryExhaustion,msEnhancedTrackingPreventionEnabled,msWebOOUI --variations-seed-version --pseudonymization-salt-handle=1908,i,3173573255921522261,11766439100202607993,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=1900 /prefetch:2 /pfhostedapp:251127d246dbd34ee3dcef878524dde1d2da99ae",
+                                           "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                       }
+                                   ],
+    "aggregate_free_mib":  97269,
+    "actual_gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+    "gpu_query_exit_code":  0,
+    "gpu_compute_query_exit_code":  0,
+    "c_free_gib":  2881.462,
+    "classification_fixture":  {
+                                   "known_desktop_na":  true,
+                                   "known_desktop_numeric":  false,
+                                   "known_desktop_missing_observed_path":  false,
+                                   "unknown_python_na":  false
+                               },
+    "hostname":  "D-26-09",
+    "gpu":  {
+                "query":  "0, GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7, NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition, 97887, 97269, 0",
+                "compute_processes":  [
+                                          "41688, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                          "12948, C:\\Windows\\System32\\dwm.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                          "10144, C:\\Windows\\explorer.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                          "37696, C:\\Windows\\System32\\LogonUI.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                          "37784, C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                          "13992, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                          "52308, C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                          "23540, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7"
+                                      ],
+                "classifications":  [
+                                        {
+                                            "raw":  "41688, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "pid":  41688,
+                                            "nvidia_process_path":  "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+                                            "used_gpu_memory":  "[N/A]",
+                                            "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "observed_name":  "ChatGPT.exe",
+                                            "observed_executable_path":  "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+                                            "observed_command_line":  "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe\" --type=utility --utility-sub-type=on_device_model.mojom.OnDeviceModelService --lang=en-GB --service-sandbox-type=on_device_model_execution --video-capture-use-gpu-memory-buffer --standard-schemes=app,codex-sandbox --service-worker-schemes=codex-sandbox --secure-schemes=app,codex-sandbox --fetch-schemes=app,codex-sandbox --cors-schemes=codex-sandbox --streaming-schemes=app,codex-sandbox --no-pre-read-main-dll --metrics-shmem-handle=8404,i,4976103046745307030,16007858044405259040,524288 --field-trial-handle=2292,i,14548207567445739071,15570621355463243648,262144 --enable-features=ReportStuckThrottle --disable-features=DropInputEventsWhilePaintHolding,WebUIOmniboxAimPopup,WebUIOmniboxPopup --variations-seed-version --pseudonymization-salt-handle=2304,i,5173299815727068363,3116719476200994042,4 --trace-process-track-uuid=3190709020982419907 --mojo-platform-channel-handle=6580 /prefetch:14",
+                                            "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                        },
+                                        {
+                                            "raw":  "12948, C:\\Windows\\System32\\dwm.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "pid":  12948,
+                                            "nvidia_process_path":  "C:\\Windows\\System32\\dwm.exe",
+                                            "used_gpu_memory":  "[N/A]",
+                                            "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "observed_name":  "dwm.exe",
+                                            "observed_executable_path":  "C:\\Windows\\system32\\dwm.exe",
+                                            "observed_command_line":  "\"dwm.exe\"",
+                                            "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                        },
+                                        {
+                                            "raw":  "10144, C:\\Windows\\explorer.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "pid":  10144,
+                                            "nvidia_process_path":  "C:\\Windows\\explorer.exe",
+                                            "used_gpu_memory":  "[N/A]",
+                                            "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "observed_name":  "explorer.exe",
+                                            "observed_executable_path":  "C:\\Windows\\Explorer.EXE",
+                                            "observed_command_line":  "C:\\Windows\\Explorer.EXE",
+                                            "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                        },
+                                        {
+                                            "raw":  "37696, C:\\Windows\\System32\\LogonUI.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "pid":  37696,
+                                            "nvidia_process_path":  "C:\\Windows\\System32\\LogonUI.exe",
+                                            "used_gpu_memory":  "[N/A]",
+                                            "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "observed_name":  "LogonUI.exe",
+                                            "observed_executable_path":  "C:\\Windows\\system32\\LogonUI.exe",
+                                            "observed_command_line":  "\"LogonUI.exe\" /flags:0x0 /state0:0x86313055 /state1:0x41c64e6d",
+                                            "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                        },
+                                        {
+                                            "raw":  "37784, C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "pid":  37784,
+                                            "nvidia_process_path":  "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+                                            "used_gpu_memory":  "[N/A]",
+                                            "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "observed_name":  "ShellExperienceHost.exe",
+                                            "observed_executable_path":  "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+                                            "observed_command_line":  "\"C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe\" -ServerName:App.AppXtk181tbxbce2qsex02s8tw7hfxa9xb3t.mca",
+                                            "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                        },
+                                        {
+                                            "raw":  "13992, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "pid":  13992,
+                                            "nvidia_process_path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe",
+                                            "used_gpu_memory":  "[N/A]",
+                                            "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "observed_name":  "msedgewebview2.exe",
+                                            "observed_executable_path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe",
+                                            "observed_command_line":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe\" --type=gpu-process --gpu-recent-crash-count=0 --noerrdialogs --user-data-dir=\"C:\\Users\\xw436\\AppData\\Local\\Packages\\MicrosoftWindows.Client.WebExperience_cw5n1h2txyewy\\LocalState\\EBWebView\" --webview-exe-name=Widgets.exe --webview-exe-version=526.21100.10.0 --embedded-browser-webview=1 --gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --startup-read-main-dll --metrics-shmem-handle=1824,i,9485275606638652650,4179444008175639333,262144 --field-trial-handle=1908,i,4250843593300012648,11939050183669061180,262144 --variations-seed-version --pseudonymization-salt-handle=1912,i,2694328131451698760,2256369778985189599,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=1896 /prefetch:2 /pfhostedapp:53eb0394466f78787d875e87e736f51058cb7883",
+                                            "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                        },
+                                        {
+                                            "raw":  "52308, C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "pid":  52308,
+                                            "nvidia_process_path":  "C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe",
+                                            "used_gpu_memory":  "[N/A]",
+                                            "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "observed_name":  "ms-teams.exe",
+                                            "observed_executable_path":  "C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe",
+                                            "observed_command_line":  "\"C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe\" \"C:\\Program Files\\WindowsApps\\MSTeams_26260.1701.5139.3736_x64__8wekyb3d8bbwe\\ms-teams.exe\" --previous-app-version=26246.1604.5133.838 --previous-web-client-state=2 --restart-reason=6 --restart-count=3 --previous-app-version=26260.1701.5139.3736 --previous-web-client-state=2",
+                                            "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                        },
+                                        {
+                                            "raw":  "23540, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe, [N/A], GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "pid":  23540,
+                                            "nvidia_process_path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe",
+                                            "used_gpu_memory":  "[N/A]",
+                                            "gpu_uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7",
+                                            "observed_name":  "msedgewebview2.exe",
+                                            "observed_executable_path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe",
+                                            "observed_command_line":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.45\\msedgewebview2.exe\" --type=gpu-process --gpu-recent-crash-count=0 --gpu-watchdog-timeout-seconds=15 --noerrdialogs --user-data-dir=\"C:\\Users\\xw436\\AppData\\Local\\Packages\\MSTeams_8wekyb3d8bbwe\\LocalCache\\Microsoft\\MSTeams\\EBWebView\" --webview-exe-name=ms-teams.exe --webview-exe-version=26260.1701.5139.3736 --embedded-browser-webview=1 --embedded-browser-webview-dpi-awareness=2 --gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --startup-read-main-dll --metrics-shmem-handle=1800,i,13364549621237584958,12086902224115822915,262144 --field-trial-handle=1904,i,3280044179847944842,4536973500482866880,262144 --enable-features=AutofillReplaceCachedWebElementsByRendererIds,DocumentPolicyIncludeJSCallStacksInCrashReports,PartitionedCookies,PreferredAudioOutputDevices,SharedArrayBuffer,ThirdPartyStoragePartitioning,msAbydos,msAbydosGestureSupport,msAbydosHandwritingAttr,msPageInteractionManagerWebview2,msSingleSignOnOSForPrimaryAccountIsShared,msWebView2EnableDraggableRegions,msWebView2GranularProcessFailedReason,msWebView2SetUserAgentOverrideOnIframes,msWebView2TerminateServiceWorkerWhenIdleIgnoringCdpSessions,msWebView2TextureStream --disable-features=BlockCrossPartitionBlobUrlFetching,BreakoutBoxPreferCaptureTimestampInVideoFrames,UseTerminationStatusMemoryExhaustion,msEnhancedTrackingPreventionEnabled,msWebOOUI --variations-seed-version --pseudonymization-salt-handle=1908,i,3173573255921522261,11766439100202607993,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=1900 /prefetch:2 /pfhostedapp:251127d246dbd34ee3dcef878524dde1d2da99ae",
+                                            "classification":  "KNOWN_DESKTOP_BACKGROUND_NA_MEMORY"
+                                        }
+                                    ],
+                "free_mib":  97269,
+                "uuid":  "GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7"
+            },
+    "environment":  {
+                        "python":  "3.12.14",
+                        "torch":  "2.11.0+cu128",
+                        "torchvision":  "0.26.0+cu128",
+                        "numpy":  "2.5.2",
+                        "pillow":  "11.3.0",
+                        "scipy":  "1.18.1",
+                        "skimage":  "0.25.2",
+                        "skimage_file":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                        "matplotlib":  "3.11.2",
+                        "psutil":  "7.0.0",
+                        "cuda":  "12.8"
+                    },
+    "environment_context":  {
+                                "schema":  1,
+                                "status":  "PASS_SCHEDULED_CONTEXT",
+                                "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+                                "observed_utc":  "2026-10-21T00:29:17.078083+00:00",
+                                "sys_executable":  "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+                                "sys_prefix":  "C:\\Users\\xw436\\pavetrack_env",
+                                "user":  "ad\\xw436",
+                                "pid":  22024,
+                                "parent_pid":  15072,
+                                "argv_sha256":  "99c7cb3469a29007c1ad4d6e10712c7af554dcd0610b9cd03a08fe2cb04935fb",
+                                "context_receipt_path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R005\\environment.context.json",
+                                "cwd":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                "pythonpath_before":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                "sys_path_before":  [
+                                                        "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                        "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                        "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+                                                        "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+                                                        "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+                                                        "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+                                                        "C:\\Users\\xw436\\pavetrack_env",
+                                                        "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+                                                    ],
+                                "dependency_root":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                "target":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\environment_probe.py",
+                                "pythonpath_after":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                "sys_path_after":  [
+                                                       "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                       "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                       "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+                                                       "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+                                                       "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+                                                       "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+                                                       "C:\\Users\\xw436\\pavetrack_env",
+                                                       "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+                                                   ],
+                                "specs":  [
+                                              {
+                                                  "name":  "skimage",
+                                                  "found":  true,
+                                                  "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                                  "submodule_search_locations":  [
+                                                                                     "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage"
+                                                                                 ]
+                                              },
+                                              {
+                                                  "name":  "skimage.morphology",
+                                                  "found":  true,
+                                                  "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+                                                  "submodule_search_locations":  [
+                                                                                     "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology"
+                                                                                 ]
+                                              },
+                                              {
+                                                  "name":  "centerline_core",
+                                                  "found":  true,
+                                                  "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\centerline_core.py",
+                                                  "submodule_search_locations":  null
+                                              },
+                                              {
+                                                  "name":  "d5_runner",
+                                                  "found":  true,
+                                                  "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_runner.py",
+                                                  "submodule_search_locations":  null
+                                              }
+                                          ],
+                                "skimage_version":  "0.25.2",
+                                "skimage_initializer":  {
+                                                            "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                                            "bytes":  4255,
+                                                            "sha256":  "7aab19d6e977cd0e8cb6febcc224231e547efbe0e254b2e2d6c4036c01fdd3b2"
+                                                        },
+                                "morphology_initializer":  {
+                                                               "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+                                                               "bytes":  2208,
+                                                               "sha256":  "313e28fe7d04adcdaee46b97931ebe29928b1057a6493747f49f51891191224f"
+                                                           },
+                                "target_file":  {
+                                                    "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\environment_probe.py",
+                                                    "bytes":  74,
+                                                    "sha256":  "ee0d7ad3490e7ca02212b6b45b055ce8ab46661de0eaabec09ca0b42b2d84057"
+                                                }
+                            },
+    "environment_control":  {
+                                "schema":  1,
+                                "status":  "COMPLETE_ZERO",
+                                "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+                                "role":  "environment",
+                                "invocation_sha256":  "dd7dabac4933ca4e6f4f85ab391efe55ce431dc1677b7a5640fd7b6171376685",
+                                "command_sha256":  "ac3121ddf86869f860d13a541bda7c072291b6e1f513d3ffc425d68b0a3dfeff",
+                                "code_snapshot":  "bb8b7d330812f1c834008c3d38484b5e27d33aeb2e0b6d3a36138ec3c3b62d8f",
+                                "data_lock_sha256":  "44acdf7ef254091e24fffa3d470efe4ec0abe2f32a50a9f4d807a878f0574b2a",
+                                "claim_sha256":  "3c8c4915a210de6e47c79474f164309d69a18973cac825bf4254bc497f0205d5",
+                                "child_exit_code":  0,
+                                "controller_exit_code":  0,
+                                "timed_out":  false,
+                                "timeout_seconds_at_start":  25.0,
+                                "pid":  15072,
+                                "kill":  null,
+                                "launch_error":  null,
+                                "context":  {
+                                                "schema":  1,
+                                                "status":  "PASS_SCHEDULED_CONTEXT",
+                                                "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+                                                "observed_utc":  "2026-10-21T00:29:17.078083+00:00",
+                                                "sys_executable":  "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+                                                "sys_prefix":  "C:\\Users\\xw436\\pavetrack_env",
+                                                "user":  "ad\\xw436",
+                                                "pid":  22024,
+                                                "parent_pid":  15072,
+                                                "argv_sha256":  "99c7cb3469a29007c1ad4d6e10712c7af554dcd0610b9cd03a08fe2cb04935fb",
+                                                "context_receipt_path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R005\\environment.context.json",
+                                                "cwd":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                "pythonpath_before":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                "sys_path_before":  [
+                                                                        "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                                        "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                                        "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+                                                                        "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+                                                                        "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+                                                                        "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+                                                                        "C:\\Users\\xw436\\pavetrack_env",
+                                                                        "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+                                                                    ],
+                                                "dependency_root":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                "target":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\environment_probe.py",
+                                                "pythonpath_after":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                "sys_path_after":  [
+                                                                       "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                                       "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                                       "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+                                                                       "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+                                                                       "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+                                                                       "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+                                                                       "C:\\Users\\xw436\\pavetrack_env",
+                                                                       "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+                                                                   ],
+                                                "specs":  [
+                                                              {
+                                                                  "name":  "skimage",
+                                                                  "found":  true,
+                                                                  "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                                                  "submodule_search_locations":  [
+                                                                                                     "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage"
+                                                                                                 ]
+                                                              },
+                                                              {
+                                                                  "name":  "skimage.morphology",
+                                                                  "found":  true,
+                                                                  "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+                                                                  "submodule_search_locations":  [
+                                                                                                     "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology"
+                                                                                                 ]
+                                                              },
+                                                              {
+                                                                  "name":  "centerline_core",
+                                                                  "found":  true,
+                                                                  "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\centerline_core.py",
+                                                                  "submodule_search_locations":  null
+                                                              },
+                                                              {
+                                                                  "name":  "d5_runner",
+                                                                  "found":  true,
+                                                                  "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_runner.py",
+                                                                  "submodule_search_locations":  null
+                                                              }
+                                                          ],
+                                                "skimage_version":  "0.25.2",
+                                                "skimage_initializer":  {
+                                                                            "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                                                            "bytes":  4255,
+                                                                            "sha256":  "7aab19d6e977cd0e8cb6febcc224231e547efbe0e254b2e2d6c4036c01fdd3b2"
+                                                                        },
+                                                "morphology_initializer":  {
+                                                                               "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+                                                                               "bytes":  2208,
+                                                                               "sha256":  "313e28fe7d04adcdaee46b97931ebe29928b1057a6493747f49f51891191224f"
+                                                                           },
+                                                "target_file":  {
+                                                                    "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\environment_probe.py",
+                                                                    "bytes":  74,
+                                                                    "sha256":  "ee0d7ad3490e7ca02212b6b45b055ce8ab46661de0eaabec09ca0b42b2d84057"
+                                                                }
+                                            },
+                                "context_sha256":  "a2213dd8744bcfd7b017a3b4d3fdca5c073ba5d9405ad6bed17941109e267929",
+                                "context_ownership":  "DIRECT_CHILD_OF_OWNED_LAUNCHER",
+                                "context_error":  null,
+                                "started_utc":  "2026-10-21T00:29:16.981942+00:00",
+                                "ended_utc":  "2026-10-21T00:29:21.025720+00:00",
+                                "elapsed_seconds":  4.063,
+                                "stdout":  {
+                                               "bytes":  318,
+                                               "sha256":  "9759858513955a528d0d8441d56076c0cc8d6d7f7a6a86d93e2805d3a4f8b0d2"
+                                           },
+                                "stderr":  {
+                                               "bytes":  0,
+                                               "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                                           }
+                            },
+    "preflight":  {
+                      "status":  "PASS_ZERO_STEP_PREFLIGHT",
+                      "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+                      "hostname":  "D-26-09",
+                      "gpu":  "0",
+                      "environment":  {
+                                          "python":  "3.12.14",
+                                          "torch":  "2.11.0+cu128",
+                                          "torchvision":  "0.26.0+cu128",
+                                          "numpy":  "2.5.2",
+                                          "pillow":  "11.3.0",
+                                          "scipy":  "1.18.1",
+                                          "skimage":  "0.25.2",
+                                          "skimage_file":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                          "matplotlib":  "3.11.2",
+                                          "psutil":  "7.0.0",
+                                          "cuda":  "12.8"
+                                      },
+                      "code_snapshot":  "bb8b7d330812f1c834008c3d38484b5e27d33aeb2e0b6d3a36138ec3c3b62d8f",
+                      "data_lock_sha256":  "44acdf7ef254091e24fffa3d470efe4ec0abe2f32a50a9f4d807a878f0574b2a",
+                      "identities":  {
+                                         "trainzip":  {
+                                                          "bytes":  115224706,
+                                                          "sha256":  "d5e9eb4bbb27163ef9778e63c7d743080d3b4458d069652f4285f07f5d02cbac"
+                                                      },
+                                         "valzip":  {
+                                                        "bytes":  20836950,
+                                                        "sha256":  "78974e47e7499aa2d40829e5171c87c8001055731aaa4a92aed5d8d67073718c"
+                                                    },
+                                         "gapszip":  {
+                                                         "bytes":  158730287,
+                                                         "sha256":  "e40e8eec77d09cb76896a4fa5bdb28f1a4df9d14602b13dbd998c5d361f0a2a6"
+                                                     },
+                                         "weights":  {
+                                                         "bytes":  46830571,
+                                                         "sha256":  "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+                                                     },
+                                         "d1_checkpoint":  {
+                                                               "bytes":  7872385,
+                                                               "sha256":  "43423f84e3f56325821000c8b6845063df2e4472424cd80f612e225c04a0205d"
+                                                           },
+                                         "d2_checkpoint":  {
+                                                               "bytes":  57735403,
+                                                               "sha256":  "92cd93741021ecdf63768f8885325d804eb1a595fff8af9ae4ba43c2686027e2"
+                                                           },
+                                         "d3_old_cfd_csv":  {
+                                                                "bytes":  26702,
+                                                                "sha256":  "61b22b603fb09003561609ff4e8c33202387b9d59eadf594e156fa83a839b6bc"
+                                                            },
+                                         "d3_old_gaps_csv":  {
+                                                                 "bytes":  110837,
+                                                                 "sha256":  "8e6308f9ec527422d2011dbbd3fe0ffe5ae010c927243d121d15b1f59f588c63"
+                                                             },
+                                         "d3_repair_cfd_csv":  {
+                                                                   "bytes":  24703,
+                                                                   "sha256":  "df82289ebd4f5bbb19deeef6538500ce8175ff5b13daa0bf50778f47931671b9"
+                                                               },
+                                         "d3_repair_gaps_csv":  {
+                                                                    "bytes":  112183,
+                                                                    "sha256":  "75577a03c79970aae831de9f9788a3a4c2756af5708bdb3f1fb32bf1f90fed75"
+                                                                }
+                                     },
+                      "counts":  {
+                                     "train_pairs":  1860,
+                                     "train_groups":  245,
+                                     "val_pairs":  341,
+                                     "val_groups":  49,
+                                     "cfd_labeled":  118,
+                                     "gaps_labeled":  384,
+                                     "gaps_nonempty":  382,
+                                     "gaps_empty":  2
+                                 },
+                      "launch_identity":  "HQ-ROAD-CENTERLINE-001-R005-20261021",
+                      "task_dependency_path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                      "thread_environment":  {
+                                                 "OMP_NUM_THREADS":  "4",
+                                                 "MKL_NUM_THREADS":  "4",
+                                                 "OPENBLAS_NUM_THREADS":  "4",
+                                                 "NUMEXPR_NUM_THREADS":  "4",
+                                                 "VECLIB_MAXIMUM_THREADS":  "4",
+                                                 "BLIS_NUM_THREADS":  "4"
+                                             },
+                      "synthetic_metrics":  {
+                                                "target_empty":  false,
+                                                "pred_empty":  false,
+                                                "target_band_fraction":  0.055689817994505494,
+                                                "pred_band_fraction":  0.01031722184065934,
+                                                "reference_centreline_pixels":  1244,
+                                                "predicted_centreline_pixels":  1043,
+                                                "cl1_precision":  0.9923298178331735,
+                                                "cl1_recall":  0.8536977491961415,
+                                                "cl1_f1":  0.9178083221234417,
+                                                "cl2_precision":  0.9990412272291467,
+                                                "cl2_recall":  0.8737942122186495,
+                                                "cl2_f1":  0.9322297343732832,
+                                                "cl4_precision":  1.0,
+                                                "cl4_recall":  0.907556270096463,
+                                                "cl4_f1":  0.9515381373788453,
+                                                "reference_components":  1,
+                                                "predicted_components":  1,
+                                                "reference_components_hit":  1,
+                                                "reference_components_omitted":  0,
+                                                "predicted_components_matched":  1,
+                                                "predicted_components_extra":  0
+                                            },
+                      "training_steps":  0,
+                      "optimizer_steps":  0,
+                      "road420_access":  false
+                  },
+    "preflight_context":  {
+                              "schema":  1,
+                              "status":  "PASS_SCHEDULED_CONTEXT",
+                              "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+                              "observed_utc":  "2026-10-21T00:29:21.395002+00:00",
+                              "sys_executable":  "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+                              "sys_prefix":  "C:\\Users\\xw436\\pavetrack_env",
+                              "user":  "ad\\xw436",
+                              "pid":  36172,
+                              "parent_pid":  19088,
+                              "argv_sha256":  "fdaa4830e6ea7ea050ecf7ee7c28d4a5d54a14d7bfbd90c8e6183a0210afac42",
+                              "context_receipt_path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R005\\preflight.context.json",
+                              "cwd":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                              "pythonpath_before":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                              "sys_path_before":  [
+                                                      "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                      "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                      "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+                                                      "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+                                                      "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+                                                      "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+                                                      "C:\\Users\\xw436\\pavetrack_env",
+                                                      "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+                                                  ],
+                              "dependency_root":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                              "target":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_preflight.py",
+                              "pythonpath_after":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                              "sys_path_after":  [
+                                                     "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                     "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                     "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+                                                     "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+                                                     "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+                                                     "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+                                                     "C:\\Users\\xw436\\pavetrack_env",
+                                                     "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+                                                 ],
+                              "specs":  [
+                                            {
+                                                "name":  "skimage",
+                                                "found":  true,
+                                                "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                                "submodule_search_locations":  [
+                                                                                   "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage"
+                                                                               ]
+                                            },
+                                            {
+                                                "name":  "skimage.morphology",
+                                                "found":  true,
+                                                "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+                                                "submodule_search_locations":  [
+                                                                                   "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology"
+                                                                               ]
+                                            },
+                                            {
+                                                "name":  "centerline_core",
+                                                "found":  true,
+                                                "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\centerline_core.py",
+                                                "submodule_search_locations":  null
+                                            },
+                                            {
+                                                "name":  "d5_runner",
+                                                "found":  true,
+                                                "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_runner.py",
+                                                "submodule_search_locations":  null
+                                            }
+                                        ],
+                              "skimage_version":  "0.25.2",
+                              "skimage_initializer":  {
+                                                          "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                                          "bytes":  4255,
+                                                          "sha256":  "7aab19d6e977cd0e8cb6febcc224231e547efbe0e254b2e2d6c4036c01fdd3b2"
+                                                      },
+                              "morphology_initializer":  {
+                                                             "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+                                                             "bytes":  2208,
+                                                             "sha256":  "313e28fe7d04adcdaee46b97931ebe29928b1057a6493747f49f51891191224f"
+                                                         },
+                              "target_file":  {
+                                                  "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_preflight.py",
+                                                  "bytes":  4563,
+                                                  "sha256":  "84c3ec157401fc38b46396bd80437ad1789c1f21f890c8966ff8d92610af54a5"
+                                              }
+                          },
+    "preflight_control":  {
+                              "schema":  1,
+                              "status":  "COMPLETE_ZERO",
+                              "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+                              "role":  "preflight",
+                              "invocation_sha256":  "b4e03c4f33256c21194292c93c474bbdce3205a6aef2347c8eff4814a4ca8e24",
+                              "command_sha256":  "058b7df002de3e82f173dbc6a437c2b9bc68640342902d0f4837947a4ed46b2f",
+                              "code_snapshot":  "bb8b7d330812f1c834008c3d38484b5e27d33aeb2e0b6d3a36138ec3c3b62d8f",
+                              "data_lock_sha256":  "44acdf7ef254091e24fffa3d470efe4ec0abe2f32a50a9f4d807a878f0574b2a",
+                              "claim_sha256":  "7e8a15d85e5206eca2c7c57c39e70564cc0968d0afd4d9a91dc0ea8d2e93c3c4",
+                              "child_exit_code":  0,
+                              "controller_exit_code":  0,
+                              "timed_out":  false,
+                              "timeout_seconds_at_start":  55.0,
+                              "pid":  19088,
+                              "kill":  null,
+                              "launch_error":  null,
+                              "context":  {
+                                              "schema":  1,
+                                              "status":  "PASS_SCHEDULED_CONTEXT",
+                                              "run_id":  "HQ-ROAD-CENTERLINE-001-R005",
+                                              "observed_utc":  "2026-10-21T00:29:21.395002+00:00",
+                                              "sys_executable":  "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+                                              "sys_prefix":  "C:\\Users\\xw436\\pavetrack_env",
+                                              "user":  "ad\\xw436",
+                                              "pid":  36172,
+                                              "parent_pid":  19088,
+                                              "argv_sha256":  "fdaa4830e6ea7ea050ecf7ee7c28d4a5d54a14d7bfbd90c8e6183a0210afac42",
+                                              "context_receipt_path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\runs\\HQ-ROAD-CENTERLINE-001-R005\\preflight.context.json",
+                                              "cwd":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                              "pythonpath_before":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                              "sys_path_before":  [
+                                                                      "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                                      "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                                      "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+                                                                      "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+                                                                      "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+                                                                      "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+                                                                      "C:\\Users\\xw436\\pavetrack_env",
+                                                                      "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+                                                                  ],
+                                              "dependency_root":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                              "target":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_preflight.py",
+                                              "pythonpath_after":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                              "sys_path_after":  [
+                                                                     "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021",
+                                                                     "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020",
+                                                                     "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip",
+                                                                     "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs",
+                                                                     "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib",
+                                                                     "C:\\Users\\xw436\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+                                                                     "C:\\Users\\xw436\\pavetrack_env",
+                                                                     "C:\\Users\\xw436\\pavetrack_env\\Lib\\site-packages"
+                                                                 ],
+                                              "specs":  [
+                                                            {
+                                                                "name":  "skimage",
+                                                                "found":  true,
+                                                                "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                                                "submodule_search_locations":  [
+                                                                                                   "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage"
+                                                                                               ]
+                                                            },
+                                                            {
+                                                                "name":  "skimage.morphology",
+                                                                "found":  true,
+                                                                "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+                                                                "submodule_search_locations":  [
+                                                                                                   "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology"
+                                                                                               ]
+                                                            },
+                                                            {
+                                                                "name":  "centerline_core",
+                                                                "found":  true,
+                                                                "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\centerline_core.py",
+                                                                "submodule_search_locations":  null
+                                                            },
+                                                            {
+                                                                "name":  "d5_runner",
+                                                                "found":  true,
+                                                                "origin":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_runner.py",
+                                                                "submodule_search_locations":  null
+                                                            }
+                                                        ],
+                                              "skimage_version":  "0.25.2",
+                                              "skimage_initializer":  {
+                                                                          "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\__init__.py",
+                                                                          "bytes":  4255,
+                                                                          "sha256":  "7aab19d6e977cd0e8cb6febcc224231e547efbe0e254b2e2d6c4036c01fdd3b2"
+                                                                      },
+                                              "morphology_initializer":  {
+                                                                             "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_deps_20261020\\skimage\\morphology\\__init__.py",
+                                                                             "bytes":  2208,
+                                                                             "sha256":  "313e28fe7d04adcdaee46b97931ebe29928b1057a6493747f49f51891191224f"
+                                                                         },
+                                              "target_file":  {
+                                                                  "path":  "C:\\Users\\xw436\\jobs\\hq_road_centerline_001_r005_stage_20261021\\HQ-ROAD-UQ-FEAS-001\\centerline_target_r005_20261021\\d5_preflight.py",
+                                                                  "bytes":  4563,
+                                                                  "sha256":  "84c3ec157401fc38b46396bd80437ad1789c1f21f890c8966ff8d92610af54a5"
+                                                              }
+                                          },
+                              "context_sha256":  "f8791bd74b05d5b3435b651ab3f6c611387947339eaa0bba8930b0f397b00d25",
+                              "context_ownership":  "DIRECT_CHILD_OF_OWNED_LAUNCHER",
+                              "context_error":  null,
+                              "started_utc":  "2026-10-21T00:29:21.310063+00:00",
+                              "ended_utc":  "2026-10-21T00:29:37.795129+00:00",
+                              "elapsed_seconds":  16.5,
+                              "stdout":  {
+                                             "bytes":  3618,
+                                             "sha256":  "b84b07d0551886156a912ca69525a8a56ca444f9b5a7c8479b0e43d3c899b965"
+                                         },
+                              "stderr":  {
+                                             "bytes":  0,
+                                             "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                                         }
+                          },
+    "code_snapshot":  "bb8b7d330812f1c834008c3d38484b5e27d33aeb2e0b6d3a36138ec3c3b62d8f",
+    "data_lock_sha256":  "44acdf7ef254091e24fffa3d470efe4ec0abe2f32a50a9f4d807a878f0574b2a",
+    "canonical_output_exists":  false,
+    "canonical_cache_markers_verified":  true,
+    "scheduled_task_exists":  false,
+    "launch_receipt_exists":  false,
+    "package_elapsed_seconds_at_admission_end":  9003.964,
+    "package_remaining_seconds_at_admission_end":  5396.036,
+    "ended_iso":  "2026-10-21T01:29:38.9644973+01:00",
+    "elapsed_seconds":  25.044,
+    "package_elapsed_seconds_at_receipt":  9003.966,
+    "package_remaining_seconds_at_receipt":  5396.034
+}
