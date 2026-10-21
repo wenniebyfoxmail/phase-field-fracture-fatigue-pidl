@@ -1,0 +1,2 @@
+case,planned_steps,accepted_steps,phase_seconds,failed_step,failed_step_marker_to_last_trace_seconds,status,reason
+train_A,600,0,170.49509115889668,1,167.2095537688583,FAILED,joint coupled block direction budget exhausted

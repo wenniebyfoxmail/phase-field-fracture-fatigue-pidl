@@ -1,0 +1,131 @@
+{
+  "schema": "hybrid-independent-saved-algebra-review-v1",
+  "verdict": "SAVED_LINEAR_ALGEBRA_RECORD_VERIFIED",
+  "scope": "R008_ALREADY_COMPLETED_SAVED_J_AND_VECTOR_ALGEBRA_ONLY",
+  "reviewer": "independent Codex reviewer /root/hybrid_readiness_review",
+  "recorded_at_utc": "2026-10-21T03:05:01.606728+00:00",
+  "run_id": "pf_hybrid_solver_v11_20261021_r8",
+  "source_commit": "a21785a9d6c62cf034ea0fa063e417b88c4dc089",
+  "artifact_id": "560e701e37005de5879ff342eee0a80a8bd648b67b6c576012561e4e9c4b9188",
+  "card_sha256": "b487e76cc7ac6679ba42f08747ed8ccd15ba63dde916e2aba6f7ddeef7f67851",
+  "new_J_actions_in_this_recording_action": 0,
+  "new_FEM_assemblies_factors_solves": 0,
+  "new_optimization_trials": 0,
+  "remote_actions": 0,
+  "bindings": {
+    "last_box_model.npz": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v11_20261021/recovered_verified/archive/train_A/unaccepted_work_points/last_box_model.npz",
+      "sha256": "e2daa68584c1d4ecbca827cd5b9630878a1c4cc796401d1175a56c8bb79995f9",
+      "bytes": 51098822
+    },
+    "last_block_direction.npz": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v11_20261021/recovered_verified/archive/train_A/unaccepted_work_points/last_block_direction.npz",
+      "sha256": "50d8944fd0eb0762f89823325d0d043fac0801e80e7a8523e4bda3f3b4330d1f",
+      "bytes": 5025859
+    },
+    "last_box_stage_Cauchy_certified.npz": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v11_20261021/recovered_verified/archive/train_A/unaccepted_work_points/last_box_stage_Cauchy_certified.npz",
+      "sha256": "05352dd55b6f5f42a3f700b9bc5902b23b3f4000483a2bea7cd631c9da291251",
+      "bytes": 4698186
+    },
+    "last_box_stage_PG1_complete.npz": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v11_20261021/recovered_verified/archive/train_A/unaccepted_work_points/last_box_stage_PG1_complete.npz",
+      "sha256": "6cc0763ae2278bcd70cd81f46fbae1fcb3e6d100f5a936f37fb93eda2b416f3f",
+      "bytes": 4719228
+    },
+    "last_box_stage_PG2_complete.npz": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v11_20261021/recovered_verified/archive/train_A/unaccepted_work_points/last_box_stage_PG2_complete.npz",
+      "sha256": "3e8b3810a198e212b8fc88d83d8f78f062c46cc522f9e406f04d210078822cbc",
+      "bytes": 4734246
+    },
+    "last_box_stage_optional_Newton_complete.npz": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v11_20261021/recovered_verified/archive/train_A/unaccepted_work_points/last_box_stage_optional_Newton_complete.npz",
+      "sha256": "252fd79542388045dcb98608eeec4db02b9e7f52acb78180c3e955beafb179f9",
+      "bytes": 5390398
+    }
+  },
+  "other_bindings": {
+    "full_remote_inventory.json": "a2cd0653fb38fd28b9f12428a84aaaa231f4a4d3d6a0ca34e76ea09cc106e7a2",
+    "complete_return_verification.json": "c8d0b7c2fabb4551e1e5a2a6288e6e063ef7a73beaac7d13b3c6253572319d2e"
+  },
+  "identity_checks": {
+    "outer": 8,
+    "parent_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+    "load_id": "train_A:c1:s1:0.023999904000000002",
+    "model_r0_id": "5a310e8d9fbc1e1b75e472060a6954a5021ed6833eae3602f9f61dce9536271f",
+    "all_four_stage_metadata_outer_parent_equal_saved_model": true,
+    "saved_block_direction_outer_parent_equal_saved_model": true,
+    "all_four_stage_base_u_d_bitwise_equal_saved_model": true,
+    "actual_u_free_and_d_nearest_difference_equal_saved_high_p": true,
+    "low_terms_included_in_model_products": true,
+    "not_spliced_across_outers": true
+  },
+  "method": {
+    "description": "Previously completed offline calculation only: reconstruct CSC from saved J_data/J_indices/J_indptr/J_shape, with saved r0 and row_weights. For each of four already-saved feasible points use both saved p and p_tail: v = r0 + row_weights*(J@p + J@p_tail); pred = 0.5*sum(r0*r0) - 0.5*sum(v*v). Compare with original persisted pred_lower/pred_upper. No native residual/tangent assembly, factorization, physical evaluation or new candidate search.",
+    "original_saved_direction": "For the already-saved unprojected block direction pn=[delta_u_free,delta_damage], compute only its existing linear model q = 0.5*sum((r0+row_weights*(J@pn))**2) and max(abs(D*pn)). This direction exceeds the trust bound and was not certified or evaluated as a nonlinear candidate.",
+    "python_absolute_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "finite_check": "Independent final replay used warnings-as-errors, finite output checks and elementwise sum for scalar squared norms; four predictions lay inside original stored intervals. Local development NumPy is not producer-version admission.",
+    "verification_limit": "Stored full interval error bounds were not newly derived or exhaustively proven by this algebra check; the check verifies matching identities and contained numerical replay for these saved points."
+  },
+  "model_replays": [
+    {
+      "stage": "Cauchy_certified",
+      "pred": 7.67493356141843e-11,
+      "stored_pred_lower": 7.674933559511526e-11,
+      "stored_pred_upper": 7.674933563325077e-11,
+      "inside_stored_interval": true,
+      "actual_TR_norm": 1.344864692728395e-06
+    },
+    {
+      "stage": "PG1_complete",
+      "pred": 1.4961145750946563e-10,
+      "stored_pred_lower": 1.4961145747186895e-10,
+      "stored_pred_upper": 1.4961145754705993e-10,
+      "inside_stored_interval": true,
+      "actual_TR_norm": 2.632270028449253e-06
+    },
+    {
+      "stage": "PG2_complete",
+      "pred": 2.188927102153835e-10,
+      "stored_pred_lower": 2.1889271015978106e-10,
+      "stored_pred_upper": 2.1889271027098613e-10,
+      "inside_stored_interval": true,
+      "actual_TR_norm": 3.865980849611696e-06
+    },
+    {
+      "stage": "optional_Newton_complete",
+      "pred": -1.1616913774897975e-08,
+      "stored_pred_lower": -1.16169137775251e-08,
+      "stored_pred_upper": -1.161691377227083e-08,
+      "inside_stored_interval": true,
+      "actual_TR_norm": 0.1
+    }
+  ],
+  "stored_Cauchy_certificate": {
+    "model_L_upper": 9.557325187260645,
+    "cauchy_model_lower_bound": 3.8881078993020006e-11,
+    "cauchy_required_bound": 1.9440539505479623e-11,
+    "positive_sufficient_bound": true
+  },
+  "saved_direction_comparison": {
+    "base_model_q": 1.3358231096803172e-08,
+    "unprojected_original_saved_block_direction_q": 3.927008442661513e-27,
+    "unprojected_original_scaled_inf": 0.9472256908833064,
+    "trust_radius": 0.1,
+    "actual_already_saved_feasible_optional_q": 2.4975144871701147e-08,
+    "actual_feasible_optional_TR_norm": 0.1,
+    "second_representable_inner_projection_changed_components": 1264,
+    "projection_count_scope": "1264 counts the second representable-inner state projection relative to its already-scaled/clipped proposed state; it is not the full original Newton direction total clipping count.",
+    "actual_optional_nonlinear_evaluation": false
+  },
+  "interpretation": [
+    "A highly accurate original coupled block direction does not imply that its componentwise box/TR-projected candidate decreases the complete coupled linear model. The final saved optional model demonstrably increases q and was not selected.",
+    "The PG2 saved point has certified positive model reduction and was selected; its actual TR norm is far below the unchanged radius. This does not identify an optimal feasible LS point or prove another method would converge.",
+    "These unaccepted working points and linear model values are not physical accepted states, nonlinear solutions, teacher labels, an NN comparison or authority for R009."
+  ],
+  "remaining_boundaries": [
+    "Only latest outer8 model/stage vectors are checked here; earlier outer JSON stage/certificate records do not imply retention of all earlier vectors.",
+    "No alternate nonlinear trial, fresh residual, new FEM matrix assembly/factorization or solver run was made by this check.",
+    "Final evidence/figures/report/cost closure require their separate exact binding; this JSON alone does not certify complete package closure."
+  ]
+}

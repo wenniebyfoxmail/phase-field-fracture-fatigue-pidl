@@ -1,6 +1,6 @@
 > D18终态：R006单次1/600、case160.748秒，第2步8方向后首停；联合Phi下降但原force仍1639倍门，半径限制的小步未达平衡。完整162文件全核/4PID全退，无重试/训练。收束有限Newton-ray，下一全局化承重缺项仅列出、无R007授权。[结果](../solver_repair_v9/result.md)／[elapsed](../solver_repair_v9/step_elapsed_times.csv)／[复核](../solver_repair_v9/evidence_review.json)。
 
-> Current D20: R008 representable-domain certification repair is in exact preparation/review, no run yet. One newly authorised original600 attempt or pre-admission park under unchanged shared clock and stricter04:54:52Z end; [plan](../solver_repair_v11/plan.md). R007 is not resumed.
+> Current D20 terminal: R008 stopped0/600 at step1 after8 outer subproblems, case170.495s/CPU202.597s/GPU0; full169files147540936B verified,4ownedPIDs absent, originalstate0/latest version0, no finalQP/CAS/NN/retry. Certification repair crossed R007, but original force173.23tol/KKT15.69tol despite Phi36.78fold reduction. Next only prospective constrained-LS subproblem direction design; noR009. [Actual result/four figures](../solver_repair_v11/result.md) / [elapsed](../solver_repair_v11/case_elapsed_times.csv) / [result review](../solver_repair_v11/evidence_review.json) / [dated costs](../solver_repair_v11/completion_cost.json). Original shared clock/end retained.
 
 > Previous D19: R007 is stopped0/600 after step1 optional Newton-candidate feasibility certification failure; complete162 files verified, no retry/NN. [Actual result, elapsed and next proposal](../solver_repair_v10/result.md). Original attempt/clock consumed; no autoR008.
 

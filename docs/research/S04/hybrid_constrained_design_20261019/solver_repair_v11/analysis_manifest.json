@@ -1,0 +1,97 @@
+{
+  "scope": "Saved R008 results only; independent already-completed algebra referenced, no new solver/native/J actions by owner",
+  "files": {
+    "README_analysis.md": {
+      "bytes": 767,
+      "sha256": "075629f6c6506d01b67f0539625922da031b5db0f5156a3d8fadc0299d9bc29d"
+    },
+    "analyse_saved.py": {
+      "bytes": 18308,
+      "sha256": "cc5aaf594bd9c1b4fabea65e657a7bbc885002dfe5cf3ce31d5ad6c29a3a57a3"
+    },
+    "analysis_run_receipt.json": {
+      "bytes": 1313,
+      "sha256": "6878b351c0ab7c96e58b028d965f864edf74c0239897fb095b91eb8d29db59af"
+    },
+    "analysis_summary.json": {
+      "bytes": 63806,
+      "sha256": "7da7e3015f5b443549ee44cc41d9eaf486fbbc88cda16e61daca9e0ca744156a"
+    },
+    "case_elapsed_times.csv": {
+      "bytes": 222,
+      "sha256": "b77dbfe838f01f6b030986c0889f415deb5a00b7975878164a41d5242de5f182"
+    },
+    "figure_check.json": {
+      "bytes": 225,
+      "sha256": "f820966655268f55ea9564ea0b137d05c695adbe054a68511a864870826caa17"
+    },
+    "r8_accepted_prefix_fields.md": {
+      "bytes": 1606,
+      "sha256": "0188b60f67d05cf44cc66343b4c8766fd946a1d95c999c3e43daf78d8ee6eb85"
+    },
+    "r8_accepted_prefix_fields.pdf": {
+      "bytes": 30836,
+      "sha256": "b9f8e80d373005dc2b3f8e96ea1193aeef60c290a80c7cc1bea5e15e37584632"
+    },
+    "r8_accepted_prefix_fields.png": {
+      "bytes": 42831,
+      "sha256": "dcbcc3721debad6b54ba36bb4113a017b749145fee525d4c471c46101bb15eb2"
+    },
+    "r8_available_prefix_evolution.md": {
+      "bytes": 1612,
+      "sha256": "2050724907396ad30ceb9a77164a5fda1e0a0df6d0e2920d0d517b93a3d11a0e"
+    },
+    "r8_available_prefix_evolution.pdf": {
+      "bytes": 16362,
+      "sha256": "f3f343bfaa82c5cb928e828e03d2713e060333ec3fa747e1a437926d14dd7597"
+    },
+    "r8_available_prefix_evolution.png": {
+      "bytes": 86297,
+      "sha256": "8241380fcd359fa4457786801bfe957aa0840790cf15b5adf1227b92c53347ed"
+    },
+    "r8_candidate_models.csv": {
+      "bytes": 8680,
+      "sha256": "c32bd68190be5081af2b052edae0fa1c900c4cbbde4f2557f434fe50579bfd40"
+    },
+    "r8_fresh.csv": {
+      "bytes": 1274,
+      "sha256": "6ba710ec19fc9e24af86e65d733cdb02fcbeca6d680ce19524d106ca0bb3b4a9"
+    },
+    "r8_globalization_trace.md": {
+      "bytes": 1675,
+      "sha256": "3647f5b8be87f09f955cc57371d2fea4e8ba11b7cc7eb3c5ac3542cb9e5f3c89"
+    },
+    "r8_globalization_trace.pdf": {
+      "bytes": 28306,
+      "sha256": "fb251878dc7b7e3cf5f940cd98a2c2714c2ecb69660e313cd7f7e2b22952c4fa"
+    },
+    "r8_globalization_trace.png": {
+      "bytes": 217273,
+      "sha256": "453f97753b393062f2f61ad4c131d7cd75029a99403ac2336495b72b2fa4a03f"
+    },
+    "r8_last_joint_fields.md": {
+      "bytes": 1643,
+      "sha256": "bad120c06ad4a6ccf51166b073ded11db62bef449ff32dc284cf13967ec3458b"
+    },
+    "r8_last_joint_fields.pdf": {
+      "bytes": 141283,
+      "sha256": "4463e60509f986e408c1eaf3259c0e68cdbc658ce7ecd20d0b986f68af10a20e"
+    },
+    "r8_last_joint_fields.png": {
+      "bytes": 284146,
+      "sha256": "eae745feefedcd31ac15ce6fa9bca046163c393af53f0ef2cb8936b882cb76f1"
+    },
+    "r8_root_work.csv": {
+      "bytes": 18204,
+      "sha256": "a9f4d6a3a825c736389408275c426e3601824066619fe198ddbcc0b73fb25f53"
+    },
+    "r8_trials.csv": {
+      "bytes": 2397,
+      "sha256": "7e02d40c58dfcffeaddab2c1a18f29a9afd92b1448509c78016591ac480c75ff"
+    }
+  },
+  "full_return_inventory_sha256": "a2cd0653fb38fd28b9f12428a84aaaa231f4a4d3d6a0ca34e76ea09cc106e7a2",
+  "complete_return_verification_sha256": "c8d0b7c2fabb4551e1e5a2a6288e6e063ef7a73beaac7d13b3c6253572319d2e",
+  "saved_algebra_review_sha256": "4b5a2ead7c3c44351da5638142297b50b4364623f0109f7351264fad3b2eb1eb",
+  "local_base": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v11_20261021"
+}

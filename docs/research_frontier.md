@@ -1,6 +1,6 @@
 # Research Frontier
 
-> S04 current D20 (2026-10-21): bounded R008 control repair is in implementation/exact review; strict representable-domain proof and typed optional-candidate composition, original physics/history unchanged. No R008 run yet. [Canonical track](experiments/s04_fem_pidl_field_alignment_track.md).
+> S04 current D20 result (2026-10-21): R008 sole0/600, step1 stopped after8 outer subproblems;169files verified/processes exited. Certification repair worked, weightedPhi36.78fold down but original force/KKT failed; no finalQP/history/NN/retry. Only future box-constrained subproblem direction design, noR009; original clocks/costs retained. [Canonical track](experiments/s04_fem_pidl_field_alignment_track.md).
 
 > S04 previous D19 (2026-10-21): R007 stopped0/600 at step1 optional-candidate floating feasibility check; full162-file evidence verified. Working-model decrease did not establish physical acceptance. Next is a prospective representable-domain/optional-comparison repair only, no retry or training. [Canonical track](experiments/s04_fem_pidl_field_alignment_track.md).
 
