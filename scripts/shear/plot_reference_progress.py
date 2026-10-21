@@ -24,7 +24,12 @@ axs[1].axhline(1e-4,color='#D55E00',ls='--',label='Unchanged limit 1e-4')
 axs[1].set(xlabel='Prescribed U',ylabel='Final ||Ru|| + ||Rpf||',title='Fresh final-state residuals');axs[1].legend(frameon=False,fontsize=8)
 axs[2].bar(np.arange(1,n+1),[x['step_seconds'] for x in rows],color='#0072B2',label='Accepted step')
 for failure in v['failures']:
- axs[2].bar(failure['step'],failure['step_seconds'],color='#D55E00',label='Rejected step')
+ if failure['step_seconds'] is not None:
+  axs[2].bar(failure['step'],failure['step_seconds'],color='#D55E00',label='Rejected step')
+if not complete:
+ reason=v['exit']['reason']
+ axs[2].text(.98,.97,f'Stopped before accepting step {n+1}\nSupervisor: {reason}',transform=axs[2].transAxes,ha='right',va='top',fontsize=8,bbox=dict(facecolor='white',alpha=.85,edgecolor='none'))
+ axs[2].set_xlim(.2,n+1.8)
 axs[2].set(xlabel='Load step',ylabel='Elapsed seconds',title='Step cost (same 600 s cap)')
 axs[2].axhline(600,color='#777777',ls=':',lw=1);axs[2].legend(frameon=False,fontsize=8)
 for ax in axs:ax.grid(alpha=.15)
