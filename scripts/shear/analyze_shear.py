@@ -105,7 +105,7 @@ def main():
             for j,(values,title) in enumerate(zip(fields,titles)):
                 ax=axs[i,j]
                 limits=(-residual_bound,residual_bound) if j==2 else (0,1)
-                artist=PolyCollection(poly,array=values,cmap='RdBu_r' if j==2 else 'viridis',edgecolors='none',rasterized=True)
+                artist=PolyCollection(poly,array=values,cmap='RdBu_r' if j==2 else 'viridis',edgecolors='none',linewidths=0,antialiased=False,rasterized=True)
                 artist.set_clim(*limits); ax.add_collection(artist)
                 ax.set(xlim=(-.5,.5),ylim=(-.5,.5),xlabel='x',ylabel='y',title=title,aspect='equal')
                 fig.colorbar(artist,ax=ax,label='Damage difference' if j==2 else 'Damage alpha',shrink=.8,extend='both')
@@ -135,7 +135,7 @@ def main():
                     titles += [f'PIDL {label}',f'PIDL - FEM {label}']
                 for j,(v,title) in enumerate(zip(values,titles)):
                     ax=axs[i,component*columns+j];b=err if j==2 else bound
-                    art=PolyCollection(poly,array=v,cmap='RdBu_r',edgecolors='none',rasterized=True);art.set_clim(-b,b);ax.add_collection(art)
+                    art=PolyCollection(poly,array=v,cmap='RdBu_r',edgecolors='none',linewidths=0,antialiased=False,rasterized=True);art.set_clim(-b,b);ax.add_collection(art)
                     ax.set(xlim=(-.5,.5),ylim=(-.5,.5),aspect='equal',xlabel='x',ylabel='y',title=title)
                     fig.colorbar(art,ax=ax,shrink=.75,extend='both',label=label)
         for ext in ['png','pdf']:fig.savefig(a.out/f'figures/shear_displacement.{ext}',dpi=180)
