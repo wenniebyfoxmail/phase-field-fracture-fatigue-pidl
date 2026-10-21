@@ -1,0 +1,43 @@
+{
+  "status": "passed_stop_record_review",
+  "scope": "Single read of stop report/receipt/failure and final metadata closure only; no resource probe, retry or analysis execution",
+  "bindings": {
+    "report": {
+      "path": "docs/research/S04/S04-E011/runs/pidl_saved_coefficient_attribution_stop_20261021.md",
+      "sha256": "1d555147fab8df135215e96302711c25d5394daec9fb8e9fdadf5f009c28050d"
+    },
+    "execution_stop": {
+      "path": "docs/research/S04/S04-E011/saved_coefficient_attribution_20261021/execution_stop.json",
+      "sha256": "e43e3ba47d7718c1610545cc67ee50f308a587acd3c2a16b244d131a0384a1db"
+    },
+    "local_execution_receipt": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/saved_coefficient_attribution_20261021/execution_receipt.json",
+      "sha256": "e43e3ba47d7718c1610545cc67ee50f308a587acd3c2a16b244d131a0384a1db"
+    },
+    "captured_original_failure": {
+      "path": "docs/research/S04/S04-E011/saved_coefficient_attribution_20261021/local_client_failure.txt",
+      "sha256": "b19d57f315ebc8a9c56949962498ba868b92c9dd5f1c7c8712ec2fbbb3f7462c"
+    }
+  },
+  "checks": [
+    "Report separates complete derivation/script preparation and static review from actual numerical attribution; no decomposition results claimed.",
+    "Initial Mac RLIMIT_AS setter ValueError is a resource-control failure, not observed OOM. Underlying platform cause remains unresolved; large getrlimit value is not proof setter compatibility.",
+    "CPU limit call preceding the failed AS setter is accurately distinguished; failure was before card/source/scientific-array reads and before SSH subprocess.",
+    "New SSH/remote actions/arrays/vector solves/factors/NN/AD/physics/SVD/GPU are0; server/GPU state remains UNKNOWN, not presumed idle or qualified.",
+    "Failed-client/full CPU, source metadata reads and costs remain UNKNOWN rather than0; prior costs/results and original limits retained.",
+    "No alternate limit probe, AS removal, interpreter/host switch or reconnect performed; current scope ends with this stop.",
+    "Complete derivation and no-new-result wording corrected; old four-arm mismatches and unchanged FEM/PIDL endpoints preserved."
+  ],
+  "final_checkpoint": {
+    "UTC": "2026-10-21T00:48:13.671966+00:00",
+    "whole_wall_seconds_through_checkpoint": 793.671966,
+    "cap": 1200,
+    "previous_checkpoint": {
+      "UTC": "2026-10-21T00:45:39.141969+00:00",
+      "wall_seconds": 639.141969
+    },
+    "excludes": "Subsequent git check/commit/final reply; no further analysis or remote action"
+  },
+  "no_new_actions": "Only requested receipt/checkpoint/review metadata writes. No resource query or setting, code-under-review execution, arrays, scientific linear solves, SSH, diagrams or computation graph.",
+  "blockers": []
+}

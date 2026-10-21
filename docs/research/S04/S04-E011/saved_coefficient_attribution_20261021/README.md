@@ -33,3 +33,7 @@ Actual rounded parameter endpoint tensors were not saved; nominal direction/scal
 ## Execution and output boundary
 
 Local source/JSON/AST and one same original reviewer static check; no new mathematical fixtures required. LargePhi absent from local mirror, so one SSH stdin CPU-only script reads original GPUServer8 run/archive, checks original manifest/outer return and74 selected immutable hashes/identity within hard60s, no GPU probe. It writes only fresh attributable analysis output, leaves old files unchanged, chunk/memmap readsPhi, returns <100MiB selected arrays and metadata. CPU220/AS16GiB hard and wall alarm cover remote work; output/temp ≤512MiB. Unknown/IO/permission/resource/connection failure is terminal, no reconnect/fallback or newcase. All old failure/cost/UNKNOWN retained. Analysis only; no new physical solution or architecture limit claim.
+
+## Actual outcome
+
+Prepared sourcefeef73bd and focused static review completed. Local client failed at line3 setrlimit(RLIMIT_AS,16GiB) before reading card/source arrays or creating SSH. ValueError current limit exceeds maximum limit; not observed OOM and not proof of actual memory exceedance. Single readonly getrlimit values do not establish platform compatibility. No SSH/remote CPU/Phi/linear solve or new attribution result; frozen no-retry control retained, no limit removal/alternate host/interpreter/probe. See[execution_stop.json](execution_stop.json) and[stop report](../runs/pidl_saved_coefficient_attribution_stop_20261021.md).

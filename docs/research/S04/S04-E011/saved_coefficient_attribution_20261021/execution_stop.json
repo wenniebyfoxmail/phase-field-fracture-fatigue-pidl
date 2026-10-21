@@ -1,0 +1,55 @@
+{
+  "status": "STOPPED_LOCAL_RESOURCE_CONTROL_BEFORE_SSH_NO_RETRY",
+  "analysis_id": "pf_s04e011_saved_coeff_attr_20261021",
+  "authority_ref": "HQ-MESH-SAVED-COEFFICIENT-ATTRIBUTION-20261021",
+  "authority_source": "human_delegated_hq",
+  "prepared_source_commit": "feef73bd",
+  "source_script_sha256": "ad17cf246fff617b6f9e1129aef7a941ad9707c4c2fb5699a7f7658d1c6b52e1",
+  "client_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/saved_coefficient_attribution_20261021/execute_once.py",
+  "client_sha256": "905f313f4e85def367fd1f6b3b09eeafb831aa97caaeeb5bfe9c0f4037b000ce",
+  "failure": {
+    "line": 3,
+    "call": "resource.setrlimit(RLIMIT_AS,(16GiB,16GiB))",
+    "error": "ValueError: current limit exceeds maximum limit",
+    "CPU_limit15_call_completed_first": true,
+    "actual_memory_exceeded": "NOT_DEMONSTRATED",
+    "underlying_platform_cause": "UNRESOLVED",
+    "AS_limit_successfully_verified": false
+  },
+  "SSH_subprocess_created": false,
+  "new_SSH_connections": 0,
+  "new_remote_actions": 0,
+  "scientific_arrays_loaded": 0,
+  "new_vector_solves": 0,
+  "new_triangular_solves": 0,
+  "new_factors": 0,
+  "new_NN_AD_physics_FEM_SVD_GPU": 0,
+  "new_attribution_numerical_result": false,
+  "server_state": "UNKNOWN_not_checked",
+  "local_readonly_limit_query": {
+    "CPU": [
+      9223372036854775807,
+      9223372036854775807
+    ],
+    "AS": [
+      9223372036854775807,
+      9223372036854775807
+    ],
+    "reported_self_CPU_seconds": 0.031466999999999995
+  },
+  "started_UTC": "2026-10-21T00:35:00+00:00",
+  "closed_checkpoint_UTC": "2026-10-21T00:48:13.671966+00:00",
+  "whole_wall_seconds_through_checkpoint": 793.671966,
+  "whole_wall_cap_seconds": 1200,
+  "deadline_UTC": "2026-10-21T00:55:00Z",
+  "whole_CPU_seconds": "UNKNOWN_not_zero",
+  "failed_client_CPU_seconds": "UNKNOWN_not_zero",
+  "new_remote_CPU_seconds": 0,
+  "scientific_array_read_bytes": 0,
+  "metadata_code_read_bytes": "UNKNOWN",
+  "monetary_cost": "UNKNOWN",
+  "previous_R002_science_seconds": 31.53257597051561,
+  "old_costs_and_UNKNOWN_retained": true,
+  "repeat_or_alternate_limit_probe": false,
+  "changed_AS_or_host_after_failure": false
+}
