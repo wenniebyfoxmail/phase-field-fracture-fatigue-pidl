@@ -59,3 +59,5 @@ Published Manav21-page paper and code links verified. Authorized recovery repair
 R011 full native-PF preparation remains unexecuted: first SCP failed DNS before upload; automatic approval review then rejected new remote upload/compute authority. Zero scientific starts, no PIDL; explicit new human launch permission required. R009 outcome unchanged. See [owner](research/S04/S04-E035/experiment.md).
 
 R011 update: human explicitly approved exact submission; MATLAB17960 started19:00:10Z onCITPC12 with9750s cap. Original00:20Z deadline retained; R010 remains conditional on full24-state validity. [45-degree follow-up design](research/S04/S04-E035/mixed_direction_next_plan.md) prepared, not launched.
+
+R011 terminal: six valid loads throughU=.18; U=.21 native PF preupdate residual8.92e-7 but returned fresh scalar1.23e-6. Locked code and saved fields locate update/stop-point mismatch; no coupled acceptance for rejected load.47files hash verified, both own PIDs exited, noPIDL. Consistent-return candidate prepared/unexecuted; [result/next decision](research/S04/S04-E035/runs/S04-E035-R011.md).45degree remains planned only.

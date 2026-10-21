@@ -281,3 +281,10 @@ Human annotated the explicit R011 upload/FEM request with “批准”. This sup
 Exact human approval permitted network-enabled continuation. CITPC12 supervisor22708 / MATLAB17960 started2026-10-21T19:00:10.1185407Z,9750s cap/science deadline21:42:40Z; original total00:20Z unchanged. Source snapshot commitc6603716 (reviewed scientificSHA unchanged), local approval controllerc7f3b5f4. Initial zero-start/auto-review records retained. R010 conditional reference now points to R011, unchanged NN science.
 
 Human proposed45-degree FEM/PINN comparison next. Local boundary implementation confirms theta measured fromx-axis,0degree horizontal shear; plan fixes vector magnitudeU and both components consistently. See [next direction plan](mixed_direction_next_plan.md). No new angle run launched or included in the current one-attempt budget.
+
+
+### R011 actual outcome — six states and native return-timing diagnosis
+
+R011 ran132.548693s, solver125.5597875s, peakRSS1.581GiB,exit1; own supervisor22708/MATLAB17960 both gone. 47/47files45,786,723bytes hash verified. Six accepted loads toU=.18 independently valid. U=.21/stagger2 fresh returnedPF1.2334014287417203e-6 rejected; native last preupdate vector norm8.917322275245907e-7. Locked native code updates field before testing its prior residual; saved fields differLinf.001023063493328258. This identifies this call timing issue, not full corrected convergence. No coupled certificate for either candidate, no seventh valid state, no PIDL. See [R011 report and next decision](runs/S04-E035-R011.md).
+
+Private consistent-return PF candidate prepared only; no newRunID or solve. Originalcriteria/first-failure stop/budgets retained. 45degree equal-magnitude mixed-loading plan remains future scope. CumulativeFEMprocesswall725.760416s, CPUUNKNOWN, all transport/admission costs retained separately.
