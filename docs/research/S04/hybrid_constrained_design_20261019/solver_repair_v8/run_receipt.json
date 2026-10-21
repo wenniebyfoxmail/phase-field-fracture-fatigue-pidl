@@ -1,0 +1,131 @@
+{
+  "run_id": "pf_hybrid_solver_v8_20261021_r5",
+  "status": "scientific_failure_stopped_no_retry",
+  "source_commit": "f4311e0e21d52eb65a8c845308436d3e7ab4df5f",
+  "artifact_id": "ff3dc7a9a97e4a53edf0eaaf6501f5e15414f1476db49a1b277b7205e32226de",
+  "card_sha256": "e7333d402c188aa7bfb21946cdc4a76e9cc7fb42497901eefb797e198b6780fe",
+  "bundle_sha256": "998feb05e4b953c2525708b9c3463bb5affc772e5d6dbc646bdffb6d828e3931",
+  "authority_id": "HQ-FEM-COUPLED-BLOCK-NEWTON-20261020",
+  "authority_type": "human_delegated_hq",
+  "producer": "drtao@172.16.100.2 GPUServer8",
+  "run_root": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v8_20261021_r5",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_hybrid_solver_v8_20261021_r5",
+  "inputs_read_only": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/inputs",
+  "launch": {
+    "state": "spawned",
+    "run_id": "pf_hybrid_solver_v8_20261021_r5",
+    "command": [
+      "/usr/bin/timeout",
+      "--signal=TERM",
+      "--kill-after=20s",
+      "12966.753418s",
+      "/usr/bin/python3",
+      "-u",
+      "/mnt/data2/drtao/wennie/pf_hybrid_solver_v8_20261021_r5/code/tools/run_hybrid_cpu_v8_budgeted.py",
+      "--supervise"
+    ],
+    "artifact_id": "ff3dc7a9a97e4a53edf0eaaf6501f5e15414f1476db49a1b277b7205e32226de",
+    "card_sha256": "e7333d402c188aa7bfb21946cdc4a76e9cc7fb42497901eefb797e198b6780fe",
+    "epoch": 1792539954.2470164,
+    "prelaunch_package_wall_charge": 788.2465817928314,
+    "outer_timeout_seconds": 12966.753418207169,
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "gpu_seconds": 0,
+    "scientific_attempt_limit": 1,
+    "pid": 3949659
+  },
+  "mechanical_actions": 2,
+  "mechanical_wall_seconds": 29.36779699998442,
+  "same_host_public_OSQP_copied_bytes": 980049,
+  "private_upload_bytes": 0,
+  "scientific_attempts": 1,
+  "automatic_retry": false,
+  "runtime": {
+    "numpy": "1.24.4",
+    "scipy": "1.15.3",
+    "osqp": "1.0.4",
+    "psutil": "7.0.0"
+  },
+  "supervisor_pid": 3949660,
+  "phase_processes": [
+    {
+      "phase": "train_A",
+      "pid": 3949673,
+      "guardian_pid": 3949674,
+      "command": [
+        "/usr/bin/python3",
+        "-u",
+        "/mnt/data2/drtao/wennie/pf_hybrid_solver_v8_20261021_r5/code/tools/hybrid_producer_worker.py",
+        "--card",
+        "/mnt/data2/drtao/wennie/pf_hybrid_solver_v8_20261021_r5/execution_card.json",
+        "--phase",
+        "train_A",
+        "--inputs",
+        "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/inputs",
+        "--out",
+        "/mnt/data2/drtao/wennie/pf_hybrid_solver_v8_20261021_r5",
+        "--archive",
+        "/mnt/data2/drtao/pidl_archives/pf_hybrid_solver_v8_20261021_r5"
+      ],
+      "log": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v8_20261021_r5/logs/train_A.log",
+      "start_epoch": 1792539954.6004987
+    }
+  ],
+  "last_snapshot_epoch": 1792539996.123036,
+  "last_accepted": {
+    "step": 1,
+    "cycle": 1,
+    "substep": 1,
+    "load": 0.023999904000000002,
+    "total_step_wall_seconds": 31.842570629902184,
+    "f_min": 1.0,
+    "state_sha256": "6560dc725a1bc5776cf9d39dae62de3c77b8da4e65f4dcfb456d273611b6722e",
+    "certificate": {
+      "outer": 3,
+      "m_work": 0.14798670955329385,
+      "m_accept": 0.14798670955329385,
+      "total_wall_seconds": 31.018138688988984,
+      "coupling_work": {
+        "proposals": 0,
+        "kept_accelerated_maps": 0,
+        "rejections": 0,
+        "newton_directions": 0,
+        "qp_calls": 2,
+        "backtrack_evaluations": 0
+      },
+      "state_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+      "true_final_QP": true
+    }
+  },
+  "active_step": {
+    "start_epoch": 1792539988.4820063,
+    "start_monotonic": 5562070.989091023,
+    "phase": "train_A",
+    "step": 2,
+    "role": "numerical_substep"
+  },
+  "sole_attempt_consumed": true,
+  "terminal_epoch": 1792540159.7008915,
+  "accepted_steps": 1,
+  "planned_steps": 600,
+  "scientific_failure": "mechanics numerically near-singular",
+  "case_phase_seconds": 205.13691322132945,
+  "producer_seconds": 205.138359378092,
+  "worker_and_guardian_CPU_seconds": 356.26735499999995,
+  "actual_GPU_seconds": 0,
+  "peak_observed_owned_tree_RSS_bytes": 4523196416,
+  "step1_elapsed_seconds": 31.842570629902184,
+  "step2_marker_to_failed_trace_seconds": 169.99380991701037,
+  "all_attributed_processes_absent": true,
+  "terminal_inventory": {
+    "files": 159,
+    "bytes": 75154098,
+    "all_SHA_verified": true
+  },
+  "evidence_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v8_20261021"
+}

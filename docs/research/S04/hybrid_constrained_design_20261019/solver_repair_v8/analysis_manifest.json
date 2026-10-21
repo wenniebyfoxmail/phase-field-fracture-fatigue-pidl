@@ -1,0 +1,98 @@
+{
+  "root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v8_20261021/analysis",
+  "files": {
+    "r5_block_directions.csv": {
+      "bytes": 995,
+      "sha256": "9b3b6ce57ba7ced334a819f25a98bc6a230bc95606c7cb6c7ee00d2bf124f76c"
+    },
+    "direction_inspection.json": {
+      "bytes": 2548,
+      "sha256": "28081af50e6ba97085ab96c47fe80eb250bb1ba8d71be32b22cb60d67991c4a4"
+    },
+    "r5_projected_fullstep_damage.md": {
+      "bytes": 1552,
+      "sha256": "6382fa2e450eea2436caca8fbe3ca6e9254dbf453d149f54103a003e8817f27d"
+    },
+    "accepted_prefix_evolution.csv": {
+      "bytes": 421,
+      "sha256": "561ba653c21dc662ac660dd99ca81580f1e6bdcab425416e0f6810abff6c3101"
+    },
+    "r5_available_prefix_evolution.png": {
+      "bytes": 151892,
+      "sha256": "7bf11bb6ebf6d174f40386985861974ba4be29444a55df6fbf68ff6f8ddba1bc"
+    },
+    "r5_residual_and_linear_quality.pdf": {
+      "bytes": 21041,
+      "sha256": "787c09ee62ea5e7d38f76a52776c920144eaa72f148c2d41ff8293bd7e289e4f"
+    },
+    "r5_available_prefix_evolution.md": {
+      "bytes": 1270,
+      "sha256": "36a6c0756ff2345b448d5dcb54e06a3f0bfd5ef97b7e1fe704c14e953362ca51"
+    },
+    "r5_residual_and_linear_quality.png": {
+      "bytes": 130113,
+      "sha256": "54843bf51a28795f1feaf8fe05dcee6b8993f9a2278c0310267b51b3e5d1c1dc"
+    },
+    "direction_stdout.json": {
+      "bytes": 2459,
+      "sha256": "a51c9fab8093e3fb4c69452d4318a16289657e78507052f75c185c90d8ac0d3d"
+    },
+    "r5_available_prefix_evolution.pdf": {
+      "bytes": 19814,
+      "sha256": "6f57206312d3dcaa642df75491b122b93cce797f5eb1274c417f70539fcc40e8"
+    },
+    "analyse_saved.py": {
+      "bytes": 20080,
+      "sha256": "e15d6c499be88d98649f5dbbf555d4f9052be47475a2a067d2f2bec34afd6a86"
+    },
+    "reconstructed_failed_damage.npz": {
+      "bytes": 259274,
+      "sha256": "3d8f5f53c01f8f1a97871913dcde288e743f5a97a296db3461fab8a8d5d8ef83"
+    },
+    "r5_accepted_prefix_fields.md": {
+      "bytes": 1352,
+      "sha256": "d12b2ac3212cb699750d0efdfff81db003384eb3b6d7391b625e42ae36dfe6f5"
+    },
+    "r5_step2_work.csv": {
+      "bytes": 41336,
+      "sha256": "d535183fe287ecd3ad9a7b9cf9620819a224e3721d27bb55dd48e0e682d0d6c4"
+    },
+    "direction_reconstruction.py": {
+      "bytes": 5639,
+      "sha256": "3c6a37bef70848308c8086978009a663d4899639fecc80694e0ca05614bf2e5b"
+    },
+    "analysis_stdout.json": {
+      "bytes": 2071,
+      "sha256": "d31271f2ebec8d8f2f4976a94d065e73f809e59fff15bb7d16f78fe926435dfb"
+    },
+    "r5_step2_candidates.csv": {
+      "bytes": 3489,
+      "sha256": "167ee3434b800508f4200d3d0ba7cd69fe81a4e39fcae65c07a64b1b353c39b4"
+    },
+    "analysis_summary.json": {
+      "bytes": 28506,
+      "sha256": "cc245d0b96b8acfaf6ca3d0d62bf67297b29a380c012e383673cdba965543c3b"
+    },
+    "r5_residual_and_linear_quality.md": {
+      "bytes": 1337,
+      "sha256": "3267a20cf44b9691f004e5b4d83aebf5b9668318995fead9ae5935eae6f57e38"
+    },
+    "r5_projected_fullstep_damage.png": {
+      "bytes": 129442,
+      "sha256": "f5cc12d1d8417fa54d842272d31f77273a472be21ae73d990eb9df0719a18417"
+    },
+    "r5_accepted_prefix_fields.png": {
+      "bytes": 181689,
+      "sha256": "44d002af8ce3ab2f925986c5aed093b32364a652ad46a151662fcf72ec88b88d"
+    },
+    "r5_accepted_prefix_fields.pdf": {
+      "bytes": 84405,
+      "sha256": "bb1519c48e67abe01c4d52a719d6a46e31b43f5af03bbe578df2556fb4f6a769"
+    },
+    "r5_projected_fullstep_damage.pdf": {
+      "bytes": 54175,
+      "sha256": "6c31a050643d4df84a4ddfc57f7785b6eb77be63bb23e1e57251b094fd479175"
+    }
+  },
+  "full_remote_inventory_sha256": "0f779587cc4ef30a4f0b34d128c3defa21ef6203460f560fda52b2af44aa7f20"
+}

@@ -1,0 +1,99 @@
+{
+  "schema": "hybrid-independent-execution-review-v1",
+  "verdict": "REVIEW_PASS",
+  "scope": "EXACT_STATIC_EXECUTION_PACKAGE_REVIEW_ONLY",
+  "reviewer": "independent Codex reviewer /root/hybrid_readiness_review",
+  "reviewed_at_utc": "2026-10-20T23:44:03.960598+00:00",
+  "source_commit": "f4311e0e21d52eb65a8c845308436d3e7ab4df5f",
+  "artifact_id": "ff3dc7a9a97e4a53edf0eaaf6501f5e15414f1476db49a1b277b7205e32226de",
+  "card_sha256": "e7333d402c188aa7bfb21946cdc4a76e9cc7fb42497901eefb797e198b6780fe",
+  "source_manifest_sha256": "a6b4acd3095348dff022f3ef482ed2d072ecafbcd11eb1ac52031d65d48d7615",
+  "source_files_verified": 34,
+  "bindings": {
+    "authority.json": "2a6859d7fa0a9983442f96352aacc15ce56584ff439d051d2e6f6389b7f70671",
+    "plan.md": "70bbb7408093f3ab1b4756542a6ee8d38a432ec160d9afb2baf452188713cbdb",
+    "checks.json": "5968c6218da9962c6b2a852151edeeb8e85661d39c02d044adbce0adff34be93",
+    "retained_deps_manifest.json": "167da1530d3a864d70d7a8ebe6e5aef870598657895af924373b6b41aff07bf4",
+    "structure_preparation.json": "10472ec5af8ce195df65cc720d5a2570cede3d64d6ae16891fcaa91faed1cc9f"
+  },
+  "inherited_scope": [
+    "Previously reviewed unchanged original FEM/history/D13/CAS operators and exact accepted-state contracts.",
+    "R4 B/C/D original residual/history-chain derivatives and natural VI projection/free-bound release.",
+    "R4 complete owned-tree monitor, AS partitions, pidfd/gated worker/guardian, exact receiver, fresh dependencies, lossless accepted snapshots, step/storage boundary and final scans."
+  ],
+  "new_diff_review": {
+    "AA": "Full alpha1 target.copy plus original box/crack projection; explicit full_original_QP_map and alpha/history-operation records determine add/clear. No array-roundtrip identity or tolerance-based operation inference.",
+    "block_equations": "Original free mechanics residual Ru is retained. Active delta_a=-F_a, original inactive Rd used directly, and B_a/D_Ia contributions enter their separate RHS. General sparse [A B_I; C_I D_II] is assembled; full history-chain C/D remain in use. No separate current-A direction LU or explicit dense Schur.",
+    "linear_solver": "Exactly one general SuperLU COLAMD default threshold-pivot factor/solve per direction; no Schur/iterative/ordering/regularization/refinement fallback. Nonfinite matrix/solution, invalid pivot, actual warning or failed independent row audit stops.",
+    "row_precision": "Each recomputed unpreconditioned block-row residual uses only its own RHS and binary64 dot/add gamma_m magnitude bound. Effective target=max(0.001*own_rhs_l2,own_roundoff_l2); no arbitrary atol or cross-row norm. Original mechanical L2<=1e-8 and damage inf<=1e-7/L2<=4e-6 remain simultaneous direction checks; full physical m_accept remains separately mandatory.",
+    "globalization_acceptance": "Ordinary/AA/Newton share strict working-merit descent and finite4-candidate backtracking with complete factor/key/domain restoration. No-QP points have NA operation component and cannot commit. Actual final QP f_solve, refreshed history/f_commit, full original acceptance and current-K pivot precede one CAS.",
+    "finite_control": "At most8 block directions perstep, ninth refused before solve; all initial/ordinary/AA/Newton/backtracked fresh evaluations share100 and original300-second external step deadline.",
+    "evidence": "Latest before/after/rejected work-point tags and raw latest block direction/RHS/Ru/Rd/F/freeDOF/inactive/true-row vectors explicitly UNACCEPTED. Fixed tags may represent different directions. Nonfinite solution emits finite diagnostic counts and can persist raw solution before stopping; original accepted NPY members retained losslessly.",
+    "admission": "v8 worker storage schema active. New preflight reads prior R3 dependency/input provenance and consumed R4 terminal/PID identities without account-wide process scanning or kills. Fresh root/reservations and no automatic retry persist."
+  },
+  "independent_checks": {
+    "all34_source_hashes_equal_manifest_and_git_show_frozen_commit": true,
+    "all10_changed_source_test_hashes_equal_checks_receipt": true,
+    "all_manifest_python_syntax_compiled_locally_without_execution": true,
+    "exact_card_validate_passed": true,
+    "card_authority_equals_bound_file": true,
+    "retained_dependency_manifest_binding_matches": true,
+    "artificial_block_and_guarded_tests": "32 passed in0.55s; small algebraic/native one-element derivatives and mocked controllers only.",
+    "new_v8_CPU_control_tests": "25 passed in0.77s; local artificial files and mocked producer/SSH/launcher controls only.",
+    "python_absolute_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+    "owner_final_record": "checks.json binds57 artificial checks; final wrapper wall1.059616915998049s/CPU1.032748s. Reviewer checked final two diagnostic-only edits and exact hashes without repeating unchanged tests or the previous163.",
+    "closed_findings": [
+      "Zero/tiny RHS no longer demands bitwise zero; separate roundoff bounds plus absolute gates cover coupled cancellation.",
+      "Inactive damage RHS uses original Rd directly, including non-unit-scale/non-reversible natural-residual regression.",
+      "R4 consumed terminal and saved owned-process identities included in new preflight."
+    ]
+  },
+  "execution_envelope": {
+    "authority_id": "HQ-FEM-COUPLED-BLOCK-NEWTON-20261020",
+    "authority_type": "human_delegated_hq",
+    "authority_provenance": "Exact bound authority records the previously owner-verified direct-human HQ delegation and this prospectively limited method package. Review grants no new authority.",
+    "run_id": "pf_hybrid_solver_v8_20261021_r5",
+    "producer": "drtao@172.16.100.2 GPUServer8",
+    "package_start_epoch": 1792539166.0,
+    "absolute_package_end_epoch": 1792553566.0,
+    "total_envelope_seconds": 14400,
+    "post_execution_reserve_seconds": 600,
+    "termination_reserve_seconds": 45,
+    "numerical_stop_epoch_before_bounded_cleanup": 1792552921.0,
+    "cpu_cores": 4,
+    "gpu_count": 0,
+    "aggregate_rss_vms_limit_bytes": 34359738368,
+    "worker_AS_bytes": 32212254720,
+    "supervisor_soft_AS_bytes": 1610612736,
+    "guardian_AS_bytes": 134217728,
+    "primary_archive_local_retrieval_gib": [
+      1,
+      7,
+      8
+    ],
+    "scope": "Only original train_A amplitude0.8,120cycles of original5loads,600continuous accepted steps, original state0/mesh/material; reference role, no NN features/training or other cases.",
+    "scientific_attempts": 1,
+    "automatic_retry": false,
+    "solver_fallback": false,
+    "mechanical_admission_actions": 2,
+    "mechanical_admission_total_seconds": 120,
+    "old_known_research_wall_seconds_preserved": 1232.4626276369672,
+    "prior_R4_conservative_calendar_charge_seconds_not_actual_CPU": 4390.0,
+    "prior_R4_charge_interval": "2026-10-20T22:19:36Z to new receipt2026-10-20T23:32:46Z; includes previous3689.498 snapshot and closure/padding; do not add R4 producer time again.",
+    "historical_unknown_control_reserve_seconds_not_actual": 600
+  },
+  "runtime_requirements": "Before and during the sole producer attempt, original exact source/card/dependency/input/runtime/host/account/mount/capacity/affinity/AS/guardian/resource/deadline checks must still pass. Unknown dispatch is reconciled using this run reservation and owned identities, never submitted a second time or replaced by a new RunID.",
+  "runtime_admission_verified": false,
+  "real_size_block_factorization_verified": false,
+  "scientific_convergence_verified": false,
+  "neural_comparison_verified": false,
+  "reviewer_SSH_actions": 0,
+  "reviewer_project_scientific_array_decodes": 0,
+  "reviewer_FEM_or_training_runs": 0,
+  "limitations": [
+    "Connectivity-only dimension/nnz/base-CSC count is not a SuperLU fill, peak memory or runtime bound; fitting32GiB/300s remains unverified.",
+    "Resource/storage scans do not prove every unsampled instantaneous peak; bounded worker AS, step headroom and final scans remain required.",
+    "Artificial tests and static review cannot establish a complete teacher, full600-step convergence, unique/physical solution, material generalisation or neural benefit."
+  ],
+  "blocking_findings": []
+}

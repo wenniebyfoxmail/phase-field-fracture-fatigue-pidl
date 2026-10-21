@@ -76,3 +76,17 @@ Actual result review: [scoped independent receipt](../research/S04/S04-E011/runs
 沿原目标/D13，后续HQ可核人方托管计算授权前瞻限定一次train_A600步、4h/4CPU/0GPU/32GiB/合计16GiB，首科学失败停；非复用R3许可。冻结bb07b014/33文件及163人工检查、独立准确执行复核后单次R4接受首步30.405秒、1/600，case150.708秒。Newton首方向全步被拒绝、半步改善；次方向48内迭代/53作用真相对残差0.155253>0.001而首停，非300秒超时。29文件/92.014MB及终态源全核、latest version1、4进程全退，未重试/训练/其他case。
 
 源码+事件独立确认AA全步减加后逐位判等导致历史误清，尚无完整持续AA验证；原物理精度/真实最终QP/单CAS未变。第1步与R3场差约1e-15不代表完整轨迹或NN收益；f始终1。下一仅提案：显式全QP操作历史语义＋原残差耦合主动集块Newton/分别固定尺度真残差，fill/成本/收敛未知，无新实现/运行。[完整诊断](../research/S04/hybrid_constrained_design_20261019/solver_repair_v7/result.md)／[elapsed](../research/S04/hybrid_constrained_design_20261019/solver_repair_v7/case_elapsed_times.csv)／[保存证据复审](../research/S04/hybrid_constrained_design_20261019/solver_repair_v7/evidence_review.json)。
+
+
+<!-- HYBRID_R5_D17_LAUNCH -->
+### 2026-10-21 D17：新授权原残差稀疏耦合块Newton一次连续轨迹
+
+沿D12–D16原目标，HQ-FEM-COUPLED-BLOCK-NEWTON-20261020新限定一次原train_A600（4h自23:32:46Z/4CPU/0GPU/32GiB/16GiB、首科学失败停不重试）；旧R3/R4及费用保留。f4311e0e/34files/57人工检查及原渠道准确绑定REVIEW_PASS后，GPUServer8实际准入通过，R5在23:45:54.247Z单次spawn。首接受步31.843秒、1/600，第2步运行中，无完整轨迹/NN收益。
+
+统一保护/D13/原精度不变；显式full-QP历史修误清，用保留非零Ru/active贡献的一般稀疏块LU替代当前Schur配置，最多8方向/100fresh/300s；双行真残差各自.001rhs或不可调运算舍入界并同时原绝对精度，无fallback。结构计数不是LU fill/RAM保证。原输入只读、98公共OSQP同机复制；零启动2动作29.368秒。详细[连贯方案](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/plan.md)／[实时收据](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/run_status.md)／[准确独立复核](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/execution_review.json)。
+
+
+<!-- HYBRID_R5_D17_TERMINAL -->
+D17实际终态（2026-10-21）：R5按首科学失败停止，1/600、首步31.84257秒/case205.13691秒/producer205.13836秒/worker+guardian CPU356.26736秒/GPU0。3个原残差块方向双行真残差均过原.001与abs门，但第三方向fullstep在机械GMRES80次未达目标后，CURRENT K LU未通过原pivot资格；非300秒或fresh/方向上限。第三方向的较小步未尝试，4归属进程退出且无重试。完整159files/75154098B逐SHA，latest version1与R4首数值态逐位相同。
+
+保存向量重建表明投影改变方向inf0.54347、实际d跳0.43479，0→50全nodal-d1 cells、32freeDOFs仅连这类单元；savedwarm全tensile/eta0下g在0..1.23e-32。支持未接受全步造成近零刚度局部，不是实测pivot/谱/精确rank或旧接受态奇异。整体600轨迹仍失败，f1-only不代表疲劳覆盖。下一机制路线仅设计联合(u,d)投影/信任域全局化，模型必须计入actualprojectedstep，原最终QP/D13/精度/pivot不放宽；未实施或授权新科学尝试。[完整结果与四图](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/result.md)／[逐case elapsed](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/case_elapsed_times.csv)／[结果复核](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/evidence_review.json)。

@@ -1,0 +1,3 @@
+run_id,case,cycle,substep,prescribed_load,accepted,elapsed_seconds,elapsed_scope,failure
+pf_hybrid_solver_v8_20261021_r5,train_A,1,1,0.023999904000000002,True,31.842570629902184,accepted step including commit/snapshot IO,
+pf_hybrid_solver_v8_20261021_r5,train_A,1,2,0.047999904,False,169.99380991701037,step marker to failed mechanics trace; no successful step completion event,mechanics numerically near-singular

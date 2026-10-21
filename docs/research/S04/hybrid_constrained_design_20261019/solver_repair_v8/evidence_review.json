@@ -1,0 +1,184 @@
+{
+  "schema": "independent-r5-saved-evidence-review-v1",
+  "verdict": "SAVED_EVIDENCE_AND_PROPOSAL_REVIEW_PASS_ONLY",
+  "scope": "Final saved R5 terminal results, source-bound damage reconstruction and geometry-only algebra, four figures, accounting boundaries and unimplemented next-route proposal. No new science, implementation or execution authority.",
+  "reviewer": "independent Codex reviewer /root/hybrid_readiness_review",
+  "reviewed_at_utc": "2026-10-21T00:13:05.112238+00:00",
+  "executed_source_commit": "f4311e0e21d52eb65a8c845308436d3e7ab4df5f",
+  "artifact_id": "ff3dc7a9a97e4a53edf0eaaf6501f5e15414f1476db49a1b277b7205e32226de",
+  "card_sha256": "e7333d402c188aa7bfb21946cdc4a76e9cc7fb42497901eefb797e198b6780fe",
+  "bindings": {
+    "report": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v8/result.md",
+      "sha256": "28d25cdf93c4ef2e5487964e95da0ada24975863cc36bc6238f96eabe95a6001"
+    },
+    "summary": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v8/result_summary.json",
+      "sha256": "cc245d0b96b8acfaf6ca3d0d62bf67297b29a380c012e383673cdba965543c3b"
+    },
+    "analysis_manifest": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v8/analysis_manifest.json",
+      "sha256": "4cfcd04cf9968a7089e2e77570c773320775ff3f35ab09066e0465203b49e9ad"
+    },
+    "analysis_script": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v8_20261021/analysis/analyse_saved.py",
+      "sha256": "e15d6c499be88d98649f5dbbf555d4f9052be47475a2a067d2f2bec34afd6a86"
+    },
+    "reconstruction_script": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v8_20261021/analysis/direction_reconstruction.py",
+      "sha256": "3c6a37bef70848308c8086978009a663d4899639fecc80694e0ca05614bf2e5b"
+    },
+    "direction_inspection": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v8_20261021/analysis/direction_inspection.json",
+      "sha256": "28081af50e6ba97085ab96c47fe80eb250bb1ba8d71be32b22cb60d67991c4a4"
+    },
+    "completion_cost": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v8/completion_cost.json",
+      "sha256": "75377a6e5f0f16c59d7fedf129a48f1afe111d8974f12c4ee87c05b76791d54b"
+    },
+    "case_elapsed_csv": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v8/case_elapsed_times.csv",
+      "sha256": "c5e0b37f3b886dbe20b1e55254411827ec470f19466be9a9996f30d589b4e04a"
+    },
+    "full_remote_inventory": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v8_20261021/full_remote_inventory.json",
+      "sha256": "0f779587cc4ef30a4f0b34d128c3defa21ef6203460f560fda52b2af44aa7f20"
+    },
+    "complete_return_verification": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_solver_repair_v8_20261021/complete_return_verification.json",
+      "sha256": "af2bf9f64e950a5e21d9fd4f5a89a3385e7667af303a6c683341ab60238504e6"
+    },
+    "step_elapsed_csv": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v8/step_elapsed_times.csv",
+      "sha256": "56817e3fb58774db6b7899585a8019180aad0005fc085d13e849da3ba85d5206"
+    }
+  },
+  "independent_checks": {
+    "complete_owned_output_inventory": {
+      "files": 159,
+      "bytes": 75154098,
+      "all_sizes_and_sha256_match": true,
+      "scope": "Entire terminal R5 runroot+archive as inventoried; excludes original R3 private input/dependency source trees."
+    },
+    "all34_returned_source_files_equal_manifest_and_unchanged_local_scientific_source": true,
+    "all23_analysis_manifest_file_sizes_and_sha256_match": true,
+    "result_summary_equals_analysis_summary": true,
+    "accepted_state_contracts": "Independently loaded saved initial0/accepted1/latest, validated original D13 envelopes and0->1 transition; latest.version==1 and numeric fingerprint matches saved R4 state1. No second accepted commit.",
+    "derived_damage": "Independently reconstructed clip(best.d+delta_damage,old accepted state1.damage,1), checked metadata parent/load/outer19, and matched stored reconstructed_failed_damage array exactly. Original lower1 fixes precrack automatically; original source also restores explicit precrack.",
+    "saved_only_recalculation": "Read authorized known-case arrays and hashed original mesh, used portable Q4 geometry and saved BC-projected warm displacement only. No stiffness matrix assembly, linear solve, factorization, fresh FEM, training, GPU or SSH.",
+    "analysis_runtime": "Existing dev venv /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python; NumPy2.2.6, single-thread environment. Producer dependency versions remain those in its exact execution receipt; local version is not substituted into runtime provenance.",
+    "trace_and_timing": "Independently reconstructed nesting including failed parent; all frames close. Root-only summed work166.69681053981185s; failed mechanical root18.151943754404783s. Guard active.started to failed trace end169.99380991701037s, distinct from successful step event timing and outer StepFailure wrapper timing.",
+    "figures_visually_inspected": [
+      "r5_residual_and_linear_quality.png",
+      "r5_projected_fullstep_damage.png",
+      "r5_accepted_prefix_fields.png",
+      "r5_available_prefix_evolution.png"
+    ],
+    "figure_review": "Readable actual/reconstructed/accepted scopes, common field scales, symmetric signed differences, local Q4 cell view, separate row residual targets and only available0->1 prefix. Four PDFs and sidecars SHA-bound; PDF pixels not separately rendered.",
+    "no_old_or_new_solver_tests_repeated_for_this_result_review": true
+  },
+  "terminal_findings": {
+    "status": "scientific_failure_stopped_no_retry",
+    "accepted_steps": 1,
+    "planned_steps": 600,
+    "step1_with_IO_seconds": 31.842570629902184,
+    "step2_marker_to_failed_trace_seconds": 169.99380991701037,
+    "step2_success_event_elapsed_seconds": null,
+    "completed_step2_fresh": 23,
+    "attempted_step2_fresh": 24,
+    "block_directions": 3,
+    "case_phase_wall_seconds": 205.13691322132945,
+    "producer_wall_seconds": 205.138359378092,
+    "worker_guardian_observed_CPU_seconds": 356.26735499999995,
+    "GPU_seconds": 0,
+    "observed_peak_owned_tree_RSS_bytes": 4523196416,
+    "root_failure": "New unaccepted third-direction alpha1 candidate mechanics first iteration: retained-LU-preconditioned GMRES80inner iterations/code4 missed original true residual target, then current-matrix LU returned and failed original finite pivot-ratio>=1e-14 qualification.",
+    "not_proven": "Actual pivot scalar, failed K/LU, spectrum, exact rank and last GMRES candidate displacement were not saved. The protection message does not prove a particular finite pivot value, exact singularity, or failure of an old accepted matrix.",
+    "secondary_guard": "Incomplete step completion at worker exit follows Python scientific failure, not a deadline-root stop.",
+    "budget_not_exhausted": [
+      "300-second step",
+      "100fresh",
+      "8block directions",
+      "RSS/AS memory envelope"
+    ],
+    "sole_scientific_attempt_no_retry_verified_within_saved_records": true,
+    "all_recorded_owned_processes_absent": [
+      3949659,
+      3949660,
+      3949673,
+      3949674
+    ],
+    "smaller_third_direction_steps_attempted": false,
+    "full_trajectory_or_neural_success": false
+  },
+  "observed_method_behavior": {
+    "AA_identity": "Real full-QP history1->2->3->4 and explicit clears appear; three actual AA trials atouter4/6/8 retained. This exercises corrected operation semantics, not more-than-three actual successful proposals or isolated AA benefit.",
+    "block_quality": "All three sampled original block directions passed separate own-RHS relative and original absolute row criteria. At all three points relative targets dominate roundoff bounds; no reliance on roundoff allowance. Passing directions are not passing nonlinear projected candidates.",
+    "globalization": "Completed retained work merits strictly decrease. First direction full rejected/half retained; second full/half/quarter rejected/eighth retained atouter19,m_work2.027988618147347. Next four ordinary map trials rejected and rolled back. Third full trial failed before fresh audit, so later step lengths were not attempted.",
+    "comparisons": "R3/R4/R5 remain separate negative/censored policies; neither the best residual nor timing establishes isolated-factor acceleration or complete teacher qualification."
+  },
+  "independent_projection_geometry_findings": {
+    "base_outer": 19,
+    "parent_state_id": "b349d1c674a2ca0b5886ffc6d3f1144a731da87e5011404fe24782a288638973",
+    "delta_damage_inf": 0.5880389182178112,
+    "projected_step_inf": 0.4347905520154579,
+    "raw_to_projected_change_inf": 0.5434685506843772,
+    "upper_clipped_nodes": 53,
+    "lower_clipped_nodes": 540,
+    "fully_nodal_d1_cells_before": 0,
+    "fully_nodal_d1_cells_after": 50,
+    "nodes_supported_only_by_those_cells": 16,
+    "free_displacement_DOFs_supported_only_by_those_cells": 32,
+    "those_nodes_old_damage_min": 0.8087799980627897,
+    "those_nodes_old_damage_max": 0.8218312982345999,
+    "those_nodes_precrack_count": 0,
+    "BC_projected_warm_u_bitwise_matches_saved_best": true,
+    "native_tensile_branch_GP": 345632,
+    "total_GP": 345632,
+    "g_range_on_fully_d1_cells": [
+      0.0,
+      1.232595164407831e-32
+    ],
+    "exact_zero_GP_on_those_cells": 50,
+    "four_exact_zero_GP_element_count": 0,
+    "interpretation": "With original eta0 and saved warm tensile branch, near-zero local stiffness support is a strong source/field explanation consistent with this new candidate mechanical qualification failure. It is conditional kinematic/constitutive inference, not an assembled failed matrix or measured pivot/rank, and proves neither accepted-state singularity nor absence of a full-model root.",
+    "history_boundary": "Predicted du is not a completed mechanical solution; best psi/A/r/f must not be relabelled as failed-candidate history. Candidate after/best tags are both outer19; last rejected completed point is ordinary outer23, not the failed third full step."
+  },
+  "next_route_assessment": {
+    "status": "DESIGN_DIRECTION_ONLY_NOT_EXECUTION_READY",
+    "assessment": "Joint projected/trust-region original-residual globalization is a coherent route to design and review, not a demonstrated fix.",
+    "requirements": [
+      "Use actual projected joint step in prediction/acceptance, including B*(projected_dd-dd); original du with clipped damage is not the original balanced linear step.",
+      "Specify work model scales, trust-radius updates, actual/predicted reduction and finite evaluation budgets prospectively. Original tolerance-normalized work merit may constrain radius through second-order Ru; do not silently loosen its guard.",
+      "Same-old trial history, original final real QP, mechanical equilibrium/currentK pivot, full m_accept, actual f_solve/f_commit and one CAS remain mandatory.",
+      "Do not add residual eta, change original equations, lower precision or bypass pivot qualification to rescue results.",
+      "Preserve candidate damage/warm-u/alpha/context and actual pivot scalar/key/branch before future failure, subject to a separately reviewed implementation and new authority."
+    ],
+    "unknowns": "Convergence, feasible trust radii, resource costs and existence of an admissible complete600-step root under the current contract remain unverified."
+  },
+  "accounting_review": {
+    "snapshot_utc": "2026-10-21T00:09:24.756087+00:00",
+    "conservative_calendar_charge_seconds": 2198.756087064743,
+    "new_package_budget_seconds": 14400,
+    "old_known_wall_seconds": 1232.4626276369672,
+    "prior_R4_conservative_calendar_charge_seconds": 4390.0,
+    "whole_package_CPU_seconds": null,
+    "historical_reserved_missing_control_seconds_not_actual": 600,
+    "combined_new_logical_storage_conservative_upper_bytes": 176701986,
+    "combined_storage_limit_bytes": 17179869184,
+    "review": "Verified arithmetic, terminal/inventory consistency and CPU/calendar/reserve distinction. Remaining original136h subtracts both old+prior+current conservative charges and the separate600-second reserve; reserve is not reclassified as actual. Storage bound is logical sizes plus whole existing worktree/vault and1MiB allowance, not an observed instantaneous peak or a new full filesystem scan by reviewer. Later review/commit overhead is outside the explicitly dated snapshot and not pretended measured.",
+    "original136h_conservative_remaining_hours_after_separate600second_reserve": 133.6607725792461
+  },
+  "historical_review_boundary": "Original static/57 artificial-check clearance remains scope-limited. R5 actual result is a scientifically failed prefix, with observed linear/control behavior but no completed teacher or neural comparison.",
+  "reviewer_remote_actions": 0,
+  "reviewer_FEM_stiffness_assemblies": 0,
+  "reviewer_factorizations_or_FEM_solves": 0,
+  "reviewer_training_runs": 0,
+  "new_execution_authority": false,
+  "scientific_convergence_verified": false,
+  "blocking_findings_for_saved_evidence_and_proposal_report": [],
+  "completion_addendum": {
+    "reviewed_at_utc": "2026-10-21T00:15:31.257306+00:00",
+    "scope": "Only added step_elapsed_times.csv binding and confirmed report digest unchanged. Step1 accepted including commit/snapshot IO31.842570629902184s; step2 marker-to-failed-trace169.99380991701037s, no successful completion event. No source/science/run changes or repeated tests."
+  }
+}
