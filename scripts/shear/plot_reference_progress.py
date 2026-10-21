@@ -22,9 +22,9 @@ axs[0].set(xlabel='Prescribed shear displacement U',ylabel='Top horizontal react
 axs[1].semilogy(u,[x['res_u']+x['res_pf'] for x in rows],'o-',ms=3,color='#0072B2')
 axs[1].axhline(1e-4,color='#D55E00',ls='--',label='Unchanged limit 1e-4')
 axs[1].set(xlabel='Prescribed U',ylabel='Final ||Ru|| + ||Rpf||',title='Fresh final-state residuals');axs[1].legend(frameon=False,fontsize=8)
-axs[2].bar(np.arange(n),[x['step_seconds'] for x in rows],color='#0072B2',label='Accepted step')
+axs[2].bar(np.arange(1,n+1),[x['step_seconds'] for x in rows],color='#0072B2',label='Accepted step')
 for failure in v['failures']:
- axs[2].bar(failure['step']-1,failure['step_seconds'],color='#D55E00',label='Rejected step')
+ axs[2].bar(failure['step'],failure['step_seconds'],color='#D55E00',label='Rejected step')
 axs[2].set(xlabel='Load step',ylabel='Elapsed seconds',title='Step cost (same 600 s cap)')
 axs[2].axhline(600,color='#777777',ls=':',lw=1);axs[2].legend(frameon=False,fontsize=8)
 for ax in axs:ax.grid(alpha=.15)
