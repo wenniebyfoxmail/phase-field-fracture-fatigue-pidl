@@ -274,3 +274,10 @@ First SCP DNS resolution failed before upload (0.017989083s), no SSH launch comm
 ### 2026-10-21 18:59Z — direct human approves exact R011 submission
 
 Human annotated the explicit R011 upload/FEM request with “批准”. This supersedes the auto-review authority block prospectively; no prior attempt is reclassified. Resume same R011 with one scientific start, no scientific retry, original9750s cap/deadline/resources and conditional PIDL unchanged. Old admission expired while awaiting required human approval; preserve original invocation and renew only remaining180s remote-operation allowance, keeping its prior0.017989083s charge. Record direct_user_approval.json and a separate approved admission receipt. No second zero-start transport has yet executed.
+
+
+### R011 live launch and mixed-direction follow-up
+
+Exact human approval permitted network-enabled continuation. CITPC12 supervisor22708 / MATLAB17960 started2026-10-21T19:00:10.1185407Z,9750s cap/science deadline21:42:40Z; original total00:20Z unchanged. Source snapshot commitc6603716 (reviewed scientificSHA unchanged), local approval controllerc7f3b5f4. Initial zero-start/auto-review records retained. R010 conditional reference now points to R011, unchanged NN science.
+
+Human proposed45-degree FEM/PINN comparison next. Local boundary implementation confirms theta measured fromx-axis,0degree horizontal shear; plan fixes vector magnitudeU and both components consistently. See [next direction plan](mixed_direction_next_plan.md). No new angle run launched or included in the current one-attempt budget.
