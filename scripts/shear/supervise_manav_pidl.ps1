@@ -40,7 +40,7 @@ if ($c.kind -eq 'fem') {
     $env:TORCHINDUCTOR_CACHE_DIR=$temp;$env:TRITON_CACHE_DIR=$temp;$env:CUDA_CACHE_PATH=$temp
     $env:OMP_NUM_THREADS='4';$env:OPENBLAS_NUM_THREADS='4';$env:MKL_NUM_THREADS='4'
     $env:PYTHONDONTWRITEBYTECODE='1'
-    $env:CUDA_VISIBLE_DEVICES=[string]$c.gpu_uuid 
+    $env:CUDA_VISIBLE_DEVICES=[string]$c.gpu_uuid
     $env:PYTHONPATH=Join-Path $c.root 'deps'
     $env:PYTHONUNBUFFERED='1'
 }
