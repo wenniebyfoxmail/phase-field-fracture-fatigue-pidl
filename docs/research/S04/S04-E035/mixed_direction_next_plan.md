@@ -20,3 +20,13 @@
 先运行一个45度完整配对，从初态重新计算；不做角度网格扫描。它能区分仅0度配置/边界偶合的问题与随混合模式改变的优化和损伤演化差异。单条synthetic轨迹不建立道路或跨材料泛化结论。
 
 本次仅设计，没有45度RunID、远程部署或训练。待0度实际成本与误差可用后，给出45度完整计算预算；目前不能承诺在原窗口内额外启动。若0度FEM仍提前失败，先用保存原生组装/返回点解释该瓶颈，避免把未合格求解器复制到新方向。
+
+
+## 2026-10-21 人方执行授权与准备审核
+
+人方明确批准0度同点返回修复及FEM/PIDL比较后，继续相同幅值45度，不逐项询问。原00:20Z截止、累计3hFEM/6GPUh及资源上限覆盖两方向，不新增窗口。45度准备代码独立只读审查通过：theta tensor显式float32匹配x.dtype；launcher强制参考angle45、幅值U身份；FEM顶边同时施加dispX/dispY并核验两分量和投影反力。0度配对尚未完成，45度仍未启动；部署控制器尚待绑定预算/顺序审查。
+
+- `run_manav_static_fem_angle.m` SHA256 `92e15f53cc12ee194e7c4e814e35abe0df3d51f5f4a89639ced266d7f4e70ed2`
+- `run_manav_static_pidl_angle.py` SHA256 `5639cf07a5119117b02d0a878d1705f7455d9e0ec404ee0551ad1b300aaa290a`
+- `launch_manav_static_pidl_angle.py` SHA256 `7366b3133223834ffc707ef9829af8b1bf495107719a9db2117ece1ec2e2b6c0`
+- `verify_manav_static_reference_angle.py` SHA256 `f71e031f9de3685b76605cbef31c59dd9ce5406cc8b546dd1f5556c2e5264404`
