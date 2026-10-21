@@ -54,6 +54,27 @@ class MechanicsWorkspace:
             raise RuntimeError('mechanics numerically near-singular')
         return ratio
 
+    def qualify(self,factor,key,stage,diagnostic=None,*,u=None,d=None):
+        # Emit actual scalar before the unchanged qualification may raise.
+        callback=diagnostic or getattr(self,'qualification_diagnostic',None)
+        state_hook=getattr(self,'qualification_state_observer',None)
+        if callback is not None or state_hook is not None:
+            piv=np.abs(factor.U.diagonal())
+            ratio=float(piv.min()/max(float(piv.max()),np.finfo(float).eps))
+            row=dict(kind='pivot_qualification',stage=stage,current_matrix_key=key.hex(),
+                pivot_ratio=ratio if np.isfinite(ratio) else None,pivot_ratio_finite=bool(np.isfinite(ratio)),
+                minimum_abs_pivot=float(piv.min()) if np.isfinite(piv).all() else None,
+                maximum_abs_pivot=float(piv.max()) if np.isfinite(piv).all() else None,
+                threshold=1e-14,branch='original current-matrix LU qualification',
+                passed=bool(np.isfinite(ratio) and ratio>=1e-14))
+            if u is not None:
+                signs=_trace_signs(u,self.kin)
+                row.update(tensile_trace_GP=int(np.sum(signs)),total_GP=int(signs.size))
+            if state_hook is not None:
+                state_hook(row,{} if u is None or d is None else dict(u=u,d=d))
+            if callback is not None:callback(row)
+        return self.pivot_ratio(factor)
+
     def certify_factor(self,d,u,dofs,observe=None):
         def call(kind,fn):return observe('mechanical.'+kind,fn) if observe else fn()
         matrix=call('acceptance_assembly',lambda:self.assemble(d,u))
@@ -64,7 +85,7 @@ class MechanicsWorkspace:
         ff=matrix[free][:,free].tocsc();key,domain=self.matrix_identity(ff,free)
         reused=key==self.factor_key and domain==self.factor_domain
         factor=self.factor if reused else call('acceptance_factorization',lambda:splu(ff))
-        ratio=self.pivot_ratio(factor)
+        ratio=self.qualify(factor,key,'final_acceptance',u=u,d=d)
         self.factor=factor;self.factor_key=key;self.factor_domain=domain
         return dict(current_matrix_pivot_qualified=True,minimum_pivot_ratio=ratio,
                     current_exact_factor_reused=bool(reused),matrix_key=key.hex())
@@ -139,11 +160,11 @@ class MechanicsWorkspace:
                 if not recycled:
                     if key!=self.factor_key or self.factor_domain!=domain:
                         factor=call('factorization',lambda:splu(ff))
-                        self.pivot_ratio(factor)
+                        self.qualify(factor,key,'new_current_factor',diagnostic,u=u,d=d)
                         self.factor=factor;self.factor_key=key;self.factor_domain=domain
                         info['factorizations']+=1
                     else:info['factor_reuses']+=1
-                    ratio=self.pivot_ratio(self.factor)
+                    ratio=self.qualify(self.factor,key,'current_factor_solve',diagnostic,u=u,d=d)
                     smallest=ratio if smallest is None else min(smallest,ratio)
                     u[free]=call('linear_solve',lambda:self.factor.solve(np.asarray(rhs).ravel()))
                     info['current_matrix_pivot_qualified']=True
@@ -161,8 +182,8 @@ class MechanicsWorkspace:
         if not np.isfinite(final.data).all():raise RuntimeError('nonfinite fresh mechanics matrix')
         if not stable and len(free):
             factor=call('fresh_factorization',lambda:splu(final[free][:,free].tocsc()));info['factorizations']+=1
-            piv=abs(factor.U.diagonal());ratio=float(piv.min()/max(float(piv.max()),np.finfo(float).eps))
-            if not np.isfinite(ratio) or ratio<1e-14:raise RuntimeError('fresh mechanics near-singular')
+            ff=final[free][:,free].tocsc();key,_=self.matrix_identity(ff,free)
+            ratio=self.qualify(factor,key,'fresh_mechanics',diagnostic,u=u,d=d)
             smallest=ratio if smallest is None else min(smallest,ratio)
         residual=np.asarray(final@u);norm=float(np.linalg.norm(residual[free]))
         scale=max(float(np.linalg.norm(final[free][:,free]@u[free])+np.linalg.norm(final[free][:,dofs]@values)),np.finfo(float).eps) if len(free) else 1.

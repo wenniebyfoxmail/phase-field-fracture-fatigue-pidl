@@ -28,9 +28,13 @@ class CouplingSettings:
     schur_relative_tolerance: float = 1.e-3
     max_newton_directions: int = 8
     block_relative_tolerance: float = 1.e-3
+    trust_trials: int = 8
+    trust_initial_radius: float = .1
+    trust_max_radius: float = .25
+    trust_min_radius: float = 1.e-8
 
     def __post_init__(self):
-        if self.mode not in ('none','projected_anderson','projected_anderson_monotone','guarded_vi_newton','guarded_block_newton'):raise ValueError('unknown coupling policy')
+        if self.mode not in ('none','projected_anderson','projected_anderson_monotone','guarded_vi_newton','guarded_block_newton','joint_projected_trust'):raise ValueError('unknown coupling policy')
         if self.mechanics_solver not in ('direct','recycled_gmres'):raise ValueError('unknown mechanics solver')
         for k in ('depth','max_proposals','max_rejections'):
             if type(getattr(self,k)) is not int or not 1<=getattr(self,k)<=5:raise ValueError('unbounded coupling policy')
@@ -41,6 +45,10 @@ class CouplingSettings:
             value=getattr(self,key)
             if type(value) is not int or not 1<=value<=cap:raise ValueError('unbounded reduced coupling policy')
         if type(self.max_newton_directions)is not int or not 1<=self.max_newton_directions<=8:raise ValueError('unbounded Newton directions')
+        if type(self.trust_trials)is not int or not 1<=self.trust_trials<=8:raise ValueError('unbounded trust trials')
+        if (not np.isfinite([self.trust_initial_radius,self.trust_max_radius,self.trust_min_radius]).all()
+            or not 0<self.trust_min_radius<=self.trust_initial_radius<=self.trust_max_radius<=.25):
+            raise ValueError('invalid joint trust radii')
         if not np.isfinite(self.block_relative_tolerance) or not 0<self.block_relative_tolerance<=1e-3:raise ValueError('invalid separate block row tolerance')
         if (not np.isfinite([self.schur_trigger_ratio,self.schur_relative_tolerance]).all()
                 or not 0<self.schur_trigger_ratio<1 or not 0<self.schur_relative_tolerance<=.01):

@@ -71,7 +71,7 @@ def marker(out, **values):
 
 
 def trajectory_storage_check(card,out,archive,headroom=False):
-    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8'):return
+    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9'):return
     # One scan at step boundaries, not every element/operator call. The live
     # supervisor also scans and final completion has an independent last check.
     from run_hybrid_producer import bytes_under
@@ -89,7 +89,7 @@ def trajectory(card, spec, inputs, out, archive):
     phase = archive / spec["id"]
     phase.mkdir()
     (phase/"states").mkdir()
-    if coupling.mode in ('guarded_vi_newton','guarded_block_newton'):
+    if coupling.mode in ('guarded_vi_newton','guarded_block_newton','joint_projected_trust'):
         def save_work_point(tag,point):
             import tempfile
             folder=phase/'unaccepted_work_points';folder.mkdir(exist_ok=True)
@@ -106,12 +106,14 @@ def trajectory(card, spec, inputs, out, archive):
                         r=point['q'].driver,f=point['q'].fatigue,psi=point['psi'],
                         metadata=np.array(json.dumps(metadata,allow_nan=False)))
                     if point['f_solve'] is not None:fields['f_solve']=point['f_solve']
+                    for key in ('Ru','F'):
+                        if key in point:fields[key]=point[key]
                     np.savez_compressed(f,**fields);f.flush();os.fsync(f.fileno())
                 os.replace(name,folder/(tag+'.npz'))
             finally:
                 if os.path.exists(name):os.unlink(name)
         backend.unaccepted_point_observer=save_work_point
-        if coupling.mode=='guarded_block_newton':
+        if coupling.mode in ('guarded_block_newton','joint_projected_trust'):
             import warnings
             warnings.simplefilter('error')
             def save_direction(point,info,vectors):
@@ -128,6 +130,23 @@ def trajectory(card, spec, inputs, out, archive):
                 finally:
                     if os.path.exists(name):os.unlink(name)
             backend.block_direction_observer=save_direction
+        if coupling.mode=='joint_projected_trust':
+            def save_joint_trial(metadata,vectors):
+                import tempfile
+                folder=phase/'unaccepted_work_points';folder.mkdir(exist_ok=True)
+                fd,name=tempfile.mkstemp(prefix='.joint-',suffix='.npz',dir=folder)
+                try:
+                    with os.fdopen(fd,'wb') as f:
+                        np.savez_compressed(f,**vectors,metadata=np.array(json.dumps(dict(metadata,
+                            classification='UNACCEPTED_JOINT_TRIAL_BEFORE_EVALUATION_NOT_LABEL'),allow_nan=False)))
+                        f.flush();os.fsync(f.fileno())
+                    target='last_mechanical_before_qualification.npz' if metadata.get('kind')=='pivot_qualification' else 'last_joint_trial_before.npz'
+                    os.replace(name,folder/target)
+                finally:
+                    if os.path.exists(name):os.unlink(name)
+            backend.joint_trial_observer=save_joint_trial
+            backend.mechanics_workspace.qualification_state_observer=lambda meta,vectors:save_joint_trial(
+                dict(meta,parent_id=old.fingerprint(),next_state_index=old.load_index+1),vectors)
     store = StateStore(phase/"latest.npz")
     store.initialize(old, context=step_context(card,spec,old,0,dofs,bc))
     shutil.copy2(store.path, phase/"states/state0000.npz")

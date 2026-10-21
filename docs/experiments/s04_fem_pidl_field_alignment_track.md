@@ -90,3 +90,9 @@ Actual result review: [scoped independent receipt](../research/S04/S04-E011/runs
 D17实际终态（2026-10-21）：R5按首科学失败停止，1/600、首步31.84257秒/case205.13691秒/producer205.13836秒/worker+guardian CPU356.26736秒/GPU0。3个原残差块方向双行真残差均过原.001与abs门，但第三方向fullstep在机械GMRES80次未达目标后，CURRENT K LU未通过原pivot资格；非300秒或fresh/方向上限。第三方向的较小步未尝试，4归属进程退出且无重试。完整159files/75154098B逐SHA，latest version1与R4首数值态逐位相同。
 
 保存向量重建表明投影改变方向inf0.54347、实际d跳0.43479，0→50全nodal-d1 cells、32freeDOFs仅连这类单元；savedwarm全tensile/eta0下g在0..1.23e-32。支持未接受全步造成近零刚度局部，不是实测pivot/谱/精确rank或旧接受态奇异。整体600轨迹仍失败，f1-only不代表疲劳覆盖。下一机制路线仅设计联合(u,d)投影/信任域全局化，模型必须计入actualprojectedstep，原最终QP/D13/精度/pivot不放宽；未实施或授权新科学尝试。[完整结果与四图](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/result.md)／[逐case elapsed](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/case_elapsed_times.csv)／[结果复核](../research/S04/hybrid_constrained_design_20261019/solver_repair_v8/evidence_review.json)。
+
+
+<!-- HYBRID_R6_D18_PREPARATION -->
+### 2026-10-21 D18：新授权联合投影信任域工作全局化
+
+HQ-FEM-JOINT-PROJECTED-TRUST-REGION-R006-20261021明确一项联合(u,d)原残差路线、一次train_A连续600；新4h自00:23:42Z/4CPU0GPU/32GiB/合计16GiB，首科学失败停不重试。D17/R3R4失败与累计费用保留，新替换working merit/普通damage map逐点机械消元，绝不改原最终QP/精度/currentK pivot/单CAS历史。初始正算子对角冻结尺度，实际投影步模型/有限radius及ratio规则见[前瞻方案](../research/S04/hybrid_constrained_design_20261019/solver_repair_v9/plan.md)。目前实现/必要人工检查/原所选独立准确复审中，未提交。新法不解trust子问题，无Cauchy/全局收敛保证，严格触发失败不证明物理无根。

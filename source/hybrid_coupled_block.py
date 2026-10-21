@@ -106,7 +106,7 @@ def solve_original_block(A,B,C,D,Ru,Rd,F,inactive,scale,settings,relative,call,r
     return delta,info
 
 
-def block_direction(backend,old,point,dofs,settings,policy,call,remaining,emit):
+def block_direction(backend,old,point,dofs,settings,policy,call,remaining,emit,*,return_model=False):
     d,u,qp,q=point['d'],point['u'],point['qp'],point['q']
     gradient=np.asarray(qp.hessian@d+qp.linear)
     F,inactive=natural_residual(d,gradient,old.damage,settings.damage_gradient_scale)
@@ -116,9 +116,15 @@ def block_direction(backend,old,point,dofs,settings,policy,call,remaining,emit):
     A=matrix[U][:,U].tocsc();Ru=np.asarray(matrix@u)[U]
     B,C,D=call('coupled_residual_tangent',lambda:coupled_blocks(backend,old,u,d,qp,q))
     hook=getattr(backend,'block_direction_observer',None)
+    saved={}
     def observer(info,vectors):
+        if return_model:saved.update(vectors)
         if hook is not None:
             call('block_direction_evidence',lambda:hook(point,info,dict(vectors,free_dofs=U)))
-    return solve_original_block(A,B[U].tocsc(),C[:,U].tocsc(),D,Ru,gradient,F,inactive,
+    Bu=B[U].tocsc();Cu=C[:,U].tocsc()
+    direction,info=solve_original_block(A,Bu,Cu,D,Ru,gradient,F,inactive,
         settings.damage_gradient_scale,settings,policy.block_relative_tolerance,
         call,remaining,emit,observer)
+    if not return_model:return direction,info
+    return direction,info,dict(A=A,B=Bu,C=Cu,D=D,Ru=Ru,F=F,inactive=inactive,
+        free_dofs=U,du=saved['delta_u_free'])

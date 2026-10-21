@@ -141,17 +141,19 @@ class NativeQ4Backend:
                                  length_scale=self.length_scale,
                                  thickness=self.material["thickness"])
 
-    def force_audit(self, u, d, dofs, values, settings):
+    def force_audit(self, u, d, dofs, values, settings, *, include_vector=False):
         matrix = assemble_amor_stiffness(self.kin, d, u, **self.material)
         force = np.asarray(matrix @ u)
         free = np.ones(len(u), bool)
         free[dofs] = False
         free_force = force[free]
-        return dict(force_inf=float(np.max(np.abs(free_force), initial=0.)),
+        result = dict(force_inf=float(np.max(np.abs(free_force), initial=0.)),
                     force_l2=float(np.linalg.norm(free_force)),
                     force_scaled=float(np.max(np.abs(free_force), initial=0.)) / settings.force_scale,
                     boundary_inf=float(np.max(np.abs(u[dofs] - values), initial=0.)),
                     reaction_dofs=dofs.tolist(), reaction_values=force[dofs].tolist())
+        if include_vector:result.update(free_residual=free_force,original_matrix=matrix)
+        return result
 
 
 def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id,
@@ -199,6 +201,13 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
             return backend.mechanics(d,dofs,values,settings)
         backend.validate_state(old)
         previous_id = old.fingerprint()
+        if coupling.mode=='joint_projected_trust' and iteration_observer is not None:
+            def initial_mechanics_diagnostic(row):
+                payload=dict(event='mechanics_linear_call',outer=0,previous_id=previous_id,
+                    load_id=next_load_id,elapsed_seconds=perf_counter()-start,**row)
+                call('iteration_evidence',lambda:iteration_observer(payload))
+            backend.mechanics_diagnostics=initial_mechanics_diagnostic
+            backend.mechanics_workspace.qualification_diagnostic=initial_mechanics_diagnostic
         attempted_model_id = "NN_OFF"
         if predictor is not None:
             attempted_model_id = getattr(predictor, "model_id", None)
@@ -245,6 +254,12 @@ def solve_step(backend, old, prescribed_dofs, prescribed_values, *, next_load_id
                 work.append(dict(work_id=len(work), kind="initial_guess_fallback",
                                  reason=str(exc), wall_seconds=0., status="baseline_initial"))
         initial_damage=d.copy()
+        if coupling.mode=='joint_projected_trust':
+            if not isinstance(backend,NativeQ4Backend):raise ValueError('joint native coupling requires NativeQ4Backend')
+            from hybrid_joint_trust import solve_joint_trust
+            return solve_joint_trust(backend,old,dofs,values,next_load_id,settings,coupling,
+                d,u_pred,initialization_source,neural_used,attempted_model_id,
+                prediction_context,work,call,remaining,start,iteration_observer)
         if coupling.mode in ('guarded_vi_newton','guarded_block_newton'):
             if not isinstance(backend,NativeQ4Backend):
                 raise ValueError('reduced native coupling requires NativeQ4Backend')
