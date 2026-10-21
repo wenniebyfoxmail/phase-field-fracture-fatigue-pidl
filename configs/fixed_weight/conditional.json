@@ -1,0 +1,11 @@
+{
+  "route": "conditional",
+  "width": 32,
+  "context_width": 16,
+  "length_scale": 1.0,
+  "load_scale": 0.1,
+  "node_scales": [0.1, 0.1, 1.0, 1.0],
+  "history_scales": [1.0, 1.0, 1.0],
+  "material_scales": [1.0, 1.0, 0.01, 0.01, 0.5, 2.0, 1.0, 1.0],
+  "output_scales": [0.1, 0.1, 1.0, 1.0, 1.0, 1.0]
+}
