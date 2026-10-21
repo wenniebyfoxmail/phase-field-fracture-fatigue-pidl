@@ -257,3 +257,10 @@ same-process environment and UUID-bound deployment are prepared only.
 One repair attempt consumed; no further producer operation or new scienceRunID.
 The original deadline and prior costs remain. Next integrated candidate
 restores all PF Newton blocks, retains physics/criteria, and is unexecuted.
+
+
+## 2026-10-21 18:54Z — prospective HQ native-PF authority
+
+Verified actual human HQ turn `01a15fc9-e8c3-7410-995a-a57981d43556` resumes research-window management. HQ issued one new full native-PF repair; source `human_delegated_hq`, not direct_user and not reuse of consumed R009. R011 starts from initial state with reviewed full native-PF SHA e585ae62d7ca7cee321fe6d096f14909b86e01199e579b946168a1134b72f58a. No changed physics, mechanics or acceptance. One scientific start; first numerical/control/IO failure closes package.
+
+Original deadline00:20Z unchanged. Prior process593.211723s plus conservative old remote-operation272.530373s and new admission180s are reserved from3h, giving new FEM cap9750s rounded down. CPU seconds remain unknown. Zero-start max2/180s (stricter than HQ300s). Original resource and single-step limits retained; PIDL R010 remains conditional on full24state validation and real GPU admission with useful whole-trajectory time before deadline minus1800s. Authority receipt: local_archive/experiments/S04-E035/manav_static_20261021/native_pf_authority.json.
