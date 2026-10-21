@@ -1,0 +1,73 @@
+{
+  "status": "PASS_one_two_mode_owned_child_fixture",
+  "cases": [
+    {
+      "mode": "RSS",
+      "error": "owned RSS sampling limit",
+      "child_exit": 0,
+      "own_child_gone": true,
+      "monitor": {
+        "failure": "owned RSS sampling limit",
+        "samples": 2,
+        "interval_seconds": 0.1,
+        "max_sample_gap_seconds": 0.12851087492890656,
+        "max_delay_above_interval_seconds": 0.028510874928906554,
+        "peak_owned_RSS_bytes": 99434496,
+        "peak_owned_VM_bytes": 840381415424,
+        "peak_sampled_owned_CPU_seconds": 0.073630584,
+        "child_bindings": [
+          {
+            "pid": 37476,
+            "created": 1792544234.83576,
+            "command": [
+              "/Users/wenxiaofang/miniconda3/bin/python3",
+              "-B",
+              "-c",
+              "import resource,time;resource.setrlimit(resource.RLIMIT_CPU,(1,1));buf=bytearray(64*1024**2);time.sleep(5)"
+            ],
+            "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929",
+            "elapsed": 0.0010869503021240234
+          }
+        ],
+        "Mac_AS_limit_required": false,
+        "RSS_monitor_kind": "user-space sampled, not kernel hard RSS guarantee"
+      }
+    },
+    {
+      "mode": "timeout",
+      "error": "owned wall timer",
+      "child_exit": 0,
+      "own_child_gone": true,
+      "monitor": {
+        "failure": null,
+        "samples": 5,
+        "interval_seconds": 0.1,
+        "max_sample_gap_seconds": 0.13475704193115234,
+        "max_delay_above_interval_seconds": 0.03475704193115234,
+        "peak_owned_RSS_bytes": 35602432,
+        "peak_owned_VM_bytes": 840897282048,
+        "peak_sampled_owned_CPU_seconds": 0.183351712,
+        "child_bindings": [
+          {
+            "pid": 37477,
+            "created": 1792544234.98473,
+            "command": [
+              "/Users/wenxiaofang/miniconda3/bin/python3",
+              "-B",
+              "-c",
+              "import resource,time;resource.setrlimit(resource.RLIMIT_CPU,(1,1));time.sleep(5)"
+            ],
+            "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929",
+            "elapsed": 0.0011191368103027344
+          }
+        ],
+        "Mac_AS_limit_required": false,
+        "RSS_monitor_kind": "user-space sampled, not kernel hard RSS guarantee"
+      }
+    }
+  ],
+  "wall_seconds": 0.7581844580126926,
+  "total_CPU_seconds": 0.194354,
+  "fixture_CPU_hard_allocation_seconds": 7,
+  "new_SSH_arrays_science": 0
+}

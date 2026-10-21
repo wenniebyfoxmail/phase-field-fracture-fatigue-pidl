@@ -1,0 +1,60 @@
+{
+  "status": "passed",
+  "review_scope": "Transport/owned-process resource-control exact static delta only; original mathematics reused, not re-reviewed or executed.",
+  "reviewed_UTC": "2026-10-21T01:02:40.419610+00:00",
+  "authority_ref": "HQ-MESH-SAVED-COEFFICIENT-TRANSPORT-R002-20261021",
+  "file_bindings": {
+    "tools/s04_e011_execution/local_owned_rss_guard.py": {
+      "sha256": "c3a33b730377f74113020e1827567cce95ea1f0bc547573ce3931b10ca762f28",
+      "git_blob": "c8e998569477dba45d488834d9dc819ae3c9cad1"
+    },
+    "tools/s04_e011_execution/saved_coeff_transport_client.py": {
+      "sha256": "7916541f0794caa3f564c702ea54f088faf8161737b1c9dcdbaa9818565581fb",
+      "git_blob": "38bfa225abb935b864a72138c0804bec4f766d87"
+    },
+    "tools/s04_e011_execution/test_saved_transport_owned_guard.py": {
+      "sha256": "55aa22bda15412328e479db927b8b75a039978a7d1e0fad626ec6f3ae868703a",
+      "git_blob": "32056fa251670f7caa4178b83727815a54e7718f"
+    },
+    "docs/research/S04/S04-E011/saved_coefficient_transport_r2_20261021/card.json": {
+      "sha256": "ceb4543226e59617eb4c3562fee011202ae39c8df34ae6e8c7b2e9b819e45b5a",
+      "git_blob": "0561abb61ff5ec3c4ece6ae9caa0bd3c1c889ac9"
+    },
+    "docs/research/S04/S04-E011/saved_coefficient_transport_r2_20261021/README.md": {
+      "sha256": "0186f36eeb9644afb6914c46aeb4d6288c287dbd9c1b5d7ea169858610a7b42d",
+      "git_blob": "d6d311ae061d5e568d64f0b0d775c8cdffd13165"
+    },
+    "docs/research/S04/S04-E011/saved_coefficient_transport_r2_20261021/fixture.json": {
+      "sha256": "a4d286821f54685b6a59380d24d717d747db3deaa05a1ea67fd330a9e07f9a50",
+      "git_blob": "0a3fddd86a2a16f7f38990e835518d5b19d53e8e"
+    }
+  },
+  "unchanged_remote_scientific_script_sha256": "ad17cf246fff617b6f9e1129aef7a941ad9707c4c2fb5699a7f7658d1c6b52e1",
+  "checks": [
+    "Mac AS setter removed only under explicit new authority; old first-stop evidence is retained.",
+    "Same in-process monitor armed before any SSH child, sampled RSS/time and output limits; no science imports.",
+    "Pipe-gated CPU-limited wrapper waits for exact PID/create_time/command/cwd binding before allowing the single SSH exec.",
+    "TERM and KILL revalidate owned identities; unverifiable identities refused. Stop exceptions logged and cannot skip parent failure notification or receipt finalization.",
+    "Guard failure prevents success even if psutil has reaped a child. Gate-not-open failure records zero connections; gate-open unknown is not reported as zero.",
+    "Return streamed to disk; safe regular-file tar paths, exclusive extraction, one-MiB streaming hashes, exact returned archive size acceptance and manifest verification.",
+    "Parent 15s plus SSH child 10s are included in transport25, not added to local50; original remote220 and postprocess25/review10/metadata20 are preserved."
+  ],
+  "fixture_evidence": {
+    "source": "Existing fixture.json read only; not re-run by this reviewer.",
+    "modes": [
+      "RSS",
+      "timeout"
+    ],
+    "wall_seconds": 0.7581844580126926,
+    "total_CPU_seconds": 0.194354,
+    "own_children_gone": true,
+    "child_exit_zero_not_used_as_normal_exit_proof": true,
+    "post_fixture_changes": "Identity/exception/pipe-gate/output/failure changes statically reviewed only."
+  },
+  "limitations": [
+    "User-space RSS/output monitoring is sampled and may overshoot between samples; no kernel-hard RSS claim.",
+    "No new SSH, fixture/test, arrays, model, operator, AD, SVD, solve or scientific execution performed for this review.",
+    "Review does not establish current server state or successful scientific attribution; one-shot authority and first-stop policy remain unchanged."
+  ],
+  "blocking_issues": []
+}

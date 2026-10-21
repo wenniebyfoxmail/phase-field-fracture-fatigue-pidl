@@ -324,3 +324,7 @@ HQ-MESH-SAVED-COEFFICIENT-ATTRIBUTION-20261021, sourcehuman_delegated_hq, author
 ### 2026-10-21 saved attribution stopped before SSH
 
 Sourcefeef73bd completed derivation/static review only. Mac client RLIMIT_AS16GiB setter raised ValueError before card/array loading or SSH spawn; no remote analysis/new vector solve/physics. Local runtime compatibility unknown, not measured OOM. No limit bypass/retry. See[runs/pidl_saved_coefficient_attribution_stop_20261021.md](runs/pidl_saved_coefficient_attribution_stop_20261021.md); priorfour-arm and all costs unchanged.
+
+### 2026-10-21 prospective saved attribution transport R002
+
+HQ-MESH-SAVED-COEFFICIENT-TRANSPORT-R002-20261021 explicitly authorizes Mac sampled owned-tree RSS512MiB with AS exemption for transport; scientific remote CPU220/AS16GiB and ad17 mathematics unchanged. Whole1200s00:53:54–01:13:54UTC/CPU300 total(220remote+25transport+25postprocess+10review+20metadata). One .1s guard RSS/timeout local fixture completed0.758wall/.194CPU; no model/arrays/SSH. One exact newcase then one SSH only/no third attempt. Prior793.67wall/CPUUNKNOWN preserved. See[saved_coefficient_transport_r2_20261021](saved_coefficient_transport_r2_20261021/README.md).

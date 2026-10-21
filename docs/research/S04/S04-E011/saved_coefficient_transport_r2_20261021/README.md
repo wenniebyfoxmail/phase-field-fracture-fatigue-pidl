@@ -1,0 +1,13 @@
+# Saved coefficient attribution transport R002
+
+New authority HQ-MESH-SAVED-COEFFICIENT-TRANSPORT-R002-20261021/human_delegated_hq. Original4c3b localAS failure/793.671966wall and CPUUNKNOWN retained. Whole00:53:54–01:13:54UTC1200wall/CPU300; remote220,transport+guard25(parent15/SSH10),postprocess/hash/figures25,review10,metadata20. One fixture below uses<=7CPU frommetadata20, not extra.
+
+Explicit resource amendment: Mac transport has no16GiB AS requirement. Dedicated owned-tree guard armed before SSH, configured0.1s sampling/RSS512MiB; record peakRSS/VM/gaps/delay, stop only bound own PID identities on RSS/time failure. This is user-space sampling, not kernel hard RSS guarantee; VM recorded without scientific-memory interpretation. All local nontransport lightweight work also monitored512MiB; no MacPhi/NN/Torch imports.
+
+Original ad17cf24 scientific script/math unchanged and old74inputs/SHA/state/runtime same. Scientific arrays/Phi only originalGPUServer8 CPU, hardAS16GiB/CPU220/singlethread,10vector20tri0factor,0GPU/operators/models/checkpoints/AD/FEM/SVD/newperturbations. New only outputanalysis root/identity/deadline, no original overwrite. OneSSH host/cache/version admission<=60 then sameCPU process completes and streams<100MiB return. Local stdlib streamingtar/hash, no array orPhi loading; one original reviewer checks only transport delta and original math review reused. One two-mode owned shortchild fixture for RSS/timeout, no remote. Firstunknown/IO/resource/connectionfailure terminal/no thirdcase/no reconnect/fallback/optimization.
+
+Goal/decomposition/provenance/RHS and uncertainty unchanged: see[original derivation](../saved_coefficient_attribution_20261021/README.md).
+
+Fixture completed once: wall0.758184s/CPU0.194354s, RSS mode stopped at99.43MB and timeout mode at0.6s, both bound child PIDs gone. psutil.wait_procs reaps own children before Popen.wait, so fixture child_exit0 is not evidence of normal child exit; controlled duration/guard event/PID disappearance establish stop. Largest sampling gap0.13476s, configured0.1s. No extra fixture or remote action.
+
+Reviewed transport additions: gated CPU wrapper binds PID/create_time/command/cwd before permitting SSH exec; guard failure and close failure force STOPPED even if child reaped by monitor. TERM/KILL recheck direct/descendant identities; refusals/errors recorded without touching unverified processes. Runtime return100MiB/case512MiB checks use same0.1s sampled guard (possible sampling overshoot recorded), plus terminal exact acceptance checks. Original fixture is not rerun after these exception/identity/gate deltas; focused static review covers changes.
