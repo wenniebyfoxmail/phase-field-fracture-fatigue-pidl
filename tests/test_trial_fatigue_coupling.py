@@ -10,6 +10,7 @@ from trial_fatigue_coupling import (
     require_fresh_trial_run_directory,
     verify_initial_network, track_optimizer_work,
 )
+from fatigue_history import compute_fatigue_degrad
 
 
 def _case(callback=None, max_outer=4):
@@ -97,6 +98,191 @@ def test_no_double_accumulation_even_when_residual_needs_many_iterations():
     assert torch.allclose(result.history, kw["old_history"] + .1)
 
 
+def test_frozen_old_keeps_old_coefficient_but_commits_fresh_trial_history():
+    def accept_late(ctx):
+        assert ctx["coefficient_mode"] == "frozen_old"
+        assert torch.allclose(ctx["trial_history"], ctx["old_history"] + .1)
+        return {"accepted": ctx["outer"] == 3, "fresh_current_state": True,
+                "state_token": ctx["state_token"], "metrics": {"Ru": 0.}}
+    kw, fits = _case(accept_late)
+    kw["config"]["coefficient_mode"] = "frozen_old"
+    old_f = compute_fatigue_degrad(kw["old_history"], kw["fatigue_dict"])
+    kw["initial_f"] = old_f.clone()
+    before = kw["old_history"].clone()
+    result = solve_trial_fatigue_step(**kw)
+    assert len(fits) == 3
+    assert all(torch.equal(fit, old_f) for fit in fits)
+    assert torch.equal(result.f_solve, old_f)
+    assert not torch.equal(result.f_solve, result.f_commit)
+    assert not result.records[-1]["f_converged"]
+    assert result.records[-1]["accepted"]
+    assert torch.allclose(result.history, before + .1)
+    assert torch.equal(kw["old_history"], before)
+
+
+def test_frozen_old_cannot_commit_when_fresh_trial_residual_fails():
+    def reject(ctx):
+        return {"accepted": False, "fresh_current_state": True,
+                "state_token": ctx["state_token"], "metrics": {"Ru": 1.}}
+    kw, fits = _case(reject, max_outer=3)
+    kw["config"]["coefficient_mode"] = "frozen_old"
+    kw["initial_f"] = compute_fatigue_degrad(kw["old_history"], kw["fatigue_dict"])
+    before = {key: kw[key].clone() for key in ("old_history", "old_active_driver", "old_damage")}
+    with pytest.raises(TrialFatigueNotConverged) as caught:
+        solve_trial_fatigue_step(**kw)
+    assert len(fits) == 3
+    assert all(torch.equal(fit, kw["initial_f"]) for fit in fits)
+    assert all(not record["accepted"] for record in caught.value.records)
+    assert all(torch.equal(kw[key], value) for key, value in before.items())
+
+
+def test_trial_mode_still_requires_fixed_point_with_the_same_old_initial_f():
+    kw, fits = _case()
+    kw["config"]["coefficient_mode"] = "trial"
+    kw["initial_f"] = compute_fatigue_degrad(kw["old_history"], kw["fatigue_dict"])
+    result = solve_trial_fatigue_step(**kw)
+    assert len(fits) == 2
+    assert not torch.equal(fits[0], fits[1])
+    assert result.records[0]["residual_accepted"]
+    assert not result.records[0]["accepted"]
+    assert result.records[-1]["f_converged"]
+    assert torch.equal(result.f_solve, result.f_commit)
+
+
+@pytest.mark.parametrize("invalid_mode", ["frozen", None, "old_history"])
+def test_invalid_coefficient_mode_rejected_before_fitting(invalid_mode):
+    kw, fits = _case()
+    kw["config"]["coefficient_mode"] = invalid_mode
+    with pytest.raises(ValueError, match="coefficient_mode"):
+        solve_trial_fatigue_step(**kw)
+    assert fits == []
+
+
+def test_frozen_old_rejects_a_coefficient_unrelated_to_old_history():
+    kw, fits = _case()
+    kw["config"]["coefficient_mode"] = "frozen_old"
+    with pytest.raises(ValueError, match="committed old history"):
+        solve_trial_fatigue_step(**kw)
+    assert fits == []
+
+
+def test_observer_sees_full_independent_outer_fixed_point_and_accepted_states():
+    kw, _ = _case()
+    events = []
+    def observe(event):
+        events.append(event)
+        assert set(("u", "v", "d", "active_driver", "displacement", "old_damage",
+                    "old_history", "old_active_driver", "trial_history", "f_solve",
+                    "f_commit", "state_token", "step", "outer")) <= event["context"].keys()
+        assert all(not value.requires_grad for value in event["context"].values()
+                   if torch.is_tensor(value))
+        if event["event"] == "outer":
+            # A storage callback cannot corrupt the controller or later events.
+            event["context"]["old_history"].zero_()
+            event["context"]["f_commit"].zero_()
+            event["record"]["residual"]["metrics"]["Ru"] = 999.
+    before = kw["old_history"].clone()
+    result = solve_trial_fatigue_step(**kw, observer=observe)
+    assert [event["event"] for event in events] == [
+        "outer", "outer", "first_f_fixed_point", "accepted"]
+    assert torch.equal(events[-1]["context"]["old_history"], before)
+    assert torch.equal(events[-1]["context"]["f_commit"], result.f_commit)
+    assert result.residual_receipt["metrics"]["Ru"] == 0.
+    assert result.records[-1]["residual"]["metrics"]["Ru"] == 0.
+    events[-1]["context"]["f_commit"].zero_()
+    assert bool(torch.any(result.f_commit != 0))
+
+
+def test_observer_reports_final_rejected_field_at_outer_exhaustion():
+    def reject(ctx):
+        return {"accepted": False, "fresh_current_state": True,
+                "state_token": ctx["state_token"], "metrics": {"Ru": 1.}}
+    kw, _ = _case(reject, max_outer=3)
+    events = []
+    with pytest.raises(TrialFatigueNotConverged):
+        solve_trial_fatigue_step(**kw, observer=events.append)
+    assert [event["event"] for event in events].count("first_f_fixed_point") == 1
+    assert "accepted" not in [event["event"] for event in events]
+    final = events[-1]
+    assert final["event"] == "exhausted"
+    assert final["reason"] == "max_outer"
+    assert final["context"]["outer"] == 3
+    assert not final["record"]["accepted"]
+    assert torch.allclose(final["context"]["trial_history"], kw["old_history"] + .1)
+
+
+def test_observer_reassembles_actual_field_after_partial_budget_exhaustion():
+    kw, _ = _case(max_outer=3)
+    original_state = kw["evaluate_state"]
+    current = {"outer": 0}
+    def solve(coefficient, outer):
+        current["outer"] = outer
+        if outer == 2:
+            raise TrialFatigueNotConverged("partial optimizer budget exhausted", [])
+    def state():
+        value = original_state()
+        value["u"] = torch.full_like(value["u"], float(current["outer"]))
+        return value
+    kw.update(solve_for_coefficient=solve, evaluate_state=state)
+    events = []
+    with pytest.raises(TrialFatigueNotConverged, match="partial optimizer budget"):
+        solve_trial_fatigue_step(**kw, observer=events.append)
+    final = events[-1]
+    assert final["event"] == "exhausted"
+    assert final["context"]["outer"] == 2
+    assert torch.equal(final["context"]["u"], torch.full_like(kw["old_damage"], 2.))
+    assert final["record"]["optimizer_exhausted"]
+    # A numerically acceptable partial field does not turn exhaustion into acceptance.
+    assert final["record"]["residual_accepted"]
+    assert not final["record"]["accepted"]
+    assert "accepted" not in [event["event"] for event in events]
+
+
+@pytest.mark.parametrize("failure_site", ["residual", "observer"])
+def test_exhaustion_diagnostic_failure_preserves_original_budget_error(failure_site):
+    kw, _ = _case(max_outer=3)
+    original_residual = kw["final_residual_check"]
+    budget_error = TrialFatigueNotConverged("original optimizer budget exhausted", [])
+    def solve(coefficient, outer):
+        if outer == 2:
+            raise budget_error
+    def residual(context):
+        if failure_site == "residual" and context["outer"] == 2:
+            raise ValueError("failed exhausted residual reassembly")
+        return original_residual(context)
+    def observe(event):
+        if failure_site == "observer" and event["event"] == "exhausted":
+            raise OSError("failed exhausted snapshot write")
+    kw.update(solve_for_coefficient=solve, final_residual_check=residual)
+    before = kw["old_history"].clone()
+    with pytest.raises(TrialFatigueNotConverged, match="original optimizer budget") as caught:
+        solve_trial_fatigue_step(**kw, observer=observe)
+    assert caught.value is budget_error
+    assert len(caught.value.records) == 1
+    assert caught.value.records[0]["outer"] == 1
+    assert "failed exhausted" in caught.value.diagnostic_error
+    assert torch.equal(kw["old_history"], before)
+
+
+@pytest.mark.parametrize("event_name", ["outer", "first_f_fixed_point", "accepted"])
+def test_observer_failure_prevents_accepted_result(event_name):
+    kw, _ = _case()
+    before = kw["old_history"].clone()
+    def fail(event):
+        if event["event"] == event_name:
+            raise OSError("snapshot persistence failed")
+    with pytest.raises(OSError, match="snapshot persistence"):
+        solve_trial_fatigue_step(**kw, observer=fail)
+    assert torch.equal(kw["old_history"], before)
+
+
+def test_invalid_observer_rejected_before_fitting():
+    kw, fits = _case()
+    with pytest.raises(ValueError, match="observer must be callable"):
+        solve_trial_fatigue_step(**kw, observer=False)
+    assert fits == []
+
+
 def test_optimizer_budget_is_shared_across_refreshes_and_exhaustion_cannot_commit():
     kw, _ = _case(max_outer=6)
     budget = PhysicalStepOptimizerBudget(2, 3)
@@ -135,6 +321,10 @@ def test_resume_contract_preserves_acceptance_and_penalty_and_omits_callbacks():
     original = trial_fatigue_checkpoint_contract(config, penalty, common, kw["fatigue_dict"])
     assert "final_residual_check" not in original["coupling"]
     assert original["coupling"]["history_mode"] == "trial"
+    assert original["coupling"]["coefficient_mode"] == "trial"
+    config["coefficient_mode"] = "frozen_old"
+    assert trial_fatigue_checkpoint_contract(config, penalty, common, kw["fatigue_dict"]) != original
+    config["coefficient_mode"] = "trial"
     assert original["irreversibility_penalty"] == penalty
     config["acceptance_config"]["joint_tol"] = 1e-3
     assert trial_fatigue_checkpoint_contract(config, penalty, common, kw["fatigue_dict"]) != original

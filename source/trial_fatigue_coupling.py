@@ -6,6 +6,7 @@ physical residual callback is mandatory; convergence of f alone is insufficient.
 """
 from dataclasses import dataclass
 from contextlib import contextmanager
+from copy import deepcopy
 import hashlib
 import json
 import math
@@ -113,6 +114,19 @@ def _detached_copy(value, name):
     return value.detach().clone()
 
 
+def _snapshot_copy(value):
+    """Give callbacks independent data, including nested tensor diagnostics."""
+    if torch.is_tensor(value):
+        return value.detach().clone()
+    if isinstance(value, dict):
+        return {key: _snapshot_copy(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_snapshot_copy(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_snapshot_copy(item) for item in value)
+    return deepcopy(value)
+
+
 def trial_fatigue_checkpoint_contract(config, irreversibility_penalty_cfg,
                                      common_problem=None, fatigue_dict=None):
     """Portable numerical policy; callbacks are runtime bindings, never state."""
@@ -121,6 +135,7 @@ def trial_fatigue_checkpoint_contract(config, irreversibility_penalty_cfg,
         if key not in {"final_residual_check", "final_residual_check_factory"}
     }
     numerical_config.setdefault("history_mode", "trial")
+    numerical_config.setdefault("coefficient_mode", "trial")
     fatigue_dict = fatigue_dict or {}
     physical_history_keys = (
         "fatigue_on", "loading_type", "accum_type", "degrad_type", "alpha_T",
@@ -195,6 +210,8 @@ def validate_trial_fatigue_config(fatigue_dict, config):
         raise ValueError("trial fatigue coupling requires the matching native GP driver reduction")
     if config.get("history_mode", "trial") != "trial":
         raise ValueError("strict fatigue coupling currently accepts trial history mode only")
+    if config.get("coefficient_mode", "trial") not in {"trial", "frozen_old"}:
+        raise ValueError("coefficient_mode must be explicit trial or frozen_old")
     if fatigue_dict.get("damage_history_storage") != "previous_accepted_nodal":
         raise ValueError("trial fatigue coupling requires previous_accepted_nodal damage history")
     if not fatigue_dict.get("fatigue_on", False):
@@ -234,7 +251,7 @@ def validate_trial_fatigue_config(fatigue_dict, config):
 def solve_trial_fatigue_step(*, old_history, old_active_driver, old_damage,
                             initial_f, fatigue_dict, config,
                             solve_for_coefficient, evaluate_state,
-                            final_residual_check, step):
+                            final_residual_check, step, observer=None):
     """Return one accepted proposal, or raise without modifying old histories.
 
     ``evaluate_state()`` returns detached/fresh u, v, d and active_driver tensors.
@@ -242,9 +259,24 @@ def solve_trial_fatigue_step(*, old_history, old_active_driver, old_damage,
     exactly that state using frozen old damage/history and trial fatigue. Its
     receipt requires accepted (bool), fresh_current_state=True, state_token
     echoed from context, and a metrics dictionary. No loss-based fallback exists.
+
+    ``coefficient_mode='trial'`` refreshes f between blocks and requires its
+    fixed point as well as the fresh residual. ``'frozen_old'`` keeps the
+    supplied committed f for every block, but still requires that same fresh
+    trial-history residual. Its f fixed point is diagnostic only. Both modes
+    rebuild trial history from the unchanged predecessor; neither commits here.
+
+    An optional ``observer(event)`` receives independent snapshots containing
+    ``event``, the full ``context`` and its ``record``. Events are ``outer``,
+    ``first_f_fixed_point``, ``accepted`` and ``exhausted``. Accepted means the
+    candidate has met the numerical criteria, before the caller commits it;
+    it is not a persistence receipt. Observer exceptions propagate before any
+    result is returned. The caller owns storage and optimizer-update metadata.
     """
     if not callable(final_residual_check):
         raise ValueError("trial fatigue coupling requires a fresh final_residual_check callback")
+    if observer is not None and not callable(observer):
+        raise ValueError("trial fatigue observer must be callable or None")
     validation_config = dict(config, final_residual_check=final_residual_check)
     validate_trial_fatigue_config(fatigue_dict, validation_config)
     A_old = _detached_copy(old_history, "old_history")
@@ -255,14 +287,24 @@ def solve_trial_fatigue_step(*, old_history, old_active_driver, old_damage,
         raise ValueError("old GP history, active driver and fatigue coefficient shapes differ")
     atol, rtol = float(config["f_atol"]), float(config["f_rtol"])
     relaxation = float(config.get("relaxation", 1.0))
+    coefficient_mode = config.get("coefficient_mode", "trial")
+    f_old = f_next.clone()
+    if coefficient_mode == "frozen_old":
+        expected_old_f = compute_fatigue_degrad(A_old, fatigue_dict).detach()
+        old_scale = atol + rtol * torch.maximum(expected_old_f.abs(), f_old.abs())
+        if not bool(torch.all((expected_old_f - f_old).abs() <= old_scale).item()):
+            raise ValueError("frozen_old initial_f must match the committed old history")
     records = []
-    for outer in range(1, int(config["max_outer"]) + 1):
-        f_solve = f_next.detach().clone()
-        try:
-            solve_for_coefficient(f_solve.clone(), outer)
-        except TrialFatigueNotConverged as error:
-            error.records = records + error.records
-            raise
+    first_fixed_point_seen = False
+
+    def observe(event, context, record, reason=None):
+        if observer is not None:
+            payload = {"event": event, "context": context, "record": record}
+            if reason is not None:
+                payload["reason"] = reason
+            observer(_snapshot_copy(payload))
+
+    def assess_current_state(f_solve, outer):
         state = {name: _detached_copy(value, name) for name, value in evaluate_state().items()}
         for name in ("u", "v", "d", "active_driver", "displacement"):
             if name not in state:
@@ -281,10 +323,11 @@ def solve_trial_fatigue_step(*, old_history, old_active_driver, old_damage,
         token = uuid.uuid4().hex
         context = {name: value.clone() for name, value in state.items()}
         context.update(step=int(step), outer=outer, state_token=token,
+                       coefficient_mode=coefficient_mode,
                        old_damage=d_old.clone(), old_history=A_old.clone(),
                        old_active_driver=r_old.clone(), trial_history=A_trial.clone(),
                        f_solve=f_solve.clone(), f_commit=f_trial.clone())
-        receipt = final_residual_check(context)
+        receipt = final_residual_check(_snapshot_copy(context))
         if not isinstance(receipt, dict) or type(receipt.get("accepted")) is not bool:
             raise ValueError("fresh residual callback must return an explicit accepted boolean in a receipt")
         if receipt.get("fresh_current_state") is not True or receipt.get("state_token") != token:
@@ -292,14 +335,48 @@ def solve_trial_fatigue_step(*, old_history, old_active_driver, old_damage,
         if not isinstance(receipt.get("metrics"), dict) or not receipt["metrics"]:
             raise ValueError("fresh residual receipt must contain physical metrics")
         record = {"step": int(step), "outer": outer,
+                  "coefficient_mode": coefficient_mode,
                   "f_max_abs_change": float(f_delta.max().item()),
                   "f_converged": f_converged, "residual_accepted": receipt["accepted"],
                   "residual": receipt}
+        return state, A_trial, active, f_trial, context, record, receipt
+
+    for outer in range(1, int(config["max_outer"]) + 1):
+        f_solve = (f_old if coefficient_mode == "frozen_old" else f_next).detach().clone()
+        try:
+            solve_for_coefficient(f_solve.clone(), outer)
+        except TrialFatigueNotConverged as error:
+            error.records = records + error.records
+            if observer is not None:
+                # A hard optimizer cap may be reached after partial updates.
+                # Read that actual field, never substitute the previous outer.
+                # Diagnostics are best effort after rejection: a second error
+                # must not erase the original budget failure or work records.
+                try:
+                    context, record = assess_current_state(f_solve, outer)[4:6]
+                    record["accepted"] = False
+                    record["optimizer_exhausted"] = True
+                    observe("exhausted", context, record, reason=str(error))
+                except Exception as diagnostic_error:
+                    error.diagnostic_error = (
+                        f"{type(diagnostic_error).__name__}: {diagnostic_error}"
+                    )
+            raise
+        state, A_trial, active, f_trial, context, record, receipt = assess_current_state(f_solve, outer)
+        f_converged = record["f_converged"]
+        accepted = receipt["accepted"] and (coefficient_mode == "frozen_old" or f_converged)
+        record["accepted"] = bool(accepted)
         records.append(record)
-        if f_converged and receipt["accepted"]:
+        observe("outer", context, record)
+        if f_converged and not first_fixed_point_seen:
+            observe("first_f_fixed_point", context, record)
+            first_fixed_point_seen = True
+        if accepted:
+            observe("accepted", context, record)
             return TrialFatigueResult(state, A_trial, active, f_solve, f_trial,
                                       records, receipt)
         f_next = ((1.0 - relaxation) * f_solve + relaxation * f_trial).detach()
+    observe("exhausted", context, record, reason="max_outer")
     raise TrialFatigueNotConverged(
         f"step {step} failed trial-fatigue/fresh-residual acceptance after {len(records)} outer iterations; no history commit",
         records,
