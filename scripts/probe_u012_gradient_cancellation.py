@@ -35,7 +35,7 @@ def stats(vectors):
         norms=dict(zip(['elastic','dissipation','irreversibility','physical_energy_only','net_log_energy','regularizer','net_total'],map(norm,vectors))),
         cos_dissipation_irr=cosine(d,h),
         norm_dissipation_plus_irr=norm(dh),
-        dh_residual_fraction=norm(dh)/(norm(d)+norm(h)),
+        dh_residual_fraction=norm(dh)/(norm(d)+norm(h)) if norm(d)+norm(h) else None,
         cos_physical_energy_vs_penalty=cosine(f,h),
         cos_physical_energy_vs_net_log_energy=cosine(f,p),
         cos_physical_energy_vs_total=cosine(f,a),
