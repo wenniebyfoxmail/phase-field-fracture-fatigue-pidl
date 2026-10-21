@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "scope": "Execution-entry stdin/argv/mechanical90/new identity delta static review only; existing scientific review reused",
+  "bindings": {
+    "tools/s04_e011_execution/frozen_completion_client.py": {
+      "git_blob": "9ec97546ab314e756888219919e12582f08d0b32",
+      "sha256": "c087614966e58dc43cb8f79ef419f8434668ebedcbe7d843c937afa55c0d6ae1"
+    },
+    "tools/s04_e011_execution/frozen_completion_launch.py": {
+      "git_blob": "34ed39f31137e8f2a964ebdd8a8a4d1fc9733205",
+      "sha256": "68397c14ac171731a6d387b25573f4296958709295df47f70a0d6e5417dc3c1c"
+    },
+    "tools/s04_e011_execution/test_frozen_stdin_transport.py": {
+      "git_blob": "f5e7514ea32edb69cea5e27291437fff6d67b3d9",
+      "sha256": "daf802c5767a3c213bdfca8133bdfb59130b9f3318ba1703fc76b797934fa55b"
+    },
+    "docs/research/S04/S04-E011/frozen_completion_stdin_r2_20261021/execution_card.json": {
+      "git_blob": "3a4850a8c54a9cb9ac81485b13ea1a8b5c5b44a4",
+      "sha256": "49adcee550820927cbfaeafeb56847a24f7303a532dfffcff626ea5c5ea421b8"
+    },
+    "docs/research/S04/S04-E011/frozen_completion_stdin_r2_20261021/stdin_fixture.json": {
+      "git_blob": "ad55e90838120b663bbdd0c95ea32210dadd1ca9",
+      "sha256": "466516058c83e5f726b8ed65d2fe830f8b24fd1e170240bcb2d50a21f71321f6"
+    },
+    "docs/research/S04/S04-E011/frozen_completion_stdin_r2_20261021/README.md": {
+      "git_blob": "27823744a981d28cc976338557c7178cb537ff19",
+      "sha256": "ed2d36903a765117af6035338791615439f1340d2ea476647f53a61b8e50cba7"
+    }
+  },
+  "checks": [
+    "Probe JSON travels through subprocess stdin and remote json.load(sys.stdin), never embedded into-c. Stage uses bounded tar stdin; code argument stays separately shlex-quoted. No metadata entries removed.",
+    "Every client SSH argv and remote bootstrap argv is checked<=16KiB per argument includingNUL and<=64KiB total. All controller/worker/guardian Popen paths in producer launcher use checked_argv.",
+    "One supplied stdin roundtrip fixture reports149910metadata bytes, all fields equal, probe2526B/stage4513B maximum argument includingNUL; reviewer did not rerun fixture.",
+    "Card input/reuse/operator/science/work/resource bindings are unchanged from original frozen-completion card; only new approved identity/root/claim/time/authority plus90second/argv transport limits change.371reuse records and6inputs remain.",
+    "Remote mechanical start conservatively maps the local elapsed first probe interval, including connection, into producer monotonic clock. Local remaining mechanical budget also spans local preparation/staging/launch confirmation; controller rechecks90seconds before gate.",
+    "No-confirmation path now stops as UNKNOWN/no-relaunch: it checks the exact owned bootstrap cwd/cmdline before TERM, waits bounded5seconds, and never issues another connection. Timeout/unknown outcomes are not treated as confirmed producer success.",
+    "Two connection batches maximum, no fallback/reconnect/waiting; old R1 failed package unchanged. Exact fresh package/authority/claim and live GPU/cache qualification still required.",
+    "Science remains frozen-only300seconds/1800whole with native recomputation forbidden and unchanged targets/thresholds; no scientific runner math re-review in this delta."
+  ],
+  "resolved_issue": "Former confirmation timeout returned success while bootstrap could remain unconfirmed. Current path labels confirmation_failed and explicitly stops the exact owned bootstrap; client uses STOPPED_NO_LAUNCH_CONFIRMATION_NO_RELAUNCH.",
+  "tests": "No tests or subprocess fixture rerun by reviewer; parent supplied one stdin fixture result, including separately retained previous fixture cost.",
+  "limits": [
+    "Static readiness does not establish network/remote Python reception, actual currentGPU/cache equality,90second launch confirmation or scientific completion.",
+    "If termination/confirmation itself times out, state is UNKNOWN and must not be relaunched under this authority.",
+    "Saved-output cross-run analysis is separate; new --native-run analyzer delta not reviewed here.",
+    "No SSH, models/real arrays, NN/AD/SVD/FEM/solve, producer or commit performed."
+  ],
+  "blockers": []
+}

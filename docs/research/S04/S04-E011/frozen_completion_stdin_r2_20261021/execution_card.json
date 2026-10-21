@@ -1,0 +1,3689 @@
+{
+  "mode": "frozen_completion_only",
+  "execution_enabled": false,
+  "run_id": "pf_s04e011_frozen_completion_r2_hq_20261021",
+  "family": "S04-E011-PROFILED-HIDDEN-C20-v1",
+  "run_root": "/mnt/data2/drtao/wennie/pf_s04e011_frozen_completion_r2_hq_20261021",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_s04e011_frozen_completion_r2_hq_20261021",
+  "family_claim": "/mnt/data2/drtao/wennie/.s04_e011_profiled_hidden_claims/S04-E011-PROFILED-HIDDEN-C20-v1.frozen_completion_r2_20261021.json",
+  "producer": {
+    "hostname": "GPUServer8",
+    "user": "drtao",
+    "gpu_index": 5,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b"
+  },
+  "input_bindings": [
+    {
+      "role": "input",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/inputs/c20_peak.npz",
+      "bytes": 15502614,
+      "sha256": "c51bd3c121378d33c7d08aaf5f88f76b7decba4827c1e8d271bb8c6dec73ecd3"
+    },
+    {
+      "role": "original_model",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_99.pt",
+      "bytes": 4510197,
+      "sha256": "55de7e6c5ed7b3dd80cee19139b7e33a22b92c0b5384a8af9a019ff3e465004f"
+    },
+    {
+      "role": "initial_model",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/output/c20_s4/accepted_network.pt",
+      "bytes": 9011061,
+      "sha256": "8ea35dc4d1147ed49b26e0e3c440034d3fde7c971343519c394526c41d12180e"
+    },
+    {
+      "role": "source_fields",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/output/c20_s4/fields.npz",
+      "bytes": 1361291,
+      "sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57"
+    },
+    {
+      "role": "source_phi",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/output/c20_s4/bases/source/phi.npy",
+      "bytes": 267902656,
+      "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+    },
+    {
+      "role": "source_transform",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_readoutaudit_a698ec7_20261018T203915Z/output/c20_s4/bases/source/transform.npy",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+    }
+  ],
+  "work_caps": {
+    "energy_force_field": 250,
+    "hidden_jvp": 8,
+    "hidden_vjp": 8,
+    "C": 8,
+    "CT": 8,
+    "native_tangent": 0,
+    "head_assembly": 30,
+    "head_factor": 30,
+    "head_triangular_solve": 4096,
+    "raw_feature_forward": 128,
+    "explicit_head_products": 1000,
+    "svd": 0,
+    "Qv": 2,
+    "frozen_tangent": 250
+  },
+  "resource_limits_bytes": {
+    "host_RSS": 17179869184,
+    "GPU_allocated": 17179869184,
+    "GPU_reserved": 17179869184,
+    "fresh_root_outputs": 8589934592
+  },
+  "admission_revision": {
+    "required_initial_free_VRAM_bytes": 21474836480,
+    "minimum_free_after_actual_preflight_bytes": 4294967296
+  },
+  "measurement_seconds": 300,
+  "envelope_seconds": 1800,
+  "envelope_started_UTC": "2026-10-21T00:02:23Z",
+  "envelope_deadline_epoch": 1792542743.0,
+  "mechanical_max_checks": 2,
+  "mechanical_max_seconds": 90,
+  "retrieval_max_bytes": 4294967296,
+  "CPU_max": 4,
+  "science": {
+    "state": "frozen c20s4/FEM damage/source PIDL history/B0/original UV",
+    "arms": [
+      "frozen_constant",
+      "frozen_zero"
+    ],
+    "Qv_calls_max": 2,
+    "head_tol": 1e-10,
+    "internal_head_tol": 1e-13,
+    "FD_abs": 1e-10,
+    "FD_rel": 0.0001,
+    "h": 1e-06,
+    "seed": 173,
+    "optimization": 0,
+    "history": 0,
+    "rollout": 0,
+    "actual_NN": false,
+    "mismatch_is_observation": true,
+    "combined_field_and_K_max": 250,
+    "source_side_value_captures": 3,
+    "AD_forward_calls_separately_counted": true,
+    "full_forward_bound_may_be_unresolved": true,
+    "all_outputs_are_diagnostic_chart_controls": true,
+    "native_recomputation": 0,
+    "source_side_value_rebuild_groups": 3,
+    "derived_maps_exact_identity": true,
+    "original_features_identity_not_claimed": true
+  },
+  "authority_ref": "HQ-MESH-FROZEN-STDIN-R002-20261021; human_delegated_hq under verified nighttime authority01a15b4c-2e3a-7772-b74b-46f4ab752766; fresh frozen pair only, same science, no optimization",
+  "reused_native_run": "pf_s04e011_residual_branch_c20_r1_hq_20261021",
+  "reuse_bindings": [
+    {
+      "role": "old_runtime",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/runtime_versions.json",
+      "bytes": 297,
+      "sha256": "0e3335751808b96af341a9d8ed39155659b1e03ef678d4a6b99de2b2e4b00d9f"
+    },
+    {
+      "role": "direction",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/direction.npy",
+      "bytes": 8992192,
+      "sha256": "08eaba51623915d776d97085baabbda9306f78b312dc9771d9747bc3c917c88a"
+    },
+    {
+      "role": "scales",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/scales.npy",
+      "bytes": 8992192,
+      "sha256": "9fe2044b9cd31e81f5e486770c232148af2b308336330b4028bfe6b96ab5453a"
+    },
+    {
+      "role": "free_dofs",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/free_dofs.npy",
+      "bytes": 1383456,
+      "sha256": "b5ce5f373083810661b0a6cb89310e30d1008ab5fc5f00625b3b5516d9965318"
+    },
+    {
+      "role": "transform",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/transform.npy",
+      "bytes": 1238416,
+      "sha256": "cc0be52ea8eae4d5540b429cc9534943a52a316c446e5b88d1df784ba29f1149"
+    },
+    {
+      "role": "source_trace",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/shared/source_trace_sign.npy",
+      "bytes": 345760,
+      "sha256": "9f2bf9380ea30f23c7fba4c74432184fdae37bd7a618ffc34b7eb9c0d272fab0"
+    },
+    {
+      "role": "native_R0",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native/R0.npy",
+      "bytes": 1388224,
+      "sha256": "9f503f40e537214863e2ea2e7db6c18f7ed5cb4d2dccaed3d067a8e56b388ac5"
+    },
+    {
+      "role": "native_g0",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native/g0.npy",
+      "bytes": 6304,
+      "sha256": "b43ca82aa17d7795c4160f3f45f74d3750d649c8d137a426f101b4212c639073"
+    },
+    {
+      "role": "source_phi",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/shared/source_phi.npy",
+      "bytes": 267902656,
+      "sha256": "c452c77cae3f9b9aa505b30cd001e46b90341c271e788d4c68b3e06b524bf93b"
+    },
+    {
+      "role": "source_qraw",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/shared/source_qraw.npy",
+      "bytes": 1388224,
+      "sha256": "03a95c99a4d288bf3d952b8e8f586e223da2d744b0f208251534c0ee9e55cdee"
+    },
+    {
+      "role": "plus_phi",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/shared/plus_phi.npy",
+      "bytes": 267902656,
+      "sha256": "ce1702831c11083da3131a07830249f56bf4a311243d19d565f9c0d53c90d404"
+    },
+    {
+      "role": "plus_qraw",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/shared/plus_qraw.npy",
+      "bytes": 1388224,
+      "sha256": "7c0be343c6eb2b56c2cadff187e6df0342fe5cb30001ea4c1fbb481fa62a4f91"
+    },
+    {
+      "role": "minus_phi",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/shared/minus_phi.npy",
+      "bytes": 267902656,
+      "sha256": "9daed741bf9051f024691ef8ae9f1726f51bf97d479c2656812aacf93697db4c"
+    },
+    {
+      "role": "minus_qraw",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/shared/minus_qraw.npy",
+      "bytes": 1388224,
+      "sha256": "a092be44735eaf9e4bc7d77168309a3832ddef73b125f5d327dc9ea622d45bb1"
+    },
+    {
+      "role": "native:native_constant/BTKJv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/BTKJv.npy",
+      "bytes": 6304,
+      "sha256": "1377280417db9d4d49c0a134f09a34ced92318c1718021a99d6abc950940258b"
+    },
+    {
+      "role": "native:native_constant/Cv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/Cv.npy",
+      "bytes": 6304,
+      "sha256": "bdd4ea9204bcfbc00aa4151047dd79f9da1f2e4b636b2bdae5ceb725366027a1"
+    },
+    {
+      "role": "native:native_constant/FD.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/FD.npy",
+      "bytes": 1383456,
+      "sha256": "f5f13de1f62f2ef1dd369bcf174bd4e9289f018943d64284431403b42ebe126f"
+    },
+    {
+      "role": "native:native_constant/H.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/H.npy",
+      "bytes": 4768000,
+      "sha256": "f8f10ac85a8ce60cd3efec71f4fd1af717f0ac6795384429332b76ae0e6a3f57"
+    },
+    {
+      "role": "native:native_constant/Jv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/Jv.npy",
+      "bytes": 1383456,
+      "sha256": "12cba9d6703dd2b58ec828b4c1995cede25b6dab19bbca22a5ee2cda78b869ae"
+    },
+    {
+      "role": "native:native_constant/KJv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/KJv.npy",
+      "bytes": 1383456,
+      "sha256": "40a9a87da03de2d8815c44f8cdf7e2ac8a78a2c96112f06091708f19a4418c0a"
+    },
+    {
+      "role": "native:native_constant/Qv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/Qv.npy",
+      "bytes": 1383456,
+      "sha256": "ebdcf25312a0ec6fd1ceaf75271e09cf67f20fc8045ecf588bf4ddc95eda30f3"
+    },
+    {
+      "role": "native:native_constant/U.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/U.npy",
+      "bytes": 6304,
+      "sha256": "d37f6f593003c2a6da8f1e871837ed24e044940f39b7153892708d201506294e"
+    },
+    {
+      "role": "native:native_constant/difference.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/difference.npy",
+      "bytes": 1383456,
+      "sha256": "414a3371d6b3d977cdc52f7cdfa7ec85babb5a351f8f5632ae334241351775d5"
+    },
+    {
+      "role": "native:native_constant/factor.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/factor.npy",
+      "bytes": 4768000,
+      "sha256": "0445e891ee745d78fe50d516963f74b061bcf55b59eb9e1761b53eb04fd88474"
+    },
+    {
+      "role": "native:native_constant/head_response.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/head_response.npy",
+      "bytes": 6304,
+      "sha256": "3f0897dfe8193bdebac68b3e0233a92d76bfed38c1c47d244b721913d05b10a4"
+    },
+    {
+      "role": "native:native_constant/minus_Gram_u.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_Gram_u.npy",
+      "bytes": 1192096,
+      "sha256": "8c8f0156542d7a36f7da8a1dac2687d0f7317e7bfe7f8d4b0dd3ccd1c9b8b608"
+    },
+    {
+      "role": "native:native_constant/minus_Gram_v.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_Gram_v.npy",
+      "bytes": 1192096,
+      "sha256": "8c8f0156542d7a36f7da8a1dac2687d0f7317e7bfe7f8d4b0dd3ccd1c9b8b608"
+    },
+    {
+      "role": "native:native_constant/minus_H.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_H.npy",
+      "bytes": 4768000,
+      "sha256": "8a6c26c6a142ba358b6b06bf0955f524cb111a888b1ac53aa5d4a9797f6c9472"
+    },
+    {
+      "role": "native:native_constant/minus_Hinv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_Hinv.npy",
+      "bytes": 4768000,
+      "sha256": "19e90a40c789771f3e4b4a76fd936861ae599f1c2c3d389297231eb8b076a52a"
+    },
+    {
+      "role": "native:native_constant/minus_R.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_R.npy",
+      "bytes": 1388224,
+      "sha256": "e2d65565c900afad05f99622f5f33ee26d2a29c0eceb96006e25c657257cdcf6"
+    },
+    {
+      "role": "native:native_constant/minus_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_defect.npy",
+      "bytes": 6304,
+      "sha256": "8fcaf4404117335bb23d53b251177e3ed55110bbf466b7ede9c07f5c428f0dd8"
+    },
+    {
+      "role": "native:native_constant/minus_direct_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_direct_defect.npy",
+      "bytes": 6304,
+      "sha256": "9f3b8c57023e270aaf04941a8d7dc82ebc2f9bc0c4a1b3f6b33917987b95a862"
+    },
+    {
+      "role": "native:native_constant/minus_factor.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_factor.npy",
+      "bytes": 4768000,
+      "sha256": "f4f61e5e73060f6e05a1128da550dd19a95d21173f8fdcf22bda2913f4b96054"
+    },
+    {
+      "role": "native:native_constant/minus_linear_defect_field.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_linear_defect_field.npy",
+      "bytes": 1383456,
+      "sha256": "7fc4f3f2f874959087c1cb3babf5b607720ecc9afc96c0bba79251ae2674eea9"
+    },
+    {
+      "role": "native:native_constant/minus_q.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_q.npy",
+      "bytes": 1388224,
+      "sha256": "8e465655837559e8467cc560c317b3a86efebd93e168e2da7f37216ee4890187"
+    },
+    {
+      "role": "native:native_constant/minus_trace.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_trace.npy",
+      "bytes": 345760,
+      "sha256": "f2606c641b782febe37068a7328c542f997ab2745fb020f85b0d5528c6fca84c"
+    },
+    {
+      "role": "native:native_constant/minus_z.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/minus_z.npy",
+      "bytes": 6304,
+      "sha256": "68303dfc2cf68266330a8c42128dbb3cf0907e9a9b10b818c918e2fbe6f40325"
+    },
+    {
+      "role": "native:native_constant/plus_Gram_u.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_Gram_u.npy",
+      "bytes": 1192096,
+      "sha256": "a70871308728db6650791e1f32701f9917acd2cba31fc6e04686b8ae8ce85375"
+    },
+    {
+      "role": "native:native_constant/plus_Gram_v.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_Gram_v.npy",
+      "bytes": 1192096,
+      "sha256": "a70871308728db6650791e1f32701f9917acd2cba31fc6e04686b8ae8ce85375"
+    },
+    {
+      "role": "native:native_constant/plus_H.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_H.npy",
+      "bytes": 4768000,
+      "sha256": "fc354fad8e29d38982f3b5ae1e723d0a33ef8bfae87a95fd46014e66d2d05980"
+    },
+    {
+      "role": "native:native_constant/plus_Hinv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_Hinv.npy",
+      "bytes": 4768000,
+      "sha256": "eed97e1e646ba2067833dc28c1225137fff0bb8dc544d5566b00ba33ee9c5769"
+    },
+    {
+      "role": "native:native_constant/plus_R.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_R.npy",
+      "bytes": 1388224,
+      "sha256": "9657c396a947e34c7c4f4549b1e343d48530abfdfec4055f86d65613331469e5"
+    },
+    {
+      "role": "native:native_constant/plus_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_defect.npy",
+      "bytes": 6304,
+      "sha256": "bd89cc833238557eb1042ebbd577d2c2457e85355166a36ae02fd05f68883d80"
+    },
+    {
+      "role": "native:native_constant/plus_direct_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_direct_defect.npy",
+      "bytes": 6304,
+      "sha256": "9afb5143fd239e1c73ea7d12d43557203e8e89273b8820d775a2b31a8b9ce2e6"
+    },
+    {
+      "role": "native:native_constant/plus_factor.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_factor.npy",
+      "bytes": 4768000,
+      "sha256": "04b33517ff8efef6a97d79872a0b9017f8e8e21021f0cf93e6a14ec169dbf757"
+    },
+    {
+      "role": "native:native_constant/plus_linear_defect_field.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_linear_defect_field.npy",
+      "bytes": 1383456,
+      "sha256": "3ec45bd22394061a22f8eb9ae6c3c23abaa2e2fc7e6a67265d1249f5539387c2"
+    },
+    {
+      "role": "native:native_constant/plus_q.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_q.npy",
+      "bytes": 1388224,
+      "sha256": "ac47eecd006bb780fb1211f9a188c1a0855759791a4f00519ca6426b96d51b86"
+    },
+    {
+      "role": "native:native_constant/plus_trace.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_trace.npy",
+      "bytes": 345760,
+      "sha256": "fc8d8be61e235a9dd341dbe97045265a82ebdfbe3c28fe23219e2d01052e45db"
+    },
+    {
+      "role": "native:native_constant/plus_z.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/plus_z.npy",
+      "bytes": 6304,
+      "sha256": "85659c1aefcb36f0dd1fc2700d7be34be25f69ad0205368e68db786ef7b1c395"
+    },
+    {
+      "role": "native:native_constant/source_AD_primal.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/source_AD_primal.npy",
+      "bytes": 1388224,
+      "sha256": "03a95c99a4d288bf3d952b8e8f586e223da2d744b0f208251534c0ee9e55cdee"
+    },
+    {
+      "role": "native:native_constant/source_R.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/source_R.npy",
+      "bytes": 1388224,
+      "sha256": "9f503f40e537214863e2ea2e7db6c18f7ed5cb4d2dccaed3d067a8e56b388ac5"
+    },
+    {
+      "role": "native:native_constant/source_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/source_defect.npy",
+      "bytes": 6304,
+      "sha256": "d5b995be168053c01596dcfbd0da5f4de718a52780aca3b2ca81a18856673914"
+    },
+    {
+      "role": "native:native_constant/source_q.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/source_q.npy",
+      "bytes": 1388224,
+      "sha256": "03a95c99a4d288bf3d952b8e8f586e223da2d744b0f208251534c0ee9e55cdee"
+    },
+    {
+      "role": "native:native_constant/source_trace.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/source_trace.npy",
+      "bytes": 345760,
+      "sha256": "9f2bf9380ea30f23c7fba4c74432184fdae37bd7a618ffc34b7eb9c0d272fab0"
+    },
+    {
+      "role": "native:native_constant/source_z.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/source_z.npy",
+      "bytes": 6304,
+      "sha256": "309ec70122432db7b39a71a08ecd9dd1f147412635c947ef1f0e13a926ab6982"
+    },
+    {
+      "role": "native:native_constant/target.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_constant/target.npy",
+      "bytes": 6304,
+      "sha256": "b43ca82aa17d7795c4160f3f45f74d3750d649c8d137a426f101b4212c639073"
+    },
+    {
+      "role": "native:native_zero/BTKJv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/BTKJv.npy",
+      "bytes": 6304,
+      "sha256": "90443397d875fa1bf7d1fc73a940a01d57de0a9c218c5f0a71e55f6f08585661"
+    },
+    {
+      "role": "native:native_zero/Cv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/Cv.npy",
+      "bytes": 6304,
+      "sha256": "8501c90af48a5a153496879a70f0054fd8f64bd5c2ffc5a70ff6a36e2d3b359b"
+    },
+    {
+      "role": "native:native_zero/FD.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/FD.npy",
+      "bytes": 1383456,
+      "sha256": "d24e42003fd08825b9e5688b161847f4afe953cb45cb35f3f015ba6491a5bc41"
+    },
+    {
+      "role": "native:native_zero/H.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/H.npy",
+      "bytes": 4768000,
+      "sha256": "f8f10ac85a8ce60cd3efec71f4fd1af717f0ac6795384429332b76ae0e6a3f57"
+    },
+    {
+      "role": "native:native_zero/Jv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/Jv.npy",
+      "bytes": 1383456,
+      "sha256": "7e8459a6909a2cb81ed83093c5e4887d8162cac361c7894026fcfc2872d47855"
+    },
+    {
+      "role": "native:native_zero/KJv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/KJv.npy",
+      "bytes": 1383456,
+      "sha256": "69a13beb579c27e74e78fe88a474fd2762e72e08105d7e0e46584de838fa89a0"
+    },
+    {
+      "role": "native:native_zero/Qv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/Qv.npy",
+      "bytes": 1383456,
+      "sha256": "c7dd034379039890282fd75119b9b37ce2aadccb07969fa5a3f8b59d49e741ec"
+    },
+    {
+      "role": "native:native_zero/U.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/U.npy",
+      "bytes": 6304,
+      "sha256": "367478b50faf3b8ab1abfd9a92f10135ece7667bb9709fa785dbed289f4726ee"
+    },
+    {
+      "role": "native:native_zero/difference.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/difference.npy",
+      "bytes": 1383456,
+      "sha256": "510684312671993a50fce3a7cdd91bd6c9ce40b7d1a01b5cc87de15347f3caaf"
+    },
+    {
+      "role": "native:native_zero/factor.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/factor.npy",
+      "bytes": 4768000,
+      "sha256": "0445e891ee745d78fe50d516963f74b061bcf55b59eb9e1761b53eb04fd88474"
+    },
+    {
+      "role": "native:native_zero/head_response.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/head_response.npy",
+      "bytes": 6304,
+      "sha256": "321c9cde16a7cec6ffbbfc600a55066486a9b9e3e0c31442536302ad99a6f9c7"
+    },
+    {
+      "role": "native:native_zero/minus_Gram_u.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_Gram_u.npy",
+      "bytes": 1192096,
+      "sha256": "8c8f0156542d7a36f7da8a1dac2687d0f7317e7bfe7f8d4b0dd3ccd1c9b8b608"
+    },
+    {
+      "role": "native:native_zero/minus_Gram_v.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_Gram_v.npy",
+      "bytes": 1192096,
+      "sha256": "8c8f0156542d7a36f7da8a1dac2687d0f7317e7bfe7f8d4b0dd3ccd1c9b8b608"
+    },
+    {
+      "role": "native:native_zero/minus_H.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_H.npy",
+      "bytes": 4768000,
+      "sha256": "8a6c26c6a142ba358b6b06bf0955f524cb111a888b1ac53aa5d4a9797f6c9472"
+    },
+    {
+      "role": "native:native_zero/minus_Hinv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_Hinv.npy",
+      "bytes": 4768000,
+      "sha256": "19e90a40c789771f3e4b4a76fd936861ae599f1c2c3d389297231eb8b076a52a"
+    },
+    {
+      "role": "native:native_zero/minus_R.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_R.npy",
+      "bytes": 1388224,
+      "sha256": "5ac5dea493dee0c1e8b3b71fae870e2fb7841ac2d7703a1df65622c5f24a548d"
+    },
+    {
+      "role": "native:native_zero/minus_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_defect.npy",
+      "bytes": 6304,
+      "sha256": "165ae4dca15ceb1eb9b26d62d4538608f4b2d44402227c52e48e8bbe6e63c7ff"
+    },
+    {
+      "role": "native:native_zero/minus_direct_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_direct_defect.npy",
+      "bytes": 6304,
+      "sha256": "9c9736471597314159f4ad4caa8e827e730caa5eb03ca7c642ef17a33f0a6e0e"
+    },
+    {
+      "role": "native:native_zero/minus_factor.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_factor.npy",
+      "bytes": 4768000,
+      "sha256": "f4f61e5e73060f6e05a1128da550dd19a95d21173f8fdcf22bda2913f4b96054"
+    },
+    {
+      "role": "native:native_zero/minus_linear_defect_field.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_linear_defect_field.npy",
+      "bytes": 1383456,
+      "sha256": "e5c21f9985377567874c70029f465c717722cdc201bb6523c5ed3ad6963c6c22"
+    },
+    {
+      "role": "native:native_zero/minus_q.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_q.npy",
+      "bytes": 1388224,
+      "sha256": "50f1f0b94dca1e1c0de49828974fff127b41db157036bbaa94e8e3663a223c4c"
+    },
+    {
+      "role": "native:native_zero/minus_trace.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_trace.npy",
+      "bytes": 345760,
+      "sha256": "f2606c641b782febe37068a7328c542f997ab2745fb020f85b0d5528c6fca84c"
+    },
+    {
+      "role": "native:native_zero/minus_z.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/minus_z.npy",
+      "bytes": 6304,
+      "sha256": "a3dc7d68a056f1f695aaa31a3c044f5991e378b3947aaf36d3658094403dd81b"
+    },
+    {
+      "role": "native:native_zero/plus_Gram_u.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_Gram_u.npy",
+      "bytes": 1192096,
+      "sha256": "a70871308728db6650791e1f32701f9917acd2cba31fc6e04686b8ae8ce85375"
+    },
+    {
+      "role": "native:native_zero/plus_Gram_v.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_Gram_v.npy",
+      "bytes": 1192096,
+      "sha256": "a70871308728db6650791e1f32701f9917acd2cba31fc6e04686b8ae8ce85375"
+    },
+    {
+      "role": "native:native_zero/plus_H.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_H.npy",
+      "bytes": 4768000,
+      "sha256": "fc354fad8e29d38982f3b5ae1e723d0a33ef8bfae87a95fd46014e66d2d05980"
+    },
+    {
+      "role": "native:native_zero/plus_Hinv.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_Hinv.npy",
+      "bytes": 4768000,
+      "sha256": "eed97e1e646ba2067833dc28c1225137fff0bb8dc544d5566b00ba33ee9c5769"
+    },
+    {
+      "role": "native:native_zero/plus_R.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_R.npy",
+      "bytes": 1388224,
+      "sha256": "a0c8eab9f5c418b7ebfbf753b27e988efab80e6fc3d51972286febd9f6fb9a94"
+    },
+    {
+      "role": "native:native_zero/plus_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_defect.npy",
+      "bytes": 6304,
+      "sha256": "855869965412e3b3fe77ba772005b903d373c0c19af4e8a849ccb44b00a68fa8"
+    },
+    {
+      "role": "native:native_zero/plus_direct_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_direct_defect.npy",
+      "bytes": 6304,
+      "sha256": "b56bd82138219c6bb12498af71de986082bfd29fd2addc3b55b8de08d5d58d7b"
+    },
+    {
+      "role": "native:native_zero/plus_factor.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_factor.npy",
+      "bytes": 4768000,
+      "sha256": "04b33517ff8efef6a97d79872a0b9017f8e8e21021f0cf93e6a14ec169dbf757"
+    },
+    {
+      "role": "native:native_zero/plus_linear_defect_field.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_linear_defect_field.npy",
+      "bytes": 1383456,
+      "sha256": "2275037e734613faf61c327164366e20f66a43edae48c0248c01fe50168b9448"
+    },
+    {
+      "role": "native:native_zero/plus_q.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_q.npy",
+      "bytes": 1388224,
+      "sha256": "15b196051a0f38c4386e4fdd89bb00923d7f6fcaa53ffc0fdf11ba4d642c29ef"
+    },
+    {
+      "role": "native:native_zero/plus_trace.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_trace.npy",
+      "bytes": 345760,
+      "sha256": "fc8d8be61e235a9dd341dbe97045265a82ebdfbe3c28fe23219e2d01052e45db"
+    },
+    {
+      "role": "native:native_zero/plus_z.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/plus_z.npy",
+      "bytes": 6304,
+      "sha256": "2142a6869b3140728c17ebe9fdac7ce7daaa631a8559552a4f455e60834a01d8"
+    },
+    {
+      "role": "native:native_zero/source_AD_primal.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/source_AD_primal.npy",
+      "bytes": 1388224,
+      "sha256": "af3db6bbcb860bfa67a4205ef353fc2738cfedd673e29b94b5477a1308a9967c"
+    },
+    {
+      "role": "native:native_zero/source_R.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/source_R.npy",
+      "bytes": 1388224,
+      "sha256": "e20a3e9c408b22c93ed556ed369d18d8db2fc964530d793af9a51f4dbefd8334"
+    },
+    {
+      "role": "native:native_zero/source_defect.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/source_defect.npy",
+      "bytes": 6304,
+      "sha256": "59afd00be62b57f1525cfdf31ddf8318cd0d0ecf6515f64ceca89d764d31f611"
+    },
+    {
+      "role": "native:native_zero/source_q.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/source_q.npy",
+      "bytes": 1388224,
+      "sha256": "af3db6bbcb860bfa67a4205ef353fc2738cfedd673e29b94b5477a1308a9967c"
+    },
+    {
+      "role": "native:native_zero/source_trace.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/source_trace.npy",
+      "bytes": 345760,
+      "sha256": "9f2bf9380ea30f23c7fba4c74432184fdae37bd7a618ffc34b7eb9c0d272fab0"
+    },
+    {
+      "role": "native:native_zero/source_z.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/source_z.npy",
+      "bytes": 6304,
+      "sha256": "b207758edf0ad745a35981ab73768d83273de8c9f2e20be2f403a989308cbc5c"
+    },
+    {
+      "role": "native:native_zero/target.npy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_residual_branch_c20_r1_hq_20261021/native_zero/target.npy",
+      "bytes": 6304,
+      "sha256": "309ec70122432db7b39a71a08ecd9dd1f147412635c947ef1f0e13a926ab6982"
+    },
+    {
+      "role": "old_native_source_card",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/execution_card.json",
+      "bytes": 4488,
+      "sha256": "f602b40f66bbde13505b7dfdfb5e7e26723bbb6b37cf7e7735c92ff133ebb5c8"
+    },
+    {
+      "role": "old_native_export_manifest",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/export_manifest.json",
+      "bytes": 95762,
+      "sha256": "8b7c6895d6a1ffe9c3899703ceaa5a268a13835a923ee54a51d4b95a88f1684e"
+    },
+    {
+      "role": "old_native_energy",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profile_measure_c20_r1_hq_20261020/point_0/local_chart_admission.json",
+      "bytes": 211,
+      "sha256": "b28f8973838a2293721ea09e30d0e860a1be1537c6ada48a8bf27761b84d69fd"
+    },
+    {
+      "role": "energy_reference_card",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_profile_measure_c20_r1_hq_20261020/execution_card.json",
+      "bytes": 4041,
+      "sha256": "47086533074f7d47ffdc00b42a3fbd30dc749abc1205d9f4d425dc77b67af1e6"
+    },
+    {
+      "role": "old_native_q0",
+      "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_profile_measure_c20_r1_hq_20261020/measurement_audit/002_source_q0.npy",
+      "bytes": 1383456,
+      "sha256": "ab04cb15dcbce17f9ada428fc9b12a5b4aa231d5960db05c935199ca9b2c979d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/_export_jpath_fields.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/_export_jpath_fields.py",
+      "bytes": 3065,
+      "sha256": "89a4c0e7bf56fd530e1b10993ba79cf1cea8747b60ecf99fffa2ff2b5d4ee0a1"
+    },
+    {
+      "role": "operator:code/SENS_tensile/alpha0_fem_to_pidl_projection.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/alpha0_fem_to_pidl_projection.py",
+      "bytes": 19715,
+      "sha256": "258248e9b1ca59fd89209d3859fa3fab96d64b204f1e46f45ff7576680db9346"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_aligned_fem_pidl_reference_tiers.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_aligned_fem_pidl_reference_tiers.py",
+      "bytes": 15448,
+      "sha256": "632f2e83832671a2626ae41c5f8db5e4ca50d9417086aed1422b167457a311b0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_c1_altmin_branch_matrix.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_c1_altmin_branch_matrix.py",
+      "bytes": 8754,
+      "sha256": "084d4d398683884048661d51a304d5b400566bb117efc630fe5fe1a35c13e3ba"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_c1_altmin_vs_fem22.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_c1_altmin_vs_fem22.py",
+      "bytes": 12871,
+      "sha256": "6805e0a8d252142b651c065853185676d08a80f0b6890d03d26a5b305f5b780e"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_damage_conditioned_equilibrium_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_damage_conditioned_equilibrium_gate.py",
+      "bytes": 15474,
+      "sha256": "398fcf125f4c4829db73d8eec20e6d32ac3c8a64c175abc469bd632283480d64"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_damage_observation_equilibrium_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_damage_observation_equilibrium_gate.py",
+      "bytes": 17254,
+      "sha256": "10b79d9270667cf6e1cbfd7e8564029a20638cd529e025dd7bfb39ae89a12cd6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_e2_trajectory.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_e2_trajectory.py",
+      "bytes": 17456,
+      "sha256": "969bf65747d3f3199811aef9b09c5599a12578788379d22da44d23b4857879f8"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_fbpinn_chain_vs_fem_nstep2.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_fbpinn_chain_vs_fem_nstep2.py",
+      "bytes": 13666,
+      "sha256": "1daeaf92d8287964fef3a434e874835ce28aa646f746e5828051df00cec4d55f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_fem_mechanism_assimilation_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_fem_mechanism_assimilation_gate.py",
+      "bytes": 14204,
+      "sha256": "3ad1889d38d9f0148e0f8c6bde2fda848b913756a6752d5e68c47065aeb6a283"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_fem_mechanism_operator_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_fem_mechanism_operator_gate.py",
+      "bytes": 16739,
+      "sha256": "da09d298be53be47d159021e855962f39a2df9b485fc10bbb5b7edda4170e76e"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_fem_request21_field_reductions.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_fem_request21_field_reductions.py",
+      "bytes": 16866,
+      "sha256": "a69bd1771f16bc6c9bad2cdd7a3b6cd1487b672134fa91b41a7f87e4897e2ada"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_frozen_alpha_elastic_vs_fem22.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_frozen_alpha_elastic_vs_fem22.py",
+      "bytes": 14660,
+      "sha256": "6c2b167fdccb69758844bc5086d4f786790e286bf2c9c295e4e162715b7786e7"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_hard_recovery_graph_residual_discriminator.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_hard_recovery_graph_residual_discriminator.py",
+      "bytes": 38882,
+      "sha256": "643a29d010d32623a3eae02819147f0df4d9c310463bdfb0c599b26fb532c4a9"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_historical_damage_assimilation_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_historical_damage_assimilation_gate.py",
+      "bytes": 11522,
+      "sha256": "3353fc0fd9fe1ff2dc439b715b7e94582cc4e02b0d18e1bf8f5482750436a16c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_history_driver_discriminator.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_history_driver_discriminator.py",
+      "bytes": 15056,
+      "sha256": "5d32d1b458a27a9da144ee8902b1d30b5418ab44502c928b9894e583657d1ef0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_mesh_gnn_residual_discriminator.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_mesh_gnn_residual_discriminator.py",
+      "bytes": 26900,
+      "sha256": "21cb54bbec159c51c84f4612537001bbcd45aaa706fd25290bd7277ce2d9c223"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_psi_argmax_t4.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_psi_argmax_t4.py",
+      "bytes": 3763,
+      "sha256": "ee5497bc6a798195180663b34f914077cafa77a3b14e917028339c3b62fc741d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_reaction_conditioned_damage_inversion_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_reaction_conditioned_damage_inversion_gate.py",
+      "bytes": 12794,
+      "sha256": "943993ba930549baf8384bf0a12229700647abb70237e6ab0e5ed5b10b4157ea"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_resstiff_epsilon_vs_fem22.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_resstiff_epsilon_vs_fem22.py",
+      "bytes": 17917,
+      "sha256": "235cae8b5046debbf07495737e301d393899b725c4aa73edf380806a5688a5a6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_resstiff_vs_fem_nstep2.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_resstiff_vs_fem_nstep2.py",
+      "bytes": 16008,
+      "sha256": "43c7075a6052dfeb76750b50804ab3830b61b614b3e7c8b3331ac319dd1cfb48"
+    },
+    {
+      "role": "operator:code/SENS_tensile/analyze_soft_hist0_state_timing.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/analyze_soft_hist0_state_timing.py",
+      "bytes": 10324,
+      "sha256": "36d7e449b52be07d0f44539a1effc97b417fedc035347603183086f268a54dfc"
+    },
+    {
+      "role": "operator:code/SENS_tensile/archive/generate_figs.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/archive/generate_figs.py",
+      "bytes": 3272,
+      "sha256": "7491fd6c111c533c2eef7dffaf5b10d503d3550eacc8fe9dac98e9efeeeba94a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/archive/generate_figs_fatigue.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/archive/generate_figs_fatigue.py",
+      "bytes": 6889,
+      "sha256": "89d87b7900e1f4f33389d96f5dc58b812351dde6ff0891f66faaa0f337ad8833"
+    },
+    {
+      "role": "operator:code/SENS_tensile/archive/recover_E_el.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/archive/recover_E_el.py",
+      "bytes": 7216,
+      "sha256": "646d5f720a604513e6f296a6cc608a0bf5186c9b2959bc94a55a52a679b80a0b"
+    },
+    {
+      "role": "operator:code/SENS_tensile/archive/recover_data.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/archive/recover_data.py",
+      "bytes": 7649,
+      "sha256": "e9f84f4d0278ca7adc408e3b107dced817cdbe933d076813622967ac57595044"
+    },
+    {
+      "role": "operator:code/SENS_tensile/archive/run_sequential.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/archive/run_sequential.py",
+      "bytes": 6425,
+      "sha256": "57aec3565b4cf481b203c624c458516118af546f3815e9558fe7048a01fd5c53"
+    },
+    {
+      "role": "operator:code/SENS_tensile/assimilate_front_translation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/assimilate_front_translation.py",
+      "bytes": 10222,
+      "sha256": "fe3dd7cde543b9bb69f794702fa435eabc24ae63291b6db4a5edcc6044008104"
+    },
+    {
+      "role": "operator:code/SENS_tensile/assimilate_global_background_mode.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/assimilate_global_background_mode.py",
+      "bytes": 12481,
+      "sha256": "887b6c4e7fd1f351b5410472e3b70f870ef5b0b5777d4116cbea3b8486deef47"
+    },
+    {
+      "role": "operator:code/SENS_tensile/audit_active_driver_definitions.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/audit_active_driver_definitions.py",
+      "bytes": 9243,
+      "sha256": "ada03f69e8a9d417eb31178ddbf1e4b882e677b31b4a3decfaa212532b25e394"
+    },
+    {
+      "role": "operator:code/SENS_tensile/audit_archive_settings.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/audit_archive_settings.py",
+      "bytes": 13209,
+      "sha256": "dbf8620d1f1c6de8437b73b4ce711428783e426c71eef44585be5a90168af037"
+    },
+    {
+      "role": "operator:code/SENS_tensile/audit_native_q4_operator.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/audit_native_q4_operator.py",
+      "bytes": 5447,
+      "sha256": "81b2048d0c567cd0309333151cfdd2b973f027299dc85525f72c45290d39a1fc"
+    },
+    {
+      "role": "operator:code/SENS_tensile/audit_soft_hist0_alignment_diagnostics.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/audit_soft_hist0_alignment_diagnostics.py",
+      "bytes": 12389,
+      "sha256": "0ea6a41f033bc2456d408dbc2779202209f246c6ad107db39b68cea54e898427"
+    },
+    {
+      "role": "operator:code/SENS_tensile/build_taobo_tier_manifest.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/build_taobo_tier_manifest.py",
+      "bytes": 15447,
+      "sha256": "25a1c73503ecb5243779946da993dc1db1066e1569a38c5ce9b8e8efc12a76eb"
+    },
+    {
+      "role": "operator:code/SENS_tensile/build_vision_observation_table.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/build_vision_observation_table.py",
+      "bytes": 3513,
+      "sha256": "a609296d00182b8b06007b32798f2fdd06eca1ba989715dd10ddf2fedcec194c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/calibrate_reality_sensor_observation_model.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/calibrate_reality_sensor_observation_model.py",
+      "bytes": 7721,
+      "sha256": "f146f1aa9f4402110bf30c32e70e941a0dfca7c8888e9418b78915fcb2789833"
+    },
+    {
+      "role": "operator:code/SENS_tensile/calibrate_spatial_degradation_reaction.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/calibrate_spatial_degradation_reaction.py",
+      "bytes": 12345,
+      "sha256": "ea0df55ab04f0bada0ae4a56c90213bab91d7da344bbb424cb8b07f8f29cb144"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_alpha_fields_pidl_fem.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_alpha_fields_pidl_fem.py",
+      "bytes": 7682,
+      "sha256": "257a82f81682d888dec71065cd8f8049cdd8416add3f898774b72de5028c5295"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_fem_cyclewise_references.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_fem_cyclewise_references.py",
+      "bytes": 7448,
+      "sha256": "407ec8be23bfecfc2556ef62b840a1d3aaede15dfbea5ebcb68ba54fc8b40500"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_fem_notch_variants.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_fem_notch_variants.py",
+      "bytes": 7256,
+      "sha256": "fd3c886e6c5c9a80bbc424afbb30138fb117b4a1784a87f09aed942e58523439"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_fem_pidl_cyclewise_mechanism.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_fem_pidl_cyclewise_mechanism.py",
+      "bytes": 7456,
+      "sha256": "fe27b6e99ac7ee8365d27b82250d10bb51806d27ca902dfe07a32216b813208e"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_fem_pidl_precrack_masked.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_fem_pidl_precrack_masked.py",
+      "bytes": 8660,
+      "sha256": "687e011b4bdf7eca8eacca923309d123838623922bace740f91d3d89b4a94936"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_femmesh_pidl_incremental_energy.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_femmesh_pidl_incremental_energy.py",
+      "bytes": 6347,
+      "sha256": "e6058ca9459fd96f7b6b9b44324113ff528ecb80660f38dcbf354e68cd646ba0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_kt_three_way.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_kt_three_way.py",
+      "bytes": 27834,
+      "sha256": "5504d13bf1f3c4826f7875bff007a1ae38de0cc41a6a3c7f6d8db9c791055efe"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_pidl_state_timing_mappings.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_pidl_state_timing_mappings.py",
+      "bytes": 9968,
+      "sha256": "31188636be1797d39908d6fecdf1c41fb8b90a5c68e453d7439479f1a56aa002"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_pidl_to_fem_nstep2_timing.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_pidl_to_fem_nstep2_timing.py",
+      "bytes": 13012,
+      "sha256": "f441220dcf96ecc68a5b3b0456f417ccb02bf109aa7144d59519ad695b99f52f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compare_umax_sweep.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compare_umax_sweep.py",
+      "bytes": 20597,
+      "sha256": "881058998d0045d617c4ed3b2efbe0c0f15d21360540cb3b7eac844fb10071a6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compute_J_integral.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compute_J_integral.py",
+      "bytes": 17519,
+      "sha256": "97228f5bd2058de1183a4109154550ae5df160eea843e23c2fe03c0681cea636"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compute_SN_sensitivity.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compute_SN_sensitivity.py",
+      "bytes": 10168,
+      "sha256": "4acff86f05d6e5549f21bc32ec7297ba2b31806e52eecf77ad94064b4f9cbab6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compute_field_level_score_v0.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compute_field_level_score_v0.py",
+      "bytes": 12496,
+      "sha256": "86d240c682e96888047c7640bf081224d94f3417e11561941bba9067ea88004f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compute_multi_objective_J.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compute_multi_objective_J.py",
+      "bytes": 8453,
+      "sha256": "ff5a928290344428225a4bf1f6e7444fc2071eb3095ddc78f258f4a3d7992833"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compute_nf_criterion_sensitivity.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compute_nf_criterion_sensitivity.py",
+      "bytes": 5934,
+      "sha256": "6ff93a575db3872413455859c53ef375f35c6376ec289cd124db977aa80057ff"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compute_process_zone_metrics.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compute_process_zone_metrics.py",
+      "bytes": 16051,
+      "sha256": "c639c48e0faa47239bf6abb87796f89f26d9740a8fdb6bfde63aea0061aa9d57"
+    },
+    {
+      "role": "operator:code/SENS_tensile/compute_transfer_function_summary.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/compute_transfer_function_summary.py",
+      "bytes": 8189,
+      "sha256": "9e4864c49f5f13ca068387acf3d33abe999325a39da767b3e07897f53ac02215"
+    },
+    {
+      "role": "operator:code/SENS_tensile/config.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/config.py",
+      "bytes": 34469,
+      "sha256": "2e36c71b49bf0b0af17aea4ffde22c01c9c67c95726adae0300acab0e016d4f4"
+    },
+    {
+      "role": "operator:code/SENS_tensile/diagnose_nstep2_active_driver_colocation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/diagnose_nstep2_active_driver_colocation.py",
+      "bytes": 14552,
+      "sha256": "8f27f5214809cff83b134ab4a59e8bc2ce93f76fb0b445683051ef765031b80e"
+    },
+    {
+      "role": "operator:code/SENS_tensile/evaluate_sequential_raw_assimilation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/evaluate_sequential_raw_assimilation.py",
+      "bytes": 9893,
+      "sha256": "5de335b9aa8bf24de7b4e8b79e1924f96be3f2d7f6e59c3a4a898cbdafa6fbf7"
+    },
+    {
+      "role": "operator:code/SENS_tensile/evaluate_spatial_degradation_reconstruction_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/evaluate_spatial_degradation_reconstruction_gate.py",
+      "bytes": 31058,
+      "sha256": "40909ee4d5cd0b1fa35d1290add4a85aba942e968a4bab02998a0ec37faa09eb"
+    },
+    {
+      "role": "operator:code/SENS_tensile/export_pidl_element_diagnostics.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/export_pidl_element_diagnostics.py",
+      "bytes": 16702,
+      "sha256": "88742cdc5343b82a1b2c6d2423e87a512c2838d37597a60cd95b882d5e301a8d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/export_pidl_initial_state.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/export_pidl_initial_state.py",
+      "bytes": 7575,
+      "sha256": "ca1aace520e8b9a3c7cee7135412cb9b9d27827d48d777f17963fce37c36ebc0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/export_pidl_mapped_state_fields.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/export_pidl_mapped_state_fields.py",
+      "bytes": 14544,
+      "sha256": "7bbde103056986bc2b5ac69311266e93f9b0f62507af928e2eabc58adda4405f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/extract_E_el_E_d.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/extract_E_el_E_d.py",
+      "bytes": 8995,
+      "sha256": "90ad0ebf27c2aa13ef89416a29d4d653a4a3c21d64bdf4d94907c0af2caed9d7"
+    },
+    {
+      "role": "operator:code/SENS_tensile/extract_Kt.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/extract_Kt.py",
+      "bytes": 11835,
+      "sha256": "b6a3816e85a4bbb96cddb733269ec4da4f9fe8cfeeaf1494032bdcfa35530905"
+    },
+    {
+      "role": "operator:code/SENS_tensile/extract_f_mean.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/extract_f_mean.py",
+      "bytes": 2968,
+      "sha256": "7ac985f9003da1a1fd18c81b18b248ee83a2d7d4135e3efe4e09c478ad339502"
+    },
+    {
+      "role": "operator:code/SENS_tensile/extract_psi_field.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/extract_psi_field.py",
+      "bytes": 5901,
+      "sha256": "c0fbf828c326632a531998a9635073b648d85f4ae17a7d2214e24f9e41c4f86a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/field_computation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/field_computation.py",
+      "bytes": 21584,
+      "sha256": "b3d04b39c7d8869b3e949ea141133d2d8103529d98010f3fcd12c7d0dcf8eea8"
+    },
+    {
+      "role": "operator:code/SENS_tensile/generate_figs_case.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/generate_figs_case.py",
+      "bytes": 7988,
+      "sha256": "43fc214b9edde855fe01a5fdae57dbf18af38859939af292838613621b93452f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/generate_figs_pidl_fem.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/generate_figs_pidl_fem.py",
+      "bytes": 22808,
+      "sha256": "aa7dd10e72be774609ae4d5bdd57a09e9681232edf5cd440534ab7bac231f61f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/generate_figs_sn_full.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/generate_figs_sn_full.py",
+      "bytes": 12199,
+      "sha256": "dfaab4d3d56e65cbaf200f98edc948c55090b329da4825410b42ba161df74b95"
+    },
+    {
+      "role": "operator:code/SENS_tensile/generate_figs_summary.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/generate_figs_summary.py",
+      "bytes": 14105,
+      "sha256": "bb8bbab972e753b1d3873b719ff08b3c4a068ec3a2e200e17906e01b86b686b9"
+    },
+    {
+      "role": "operator:code/SENS_tensile/invert_dic_conditioned_degradation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/invert_dic_conditioned_degradation.py",
+      "bytes": 20620,
+      "sha256": "6d5c05bbb28115e847904d712b67fc9092c6ad37f3535ef482c90ef4fb44a31d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/invert_dic_conditioned_nodal_damage.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/invert_dic_conditioned_nodal_damage.py",
+      "bytes": 27140,
+      "sha256": "a9f9c8a3b5bac167c898870e49ca2dac9b45d7d82ee23f14281da0abf51f62c1"
+    },
+    {
+      "role": "operator:code/SENS_tensile/main.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/main.py",
+      "bytes": 3578,
+      "sha256": "29fbe6b04edec544573b6c7f41c4b6bc8daecdc27df9aaa407c8298363896c27"
+    },
+    {
+      "role": "operator:code/SENS_tensile/make_alpha1_mesh.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/make_alpha1_mesh.py",
+      "bytes": 4189,
+      "sha256": "2371ce9925abc062db73590035410042232d0773406f937549388c41ada14c9c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/make_fem_mesh.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/make_fem_mesh.py",
+      "bytes": 4230,
+      "sha256": "a9e14ce989490f231d4a666e57f443628b04b68a235ed89231a9de920c00b23c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/monitor.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/monitor.py",
+      "bytes": 3496,
+      "sha256": "e9c022c71190cb2031e9334c9ccd30227aa37f8a7e45457f6fc63207840532cd"
+    },
+    {
+      "role": "operator:code/SENS_tensile/observable_growth_baseline.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/observable_growth_baseline.py",
+      "bytes": 11711,
+      "sha256": "cd736cefe3601e89712eeabb91664cf2cbc6ef05f363ba1231c8e9d0c8ebaa82"
+    },
+    {
+      "role": "operator:code/SENS_tensile/phase3_cdm_condition.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/phase3_cdm_condition.py",
+      "bytes": 4582,
+      "sha256": "36fae89de8a49882f5b9921df63d7fdd6d249dfc1ba9da91a5c01a348e4c0462"
+    },
+    {
+      "role": "operator:code/SENS_tensile/phase3_crack_image_pipeline.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/phase3_crack_image_pipeline.py",
+      "bytes": 9610,
+      "sha256": "c18d2ba9079ac4c8dd729e680113e93b5df6c0838c6afe8fc35b2b369b933312"
+    },
+    {
+      "role": "operator:code/SENS_tensile/phase3_fem_pipeline.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/phase3_fem_pipeline.py",
+      "bytes": 7085,
+      "sha256": "c897db931ad64c005832511cabd09e60a03d9638a3df45a6464ea21553b6e320"
+    },
+    {
+      "role": "operator:code/SENS_tensile/phase3_morphology_stats.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/phase3_morphology_stats.py",
+      "bytes": 5645,
+      "sha256": "88de2f6915d8b986c5b3bca81ba29cb1626f410bc1a09ec0c04a11e78c234442"
+    },
+    {
+      "role": "operator:code/SENS_tensile/phase3_render_overlay.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/phase3_render_overlay.py",
+      "bytes": 5548,
+      "sha256": "4caa9e7fdf8cb4f565f2a2e8399ed0a737d42cd20af1886842d9f0fd7a46cb2a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/pidl_fem_alignment_protocol.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/pidl_fem_alignment_protocol.py",
+      "bytes": 1718,
+      "sha256": "16d473da45cb4379c42d5da101b480a8031f0f52279e32f5b415af58e3028d48"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_4archive_comparison.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_4archive_comparison.py",
+      "bytes": 6474,
+      "sha256": "dfb2e4dec30aa8eb369fad914f1201249ffd179b8b62bfdd940921c8d4b7d846"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_C5_symY2_skew.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_C5_symY2_skew.py",
+      "bytes": 4237,
+      "sha256": "cc472211658a6e7cbe57be73558fccf03fc83cff02e3040d73f3ab8cb34faa0a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_FEM_alpha_field.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_FEM_alpha_field.py",
+      "bytes": 5376,
+      "sha256": "cb2faf49ab8791a282b026b5cd35ec7769e03bde1e8c6d39daffc3bbb19ec92d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_J_integral_comparison.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_J_integral_comparison.py",
+      "bytes": 9632,
+      "sha256": "045ddea197f4da247c013bd7567191b31812e5d2d2331c3746d45c3521a249a6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_Rbc_residual_field.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_Rbc_residual_field.py",
+      "bytes": 8701,
+      "sha256": "428ff6a07b7812ddc5fb4109c61ace48b4c01f41134860d411de20088e15804f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_allfemmesh_energy_components.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_allfemmesh_energy_components.py",
+      "bytes": 9286,
+      "sha256": "4cb9cc7e91fabec0eebe80d6d1f5a8588fcadc5de764b0abc0c9f44bcec7237e"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_allfemmesh_lambda_hist_trace.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_allfemmesh_lambda_hist_trace.py",
+      "bytes": 4307,
+      "sha256": "e022c323ea051d3f4c0fe1ef4e0059e5d9f2fc4c03fce3e5d486a6b2a0be3146"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fem22_nstep2_vs_pidl_baseline_residual_fields.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fem22_nstep2_vs_pidl_baseline_residual_fields.py",
+      "bytes": 10592,
+      "sha256": "5f9392c742c2568780a55327e88fc6893f1e96307038a1b66cffce47dd46309c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fem_damage_fields.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fem_damage_fields.py",
+      "bytes": 6853,
+      "sha256": "0384f0db7c10313d5b6c8d81f711be23ed34fbd774d7416b2521d1e988ce7456"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fem_mode_shift.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fem_mode_shift.py",
+      "bytes": 7202,
+      "sha256": "21329db7d8bff1ddf3042ffcfac33d11dc126810e1ff37363ded11ed9a23be36"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fem_pidl_residual_fields.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fem_pidl_residual_fields.py",
+      "bytes": 7502,
+      "sha256": "0ffd5921601ace9aa8f5e19f2f5c3db9b071afd05772ee1a38917743e6bb2242"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fem_request21_cadence_summary.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fem_request21_cadence_summary.py",
+      "bytes": 3926,
+      "sha256": "3333ea9409a5be3d4f77c7438671bd8268437b1a60ec64ee8f07a5dd99b522d4"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_B_soft_sym_mirror.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_B_soft_sym_mirror.py",
+      "bytes": 3991,
+      "sha256": "8971936dda07868d09ba73f5de840db7634373ff69066d0eca78089cded0029a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_F11_domain_mean_alpha.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_F11_domain_mean_alpha.py",
+      "bytes": 4783,
+      "sha256": "18dcd090025679f32520c6250964551e0fc9c987089c7a81f60e954194f619b6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_F1_nf_vs_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_F1_nf_vs_umax.py",
+      "bytes": 5653,
+      "sha256": "2b8925201d7f19732e0a9851ab4e4417a4eec5a9413c85d62ee55e200724ab14"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_F2_v4_v7_barchart.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_F2_v4_v7_barchart.py",
+      "bytes": 5317,
+      "sha256": "896876199f28983b93adcd887b0ee15624f044197bf8a5750d5cc32480512643"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_F4_F5_trajectories.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_F4_F5_trajectories.py",
+      "bytes": 5369,
+      "sha256": "02386d3c9f9455a0bec7ffdafe1d81db6eda92a2028389a9a8fc3b5fecd43b82"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_F6_v7_trajectory.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_F6_v7_trajectory.py",
+      "bytes": 3217,
+      "sha256": "add0a4ea0c2916a0b8900a61ce100d6002598744371a418a7ec085512e3810d8"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_F7_basquin.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_F7_basquin.py",
+      "bytes": 2885,
+      "sha256": "f059a27cff79ab26ac4e197f6d3ced5e77dacc4b931aa06428d91dc51caaaf72"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_F8_mesh_convergence.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_F8_mesh_convergence.py",
+      "bytes": 3221,
+      "sha256": "e1fd1ef3aa730f2a7ade82b75455eeff6c33fb9dd30f6e03e92d4bf9742e3d95"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_fig_F9_multiseed.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_fig_F9_multiseed.py",
+      "bytes": 4272,
+      "sha256": "42a12952ed6eb0f5ca0ddc7db6c1b1d7cfba95b75ad11d72a50aba2dc59f5cb3"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_hero_fem_vs_pidl.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_hero_fem_vs_pidl.py",
+      "bytes": 12984,
+      "sha256": "8738f923b317bd287c77b279e09ac3653e9ce47b1d30a520c5ecd9f491eae498"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_hero_fem_vs_pidl_d_and_f.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_hero_fem_vs_pidl_d_and_f.py",
+      "bytes": 14166,
+      "sha256": "820b93f4faca8ddea1b5c796167f67d8543a1cefe13c33221bd5cd97ccbaff26"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_latest_fem_energy_vs_allfemmesh_pidl.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_latest_fem_energy_vs_allfemmesh_pidl.py",
+      "bytes": 9179,
+      "sha256": "431774b0ad2ce5b4d80258deb4dbcae1f3c4b8364cdbec510f3cc3fe22fe4c75"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_mesh_comparison_lambda_eirres.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_mesh_comparison_lambda_eirres.py",
+      "bytes": 10478,
+      "sha256": "53014d7dd68233b246a653e010a16eeaecdf5e5c18615eedc57af1f778368641"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_oracle_umax_sweep.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_oracle_umax_sweep.py",
+      "bytes": 7342,
+      "sha256": "f8650ae70c85bc5e5e6ea50f4e680e808c130539d734edf43df6a124ef954731"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_oracle_zone_overlay.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_oracle_zone_overlay.py",
+      "bytes": 4466,
+      "sha256": "f87edf63a4b7a1a7dde4b33c4a9c99912e296fb7aaa1396ed5bce94f197fc393"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_pidl_fem_baseline_mesh_comparison.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_pidl_fem_baseline_mesh_comparison.py",
+      "bytes": 10527,
+      "sha256": "4a38f88216bfe503bc348b8c5791a5c37ac0a11193cff2421081af380fa2116b"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_pidl_mesh_comparison.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_pidl_mesh_comparison.py",
+      "bytes": 3495,
+      "sha256": "0f62bb541cbd3958699f1102b726e112274b42de3d755fb3df9a4b416eedc202"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_pidl_method_promise_summary.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_pidl_method_promise_summary.py",
+      "bytes": 6543,
+      "sha256": "3fe01505bef5fb199bae164d31dfbe8a3a802d24e8ab6ee493b3da77901d1dc0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_process_zone_comparison.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_process_zone_comparison.py",
+      "bytes": 7958,
+      "sha256": "3404927530c490ddc21462791559805a2f27c6a05c4e5c33028cf8d5d6357eaf"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_sequential_raw_assimilation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_sequential_raw_assimilation.py",
+      "bytes": 9554,
+      "sha256": "3a3ee05b086b932b51c6217a88410d0edb9e2151b7d509ce40c31181980e9de7"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_soft_hist0_common_probe_residuals.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_soft_hist0_common_probe_residuals.py",
+      "bytes": 8429,
+      "sha256": "94564b0c5ef6b6519eee17ee14f93a5d8bd01b3bacd24d821df8633dff5023e7"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_tip_tracking_evidence.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_tip_tracking_evidence.py",
+      "bytes": 8307,
+      "sha256": "6706760dbcd377fc5552b76e1e951fc71baf3a66d8f535792dfa0315924dc214"
+    },
+    {
+      "role": "operator:code/SENS_tensile/plot_umax_init_coeff_sweep.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/plot_umax_init_coeff_sweep.py",
+      "bytes": 7104,
+      "sha256": "ddc95fc5abdc7be898af702c1488bcc13482ee992df97ee046106be47c651ee4"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_5metric_multiarchive.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_5metric_multiarchive.py",
+      "bytes": 13648,
+      "sha256": "ac72c085cd51bdc06e8477feae7e1b86815c7107e8e4e821233df99f6625dada"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_alignment_criteria.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_alignment_criteria.py",
+      "bytes": 8672,
+      "sha256": "e5f8faad903b4599cead62ca0c32768419c907efe9f1ea074cf4a9f368a3436a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_allfemmesh_energy_trace.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_allfemmesh_energy_trace.py",
+      "bytes": 6931,
+      "sha256": "ee0c3670caaaecbeadd3c3e2dcc611cbffcddf257cc094c901a9b69430b7734d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_cracktip_local_diagnostics.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_cracktip_local_diagnostics.py",
+      "bytes": 45328,
+      "sha256": "b539ef1161fc970ce4ba1748c9466384cc441bec58759b9c99884bd6e72b704a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_element_tip_criterion.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_element_tip_criterion.py",
+      "bytes": 13147,
+      "sha256": "1917bf0589f373d25c9b4dbf0ade433fd1945ad73d79f250c1100c8efd884733"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_lbfgs_polish_audit.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_lbfgs_polish_audit.py",
+      "bytes": 11756,
+      "sha256": "d12a1c3fc6a6a427cb4502460a2bcc8a7ced2b312dda9d2e7d5550c823384a42"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_mesh_probe_alignment.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_mesh_probe_alignment.py",
+      "bytes": 18811,
+      "sha256": "8c1c590a41c9211c3e3d3ff01a62e67bcf110037aeab081a145f9901ffcc3272"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_pidl_vs_fem_trajectory.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_pidl_vs_fem_trajectory.py",
+      "bytes": 9597,
+      "sha256": "64b0dbc7f8e84021e81ebc81f717fdf5323fa7d6fdc186429b79e11df81bede2"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_reaction_force.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_reaction_force.py",
+      "bytes": 6101,
+      "sha256": "0c03f61fcade54299ecaaaf9e0825dfae9c0ca083ca9de965b112a724755927e"
+    },
+    {
+      "role": "operator:code/SENS_tensile/posthoc_v7_global_audit.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/posthoc_v7_global_audit.py",
+      "bytes": 11429,
+      "sha256": "da77c923c14a544eba1642ae225d57e403b50ad99cb552a4016546a0fe1ea331"
+    },
+    {
+      "role": "operator:code/SENS_tensile/prepare_branch_restart_archive.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/prepare_branch_restart_archive.py",
+      "bytes": 7709,
+      "sha256": "5826e49c7fd2918d371946b01cf15767d765498cda961fd69d0fa88f60aeb82d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/prepare_fem_mechanism_operator_dataset.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/prepare_fem_mechanism_operator_dataset.py",
+      "bytes": 11423,
+      "sha256": "543591e8276ebd4b970fedacccd1a6392e63e8316b36e1ea761dfc4591b4f433"
+    },
+    {
+      "role": "operator:code/SENS_tensile/prepare_spatial_degradation_reconstruction_dataset.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/prepare_spatial_degradation_reconstruction_dataset.py",
+      "bytes": 13416,
+      "sha256": "1f18a9f71b733ca72630c0799550ee08ce14106d61547fb690c6af08f7b0c9d6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/process_carrara_digitized_fig6.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/process_carrara_digitized_fig6.py",
+      "bytes": 9828,
+      "sha256": "80d9ed94eafbe107300cd04509a7aa1174869a11c7059a0442d6c1186cfcb24e"
+    },
+    {
+      "role": "operator:code/SENS_tensile/reality_assimilation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/reality_assimilation.py",
+      "bytes": 61749,
+      "sha256": "2e6b50b76b696835acbf37e404fb185148d6d41e737a6ffe6394bb8e0fce5448"
+    },
+    {
+      "role": "operator:code/SENS_tensile/recompute_psi_peak.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/recompute_psi_peak.py",
+      "bytes": 9704,
+      "sha256": "8a43f01ccf0e25c2724a48a3a65587c741810cdd236a5a5c8ea379662adcf75c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/render_late_cycles.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/render_late_cycles.py",
+      "bytes": 7053,
+      "sha256": "ba28f8e1b2321ed1946e6ba4307f41e7e5adf1ec012df77b47c9ff3681ad729f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_AT2_vol_baseline_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_AT2_vol_baseline_umax.py",
+      "bytes": 4074,
+      "sha256": "e2614e41847575e12306cf4c75b9351c5c21b895322cf48c2bfcba7c8978688f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_A_oracle_psi_c4f_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_A_oracle_psi_c4f_umax.py",
+      "bytes": 2153,
+      "sha256": "730ae48728c0a3bda828ce673d1169c68158e72e3ecd3e2f25df52a66ec6f901"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_B_mit8_c4f_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_B_mit8_c4f_umax.py",
+      "bytes": 2050,
+      "sha256": "e90b1795ab55941f61f733de2594e9f025608b2d680a7b753868eaa37da68932"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_C4linear_fourier_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_C4linear_fourier_umax.py",
+      "bytes": 1499,
+      "sha256": "df75f6c3eb3cbd8b4b3767d34f06f98a1fa1c678c479c28cddecd26729ff99d1"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_E_enriched_c4f_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_E_enriched_c4f_umax.py",
+      "bytes": 1395,
+      "sha256": "25fda4bc859e972887dd8213e8fe4aa60dbff3a2ae5ebe9a44dded6a8aa37612"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_adaptive_sampling_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_adaptive_sampling_umax.py",
+      "bytes": 7838,
+      "sha256": "42424a0a94ec361668cc119c9e4e84892f1d4cd1538ec546f17cec56d18d3f1f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_algo1_mit8_noc4_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_algo1_mit8_noc4_umax.py",
+      "bytes": 8705,
+      "sha256": "7784947147610969a6af59d6aec458e7b6afa15bc4656a860dc6e2f53bb63bb6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_algo1_psi_allcycles_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_algo1_psi_allcycles_umax.py",
+      "bytes": 7058,
+      "sha256": "8bd854a5d02e64cfa7ec770b3c1b07bdde9eca963280cc7fd37fa23e61215c60"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_alpha1_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_alpha1_umax.py",
+      "bytes": 6965,
+      "sha256": "219464330c952498eb232b47ac2fc048c8d2dfefd823a2b1f1d8fd16a51a45ed"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_baseline_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_baseline_umax.py",
+      "bytes": 4614,
+      "sha256": "b2056d2c1f350eb057663e01f32852f10fa31acb0800c425f05cd7eb81bb3c9d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_damage_conditioned_equilibrium_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_damage_conditioned_equilibrium_gate.py",
+      "bytes": 13821,
+      "sha256": "d9dcd5ccc249c159453ce38c407e733681d7a2ce2a277331237e55aa995316cd"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_damage_observation_equilibrium_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_damage_observation_equilibrium_gate.py",
+      "bytes": 20436,
+      "sha256": "6bc3894c5b22b74bfb48641cfb94a046b917374ffbcb3466966c0a79a81e9105"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_delta1_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_delta1_umax.py",
+      "bytes": 8152,
+      "sha256": "3817e7e67346efc489a0f78c8fc1d4e64cf0b5c32e5678893b7ed0f894b59cee"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_dir63_logf_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_dir63_logf_umax.py",
+      "bytes": 6695,
+      "sha256": "11fc8a2e1e5efd110988e9ad2bc4c3ad430cd8dd8e971d33170bf050c7906f90"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_e2_reverse_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_e2_reverse_umax.py",
+      "bytes": 10183,
+      "sha256": "402ce1dfa3ad1025e029d325c7b2ebc50cff715fc973ee17db8b119efc71a4be"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_e2_reverse_umax_windows.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_e2_reverse_umax_windows.py",
+      "bytes": 1950,
+      "sha256": "e79adc2590d203991d73285d84fa4497bfbacb8a0201aeeb74d1fe66dff5e6f6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_enriched_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_enriched_umax.py",
+      "bytes": 7229,
+      "sha256": "eece27307243890bc11a69d0441124df18bba638525c342236ebc2dc3ee64950"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_enriched_v2_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_enriched_v2_umax.py",
+      "bytes": 5995,
+      "sha256": "c873fb840cb7a6362574d4f39720cc6e0878384aa0de746bdc96cab5492f8e52"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_exact_bc_fourier_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_exact_bc_fourier_umax.py",
+      "bytes": 8348,
+      "sha256": "35d95349622e0b90fd4b81c3e16ca643f82b0987d943e31f52c2585b0ea4c48f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_exact_bc_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_exact_bc_umax.py",
+      "bytes": 6017,
+      "sha256": "b1ea325739403b7f68415c55f2e4a4cc42aa43fb00604e58194b1af8eeabd106"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_explicit_cycle_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_explicit_cycle_umax.py",
+      "bytes": 5709,
+      "sha256": "7cb639d5d749b5cf6953aa8c6c4bae93096c2bcf2a6dfb2542f6a45663d41b00"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_anchor_bc_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_anchor_bc_umax.py",
+      "bytes": 4662,
+      "sha256": "12a10d8a5457e4ca0e398607082a3eec9a20dc788f971285165236c9f9a8d7aa"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_anchor_symmetry_prior_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_anchor_symmetry_prior_umax.py",
+      "bytes": 4652,
+      "sha256": "f0a39117af7631c8636e5e8956bdca0208bac33cb4ab8a2f74055298c14e35e6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_anchor_symmetry_soft_algo1_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_anchor_symmetry_soft_algo1_umax.py",
+      "bytes": 6957,
+      "sha256": "2a4e7f3994d939c3ed2c8a23d9c9b77434e76a0fec2960b27f9cd1275ed6b2d1"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_anchor_symmetry_soft_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_anchor_symmetry_soft_umax.py",
+      "bytes": 5063,
+      "sha256": "d4964f61a08e3434a7f75fc2b807a5f395910b9b12d01e41b62e65fdda76f347"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mechanism_assimilation_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mechanism_assimilation_gate.py",
+      "bytes": 11793,
+      "sha256": "ae1758e39269ea8d9d0242d137fec07fafc1bfc98a7ff9baa4be883ed3b59969"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_adaptive_lambda_hist_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_adaptive_lambda_hist_umax.py",
+      "bytes": 7470,
+      "sha256": "3c39a564d9391339c323659026bf9491dea403b7a50d798c100441cfb5e85192"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_c1_altmin_probe.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_c1_altmin_probe.py",
+      "bytes": 19897,
+      "sha256": "40cf4b22308ed0249dc2d26efb19cfc3c2750bf4d1449eeda4ec31ef57d97fbb"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_fbpinn_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_fbpinn_umax.py",
+      "bytes": 8502,
+      "sha256": "4e20c14d3f03e44c18a12ae29796a16198cf98904022aa7860be458b4a2b0e42"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_frozen_alpha_elastic_probe.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_frozen_alpha_elastic_probe.py",
+      "bytes": 10275,
+      "sha256": "26cd36cc010d13aa0e26adc73189ab89f89d33b762f290f010c73a011eb1c368"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_history_driver_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_history_driver_umax.py",
+      "bytes": 7812,
+      "sha256": "846fe0cac5d8d98fa8237090e4fb1a3f28abf4cad5e5146364a78b09feb7b011"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_inverse_alphaT_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_inverse_alphaT_umax.py",
+      "bytes": 12610,
+      "sha256": "e2481a23f012b47ad3092de11ad50cff0f2e93f43c539a0073d128b7f69f056c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_local_patch_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_local_patch_umax.py",
+      "bytes": 9069,
+      "sha256": "e16e375ab72f31c2cd604393e734ff790b4f0532756a2bc69777837376bf0070"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_monotonic_fatigue_off.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_monotonic_fatigue_off.py",
+      "bytes": 12202,
+      "sha256": "dce7cf2408b8a4ae2bac63f9e91b3353baef4f75042715e53b40a9a7c65e30cb"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_monotonic_fatigue_on.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_monotonic_fatigue_on.py",
+      "bytes": 6886,
+      "sha256": "297252801e8e5e4ea8cf7cd9ef9642f0222bf53dd4ff5aeca5a0cca3b48d7095"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_oracle_field_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_oracle_field_umax.py",
+      "bytes": 27686,
+      "sha256": "e2f9fe7b9d0530be958df8e428e8d1237cba3bfd975e0bb3998ebfabe57fa4fb"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_precrack_fatigue_mask_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_precrack_fatigue_mask_umax.py",
+      "bytes": 10786,
+      "sha256": "9aa154161b5a23f84a89055284a00f78a30f306b39b7a52e39544ff333bb96d0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_probe_driver_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_probe_driver_umax.py",
+      "bytes": 32111,
+      "sha256": "724bbe213d63b4b9505ffa071b2a4e6aa3e91a51f275d074875dca7770ff5b00"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_res_stiff_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_res_stiff_umax.py",
+      "bytes": 7697,
+      "sha256": "b7a7607817a314964024b14daa350dfe78baab94ae417c284071a8983888b199"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_staged_alpha_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_staged_alpha_umax.py",
+      "bytes": 7597,
+      "sha256": "575a78c2a11e7d4ca69581c41f1c1715a72a545bf94425361941ecaeb72271b8"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_mesh_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_mesh_umax.py",
+      "bytes": 8363,
+      "sha256": "08b763e49964b76490a1f90d34a46c7fe45d12aa1df4bac089135868b61edb95"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fem_state_restart_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fem_state_restart_umax.py",
+      "bytes": 15182,
+      "sha256": "3bfae92f86eae5df0872f8261c04a9c5900cba57d39df368250233634c0de38b"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_fourier_features_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_fourier_features_umax.py",
+      "bytes": 5340,
+      "sha256": "5394c6800cf8fd59b74560e0c3e778db2a8afe61547b0985c9fad1f12a103a0f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_g4_sensitivity.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_g4_sensitivity.py",
+      "bytes": 7398,
+      "sha256": "e8ddef5863e32c85e7cf855435184d65d43792c73f3614b38167f8b3ea96301b"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_historical_damage_assimilation_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_historical_damage_assimilation_gate.py",
+      "bytes": 38806,
+      "sha256": "92af730c83c092f7cddf85ad5ef735228178ae96a72c416b1a81415e485dfc4c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_jpath_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_jpath_umax.py",
+      "bytes": 5609,
+      "sha256": "130c0cd7da93afe1c752769db74c2d6008c0966b11eafeca3467fb6834c72636"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_climate_free_ab.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_climate_free_ab.py",
+      "bytes": 7292,
+      "sha256": "7075a330469fa545c9239c8502eb1753ad220600b265e81c7011c304a5dd5c34"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_climate_free_baseline_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_climate_free_baseline_gate.py",
+      "bytes": 4819,
+      "sha256": "9df60bd58e6d8160cfaa2a38558ff0a9c21143874b6b34956379b68a9fa1d3d4"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_geometry_climate_preflight.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_geometry_climate_preflight.py",
+      "bytes": 5880,
+      "sha256": "a2cb1485211fe470fa4c659a3c66afa326ec0417085e1572fd8e4458f763b8ad"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_identifiability_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_identifiability_gate.py",
+      "bytes": 8758,
+      "sha256": "f2c22132117bc805b1b0f981fc7b1b585c19b834fbe6043115e830e4330456e4"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_mon_dis_trend_diagnostic.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_mon_dis_trend_diagnostic.py",
+      "bytes": 5959,
+      "sha256": "8dafe2810e045614ea64ddb0f0ec1d4cf839a1ab803230a42ec85cb6692d196b"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_observation_state_gate_v1.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_observation_state_gate_v1.py",
+      "bytes": 18047,
+      "sha256": "5e7b8697578560f51c33e3009619b4fdaaa6e7f159eaf1d9c7fb991adc853b89"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_real_route_preflight.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_real_route_preflight.py",
+      "bytes": 8320,
+      "sha256": "34b3f572387dec5f9ce8149cbabcfc67365c0b156daa2d0f8190d6e7865cf7e0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_reduced_library_identifiability.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_reduced_library_identifiability.py",
+      "bytes": 8287,
+      "sha256": "255040783de16fe4bdf0d6fbec065bb2b8be1c75fc205133edfab2b758b8d351"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_single_annotator_freeze_select.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_single_annotator_freeze_select.py",
+      "bytes": 16431,
+      "sha256": "47f61ef46f5ffaa543ae3d1c0f18b84e12f925b6cd275e620fcb89ea5ca0ee31"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_single_annotator_preflight.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_single_annotator_preflight.py",
+      "bytes": 5983,
+      "sha256": "5978c70b1d0a4dfe3ce549f89687c0f48b45b5a52545755a9caea77445b7fd24"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_ltpp_06_1253_structured_field_adapter_v1.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_ltpp_06_1253_structured_field_adapter_v1.py",
+      "bytes": 8479,
+      "sha256": "d0b4dcfa4ff5cdd638e2f931c7aabda25214f814fa537c06b9e8408df74157c9"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_m2s_next_stage_feasibility.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_m2s_next_stage_feasibility.py",
+      "bytes": 30562,
+      "sha256": "ec763373f96644736898e6b8dcad78cdfa807c3dd2047c8517d69f15c0b7de07"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_m2s_synthetic_validation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_m2s_synthetic_validation.py",
+      "bytes": 19000,
+      "sha256": "9912cdad75080b8775fe268b0f134d7266129dd09657e3c17543ceb9ade9369c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_mirror_alpha_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_mirror_alpha_umax.py",
+      "bytes": 6803,
+      "sha256": "e2a1f7dc8c9fd8c1ae7d41fda1c565a8c88209ebf5bbd1d38f34a3e5b8d95337"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_mirror_strac_combo_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_mirror_strac_combo_umax.py",
+      "bytes": 7028,
+      "sha256": "7ff7b42ab47c7c30759cd06f660f525ad26c0264edad98332385f325225cf1de"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_mit8_warmup_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_mit8_warmup_umax.py",
+      "bytes": 11938,
+      "sha256": "b813c72e20fa06027f7f9699a6e762ca370fd56d3a8aa6ae93af4cb3d71028d2"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_native_q4_bounded_picard.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_native_q4_bounded_picard.py",
+      "bytes": 32394,
+      "sha256": "8226944b7001ee268cb17c64b3260fe6f134130bb7337d8e63a881ad4ac6203c"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_native_q4_direct_q4_damage.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_native_q4_direct_q4_damage.py",
+      "bytes": 59448,
+      "sha256": "7ea553bc7b74b1c0d1c32ff40c6f1683aaad5a8a7067db5c88f7e7cc872ff473"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_native_q4_direct_reference.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_native_q4_direct_reference.py",
+      "bytes": 20589,
+      "sha256": "30c2e7975a606e610eddb761fe2cb5af651a77cc303468b167f838fc37cb1b9b"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_native_q4_one_step_matrix.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_native_q4_one_step_matrix.py",
+      "bytes": 20762,
+      "sha256": "b508f60f495772f1cd13e29fa186e527ae2670f85d1459c36af7ed00be647a9d"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_native_q4_smooth_b0_picard.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_native_q4_smooth_b0_picard.py",
+      "bytes": 61388,
+      "sha256": "c8c1c56f828f43b3ff1932353d131b189a8780f721c1c9da3dcf76e218f3b7be"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_only_Umax_008_fast.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_only_Umax_008_fast.py",
+      "bytes": 7453,
+      "sha256": "bb0d87133893375e74f5d272354938331856d6020a1666aed1c2e4b000b5466a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_pcc_baseline_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_pcc_baseline_umax.py",
+      "bytes": 9016,
+      "sha256": "4460ccfc1ac5eb0da98e8871ebd5d24fe0a941992dc6f47aed034d6b513c22bf"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_psi_hack_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_psi_hack_umax.py",
+      "bytes": 7158,
+      "sha256": "96fa03b87d7e472e393c5253914a04bf8b621149dff73b55091ef6a0b30a87a7"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_reaction_conditioned_damage_inversion_gate.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_reaction_conditioned_damage_inversion_gate.py",
+      "bytes": 30169,
+      "sha256": "98e29e78d3d389a19d4e4513b3fe0dad2b6088b4a6c954cf349412659efdb6e4"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_reality_assimilation_benchmark.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_reality_assimilation_benchmark.py",
+      "bytes": 20031,
+      "sha256": "df46d8a17ebd9f95773063c4f3cb7511d8e3d650ccaad0a3d61993962a89ae39"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_reality_assimilation_inference.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_reality_assimilation_inference.py",
+      "bytes": 5564,
+      "sha256": "509c88e580c5d75eb17e3e2dca6e64ce86220355396ee8ef29e677a0a78bf491"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_sequential_coeff3.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_sequential_coeff3.py",
+      "bytes": 7199,
+      "sha256": "5d332dcc284e42cb164e0ebbce08dcd70a0829f3f69105ec3d78014f8f59c3d1"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_sequential_coeff3_fast.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_sequential_coeff3_fast.py",
+      "bytes": 7645,
+      "sha256": "355598afaceacc7f1a6f8d41ac39c8377bf464cc2aeb8ee4f2e5c70266ca4fbc"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_side_traction_soft_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_side_traction_soft_umax.py",
+      "bytes": 7835,
+      "sha256": "6f64e9d884edb0145508022d2e41396dba5e959bbe4cd093174fbabc0acccf48"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_symmetry_prior_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_symmetry_prior_umax.py",
+      "bytes": 6298,
+      "sha256": "3d409e760afce2dbe3cb185b59a5691d2a32f60165aee273b78aac630e059038"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_symmetry_soft_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_symmetry_soft_umax.py",
+      "bytes": 6249,
+      "sha256": "cc835c2463d7a44de6f9303cb2f772e840ad1e9cb8f0d82be9289c7c29e24486"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_tipw_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_tipw_umax.py",
+      "bytes": 8081,
+      "sha256": "dc7a7d4250a2d1ec8f769460c807d0e8bd6aee65183b88a0bb2405d3d24ea77f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_tolir_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_tolir_umax.py",
+      "bytes": 4345,
+      "sha256": "d19133c9f40a73b64aa6c6c9f381674a58c3ec4769d33a9ec0dfa76de5e8d1f6"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_validation_all_methods.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_validation_all_methods.py",
+      "bytes": 7303,
+      "sha256": "e0baf36f97e64bfd5936bc1762e5f7d4c6164a2866b545a5f656d3861495c87b"
+    },
+    {
+      "role": "operator:code/SENS_tensile/run_void_notch_mask_umax.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/run_void_notch_mask_umax.py",
+      "bytes": 7267,
+      "sha256": "413880505ed6e3ce2df8e5a2a607e09722d53641043c8c8a9035a465244493f9"
+    },
+    {
+      "role": "operator:code/SENS_tensile/select_spatial_degradation_reconstruction.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/select_spatial_degradation_reconstruction.py",
+      "bytes": 4662,
+      "sha256": "0c2a0f4fa4760e73fab1e978733dc987a57c681590c8711c944dec663d10c40f"
+    },
+    {
+      "role": "operator:code/SENS_tensile/smoke_surrogate_architectures.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/smoke_surrogate_architectures.py",
+      "bytes": 16275,
+      "sha256": "51ac420314f77f6c04479f0a41fc67318183731128adbe647bd561874b57f968"
+    },
+    {
+      "role": "operator:code/SENS_tensile/summarize_femmesh_event_alignment.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/summarize_femmesh_event_alignment.py",
+      "bytes": 4587,
+      "sha256": "a4f8a9c7ff62ba01ea04d8cfd7912e61a8391daefede7194345d7b49ab04ae16"
+    },
+    {
+      "role": "operator:code/SENS_tensile/summarize_lbfgs_polish_audit.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/summarize_lbfgs_polish_audit.py",
+      "bytes": 3835,
+      "sha256": "dbb208e98fef64a0b8a7aed33082d81d50ddc318ee5c740eb9d456b849c5a7a0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/summarize_v4_v7_all_methods.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/summarize_v4_v7_all_methods.py",
+      "bytes": 6541,
+      "sha256": "b34c949d9ccaf6b2b33303f09b73e61fffa0c8e72583cdd341e3d1f7cd5b2a08"
+    },
+    {
+      "role": "operator:code/SENS_tensile/train_fem_mechanism_mesh_operator.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/train_fem_mechanism_mesh_operator.py",
+      "bytes": 19756,
+      "sha256": "46f3ddd4efb3f09fdaa0205e556fec3babe214dbe2b195a2c3bbb66c08c005b0"
+    },
+    {
+      "role": "operator:code/SENS_tensile/train_spatial_degradation_reconstructor.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/train_spatial_degradation_reconstructor.py",
+      "bytes": 16348,
+      "sha256": "7d05cde7b7fbd9671d6b034d54965e733041171700eacfbbec65a6d1e6179837"
+    },
+    {
+      "role": "operator:code/SENS_tensile/train_transition_aware_loco_gno.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/train_transition_aware_loco_gno.py",
+      "bytes": 42486,
+      "sha256": "8d675d722153df3733b0b733b3aa6cdc59867d516002818dfa853dbcb49c51ba"
+    },
+    {
+      "role": "operator:code/SENS_tensile/validate_pidl_archive.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/validate_pidl_archive.py",
+      "bytes": 41354,
+      "sha256": "ca578a139486dd0e3b07c07faf68ec0bbdda203bd7e55e1b457b79d60d4b4e4a"
+    },
+    {
+      "role": "operator:code/SENS_tensile/validate_reality_assimilation_package.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/SENS_tensile/validate_reality_assimilation_package.py",
+      "bytes": 7210,
+      "sha256": "bd07a979e2a71d189e9f875288703b1f4f9e9bf4438d7ca7a4b036a0b334b64a"
+    },
+    {
+      "role": "operator:code/source/__init__.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/__init__.py",
+      "bytes": 228,
+      "sha256": "c382257fec41061b4d207c88797c8455de9430e888bde295aeee24d58388fdb0"
+    },
+    {
+      "role": "operator:code/source/adaptive_sampling.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/adaptive_sampling.py",
+      "bytes": 7360,
+      "sha256": "60060a1b8429f5504084134a9b946f406146c45a66f442056c0af62e1b3abb4a"
+    },
+    {
+      "role": "operator:code/source/compute_energy.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/compute_energy.py",
+      "bytes": 28966,
+      "sha256": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60"
+    },
+    {
+      "role": "operator:code/source/construct_model.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/construct_model.py",
+      "bytes": 8425,
+      "sha256": "c953e295dbd5845fc1807ecca885409532288f115d7d892414206fff124ae00e"
+    },
+    {
+      "role": "operator:code/source/damage_conditioned_equilibrium.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/damage_conditioned_equilibrium.py",
+      "bytes": 20011,
+      "sha256": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301"
+    },
+    {
+      "role": "operator:code/source/damage_observation_reconstruction.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/damage_observation_reconstruction.py",
+      "bytes": 8527,
+      "sha256": "78af96861ae156f507e85e94e239023432ea932f7411415794fa3a8ce99f5d21"
+    },
+    {
+      "role": "operator:code/source/damage_state_inversion.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/damage_state_inversion.py",
+      "bytes": 6512,
+      "sha256": "3d441c5bd15daa70be865b48d7587e5cfbdde40e88f370b06418db4add425491"
+    },
+    {
+      "role": "operator:code/source/dataset_element.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/dataset_element.py",
+      "bytes": 4266,
+      "sha256": "8f7a263ad6fb3a79e47756ea520d288f36188765f08bc65e71018d8d3b0e1555"
+    },
+    {
+      "role": "operator:code/source/enriched_ansatz.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/enriched_ansatz.py",
+      "bytes": 6757,
+      "sha256": "5cf3853aafc59a421482b4eb25c7174397ca68c41fc331d76a438aa1c59ce859"
+    },
+    {
+      "role": "operator:code/source/fatigue_history.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/fatigue_history.py",
+      "bytes": 9767,
+      "sha256": "ae75652a74f987f3ef10e3c8585eb51da9781a3d24f6941707b4c751b6a18918"
+    },
+    {
+      "role": "operator:code/source/fem_mechanism_assimilation.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/fem_mechanism_assimilation.py",
+      "bytes": 8166,
+      "sha256": "dddca5b5b05263fbd35096d4be08da6fc3d6af9eee2281ad6efdfd4d4985d557"
+    },
+    {
+      "role": "operator:code/source/fem_mechanism_operator.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/fem_mechanism_operator.py",
+      "bytes": 9776,
+      "sha256": "f4a76d4f6941e64fc0846a95d45524875770d3fd0a21c81806a485b91e5d7037"
+    },
+    {
+      "role": "operator:code/source/fem_supervision.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/fem_supervision.py",
+      "bytes": 23159,
+      "sha256": "f6d84e41f210dd5a3c655b02059d6b19abc1e6a5a42183417236c375d07f23f2"
+    },
+    {
+      "role": "operator:code/source/fit.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/fit.py",
+      "bytes": 35833,
+      "sha256": "db71d99c7e2862ef6c449fcd61f4e4c56f4500a62028e9dac1439c53d366432c"
+    },
+    {
+      "role": "operator:code/source/input_data_from_mesh.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/input_data_from_mesh.py",
+      "bytes": 1219,
+      "sha256": "f837966bb9068178c86cbe180fba73f72c737c8efa1b153dfd0a67065571d895"
+    },
+    {
+      "role": "operator:code/source/inverse_params.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/inverse_params.py",
+      "bytes": 1640,
+      "sha256": "9b3834d8ce4b43910c671bed9f71d94b6b27617d0ba4e8cd801273979673389c"
+    },
+    {
+      "role": "operator:code/source/material_properties.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/material_properties.py",
+      "bytes": 919,
+      "sha256": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c"
+    },
+    {
+      "role": "operator:code/source/model_train.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/model_train.py",
+      "bytes": 155527,
+      "sha256": "975edbcc506cd0cdad8e6881f9be7384b13a38a3092284681c8ba9d123e49d9f"
+    },
+    {
+      "role": "operator:code/source/native_q4_damage_qp.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/native_q4_damage_qp.py",
+      "bytes": 16116,
+      "sha256": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9"
+    },
+    {
+      "role": "operator:code/source/network.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/network.py",
+      "bytes": 25661,
+      "sha256": "85cec459cb6ac99e959e3eba5072ee448560890a4b6b0a592ea136cea5d2bded"
+    },
+    {
+      "role": "operator:code/source/optim.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/optim.py",
+      "bytes": 1047,
+      "sha256": "94f699a1cb6181cac7037b81f821161cc5537ff6fa972b6c8b698490a0534398"
+    },
+    {
+      "role": "operator:code/source/paper_style.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/paper_style.py",
+      "bytes": 10591,
+      "sha256": "e5ee6aead9b95d8043c7cb1c7b2c82e841b6645d9eab30dd71e5ad161361c977"
+    },
+    {
+      "role": "operator:code/source/pff_model.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/pff_model.py",
+      "bytes": 5749,
+      "sha256": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a"
+    },
+    {
+      "role": "operator:code/source/plotting.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/plotting.py",
+      "bytes": 7883,
+      "sha256": "8041ab2f4347c319a9755d052c63188d8015aa1e02669236864bfc1c4e72eda9"
+    },
+    {
+      "role": "operator:code/source/q4_quadrature.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/q4_quadrature.py",
+      "bytes": 2876,
+      "sha256": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb"
+    },
+    {
+      "role": "operator:code/source/scaling.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/scaling.py",
+      "bytes": 13622,
+      "sha256": "45f487895e67d49b7eecf1abe9beae1e9fe980801db2582b8bd4be44d4d9192f"
+    },
+    {
+      "role": "operator:code/source/spatial_degradation_reconstruction.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/spatial_degradation_reconstruction.py",
+      "bytes": 7767,
+      "sha256": "e6facf2d134ceac9a9dc8d5e397c603a42d964deb3455b95136a53e4910681b5"
+    },
+    {
+      "role": "operator:code/source/transition_aware_mesh_operator.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/transition_aware_mesh_operator.py",
+      "bytes": 8714,
+      "sha256": "88f18087a12ff6fc44579be59ff8cbd146f67f871048bbf56e4a01f5b6796b09"
+    },
+    {
+      "role": "operator:code/source/tri3_quadrature.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/tri3_quadrature.py",
+      "bytes": 2039,
+      "sha256": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce"
+    },
+    {
+      "role": "operator:code/source/utils.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/utils.py",
+      "bytes": 10166,
+      "sha256": "42056272d9ed53c1657f0c867509e7c1ae6ec3a94be45e77228f64ff381179ca"
+    },
+    {
+      "role": "operator:code/source/validate_figure_sidecars.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/validate_figure_sidecars.py",
+      "bytes": 1779,
+      "sha256": "56b8f45ce496f425b29676246042eff8d19c31cd005259820b94c7804c5b664a"
+    },
+    {
+      "role": "operator:code/source/williams_features.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/source/williams_features.py",
+      "bytes": 5253,
+      "sha256": "efdcbc624db04be9cd11d3e13b1d5360deb7e4625fe806a037af374b55c8e137"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_block_diagnosis.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_block_diagnosis.py",
+      "bytes": 21383,
+      "sha256": "b8f4e40ca466daab7a1c5e287816abcf92cd2b24c1d9f8c1ca8856ff20604848"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_energy_head.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_energy_head.py",
+      "bytes": 17946,
+      "sha256": "bee1f5dbec4b8a1579e8005371fa99841be0b83fc27c8b977c4026041569821f"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_head_newton.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_head_newton.py",
+      "bytes": 22565,
+      "sha256": "eb0b6f6fc28cf134c942d9e3c4dc5358b8f1355982c1cf0cbe314789d9f8f7f1"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_head_readout_audit.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_head_readout_audit.py",
+      "bytes": 16119,
+      "sha256": "7c5b9eb831c77dc27667451236e9381c7c974123b02c16ae3d00dc1ce7d71647"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_hidden_newton.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_hidden_newton.py",
+      "bytes": 28343,
+      "sha256": "f5580898a265820493c6ef235f4570adc1a15e696ca3bde051b9d6ba7e60eb54"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_learned_head_newton.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_learned_head_newton.py",
+      "bytes": 14626,
+      "sha256": "8e8686ad8516c6dfd1fc5ac442e0d97a6442feefc312d13a628a7fbd380a265b"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_learned_hidden_newton.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_learned_hidden_newton.py",
+      "bytes": 19692,
+      "sha256": "0cfff3510eea67487e64a50044f8fb723a5aee172a7f40142cadb154ac2b9793"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_persisted_phi_hidden_newton.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_persisted_phi_hidden_newton.py",
+      "bytes": 26639,
+      "sha256": "406c59de48a99558b156a29fceb00d92d432e72aa06ae36a41c4708804592332"
+    },
+    {
+      "role": "operator:code/tools/s04_e011_analysis/run_pidl_tight_coupling_hidden_newton.py",
+      "source": "/mnt/data2/drtao/wennie/pf_s04e011_residual_branch_c20_r1_hq_20261021/code/tools/s04_e011_analysis/run_pidl_tight_coupling_hidden_newton.py",
+      "bytes": 18021,
+      "sha256": "d54e341e13e1486ea3965b9a504464e86d403b0cb8b00c87dfc44b5ff11f3101"
+    }
+  ],
+  "operator_bindings": [
+    {
+      "path": "SENS_tensile/_export_jpath_fields.py",
+      "bytes": 3065,
+      "sha256": "89a4c0e7bf56fd530e1b10993ba79cf1cea8747b60ecf99fffa2ff2b5d4ee0a1"
+    },
+    {
+      "path": "SENS_tensile/alpha0_fem_to_pidl_projection.py",
+      "bytes": 19715,
+      "sha256": "258248e9b1ca59fd89209d3859fa3fab96d64b204f1e46f45ff7576680db9346"
+    },
+    {
+      "path": "SENS_tensile/analyze_aligned_fem_pidl_reference_tiers.py",
+      "bytes": 15448,
+      "sha256": "632f2e83832671a2626ae41c5f8db5e4ca50d9417086aed1422b167457a311b0"
+    },
+    {
+      "path": "SENS_tensile/analyze_c1_altmin_branch_matrix.py",
+      "bytes": 8754,
+      "sha256": "084d4d398683884048661d51a304d5b400566bb117efc630fe5fe1a35c13e3ba"
+    },
+    {
+      "path": "SENS_tensile/analyze_c1_altmin_vs_fem22.py",
+      "bytes": 12871,
+      "sha256": "6805e0a8d252142b651c065853185676d08a80f0b6890d03d26a5b305f5b780e"
+    },
+    {
+      "path": "SENS_tensile/analyze_damage_conditioned_equilibrium_gate.py",
+      "bytes": 15474,
+      "sha256": "398fcf125f4c4829db73d8eec20e6d32ac3c8a64c175abc469bd632283480d64"
+    },
+    {
+      "path": "SENS_tensile/analyze_damage_observation_equilibrium_gate.py",
+      "bytes": 17254,
+      "sha256": "10b79d9270667cf6e1cbfd7e8564029a20638cd529e025dd7bfb39ae89a12cd6"
+    },
+    {
+      "path": "SENS_tensile/analyze_e2_trajectory.py",
+      "bytes": 17456,
+      "sha256": "969bf65747d3f3199811aef9b09c5599a12578788379d22da44d23b4857879f8"
+    },
+    {
+      "path": "SENS_tensile/analyze_fbpinn_chain_vs_fem_nstep2.py",
+      "bytes": 13666,
+      "sha256": "1daeaf92d8287964fef3a434e874835ce28aa646f746e5828051df00cec4d55f"
+    },
+    {
+      "path": "SENS_tensile/analyze_fem_mechanism_assimilation_gate.py",
+      "bytes": 14204,
+      "sha256": "3ad1889d38d9f0148e0f8c6bde2fda848b913756a6752d5e68c47065aeb6a283"
+    },
+    {
+      "path": "SENS_tensile/analyze_fem_mechanism_operator_gate.py",
+      "bytes": 16739,
+      "sha256": "da09d298be53be47d159021e855962f39a2df9b485fc10bbb5b7edda4170e76e"
+    },
+    {
+      "path": "SENS_tensile/analyze_fem_request21_field_reductions.py",
+      "bytes": 16866,
+      "sha256": "a69bd1771f16bc6c9bad2cdd7a3b6cd1487b672134fa91b41a7f87e4897e2ada"
+    },
+    {
+      "path": "SENS_tensile/analyze_frozen_alpha_elastic_vs_fem22.py",
+      "bytes": 14660,
+      "sha256": "6c2b167fdccb69758844bc5086d4f786790e286bf2c9c295e4e162715b7786e7"
+    },
+    {
+      "path": "SENS_tensile/analyze_hard_recovery_graph_residual_discriminator.py",
+      "bytes": 38882,
+      "sha256": "643a29d010d32623a3eae02819147f0df4d9c310463bdfb0c599b26fb532c4a9"
+    },
+    {
+      "path": "SENS_tensile/analyze_historical_damage_assimilation_gate.py",
+      "bytes": 11522,
+      "sha256": "3353fc0fd9fe1ff2dc439b715b7e94582cc4e02b0d18e1bf8f5482750436a16c"
+    },
+    {
+      "path": "SENS_tensile/analyze_history_driver_discriminator.py",
+      "bytes": 15056,
+      "sha256": "5d32d1b458a27a9da144ee8902b1d30b5418ab44502c928b9894e583657d1ef0"
+    },
+    {
+      "path": "SENS_tensile/analyze_mesh_gnn_residual_discriminator.py",
+      "bytes": 26900,
+      "sha256": "21cb54bbec159c51c84f4612537001bbcd45aaa706fd25290bd7277ce2d9c223"
+    },
+    {
+      "path": "SENS_tensile/analyze_psi_argmax_t4.py",
+      "bytes": 3763,
+      "sha256": "ee5497bc6a798195180663b34f914077cafa77a3b14e917028339c3b62fc741d"
+    },
+    {
+      "path": "SENS_tensile/analyze_reaction_conditioned_damage_inversion_gate.py",
+      "bytes": 12794,
+      "sha256": "943993ba930549baf8384bf0a12229700647abb70237e6ab0e5ed5b10b4157ea"
+    },
+    {
+      "path": "SENS_tensile/analyze_resstiff_epsilon_vs_fem22.py",
+      "bytes": 17917,
+      "sha256": "235cae8b5046debbf07495737e301d393899b725c4aa73edf380806a5688a5a6"
+    },
+    {
+      "path": "SENS_tensile/analyze_resstiff_vs_fem_nstep2.py",
+      "bytes": 16008,
+      "sha256": "43c7075a6052dfeb76750b50804ab3830b61b614b3e7c8b3331ac319dd1cfb48"
+    },
+    {
+      "path": "SENS_tensile/analyze_soft_hist0_state_timing.py",
+      "bytes": 10324,
+      "sha256": "36d7e449b52be07d0f44539a1effc97b417fedc035347603183086f268a54dfc"
+    },
+    {
+      "path": "SENS_tensile/archive/generate_figs.py",
+      "bytes": 3272,
+      "sha256": "7491fd6c111c533c2eef7dffaf5b10d503d3550eacc8fe9dac98e9efeeeba94a"
+    },
+    {
+      "path": "SENS_tensile/archive/generate_figs_fatigue.py",
+      "bytes": 6889,
+      "sha256": "89d87b7900e1f4f33389d96f5dc58b812351dde6ff0891f66faaa0f337ad8833"
+    },
+    {
+      "path": "SENS_tensile/archive/recover_E_el.py",
+      "bytes": 7216,
+      "sha256": "646d5f720a604513e6f296a6cc608a0bf5186c9b2959bc94a55a52a679b80a0b"
+    },
+    {
+      "path": "SENS_tensile/archive/recover_data.py",
+      "bytes": 7649,
+      "sha256": "e9f84f4d0278ca7adc408e3b107dced817cdbe933d076813622967ac57595044"
+    },
+    {
+      "path": "SENS_tensile/archive/run_sequential.py",
+      "bytes": 6425,
+      "sha256": "57aec3565b4cf481b203c624c458516118af546f3815e9558fe7048a01fd5c53"
+    },
+    {
+      "path": "SENS_tensile/assimilate_front_translation.py",
+      "bytes": 10222,
+      "sha256": "fe3dd7cde543b9bb69f794702fa435eabc24ae63291b6db4a5edcc6044008104"
+    },
+    {
+      "path": "SENS_tensile/assimilate_global_background_mode.py",
+      "bytes": 12481,
+      "sha256": "887b6c4e7fd1f351b5410472e3b70f870ef5b0b5777d4116cbea3b8486deef47"
+    },
+    {
+      "path": "SENS_tensile/audit_active_driver_definitions.py",
+      "bytes": 9243,
+      "sha256": "ada03f69e8a9d417eb31178ddbf1e4b882e677b31b4a3decfaa212532b25e394"
+    },
+    {
+      "path": "SENS_tensile/audit_archive_settings.py",
+      "bytes": 13209,
+      "sha256": "dbf8620d1f1c6de8437b73b4ce711428783e426c71eef44585be5a90168af037"
+    },
+    {
+      "path": "SENS_tensile/audit_native_q4_operator.py",
+      "bytes": 5447,
+      "sha256": "81b2048d0c567cd0309333151cfdd2b973f027299dc85525f72c45290d39a1fc"
+    },
+    {
+      "path": "SENS_tensile/audit_soft_hist0_alignment_diagnostics.py",
+      "bytes": 12389,
+      "sha256": "0ea6a41f033bc2456d408dbc2779202209f246c6ad107db39b68cea54e898427"
+    },
+    {
+      "path": "SENS_tensile/build_taobo_tier_manifest.py",
+      "bytes": 15447,
+      "sha256": "25a1c73503ecb5243779946da993dc1db1066e1569a38c5ce9b8e8efc12a76eb"
+    },
+    {
+      "path": "SENS_tensile/build_vision_observation_table.py",
+      "bytes": 3513,
+      "sha256": "a609296d00182b8b06007b32798f2fdd06eca1ba989715dd10ddf2fedcec194c"
+    },
+    {
+      "path": "SENS_tensile/calibrate_reality_sensor_observation_model.py",
+      "bytes": 7721,
+      "sha256": "f146f1aa9f4402110bf30c32e70e941a0dfca7c8888e9418b78915fcb2789833"
+    },
+    {
+      "path": "SENS_tensile/calibrate_spatial_degradation_reaction.py",
+      "bytes": 12345,
+      "sha256": "ea0df55ab04f0bada0ae4a56c90213bab91d7da344bbb424cb8b07f8f29cb144"
+    },
+    {
+      "path": "SENS_tensile/compare_alpha_fields_pidl_fem.py",
+      "bytes": 7682,
+      "sha256": "257a82f81682d888dec71065cd8f8049cdd8416add3f898774b72de5028c5295"
+    },
+    {
+      "path": "SENS_tensile/compare_fem_cyclewise_references.py",
+      "bytes": 7448,
+      "sha256": "407ec8be23bfecfc2556ef62b840a1d3aaede15dfbea5ebcb68ba54fc8b40500"
+    },
+    {
+      "path": "SENS_tensile/compare_fem_notch_variants.py",
+      "bytes": 7256,
+      "sha256": "fd3c886e6c5c9a80bbc424afbb30138fb117b4a1784a87f09aed942e58523439"
+    },
+    {
+      "path": "SENS_tensile/compare_fem_pidl_cyclewise_mechanism.py",
+      "bytes": 7456,
+      "sha256": "fe27b6e99ac7ee8365d27b82250d10bb51806d27ca902dfe07a32216b813208e"
+    },
+    {
+      "path": "SENS_tensile/compare_fem_pidl_precrack_masked.py",
+      "bytes": 8660,
+      "sha256": "687e011b4bdf7eca8eacca923309d123838623922bace740f91d3d89b4a94936"
+    },
+    {
+      "path": "SENS_tensile/compare_femmesh_pidl_incremental_energy.py",
+      "bytes": 6347,
+      "sha256": "e6058ca9459fd96f7b6b9b44324113ff528ecb80660f38dcbf354e68cd646ba0"
+    },
+    {
+      "path": "SENS_tensile/compare_kt_three_way.py",
+      "bytes": 27834,
+      "sha256": "5504d13bf1f3c4826f7875bff007a1ae38de0cc41a6a3c7f6d8db9c791055efe"
+    },
+    {
+      "path": "SENS_tensile/compare_pidl_state_timing_mappings.py",
+      "bytes": 9968,
+      "sha256": "31188636be1797d39908d6fecdf1c41fb8b90a5c68e453d7439479f1a56aa002"
+    },
+    {
+      "path": "SENS_tensile/compare_pidl_to_fem_nstep2_timing.py",
+      "bytes": 13012,
+      "sha256": "f441220dcf96ecc68a5b3b0456f417ccb02bf109aa7144d59519ad695b99f52f"
+    },
+    {
+      "path": "SENS_tensile/compare_umax_sweep.py",
+      "bytes": 20597,
+      "sha256": "881058998d0045d617c4ed3b2efbe0c0f15d21360540cb3b7eac844fb10071a6"
+    },
+    {
+      "path": "SENS_tensile/compute_J_integral.py",
+      "bytes": 17519,
+      "sha256": "97228f5bd2058de1183a4109154550ae5df160eea843e23c2fe03c0681cea636"
+    },
+    {
+      "path": "SENS_tensile/compute_SN_sensitivity.py",
+      "bytes": 10168,
+      "sha256": "4acff86f05d6e5549f21bc32ec7297ba2b31806e52eecf77ad94064b4f9cbab6"
+    },
+    {
+      "path": "SENS_tensile/compute_field_level_score_v0.py",
+      "bytes": 12496,
+      "sha256": "86d240c682e96888047c7640bf081224d94f3417e11561941bba9067ea88004f"
+    },
+    {
+      "path": "SENS_tensile/compute_multi_objective_J.py",
+      "bytes": 8453,
+      "sha256": "ff5a928290344428225a4bf1f6e7444fc2071eb3095ddc78f258f4a3d7992833"
+    },
+    {
+      "path": "SENS_tensile/compute_nf_criterion_sensitivity.py",
+      "bytes": 5934,
+      "sha256": "6ff93a575db3872413455859c53ef375f35c6376ec289cd124db977aa80057ff"
+    },
+    {
+      "path": "SENS_tensile/compute_process_zone_metrics.py",
+      "bytes": 16051,
+      "sha256": "c639c48e0faa47239bf6abb87796f89f26d9740a8fdb6bfde63aea0061aa9d57"
+    },
+    {
+      "path": "SENS_tensile/compute_transfer_function_summary.py",
+      "bytes": 8189,
+      "sha256": "9e4864c49f5f13ca068387acf3d33abe999325a39da767b3e07897f53ac02215"
+    },
+    {
+      "path": "SENS_tensile/config.py",
+      "bytes": 34469,
+      "sha256": "2e36c71b49bf0b0af17aea4ffde22c01c9c67c95726adae0300acab0e016d4f4"
+    },
+    {
+      "path": "SENS_tensile/diagnose_nstep2_active_driver_colocation.py",
+      "bytes": 14552,
+      "sha256": "8f27f5214809cff83b134ab4a59e8bc2ce93f76fb0b445683051ef765031b80e"
+    },
+    {
+      "path": "SENS_tensile/evaluate_sequential_raw_assimilation.py",
+      "bytes": 9893,
+      "sha256": "5de335b9aa8bf24de7b4e8b79e1924f96be3f2d7f6e59c3a4a898cbdafa6fbf7"
+    },
+    {
+      "path": "SENS_tensile/evaluate_spatial_degradation_reconstruction_gate.py",
+      "bytes": 31058,
+      "sha256": "40909ee4d5cd0b1fa35d1290add4a85aba942e968a4bab02998a0ec37faa09eb"
+    },
+    {
+      "path": "SENS_tensile/export_pidl_element_diagnostics.py",
+      "bytes": 16702,
+      "sha256": "88742cdc5343b82a1b2c6d2423e87a512c2838d37597a60cd95b882d5e301a8d"
+    },
+    {
+      "path": "SENS_tensile/export_pidl_initial_state.py",
+      "bytes": 7575,
+      "sha256": "ca1aace520e8b9a3c7cee7135412cb9b9d27827d48d777f17963fce37c36ebc0"
+    },
+    {
+      "path": "SENS_tensile/export_pidl_mapped_state_fields.py",
+      "bytes": 14544,
+      "sha256": "7bbde103056986bc2b5ac69311266e93f9b0f62507af928e2eabc58adda4405f"
+    },
+    {
+      "path": "SENS_tensile/extract_E_el_E_d.py",
+      "bytes": 8995,
+      "sha256": "90ad0ebf27c2aa13ef89416a29d4d653a4a3c21d64bdf4d94907c0af2caed9d7"
+    },
+    {
+      "path": "SENS_tensile/extract_Kt.py",
+      "bytes": 11835,
+      "sha256": "b6a3816e85a4bbb96cddb733269ec4da4f9fe8cfeeaf1494032bdcfa35530905"
+    },
+    {
+      "path": "SENS_tensile/extract_f_mean.py",
+      "bytes": 2968,
+      "sha256": "7ac985f9003da1a1fd18c81b18b248ee83a2d7d4135e3efe4e09c478ad339502"
+    },
+    {
+      "path": "SENS_tensile/extract_psi_field.py",
+      "bytes": 5901,
+      "sha256": "c0fbf828c326632a531998a9635073b648d85f4ae17a7d2214e24f9e41c4f86a"
+    },
+    {
+      "path": "SENS_tensile/field_computation.py",
+      "bytes": 21584,
+      "sha256": "b3d04b39c7d8869b3e949ea141133d2d8103529d98010f3fcd12c7d0dcf8eea8"
+    },
+    {
+      "path": "SENS_tensile/generate_figs_case.py",
+      "bytes": 7988,
+      "sha256": "43fc214b9edde855fe01a5fdae57dbf18af38859939af292838613621b93452f"
+    },
+    {
+      "path": "SENS_tensile/generate_figs_pidl_fem.py",
+      "bytes": 22808,
+      "sha256": "aa7dd10e72be774609ae4d5bdd57a09e9681232edf5cd440534ab7bac231f61f"
+    },
+    {
+      "path": "SENS_tensile/generate_figs_sn_full.py",
+      "bytes": 12199,
+      "sha256": "dfaab4d3d56e65cbaf200f98edc948c55090b329da4825410b42ba161df74b95"
+    },
+    {
+      "path": "SENS_tensile/generate_figs_summary.py",
+      "bytes": 14105,
+      "sha256": "bb8bbab972e753b1d3873b719ff08b3c4a068ec3a2e200e17906e01b86b686b9"
+    },
+    {
+      "path": "SENS_tensile/invert_dic_conditioned_degradation.py",
+      "bytes": 20620,
+      "sha256": "6d5c05bbb28115e847904d712b67fc9092c6ad37f3535ef482c90ef4fb44a31d"
+    },
+    {
+      "path": "SENS_tensile/invert_dic_conditioned_nodal_damage.py",
+      "bytes": 27140,
+      "sha256": "a9f9c8a3b5bac167c898870e49ca2dac9b45d7d82ee23f14281da0abf51f62c1"
+    },
+    {
+      "path": "SENS_tensile/main.py",
+      "bytes": 3578,
+      "sha256": "29fbe6b04edec544573b6c7f41c4b6bc8daecdc27df9aaa407c8298363896c27"
+    },
+    {
+      "path": "SENS_tensile/make_alpha1_mesh.py",
+      "bytes": 4189,
+      "sha256": "2371ce9925abc062db73590035410042232d0773406f937549388c41ada14c9c"
+    },
+    {
+      "path": "SENS_tensile/make_fem_mesh.py",
+      "bytes": 4230,
+      "sha256": "a9e14ce989490f231d4a666e57f443628b04b68a235ed89231a9de920c00b23c"
+    },
+    {
+      "path": "SENS_tensile/monitor.py",
+      "bytes": 3496,
+      "sha256": "e9c022c71190cb2031e9334c9ccd30227aa37f8a7e45457f6fc63207840532cd"
+    },
+    {
+      "path": "SENS_tensile/observable_growth_baseline.py",
+      "bytes": 11711,
+      "sha256": "cd736cefe3601e89712eeabb91664cf2cbc6ef05f363ba1231c8e9d0c8ebaa82"
+    },
+    {
+      "path": "SENS_tensile/phase3_cdm_condition.py",
+      "bytes": 4582,
+      "sha256": "36fae89de8a49882f5b9921df63d7fdd6d249dfc1ba9da91a5c01a348e4c0462"
+    },
+    {
+      "path": "SENS_tensile/phase3_crack_image_pipeline.py",
+      "bytes": 9610,
+      "sha256": "c18d2ba9079ac4c8dd729e680113e93b5df6c0838c6afe8fc35b2b369b933312"
+    },
+    {
+      "path": "SENS_tensile/phase3_fem_pipeline.py",
+      "bytes": 7085,
+      "sha256": "c897db931ad64c005832511cabd09e60a03d9638a3df45a6464ea21553b6e320"
+    },
+    {
+      "path": "SENS_tensile/phase3_morphology_stats.py",
+      "bytes": 5645,
+      "sha256": "88de2f6915d8b986c5b3bca81ba29cb1626f410bc1a09ec0c04a11e78c234442"
+    },
+    {
+      "path": "SENS_tensile/phase3_render_overlay.py",
+      "bytes": 5548,
+      "sha256": "4caa9e7fdf8cb4f565f2a2e8399ed0a737d42cd20af1886842d9f0fd7a46cb2a"
+    },
+    {
+      "path": "SENS_tensile/pidl_fem_alignment_protocol.py",
+      "bytes": 1718,
+      "sha256": "16d473da45cb4379c42d5da101b480a8031f0f52279e32f5b415af58e3028d48"
+    },
+    {
+      "path": "SENS_tensile/plot_4archive_comparison.py",
+      "bytes": 6474,
+      "sha256": "dfb2e4dec30aa8eb369fad914f1201249ffd179b8b62bfdd940921c8d4b7d846"
+    },
+    {
+      "path": "SENS_tensile/plot_C5_symY2_skew.py",
+      "bytes": 4237,
+      "sha256": "cc472211658a6e7cbe57be73558fccf03fc83cff02e3040d73f3ab8cb34faa0a"
+    },
+    {
+      "path": "SENS_tensile/plot_FEM_alpha_field.py",
+      "bytes": 5376,
+      "sha256": "cb2faf49ab8791a282b026b5cd35ec7769e03bde1e8c6d39daffc3bbb19ec92d"
+    },
+    {
+      "path": "SENS_tensile/plot_J_integral_comparison.py",
+      "bytes": 9632,
+      "sha256": "045ddea197f4da247c013bd7567191b31812e5d2d2331c3746d45c3521a249a6"
+    },
+    {
+      "path": "SENS_tensile/plot_Rbc_residual_field.py",
+      "bytes": 8701,
+      "sha256": "428ff6a07b7812ddc5fb4109c61ace48b4c01f41134860d411de20088e15804f"
+    },
+    {
+      "path": "SENS_tensile/plot_allfemmesh_energy_components.py",
+      "bytes": 9286,
+      "sha256": "4cb9cc7e91fabec0eebe80d6d1f5a8588fcadc5de764b0abc0c9f44bcec7237e"
+    },
+    {
+      "path": "SENS_tensile/plot_allfemmesh_lambda_hist_trace.py",
+      "bytes": 4307,
+      "sha256": "e022c323ea051d3f4c0fe1ef4e0059e5d9f2fc4c03fce3e5d486a6b2a0be3146"
+    },
+    {
+      "path": "SENS_tensile/plot_fem22_nstep2_vs_pidl_baseline_residual_fields.py",
+      "bytes": 10592,
+      "sha256": "5f9392c742c2568780a55327e88fc6893f1e96307038a1b66cffce47dd46309c"
+    },
+    {
+      "path": "SENS_tensile/plot_fem_damage_fields.py",
+      "bytes": 6853,
+      "sha256": "0384f0db7c10313d5b6c8d81f711be23ed34fbd774d7416b2521d1e988ce7456"
+    },
+    {
+      "path": "SENS_tensile/plot_fem_mode_shift.py",
+      "bytes": 7202,
+      "sha256": "21329db7d8bff1ddf3042ffcfac33d11dc126810e1ff37363ded11ed9a23be36"
+    },
+    {
+      "path": "SENS_tensile/plot_fem_pidl_residual_fields.py",
+      "bytes": 7502,
+      "sha256": "0ffd5921601ace9aa8f5e19f2f5c3db9b071afd05772ee1a38917743e6bb2242"
+    },
+    {
+      "path": "SENS_tensile/plot_fem_request21_cadence_summary.py",
+      "bytes": 3926,
+      "sha256": "3333ea9409a5be3d4f77c7438671bd8268437b1a60ec64ee8f07a5dd99b522d4"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_B_soft_sym_mirror.py",
+      "bytes": 3991,
+      "sha256": "8971936dda07868d09ba73f5de840db7634373ff69066d0eca78089cded0029a"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_F11_domain_mean_alpha.py",
+      "bytes": 4783,
+      "sha256": "18dcd090025679f32520c6250964551e0fc9c987089c7a81f60e954194f619b6"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_F1_nf_vs_umax.py",
+      "bytes": 5653,
+      "sha256": "2b8925201d7f19732e0a9851ab4e4417a4eec5a9413c85d62ee55e200724ab14"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_F2_v4_v7_barchart.py",
+      "bytes": 5317,
+      "sha256": "896876199f28983b93adcd887b0ee15624f044197bf8a5750d5cc32480512643"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_F4_F5_trajectories.py",
+      "bytes": 5369,
+      "sha256": "02386d3c9f9455a0bec7ffdafe1d81db6eda92a2028389a9a8fc3b5fecd43b82"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_F6_v7_trajectory.py",
+      "bytes": 3217,
+      "sha256": "add0a4ea0c2916a0b8900a61ce100d6002598744371a418a7ec085512e3810d8"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_F7_basquin.py",
+      "bytes": 2885,
+      "sha256": "f059a27cff79ab26ac4e197f6d3ced5e77dacc4b931aa06428d91dc51caaaf72"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_F8_mesh_convergence.py",
+      "bytes": 3221,
+      "sha256": "e1fd1ef3aa730f2a7ade82b75455eeff6c33fb9dd30f6e03e92d4bf9742e3d95"
+    },
+    {
+      "path": "SENS_tensile/plot_fig_F9_multiseed.py",
+      "bytes": 4272,
+      "sha256": "42a12952ed6eb0f5ca0ddc7db6c1b1d7cfba95b75ad11d72a50aba2dc59f5cb3"
+    },
+    {
+      "path": "SENS_tensile/plot_hero_fem_vs_pidl.py",
+      "bytes": 12984,
+      "sha256": "8738f923b317bd287c77b279e09ac3653e9ce47b1d30a520c5ecd9f491eae498"
+    },
+    {
+      "path": "SENS_tensile/plot_hero_fem_vs_pidl_d_and_f.py",
+      "bytes": 14166,
+      "sha256": "820b93f4faca8ddea1b5c796167f67d8543a1cefe13c33221bd5cd97ccbaff26"
+    },
+    {
+      "path": "SENS_tensile/plot_latest_fem_energy_vs_allfemmesh_pidl.py",
+      "bytes": 9179,
+      "sha256": "431774b0ad2ce5b4d80258deb4dbcae1f3c4b8364cdbec510f3cc3fe22fe4c75"
+    },
+    {
+      "path": "SENS_tensile/plot_mesh_comparison_lambda_eirres.py",
+      "bytes": 10478,
+      "sha256": "53014d7dd68233b246a653e010a16eeaecdf5e5c18615eedc57af1f778368641"
+    },
+    {
+      "path": "SENS_tensile/plot_oracle_umax_sweep.py",
+      "bytes": 7342,
+      "sha256": "f8650ae70c85bc5e5e6ea50f4e680e808c130539d734edf43df6a124ef954731"
+    },
+    {
+      "path": "SENS_tensile/plot_oracle_zone_overlay.py",
+      "bytes": 4466,
+      "sha256": "f87edf63a4b7a1a7dde4b33c4a9c99912e296fb7aaa1396ed5bce94f197fc393"
+    },
+    {
+      "path": "SENS_tensile/plot_pidl_fem_baseline_mesh_comparison.py",
+      "bytes": 10527,
+      "sha256": "4a38f88216bfe503bc348b8c5791a5c37ac0a11193cff2421081af380fa2116b"
+    },
+    {
+      "path": "SENS_tensile/plot_pidl_mesh_comparison.py",
+      "bytes": 3495,
+      "sha256": "0f62bb541cbd3958699f1102b726e112274b42de3d755fb3df9a4b416eedc202"
+    },
+    {
+      "path": "SENS_tensile/plot_pidl_method_promise_summary.py",
+      "bytes": 6543,
+      "sha256": "3fe01505bef5fb199bae164d31dfbe8a3a802d24e8ab6ee493b3da77901d1dc0"
+    },
+    {
+      "path": "SENS_tensile/plot_process_zone_comparison.py",
+      "bytes": 7958,
+      "sha256": "3404927530c490ddc21462791559805a2f27c6a05c4e5c33028cf8d5d6357eaf"
+    },
+    {
+      "path": "SENS_tensile/plot_sequential_raw_assimilation.py",
+      "bytes": 9554,
+      "sha256": "3a3ee05b086b932b51c6217a88410d0edb9e2151b7d509ce40c31181980e9de7"
+    },
+    {
+      "path": "SENS_tensile/plot_soft_hist0_common_probe_residuals.py",
+      "bytes": 8429,
+      "sha256": "94564b0c5ef6b6519eee17ee14f93a5d8bd01b3bacd24d821df8633dff5023e7"
+    },
+    {
+      "path": "SENS_tensile/plot_tip_tracking_evidence.py",
+      "bytes": 8307,
+      "sha256": "6706760dbcd377fc5552b76e1e951fc71baf3a66d8f535792dfa0315924dc214"
+    },
+    {
+      "path": "SENS_tensile/plot_umax_init_coeff_sweep.py",
+      "bytes": 7104,
+      "sha256": "ddc95fc5abdc7be898af702c1488bcc13482ee992df97ee046106be47c651ee4"
+    },
+    {
+      "path": "SENS_tensile/posthoc_5metric_multiarchive.py",
+      "bytes": 13648,
+      "sha256": "ac72c085cd51bdc06e8477feae7e1b86815c7107e8e4e821233df99f6625dada"
+    },
+    {
+      "path": "SENS_tensile/posthoc_alignment_criteria.py",
+      "bytes": 8672,
+      "sha256": "e5f8faad903b4599cead62ca0c32768419c907efe9f1ea074cf4a9f368a3436a"
+    },
+    {
+      "path": "SENS_tensile/posthoc_allfemmesh_energy_trace.py",
+      "bytes": 6931,
+      "sha256": "ee0c3670caaaecbeadd3c3e2dcc611cbffcddf257cc094c901a9b69430b7734d"
+    },
+    {
+      "path": "SENS_tensile/posthoc_cracktip_local_diagnostics.py",
+      "bytes": 45328,
+      "sha256": "b539ef1161fc970ce4ba1748c9466384cc441bec58759b9c99884bd6e72b704a"
+    },
+    {
+      "path": "SENS_tensile/posthoc_element_tip_criterion.py",
+      "bytes": 13147,
+      "sha256": "1917bf0589f373d25c9b4dbf0ade433fd1945ad73d79f250c1100c8efd884733"
+    },
+    {
+      "path": "SENS_tensile/posthoc_lbfgs_polish_audit.py",
+      "bytes": 11756,
+      "sha256": "d12a1c3fc6a6a427cb4502460a2bcc8a7ced2b312dda9d2e7d5550c823384a42"
+    },
+    {
+      "path": "SENS_tensile/posthoc_mesh_probe_alignment.py",
+      "bytes": 18811,
+      "sha256": "8c1c590a41c9211c3e3d3ff01a62e67bcf110037aeab081a145f9901ffcc3272"
+    },
+    {
+      "path": "SENS_tensile/posthoc_pidl_vs_fem_trajectory.py",
+      "bytes": 9597,
+      "sha256": "64b0dbc7f8e84021e81ebc81f717fdf5323fa7d6fdc186429b79e11df81bede2"
+    },
+    {
+      "path": "SENS_tensile/posthoc_reaction_force.py",
+      "bytes": 6101,
+      "sha256": "0c03f61fcade54299ecaaaf9e0825dfae9c0ca083ca9de965b112a724755927e"
+    },
+    {
+      "path": "SENS_tensile/posthoc_v7_global_audit.py",
+      "bytes": 11429,
+      "sha256": "da77c923c14a544eba1642ae225d57e403b50ad99cb552a4016546a0fe1ea331"
+    },
+    {
+      "path": "SENS_tensile/prepare_branch_restart_archive.py",
+      "bytes": 7709,
+      "sha256": "5826e49c7fd2918d371946b01cf15767d765498cda961fd69d0fa88f60aeb82d"
+    },
+    {
+      "path": "SENS_tensile/prepare_fem_mechanism_operator_dataset.py",
+      "bytes": 11423,
+      "sha256": "543591e8276ebd4b970fedacccd1a6392e63e8316b36e1ea761dfc4591b4f433"
+    },
+    {
+      "path": "SENS_tensile/prepare_spatial_degradation_reconstruction_dataset.py",
+      "bytes": 13416,
+      "sha256": "1f18a9f71b733ca72630c0799550ee08ce14106d61547fb690c6af08f7b0c9d6"
+    },
+    {
+      "path": "SENS_tensile/process_carrara_digitized_fig6.py",
+      "bytes": 9828,
+      "sha256": "80d9ed94eafbe107300cd04509a7aa1174869a11c7059a0442d6c1186cfcb24e"
+    },
+    {
+      "path": "SENS_tensile/reality_assimilation.py",
+      "bytes": 61749,
+      "sha256": "2e6b50b76b696835acbf37e404fb185148d6d41e737a6ffe6394bb8e0fce5448"
+    },
+    {
+      "path": "SENS_tensile/recompute_psi_peak.py",
+      "bytes": 9704,
+      "sha256": "8a43f01ccf0e25c2724a48a3a65587c741810cdd236a5a5c8ea379662adcf75c"
+    },
+    {
+      "path": "SENS_tensile/render_late_cycles.py",
+      "bytes": 7053,
+      "sha256": "ba28f8e1b2321ed1946e6ba4307f41e7e5adf1ec012df77b47c9ff3681ad729f"
+    },
+    {
+      "path": "SENS_tensile/run_AT2_vol_baseline_umax.py",
+      "bytes": 4074,
+      "sha256": "e2614e41847575e12306cf4c75b9351c5c21b895322cf48c2bfcba7c8978688f"
+    },
+    {
+      "path": "SENS_tensile/run_A_oracle_psi_c4f_umax.py",
+      "bytes": 2153,
+      "sha256": "730ae48728c0a3bda828ce673d1169c68158e72e3ecd3e2f25df52a66ec6f901"
+    },
+    {
+      "path": "SENS_tensile/run_B_mit8_c4f_umax.py",
+      "bytes": 2050,
+      "sha256": "e90b1795ab55941f61f733de2594e9f025608b2d680a7b753868eaa37da68932"
+    },
+    {
+      "path": "SENS_tensile/run_C4linear_fourier_umax.py",
+      "bytes": 1499,
+      "sha256": "df75f6c3eb3cbd8b4b3767d34f06f98a1fa1c678c479c28cddecd26729ff99d1"
+    },
+    {
+      "path": "SENS_tensile/run_E_enriched_c4f_umax.py",
+      "bytes": 1395,
+      "sha256": "25fda4bc859e972887dd8213e8fe4aa60dbff3a2ae5ebe9a44dded6a8aa37612"
+    },
+    {
+      "path": "SENS_tensile/run_adaptive_sampling_umax.py",
+      "bytes": 7838,
+      "sha256": "42424a0a94ec361668cc119c9e4e84892f1d4cd1538ec546f17cec56d18d3f1f"
+    },
+    {
+      "path": "SENS_tensile/run_algo1_mit8_noc4_umax.py",
+      "bytes": 8705,
+      "sha256": "7784947147610969a6af59d6aec458e7b6afa15bc4656a860dc6e2f53bb63bb6"
+    },
+    {
+      "path": "SENS_tensile/run_algo1_psi_allcycles_umax.py",
+      "bytes": 7058,
+      "sha256": "8bd854a5d02e64cfa7ec770b3c1b07bdde9eca963280cc7fd37fa23e61215c60"
+    },
+    {
+      "path": "SENS_tensile/run_alpha1_umax.py",
+      "bytes": 6965,
+      "sha256": "219464330c952498eb232b47ac2fc048c8d2dfefd823a2b1f1d8fd16a51a45ed"
+    },
+    {
+      "path": "SENS_tensile/run_baseline_umax.py",
+      "bytes": 4614,
+      "sha256": "b2056d2c1f350eb057663e01f32852f10fa31acb0800c425f05cd7eb81bb3c9d"
+    },
+    {
+      "path": "SENS_tensile/run_damage_conditioned_equilibrium_gate.py",
+      "bytes": 13821,
+      "sha256": "d9dcd5ccc249c159453ce38c407e733681d7a2ce2a277331237e55aa995316cd"
+    },
+    {
+      "path": "SENS_tensile/run_damage_observation_equilibrium_gate.py",
+      "bytes": 20436,
+      "sha256": "6bc3894c5b22b74bfb48641cfb94a046b917374ffbcb3466966c0a79a81e9105"
+    },
+    {
+      "path": "SENS_tensile/run_delta1_umax.py",
+      "bytes": 8152,
+      "sha256": "3817e7e67346efc489a0f78c8fc1d4e64cf0b5c32e5678893b7ed0f894b59cee"
+    },
+    {
+      "path": "SENS_tensile/run_dir63_logf_umax.py",
+      "bytes": 6695,
+      "sha256": "11fc8a2e1e5efd110988e9ad2bc4c3ad430cd8dd8e971d33170bf050c7906f90"
+    },
+    {
+      "path": "SENS_tensile/run_e2_reverse_umax.py",
+      "bytes": 10183,
+      "sha256": "402ce1dfa3ad1025e029d325c7b2ebc50cff715fc973ee17db8b119efc71a4be"
+    },
+    {
+      "path": "SENS_tensile/run_e2_reverse_umax_windows.py",
+      "bytes": 1950,
+      "sha256": "e79adc2590d203991d73285d84fa4497bfbacb8a0201aeeb74d1fe66dff5e6f6"
+    },
+    {
+      "path": "SENS_tensile/run_enriched_umax.py",
+      "bytes": 7229,
+      "sha256": "eece27307243890bc11a69d0441124df18bba638525c342236ebc2dc3ee64950"
+    },
+    {
+      "path": "SENS_tensile/run_enriched_v2_umax.py",
+      "bytes": 5995,
+      "sha256": "c873fb840cb7a6362574d4f39720cc6e0878384aa0de746bdc96cab5492f8e52"
+    },
+    {
+      "path": "SENS_tensile/run_exact_bc_fourier_umax.py",
+      "bytes": 8348,
+      "sha256": "35d95349622e0b90fd4b81c3e16ca643f82b0987d943e31f52c2585b0ea4c48f"
+    },
+    {
+      "path": "SENS_tensile/run_exact_bc_umax.py",
+      "bytes": 6017,
+      "sha256": "b1ea325739403b7f68415c55f2e4a4cc42aa43fb00604e58194b1af8eeabd106"
+    },
+    {
+      "path": "SENS_tensile/run_explicit_cycle_umax.py",
+      "bytes": 5709,
+      "sha256": "7cb639d5d749b5cf6953aa8c6c4bae93096c2bcf2a6dfb2542f6a45663d41b00"
+    },
+    {
+      "path": "SENS_tensile/run_fem_anchor_bc_umax.py",
+      "bytes": 4662,
+      "sha256": "12a10d8a5457e4ca0e398607082a3eec9a20dc788f971285165236c9f9a8d7aa"
+    },
+    {
+      "path": "SENS_tensile/run_fem_anchor_symmetry_prior_umax.py",
+      "bytes": 4652,
+      "sha256": "f0a39117af7631c8636e5e8956bdca0208bac33cb4ab8a2f74055298c14e35e6"
+    },
+    {
+      "path": "SENS_tensile/run_fem_anchor_symmetry_soft_algo1_umax.py",
+      "bytes": 6957,
+      "sha256": "2a4e7f3994d939c3ed2c8a23d9c9b77434e76a0fec2960b27f9cd1275ed6b2d1"
+    },
+    {
+      "path": "SENS_tensile/run_fem_anchor_symmetry_soft_umax.py",
+      "bytes": 5063,
+      "sha256": "d4964f61a08e3434a7f75fc2b807a5f395910b9b12d01e41b62e65fdda76f347"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mechanism_assimilation_gate.py",
+      "bytes": 11793,
+      "sha256": "ae1758e39269ea8d9d0242d137fec07fafc1bfc98a7ff9baa4be883ed3b59969"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_adaptive_lambda_hist_umax.py",
+      "bytes": 7470,
+      "sha256": "3c39a564d9391339c323659026bf9491dea403b7a50d798c100441cfb5e85192"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_c1_altmin_probe.py",
+      "bytes": 19897,
+      "sha256": "40cf4b22308ed0249dc2d26efb19cfc3c2750bf4d1449eeda4ec31ef57d97fbb"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_fbpinn_umax.py",
+      "bytes": 8502,
+      "sha256": "4e20c14d3f03e44c18a12ae29796a16198cf98904022aa7860be458b4a2b0e42"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_frozen_alpha_elastic_probe.py",
+      "bytes": 10275,
+      "sha256": "26cd36cc010d13aa0e26adc73189ab89f89d33b762f290f010c73a011eb1c368"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_history_driver_umax.py",
+      "bytes": 7812,
+      "sha256": "846fe0cac5d8d98fa8237090e4fb1a3f28abf4cad5e5146364a78b09feb7b011"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_inverse_alphaT_umax.py",
+      "bytes": 12610,
+      "sha256": "e2481a23f012b47ad3092de11ad50cff0f2e93f43c539a0073d128b7f69f056c"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_local_patch_umax.py",
+      "bytes": 9069,
+      "sha256": "e16e375ab72f31c2cd604393e734ff790b4f0532756a2bc69777837376bf0070"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_monotonic_fatigue_off.py",
+      "bytes": 12202,
+      "sha256": "dce7cf2408b8a4ae2bac63f9e91b3353baef4f75042715e53b40a9a7c65e30cb"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_monotonic_fatigue_on.py",
+      "bytes": 6886,
+      "sha256": "297252801e8e5e4ea8cf7cd9ef9642f0222bf53dd4ff5aeca5a0cca3b48d7095"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_oracle_field_umax.py",
+      "bytes": 27686,
+      "sha256": "e2f9fe7b9d0530be958df8e428e8d1237cba3bfd975e0bb3998ebfabe57fa4fb"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_precrack_fatigue_mask_umax.py",
+      "bytes": 10786,
+      "sha256": "9aa154161b5a23f84a89055284a00f78a30f306b39b7a52e39544ff333bb96d0"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_probe_driver_umax.py",
+      "bytes": 32111,
+      "sha256": "724bbe213d63b4b9505ffa071b2a4e6aa3e91a51f275d074875dca7770ff5b00"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_res_stiff_umax.py",
+      "bytes": 7697,
+      "sha256": "b7a7607817a314964024b14daa350dfe78baab94ae417c284071a8983888b199"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_staged_alpha_umax.py",
+      "bytes": 7597,
+      "sha256": "575a78c2a11e7d4ca69581c41f1c1715a72a545bf94425361941ecaeb72271b8"
+    },
+    {
+      "path": "SENS_tensile/run_fem_mesh_umax.py",
+      "bytes": 8363,
+      "sha256": "08b763e49964b76490a1f90d34a46c7fe45d12aa1df4bac089135868b61edb95"
+    },
+    {
+      "path": "SENS_tensile/run_fem_state_restart_umax.py",
+      "bytes": 15182,
+      "sha256": "3bfae92f86eae5df0872f8261c04a9c5900cba57d39df368250233634c0de38b"
+    },
+    {
+      "path": "SENS_tensile/run_fourier_features_umax.py",
+      "bytes": 5340,
+      "sha256": "5394c6800cf8fd59b74560e0c3e778db2a8afe61547b0985c9fad1f12a103a0f"
+    },
+    {
+      "path": "SENS_tensile/run_g4_sensitivity.py",
+      "bytes": 7398,
+      "sha256": "e8ddef5863e32c85e7cf855435184d65d43792c73f3614b38167f8b3ea96301b"
+    },
+    {
+      "path": "SENS_tensile/run_historical_damage_assimilation_gate.py",
+      "bytes": 38806,
+      "sha256": "92af730c83c092f7cddf85ad5ef735228178ae96a72c416b1a81415e485dfc4c"
+    },
+    {
+      "path": "SENS_tensile/run_jpath_umax.py",
+      "bytes": 5609,
+      "sha256": "130c0cd7da93afe1c752769db74c2d6008c0966b11eafeca3467fb6834c72636"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_climate_free_ab.py",
+      "bytes": 7292,
+      "sha256": "7075a330469fa545c9239c8502eb1753ad220600b265e81c7011c304a5dd5c34"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_climate_free_baseline_gate.py",
+      "bytes": 4819,
+      "sha256": "9df60bd58e6d8160cfaa2a38558ff0a9c21143874b6b34956379b68a9fa1d3d4"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_geometry_climate_preflight.py",
+      "bytes": 5880,
+      "sha256": "a2cb1485211fe470fa4c659a3c66afa326ec0417085e1572fd8e4458f763b8ad"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_identifiability_gate.py",
+      "bytes": 8758,
+      "sha256": "f2c22132117bc805b1b0f981fc7b1b585c19b834fbe6043115e830e4330456e4"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_mon_dis_trend_diagnostic.py",
+      "bytes": 5959,
+      "sha256": "8dafe2810e045614ea64ddb0f0ec1d4cf839a1ab803230a42ec85cb6692d196b"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_observation_state_gate_v1.py",
+      "bytes": 18047,
+      "sha256": "5e7b8697578560f51c33e3009619b4fdaaa6e7f159eaf1d9c7fb991adc853b89"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_real_route_preflight.py",
+      "bytes": 8320,
+      "sha256": "34b3f572387dec5f9ce8149cbabcfc67365c0b156daa2d0f8190d6e7865cf7e0"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_reduced_library_identifiability.py",
+      "bytes": 8287,
+      "sha256": "255040783de16fe4bdf0d6fbec065bb2b8be1c75fc205133edfab2b758b8d351"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_single_annotator_freeze_select.py",
+      "bytes": 16431,
+      "sha256": "47f61ef46f5ffaa543ae3d1c0f18b84e12f925b6cd275e620fcb89ea5ca0ee31"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_single_annotator_preflight.py",
+      "bytes": 5983,
+      "sha256": "5978c70b1d0a4dfe3ce549f89687c0f48b45b5a52545755a9caea77445b7fd24"
+    },
+    {
+      "path": "SENS_tensile/run_ltpp_06_1253_structured_field_adapter_v1.py",
+      "bytes": 8479,
+      "sha256": "d0b4dcfa4ff5cdd638e2f931c7aabda25214f814fa537c06b9e8408df74157c9"
+    },
+    {
+      "path": "SENS_tensile/run_m2s_next_stage_feasibility.py",
+      "bytes": 30562,
+      "sha256": "ec763373f96644736898e6b8dcad78cdfa807c3dd2047c8517d69f15c0b7de07"
+    },
+    {
+      "path": "SENS_tensile/run_m2s_synthetic_validation.py",
+      "bytes": 19000,
+      "sha256": "9912cdad75080b8775fe268b0f134d7266129dd09657e3c17543ceb9ade9369c"
+    },
+    {
+      "path": "SENS_tensile/run_mirror_alpha_umax.py",
+      "bytes": 6803,
+      "sha256": "e2a1f7dc8c9fd8c1ae7d41fda1c565a8c88209ebf5bbd1d38f34a3e5b8d95337"
+    },
+    {
+      "path": "SENS_tensile/run_mirror_strac_combo_umax.py",
+      "bytes": 7028,
+      "sha256": "7ff7b42ab47c7c30759cd06f660f525ad26c0264edad98332385f325225cf1de"
+    },
+    {
+      "path": "SENS_tensile/run_mit8_warmup_umax.py",
+      "bytes": 11938,
+      "sha256": "b813c72e20fa06027f7f9699a6e762ca370fd56d3a8aa6ae93af4cb3d71028d2"
+    },
+    {
+      "path": "SENS_tensile/run_native_q4_bounded_picard.py",
+      "bytes": 32394,
+      "sha256": "8226944b7001ee268cb17c64b3260fe6f134130bb7337d8e63a881ad4ac6203c"
+    },
+    {
+      "path": "SENS_tensile/run_native_q4_direct_q4_damage.py",
+      "bytes": 59448,
+      "sha256": "7ea553bc7b74b1c0d1c32ff40c6f1683aaad5a8a7067db5c88f7e7cc872ff473"
+    },
+    {
+      "path": "SENS_tensile/run_native_q4_direct_reference.py",
+      "bytes": 20589,
+      "sha256": "30c2e7975a606e610eddb761fe2cb5af651a77cc303468b167f838fc37cb1b9b"
+    },
+    {
+      "path": "SENS_tensile/run_native_q4_one_step_matrix.py",
+      "bytes": 20762,
+      "sha256": "b508f60f495772f1cd13e29fa186e527ae2670f85d1459c36af7ed00be647a9d"
+    },
+    {
+      "path": "SENS_tensile/run_native_q4_smooth_b0_picard.py",
+      "bytes": 61388,
+      "sha256": "c8c1c56f828f43b3ff1932353d131b189a8780f721c1c9da3dcf76e218f3b7be"
+    },
+    {
+      "path": "SENS_tensile/run_only_Umax_008_fast.py",
+      "bytes": 7453,
+      "sha256": "bb0d87133893375e74f5d272354938331856d6020a1666aed1c2e4b000b5466a"
+    },
+    {
+      "path": "SENS_tensile/run_pcc_baseline_umax.py",
+      "bytes": 9016,
+      "sha256": "4460ccfc1ac5eb0da98e8871ebd5d24fe0a941992dc6f47aed034d6b513c22bf"
+    },
+    {
+      "path": "SENS_tensile/run_psi_hack_umax.py",
+      "bytes": 7158,
+      "sha256": "96fa03b87d7e472e393c5253914a04bf8b621149dff73b55091ef6a0b30a87a7"
+    },
+    {
+      "path": "SENS_tensile/run_reaction_conditioned_damage_inversion_gate.py",
+      "bytes": 30169,
+      "sha256": "98e29e78d3d389a19d4e4513b3fe0dad2b6088b4a6c954cf349412659efdb6e4"
+    },
+    {
+      "path": "SENS_tensile/run_reality_assimilation_benchmark.py",
+      "bytes": 20031,
+      "sha256": "df46d8a17ebd9f95773063c4f3cb7511d8e3d650ccaad0a3d61993962a89ae39"
+    },
+    {
+      "path": "SENS_tensile/run_reality_assimilation_inference.py",
+      "bytes": 5564,
+      "sha256": "509c88e580c5d75eb17e3e2dca6e64ce86220355396ee8ef29e677a0a78bf491"
+    },
+    {
+      "path": "SENS_tensile/run_sequential_coeff3.py",
+      "bytes": 7199,
+      "sha256": "5d332dcc284e42cb164e0ebbce08dcd70a0829f3f69105ec3d78014f8f59c3d1"
+    },
+    {
+      "path": "SENS_tensile/run_sequential_coeff3_fast.py",
+      "bytes": 7645,
+      "sha256": "355598afaceacc7f1a6f8d41ac39c8377bf464cc2aeb8ee4f2e5c70266ca4fbc"
+    },
+    {
+      "path": "SENS_tensile/run_side_traction_soft_umax.py",
+      "bytes": 7835,
+      "sha256": "6f64e9d884edb0145508022d2e41396dba5e959bbe4cd093174fbabc0acccf48"
+    },
+    {
+      "path": "SENS_tensile/run_symmetry_prior_umax.py",
+      "bytes": 6298,
+      "sha256": "3d409e760afce2dbe3cb185b59a5691d2a32f60165aee273b78aac630e059038"
+    },
+    {
+      "path": "SENS_tensile/run_symmetry_soft_umax.py",
+      "bytes": 6249,
+      "sha256": "cc835c2463d7a44de6f9303cb2f772e840ad1e9cb8f0d82be9289c7c29e24486"
+    },
+    {
+      "path": "SENS_tensile/run_tipw_umax.py",
+      "bytes": 8081,
+      "sha256": "dc7a7d4250a2d1ec8f769460c807d0e8bd6aee65183b88a0bb2405d3d24ea77f"
+    },
+    {
+      "path": "SENS_tensile/run_tolir_umax.py",
+      "bytes": 4345,
+      "sha256": "d19133c9f40a73b64aa6c6c9f381674a58c3ec4769d33a9ec0dfa76de5e8d1f6"
+    },
+    {
+      "path": "SENS_tensile/run_validation_all_methods.py",
+      "bytes": 7303,
+      "sha256": "e0baf36f97e64bfd5936bc1762e5f7d4c6164a2866b545a5f656d3861495c87b"
+    },
+    {
+      "path": "SENS_tensile/run_void_notch_mask_umax.py",
+      "bytes": 7267,
+      "sha256": "413880505ed6e3ce2df8e5a2a607e09722d53641043c8c8a9035a465244493f9"
+    },
+    {
+      "path": "SENS_tensile/select_spatial_degradation_reconstruction.py",
+      "bytes": 4662,
+      "sha256": "0c2a0f4fa4760e73fab1e978733dc987a57c681590c8711c944dec663d10c40f"
+    },
+    {
+      "path": "SENS_tensile/smoke_surrogate_architectures.py",
+      "bytes": 16275,
+      "sha256": "51ac420314f77f6c04479f0a41fc67318183731128adbe647bd561874b57f968"
+    },
+    {
+      "path": "SENS_tensile/summarize_femmesh_event_alignment.py",
+      "bytes": 4587,
+      "sha256": "a4f8a9c7ff62ba01ea04d8cfd7912e61a8391daefede7194345d7b49ab04ae16"
+    },
+    {
+      "path": "SENS_tensile/summarize_lbfgs_polish_audit.py",
+      "bytes": 3835,
+      "sha256": "dbb208e98fef64a0b8a7aed33082d81d50ddc318ee5c740eb9d456b849c5a7a0"
+    },
+    {
+      "path": "SENS_tensile/summarize_v4_v7_all_methods.py",
+      "bytes": 6541,
+      "sha256": "b34c949d9ccaf6b2b33303f09b73e61fffa0c8e72583cdd341e3d1f7cd5b2a08"
+    },
+    {
+      "path": "SENS_tensile/train_fem_mechanism_mesh_operator.py",
+      "bytes": 19756,
+      "sha256": "46f3ddd4efb3f09fdaa0205e556fec3babe214dbe2b195a2c3bbb66c08c005b0"
+    },
+    {
+      "path": "SENS_tensile/train_spatial_degradation_reconstructor.py",
+      "bytes": 16348,
+      "sha256": "7d05cde7b7fbd9671d6b034d54965e733041171700eacfbbec65a6d1e6179837"
+    },
+    {
+      "path": "SENS_tensile/train_transition_aware_loco_gno.py",
+      "bytes": 42486,
+      "sha256": "8d675d722153df3733b0b733b3aa6cdc59867d516002818dfa853dbcb49c51ba"
+    },
+    {
+      "path": "SENS_tensile/validate_pidl_archive.py",
+      "bytes": 41354,
+      "sha256": "ca578a139486dd0e3b07c07faf68ec0bbdda203bd7e55e1b457b79d60d4b4e4a"
+    },
+    {
+      "path": "SENS_tensile/validate_reality_assimilation_package.py",
+      "bytes": 7210,
+      "sha256": "bd07a979e2a71d189e9f875288703b1f4f9e9bf4438d7ca7a4b036a0b334b64a"
+    },
+    {
+      "path": "source/__init__.py",
+      "bytes": 228,
+      "sha256": "c382257fec41061b4d207c88797c8455de9430e888bde295aeee24d58388fdb0"
+    },
+    {
+      "path": "source/adaptive_sampling.py",
+      "bytes": 7360,
+      "sha256": "60060a1b8429f5504084134a9b946f406146c45a66f442056c0af62e1b3abb4a"
+    },
+    {
+      "path": "source/compute_energy.py",
+      "bytes": 28966,
+      "sha256": "6e89ab87f6d5521d60afeeaa888d2b769d1cf416f145dbf332471388e561fd60"
+    },
+    {
+      "path": "source/construct_model.py",
+      "bytes": 8425,
+      "sha256": "c953e295dbd5845fc1807ecca885409532288f115d7d892414206fff124ae00e"
+    },
+    {
+      "path": "source/damage_conditioned_equilibrium.py",
+      "bytes": 20011,
+      "sha256": "aec11ccfddd14406b05aa4679fc0200996a5cacd13f368645626f6756fee4301"
+    },
+    {
+      "path": "source/damage_observation_reconstruction.py",
+      "bytes": 8527,
+      "sha256": "78af96861ae156f507e85e94e239023432ea932f7411415794fa3a8ce99f5d21"
+    },
+    {
+      "path": "source/damage_state_inversion.py",
+      "bytes": 6512,
+      "sha256": "3d441c5bd15daa70be865b48d7587e5cfbdde40e88f370b06418db4add425491"
+    },
+    {
+      "path": "source/dataset_element.py",
+      "bytes": 4266,
+      "sha256": "8f7a263ad6fb3a79e47756ea520d288f36188765f08bc65e71018d8d3b0e1555"
+    },
+    {
+      "path": "source/enriched_ansatz.py",
+      "bytes": 6757,
+      "sha256": "5cf3853aafc59a421482b4eb25c7174397ca68c41fc331d76a438aa1c59ce859"
+    },
+    {
+      "path": "source/fatigue_history.py",
+      "bytes": 9767,
+      "sha256": "ae75652a74f987f3ef10e3c8585eb51da9781a3d24f6941707b4c751b6a18918"
+    },
+    {
+      "path": "source/fem_mechanism_assimilation.py",
+      "bytes": 8166,
+      "sha256": "dddca5b5b05263fbd35096d4be08da6fc3d6af9eee2281ad6efdfd4d4985d557"
+    },
+    {
+      "path": "source/fem_mechanism_operator.py",
+      "bytes": 9776,
+      "sha256": "f4a76d4f6941e64fc0846a95d45524875770d3fd0a21c81806a485b91e5d7037"
+    },
+    {
+      "path": "source/fem_supervision.py",
+      "bytes": 23159,
+      "sha256": "f6d84e41f210dd5a3c655b02059d6b19abc1e6a5a42183417236c375d07f23f2"
+    },
+    {
+      "path": "source/fit.py",
+      "bytes": 35833,
+      "sha256": "db71d99c7e2862ef6c449fcd61f4e4c56f4500a62028e9dac1439c53d366432c"
+    },
+    {
+      "path": "source/input_data_from_mesh.py",
+      "bytes": 1219,
+      "sha256": "f837966bb9068178c86cbe180fba73f72c737c8efa1b153dfd0a67065571d895"
+    },
+    {
+      "path": "source/inverse_params.py",
+      "bytes": 1640,
+      "sha256": "9b3834d8ce4b43910c671bed9f71d94b6b27617d0ba4e8cd801273979673389c"
+    },
+    {
+      "path": "source/material_properties.py",
+      "bytes": 919,
+      "sha256": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c"
+    },
+    {
+      "path": "source/model_train.py",
+      "bytes": 155527,
+      "sha256": "975edbcc506cd0cdad8e6881f9be7384b13a38a3092284681c8ba9d123e49d9f"
+    },
+    {
+      "path": "source/native_q4_damage_qp.py",
+      "bytes": 16116,
+      "sha256": "74d4336024ec3bcca14eb7c4acbf2e295c964e72805bb257ddd91ea3cb54dbb9"
+    },
+    {
+      "path": "source/network.py",
+      "bytes": 25661,
+      "sha256": "85cec459cb6ac99e959e3eba5072ee448560890a4b6b0a592ea136cea5d2bded"
+    },
+    {
+      "path": "source/optim.py",
+      "bytes": 1047,
+      "sha256": "94f699a1cb6181cac7037b81f821161cc5537ff6fa972b6c8b698490a0534398"
+    },
+    {
+      "path": "source/paper_style.py",
+      "bytes": 10591,
+      "sha256": "e5ee6aead9b95d8043c7cb1c7b2c82e841b6645d9eab30dd71e5ad161361c977"
+    },
+    {
+      "path": "source/pff_model.py",
+      "bytes": 5749,
+      "sha256": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a"
+    },
+    {
+      "path": "source/plotting.py",
+      "bytes": 7883,
+      "sha256": "8041ab2f4347c319a9755d052c63188d8015aa1e02669236864bfc1c4e72eda9"
+    },
+    {
+      "path": "source/q4_quadrature.py",
+      "bytes": 2876,
+      "sha256": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb"
+    },
+    {
+      "path": "source/scaling.py",
+      "bytes": 13622,
+      "sha256": "45f487895e67d49b7eecf1abe9beae1e9fe980801db2582b8bd4be44d4d9192f"
+    },
+    {
+      "path": "source/spatial_degradation_reconstruction.py",
+      "bytes": 7767,
+      "sha256": "e6facf2d134ceac9a9dc8d5e397c603a42d964deb3455b95136a53e4910681b5"
+    },
+    {
+      "path": "source/transition_aware_mesh_operator.py",
+      "bytes": 8714,
+      "sha256": "88f18087a12ff6fc44579be59ff8cbd146f67f871048bbf56e4a01f5b6796b09"
+    },
+    {
+      "path": "source/tri3_quadrature.py",
+      "bytes": 2039,
+      "sha256": "93f737b4b45ad1b72d1215f99bc751e22134445ee1d57380fceaeae94dbf03ce"
+    },
+    {
+      "path": "source/utils.py",
+      "bytes": 10166,
+      "sha256": "42056272d9ed53c1657f0c867509e7c1ae6ec3a94be45e77228f64ff381179ca"
+    },
+    {
+      "path": "source/validate_figure_sidecars.py",
+      "bytes": 1779,
+      "sha256": "56b8f45ce496f425b29676246042eff8d19c31cd005259820b94c7804c5b664a"
+    },
+    {
+      "path": "source/williams_features.py",
+      "bytes": 5253,
+      "sha256": "efdcbc624db04be9cd11d3e13b1d5360deb7e4625fe806a037af374b55c8e137"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_block_diagnosis.py",
+      "bytes": 21383,
+      "sha256": "b8f4e40ca466daab7a1c5e287816abcf92cd2b24c1d9f8c1ca8856ff20604848"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_energy_head.py",
+      "bytes": 17946,
+      "sha256": "bee1f5dbec4b8a1579e8005371fa99841be0b83fc27c8b977c4026041569821f"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_head_newton.py",
+      "bytes": 22565,
+      "sha256": "eb0b6f6fc28cf134c942d9e3c4dc5358b8f1355982c1cf0cbe314789d9f8f7f1"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_head_readout_audit.py",
+      "bytes": 16119,
+      "sha256": "7c5b9eb831c77dc27667451236e9381c7c974123b02c16ae3d00dc1ce7d71647"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_hidden_newton.py",
+      "bytes": 28343,
+      "sha256": "f5580898a265820493c6ef235f4570adc1a15e696ca3bde051b9d6ba7e60eb54"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_learned_head_newton.py",
+      "bytes": 14626,
+      "sha256": "8e8686ad8516c6dfd1fc5ac442e0d97a6442feefc312d13a628a7fbd380a265b"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_learned_hidden_newton.py",
+      "bytes": 19692,
+      "sha256": "0cfff3510eea67487e64a50044f8fb723a5aee172a7f40142cadb154ac2b9793"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_persisted_phi_hidden_newton.py",
+      "bytes": 26639,
+      "sha256": "406c59de48a99558b156a29fceb00d92d432e72aa06ae36a41c4708804592332"
+    },
+    {
+      "path": "tools/s04_e011_analysis/run_pidl_tight_coupling_hidden_newton.py",
+      "bytes": 18021,
+      "sha256": "d54e341e13e1486ea3965b9a504464e86d403b0cb8b00c87dfc44b5ff11f3101"
+    }
+  ],
+  "single_argument_max_bytes": 16384,
+  "total_argv_max_bytes": 65536
+}

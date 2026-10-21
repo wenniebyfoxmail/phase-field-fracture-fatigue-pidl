@@ -7,6 +7,12 @@ from control import bytes_under,consume_claim,digest,seal_outputs,stop_owned,ver
 from launch import host_check,gpu_snapshot,resource_check,controller_gate,process_tree
 
 
+def checked_argv(argv):
+    sizes=[len(x.encode())+1 for x in argv]
+    if max(sizes)>16384 or sum(sizes)>65536:raise RuntimeError('command exceeds16KiB single/64KiB total argv')
+    return argv
+
+
 def validate(card,authority,manifest_sha,now=None):
     now=time.time() if now is None else now
     if not (authority.get('approved_by')=='human_delegated_HQ' and authority.get('execute_one_frozen_pair_completion') is True
@@ -15,6 +21,7 @@ def validate(card,authority,manifest_sha,now=None):
     if card.get('mode')!='frozen_completion_only' or card.get('execution_enabled') is not False:raise RuntimeError('closed measurement card required')
     if now>=card['envelope_deadline_epoch'] or card['measurement_seconds']!=300 or card['envelope_seconds']!=1800:raise RuntimeError('expired/changed time envelope')
     if card['work_caps']['energy_force_field']!=250 or card['work_caps']['head_assembly']!=30 or card['work_caps']['svd']!=0:raise RuntimeError('changed scientific work caps')
+    if card['mechanical_max_seconds']!=90 or authority.get('mechanical_max_seconds')!=90:raise RuntimeError('mechanical90 envelope required')
     limits=card['resource_limits_bytes'];G=1024**3
     if card['work_caps']['Qv']!=2 or card['work_caps']['hidden_jvp']!=8 or card['work_caps']['hidden_vjp']!=8:raise RuntimeError('derivative caps differ')
     if card['science']['arms']!=['frozen_constant','frozen_zero'] or card['work_caps']['native_tangent']!=0:raise RuntimeError('native recomputation forbidden')
@@ -59,7 +66,7 @@ def execute(root,authority_path,authority_sha,deadline_epoch):
     archive=Path(card['archive_root']);child=guardian=None;left=right=None;fds=[];usage={};reason=None;gate_opened=False
     try:
         host_check(card,root,archive)
-        if not (0<=time.monotonic()-authority['mechanical_started_monotonic']<=60 and authority['mechanical_checks']<=2):raise RuntimeError('mechanical zero-start budget')
+        if not (0<=time.monotonic()-authority['mechanical_started_monotonic']<=90 and authority['mechanical_checks']<=2):raise RuntimeError('mechanical zero-start budget')
         admission=gpu_snapshot(card)
         if admission['free_mib']<20*1024:raise RuntimeError('need16GiB cap plus4GiB initial physical margin')
         cpus=sorted(os.sched_getaffinity(0))[:4];os.sched_setaffinity(0,cpus)
@@ -75,15 +82,15 @@ def execute(root,authority_path,authority_sha,deadline_epoch):
             E011_SUPERVISOR_PID=str(os.getpid()),E011_START_FD=str(start_r),E011_GUARD_FD=str(right.fileno()),E011_STARTED=str(started))
         cmd=[sys.executable,'-B',str(root/'code/tools/s04_e011_execution/frozen_completion_launch.py'),'--worker','--package',str(root)]
         with (root/'worker.log').open('xb') as log,(root/'guardian.log').open('xb') as glog:
-            child=subprocess.Popen(cmd,cwd=root/'code',env=env,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,pass_fds=(start_r,right.fileno()))
+            child=subprocess.Popen(checked_argv(cmd),cwd=root/'code',env=env,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,pass_fds=(start_r,right.fileno()))
             gcmd=[sys.executable,'-B',str(root/'code/tools/s04_e011_execution/deadline_guard.py'),'--worker',str(child.pid),'--supervisor',str(os.getpid()),
                 '--fd',str(left.fileno()),'--deadline',str(absolute),'--step-seconds','300','--phase-seconds-json','[300]',
                 '--report',str(root/'deadline_guard.json'),'--ready-fd',str(ready_w)]
-            guardian=subprocess.Popen(gcmd,cwd=root/'code',env=env,stdin=subprocess.DEVNULL,stdout=glog,stderr=subprocess.STDOUT,start_new_session=True,pass_fds=(left.fileno(),ready_w))
+            guardian=subprocess.Popen(checked_argv(gcmd),cwd=root/'code',env=env,stdin=subprocess.DEVNULL,stdout=glog,stderr=subprocess.STDOUT,start_new_session=True,pass_fds=(left.fileno(),ready_w))
             os.close(ready_w);fds.remove(ready_w);wait_guard_ready(ready_r)
             # Still gated. Fresh no-conflict check is part of the same second mechanical batch.
             admission=gpu_snapshot(card)
-            if time.monotonic()-authority['mechanical_started_monotonic']>60:raise RuntimeError('mechanical allowance exhausted before gate')
+            if time.monotonic()-authority['mechanical_started_monotonic']>90:raise RuntimeError('mechanical allowance exhausted before gate')
             write_json(root/'launch_receipt.json',dict(run_id=card['run_id'],source_commit=manifest['source_commit'],package_sha256=digest(root/'package_manifest.json'),
                 worker_pid=child.pid,guardian_pid=guardian.pid,command=cmd,started_monotonic=started,deadline=absolute,
                 source_branch=manifest['source_branch'],admission=admission,CPU_affinity=cpus,authority=authority,log=str(root/'worker.log')))
@@ -144,11 +151,11 @@ def outer(root,authority_path,authority_sha,deadline_epoch):
         cmd=[sys.executable,'-B',str(root/'code/tools/s04_e011_execution/frozen_completion_launch.py'),'--controller','--package',str(root),
             '--authority',str(authority_path),'--authority-sha256',authority_sha,'--envelope-deadline',str(deadline_epoch)]
         with (root/'outer_controller.log').open('xb') as log,(root/'outer_guard.log').open('xb') as glog:
-            controller=subprocess.Popen(cmd,cwd=root/'code',env=env,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,pass_fds=(gate_r,))
+            controller=subprocess.Popen(checked_argv(cmd),cwd=root/'code',env=env,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,pass_fds=(gate_r,))
             gcmd=[sys.executable,'-B',str(root/'code/tools/s04_e011_execution/deadline_guard.py'),'--worker',str(controller.pid),
                 '--supervisor',str(os.getpid()),'--fd',str(left.fileno()),'--deadline',str(time.monotonic()+max(.01,deadline_epoch-time.time()-20)),
                 '--step-seconds','1800','--report',str(root/'outer_guard.json'),'--ready-fd',str(ready_w)]
-            guardian=subprocess.Popen(gcmd,cwd=root/'code',env=env,stdin=subprocess.DEVNULL,stdout=glog,stderr=subprocess.STDOUT,start_new_session=True,pass_fds=(left.fileno(),ready_w))
+            guardian=subprocess.Popen(checked_argv(gcmd),cwd=root/'code',env=env,stdin=subprocess.DEVNULL,stdout=glog,stderr=subprocess.STDOUT,start_new_session=True,pass_fds=(left.fileno(),ready_w))
             os.close(ready_w);fds.remove(ready_w);wait_guard_ready(ready_r)
             write_json(root/'outer_launch_receipt.json',dict(controller_pid=controller.pid,guardian_pid=guardian.pid,command=cmd,
                 absolute_envelope_deadline_epoch=deadline_epoch,guardian_armed_before_hash_or_model=True))

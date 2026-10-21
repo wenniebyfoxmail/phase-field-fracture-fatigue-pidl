@@ -1,0 +1,23 @@
+{
+  "status": "PASS_one_stdin_roundtrip_fixture",
+  "stdin_bytes": 149910,
+  "stdin_sha256": "e5e51e27bc91ff53216d04e1c5ad9f121bff6a090705c83764438763d8a1e500",
+  "all_fields_equal": true,
+  "reuse_identity_items": 371,
+  "original_science_unchanged": true,
+  "commands": [
+    {
+      "command": "probe",
+      "single_max_bytes": 2526,
+      "total_argv_bytes": 2641
+    },
+    {
+      "command": "stage",
+      "single_max_bytes": 4513,
+      "total_argv_bytes": 4628
+    }
+  ],
+  "wall_seconds": 0.01903929200489074,
+  "new_SSH": 0,
+  "new_model_array_calls": 0
+}

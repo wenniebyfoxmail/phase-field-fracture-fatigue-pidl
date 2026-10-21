@@ -10,11 +10,19 @@ from matplotlib.colors import SymLogNorm
 
 
 def main():
-    start=time.monotonic();cpu=time.process_time();ap=argparse.ArgumentParser();ap.add_argument('--run',type=Path,required=True);args=ap.parse_args();case=args.run;a=case/'retrieved_partial/archive';out=case/'analysis';out.mkdir(exist_ok=True)
-    load=lambda p:json.loads(p.read_text());arr=lambda arm,name:np.load(a/arm/(name+'.npy'),allow_pickle=False)
+    start=time.monotonic();cpu=time.process_time();ap=argparse.ArgumentParser();ap.add_argument('--run',type=Path,required=True);ap.add_argument('--native-run',type=Path);args=ap.parse_args();case=args.run;a=case/'retrieved_partial/archive';out=case/'analysis';out.mkdir(exist_ok=True)
+    load=lambda p:json.loads(p.read_text());native=None if args.native_run is None else args.native_run/'retrieved_partial/archive'
+    armroot=lambda arm:native if native is not None and arm.startswith('native_') else a
+    arr=lambda arm,name:np.load(armroot(arm)/arm/(name+'.npy'),allow_pickle=False)
     if (a/'measurement_result.json').exists():
         result=load(a/'measurement_result.json')
-        if result['status']!='FOUR_ARM_COMPLETE_NO_OPTIMIZATION':raise ValueError('not complete four-arm panel')
+        if result['status'] not in ['FOUR_ARM_COMPLETE_NO_OPTIMIZATION','FROZEN_PAIR_COMPLETE_NO_OPTIMIZATION']:raise ValueError('not complete control panel')
+        if native is not None:
+            old=load(args.native_run/'analysis/saved_analysis.json')
+            if old['result']['status']!='PARTIAL_STOPPED_NO_RETRY' or [x['arm'] for x in old['result']['arms']]!=['native_constant','native_zero']:raise ValueError('unexpected old native source')
+            if result['reused_native_run']!=args.native_run.name:raise ValueError('reused native run mismatch')
+            if not np.array_equal(np.load(native/'free_dofs.npy'),np.load(a/'free_dofs.npy')):raise ValueError('cross-run free order mismatch')
+            result=dict(result,new_frozen_arms=result['arms'],old_native_result=old['result'],arms=old['result']['arms']+result['arms'],combined_runs=[args.native_run.name,case.name])
     else:
         terminal=load(a/'measurement_terminal.json');failure=load(a/'worker_failure.json')
         if terminal['completed'] or failure['type']!='FileExistsError':raise ValueError('unsupported partial terminal; inspect rather than infer')
@@ -45,7 +53,7 @@ def main():
         row=dict(original);row.update(Qnorm=norm(Q),FDnorm=norm(fd),recomputed_error=norm(err),recomputed_ratio=norm(err)/tol,FD_passed=bool(norm(err)<=tol),original_tolerance=tol)
         source_trace=arr(arm,'source_trace');cross=np.zeros_like(source_trace,dtype=bool);side_est=[]
         for side in ['plus','minus']:
-            info=load(a/(arm+'_'+side+'_forward.json'));solver=load(a/(arm+'_'+side+'_solver.json'))
+            info=load(armroot(arm)/(arm+'_'+side+'_forward.json'));solver=load(armroot(arm)/(arm+'_'+side+'_solver.json'))
             info.update(arm=arm,side=side,original_physical_g_inf=solver['physical_gradient_inf'],target_defect_inf=solver['target_defect_inf']);forwards.append(info)
             cross|=arr(arm,side+'_trace')!=source_trace
             side_est.append(info['linear_forward_upper_conditional_saved_R'])
@@ -62,7 +70,7 @@ def main():
     for name,items in [('FD_metrics',rows),('spatial',spatial),('pair_differences',pairs),('forward_estimates',forwards)]:
         with (out/(name+'.csv')).open('w',newline='') as f:
             writer=csv.DictWriter(f,fieldnames=list(dict.fromkeys(k for row in items for k in row)),lineterminator='\n');writer.writeheader();writer.writerows(items)
-    summary=dict(run_id=case.name,result=result,FD=rows,spatial=spatial,pair_differences=pairs,geometry_SHA256=msh,full_forward_bound_trusted=False,verdict='Partial native pair only; full2x2 incomplete, frozen branches unavailable, unique mechanism unresolved without complete forward bound',new_field_or_energy_evaluations=0,new_NN_AD_SVD_solve=0)
+    summary=dict(run_id=case.name,result=result,FD=rows,spatial=spatial,pair_differences=pairs,geometry_SHA256=msh,full_forward_bound_trusted=False,verdict=('Four controls from two immutable runs; derivative/branch observation only, unique mechanism unresolved without complete forward bound' if len(arms)==4 else 'Partial native pair only; full2x2 incomplete, frozen branches unavailable, unique mechanism unresolved without complete forward bound'),new_field_or_energy_evaluations=0,new_NN_AD_SVD_solve=0)
     (out/'saved_analysis.json').write_text(json.dumps(summary,indent=2,allow_nan=False)+'\n')
     fig,ax=plt.subplots(figsize=(8.6,4.4),layout='constrained');colors=['#D55E00','#E69F00','#0072B2','#56B4E9'][:len(rows)];xs=np.arange(len(rows));ratios=[r['recomputed_ratio'] for r in rows]
     ax.bar(xs,ratios,color=colors);ax.axhline(1,color='#222222',linestyle='--',label='original FD threshold');ax.set_yscale('log');ax.set_xticks(np.arange(4),['Native\ng=g0','Native\ng=0 root','Frozen branch\ng=g0','Frozen branch\ng=0 root']);ax.set_ylabel('||Q - FD||2 / original tolerance');ax.set_title('c20 chart controls: derivative mismatch, not FEM/PIDL solution error');ax.legend()
@@ -77,7 +85,7 @@ def main():
     for ax in list(axes.flat)[len(arms):]:
         ax.set_axis_off();ax.text(.5,.5,'Frozen branch: NOT RUN\nStopped after recording error',ha='center',va='center',transform=ax.transAxes)
     fig.colorbar(pc,ax=axes,label='Cell RMS of nodal |Q - FD|\nUV per scaled-hidden unit; shared symlog',shrink=.9);fig.savefig(out/'FD_four_arm_fields.png',dpi=170);plt.close(fig)
-    provenance=f'Run {case.name}; sourcefa9ce259, fixedc20s4/FEMdamage/sourcePIDLhistory/Phi/T0/UV/B0, seed173/h1e-6. Selected remote arrays retrieved with SHA/size checks; local mirror partial (three large shared Phi maps remain remote). Geometry SHA {msh}. Source/side fields/Q/FD/differences used without NN, AD, force, energy, tangent, SVD or solve. Only fully saved native controls available here; frozen controls were not run after first recording failure. These chart controls are not installed NN endpoints.'
+    provenance=f'Run {case.name}; native run {None if args.native_run is None else args.native_run.name}; native sourcefa9ce259 and new frozen source per verified run manifest, fixedc20s4/FEMdamage/sourcePIDLhistory/Phi/T0/UV/B0, seed173/h1e-6. Selected remote arrays retrieved with SHA/size checks; local mirror partial (three large shared Phi maps remain remote). Geometry SHA {msh}. Source/side fields/Q/FD/differences used without NN, AD, force, energy, tangent, SVD or solve. Native controls come from original partial R1; frozen controls, when present, come from the separately hash-verified completion run. Missing controls are labelled NOT RUN. These chart controls are not installed NN endpoints.'
     for stem,desc in [('FD_four_arm','Bars are original abs1e-10+rel1e-4 L2 gate ratios, not physical residual or FEM/PIDL error. Log y; threshold1 unchanged. A smaller bar is a more consistent derivative check, not a better solution.'),('FD_four_arm_fields','Common full-mesh symlog color scale; free-field error vectors placed into original u/v nodal slots with prescribed increments zero. Each Q4 shows RMS nodal vector magnitude; no smoothing or clipping. This visualization is not the scalar unweighted L2 test.')]:
         (out/(stem+'.md')).write_text('# '+stem+'\n\n'+desc+'\n\n'+provenance+'\n\nComplete forward arithmetic/nonlinear root error is not certified. Even an FD pass is not a unique-cause, architecture-capacity, optimization, FEM qualification or physical validation result.\n')
     (out/'analysis_cost.json').write_text(json.dumps(dict(wall_seconds=time.monotonic()-start,CPU_seconds=time.process_time()-cpu,new_field_or_energy_evaluations=0,NN_AD_SVD_solve=0),indent=2)+'\n')

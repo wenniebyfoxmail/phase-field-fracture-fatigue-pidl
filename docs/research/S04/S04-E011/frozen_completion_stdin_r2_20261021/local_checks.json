@@ -1,0 +1,11 @@
+{
+  "stdin_fixture_runs": 2,
+  "fixture_wall_seconds": [
+    0.018981041037477553,
+    0.01903929200489074
+  ],
+  "reason_second": "Review-directed confirmation lifecycle fix changed stage command; same metadata-only fixture rerun",
+  "prior_tests_not_repeated": true,
+  "science_runner_unchanged": true,
+  "new_SSH": 0
+}
