@@ -60,7 +60,10 @@ class MechanicsWorkspace:
         state_hook=getattr(self,'qualification_state_observer',None)
         if callback is not None or state_hook is not None:
             piv=np.abs(factor.U.diagonal())
-            ratio=float(piv.min()/max(float(piv.max()),np.finfo(float).eps))
+            # Diagnostic calculation only: persist nonfinite identity before
+            # the unchanged original pivot_ratio may raise warning/error.
+            with np.errstate(invalid='ignore',divide='ignore',over='ignore'):
+                ratio=float(piv.min()/max(float(piv.max()),np.finfo(float).eps))
             row=dict(kind='pivot_qualification',stage=stage,current_matrix_key=key.hex(),
                 pivot_ratio=ratio if np.isfinite(ratio) else None,pivot_ratio_finite=bool(np.isfinite(ratio)),
                 minimum_abs_pivot=float(piv.min()) if np.isfinite(piv).all() else None,

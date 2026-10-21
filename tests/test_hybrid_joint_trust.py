@@ -151,6 +151,18 @@ def test_actual_pivot_scalar_and_key_persist_before_rejection():
     assert rows[-1]['pivot_ratio']==1e-16 and rows[-1]['current_matrix_key']==b'abc'.hex() and not rows[-1]['passed']
 
 
+def test_all_infinite_pivot_diagnostic_survives_warnings_as_errors():
+    import warnings
+    b,old=native_old();rows=[];b.mechanics_workspace.qualification_diagnostic=rows.append
+    factor=SimpleNamespace(U=sparse.diags([np.inf,np.inf],format='csc'))
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        with pytest.raises((RuntimeWarning,RuntimeError)):
+            b.mechanics_workspace.qualify(factor,b'nonfinite','artificial')
+    assert len(rows)==1 and rows[0]['pivot_ratio']is None
+    assert not rows[0]['pivot_ratio_finite'] and not rows[0]['passed']
+
+
 def test_near_zero_support_residual_evaluation_does_not_require_inverse(monkeypatch):
     b,old=native_old();u=.01*b.kin.points.ravel();d=np.ones(4)
     monkeypatch.setattr(b,'mechanics',lambda *a,**kw:(_ for _ in ()).throw(AssertionError('no inverse allowed for trial')))
