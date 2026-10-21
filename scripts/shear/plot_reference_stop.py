@@ -45,9 +45,13 @@ Therefore: preserve six qualified numerical states but stop this package; next d
 Does not show: that initial-crack preservation guarantees the full trajectory, that R004/R006 have identical boundary contracts, or any physical/road validation. The changed essential initial-crack condition is precisely the intervention; the rejected R004 field is never projected or retrospectively accepted.
 '''
 (out/'figures/shear_validity_and_cost.md').write_text(caption)
-with (out/'README_analysis.md').open('a') as f:f.write('\n## Reference verification and decision\n\nRead shear_validity_and_cost first, then reaction/energy curves, then displacement/damage snapshots.\n'+caption+'\n')
+readme=out/'README_analysis.md'
+base=readme.read_text().split('\n## Reference verification and decision')[0]
+readme.write_text(base+'\n## Reference verification and decision\n\nRead shear_validity_and_cost first, then reaction/energy curves, then displacement/damage snapshots and last_valid_shear_fields.\n'+caption+'\n')
 for stem in ['shear_response','shear_energies','shear_damage','shear_displacement']:
- with (out/f'figures/{stem}.md').open('a') as f:f.write(f'\nMeasured result: raw-array verification confirms6/30accepted states throughU=.18; U=.21 rejected at native displacement Newton limit500. AtU=.18 topRx={rows[-1]["Rx_top"]:.12g}, E_el={rows[-1]["E_el"]:.12g}, E_d={rows[-1]["E_d"]:.12g}. All shown accepted states have unchanged residual/bounds/healing checks satisfied and alpha1 on the251-node initial crack. No PIDL state exists; these fields/curves cannot show cross-solver agreement or full-path crack evolution.\n')
+ sidecar=out/f'figures/{stem}.md'
+ base=sidecar.read_text().split('\nMeasured result:')[0]
+ sidecar.write_text(base+f'\nMeasured result: raw-array verification confirms6/30accepted states throughU=.18; U=.21 rejected at native displacement Newton limit500. AtU=.18 topRx={rows[-1]["Rx_top"]:.12g}, E_el={rows[-1]["E_el"]:.12g}, E_d={rows[-1]["E_d"]:.12g}. All shown accepted states have unchanged residual/bounds/healing checks satisfied and alpha1 on the251-node initial crack. No PIDL state exists; these fields/curves cannot show cross-solver agreement or full-path crack evolution.\n')
 print(json.dumps({'first_state_healing':rows[0]['max_healing'],'accepted_prefix':len(rows),'failed_step_seconds':failed['step_seconds']},indent=2))
 
 # Largest accepted U is a declared diagnostic selection, not the best agreement.
