@@ -242,3 +242,18 @@ is conditional, capped by6GPUh and actual remaining time with retrieval reserve.
 No new physics, clipping, load schedule, or loaded-solver change. Metadata-only
 deployment adaptation carries forward the preparation review; no repeated
 human confirmation is required for checks, submission or conditional PIDL.
+
+### R009 outcome — recovery fixed; seven valid loaded states
+
+The explicitly authorised repair ran onCITPC12 PID44308. Native recovery
+passed;7/24loads throughU=.21 independently verified. U=.24 step8/outer1
+PFNewton72 exhausted the remaining task-local residual line-search trials.
+This is not evidence of native PF Newton failure. Candidate damage stayed
+within the range/healing conditions, but no coupled certificate exists.
+All50files/50,136,428bytes hash verified; process577.909939s/peakRSS1.582GiB.
+See [R009 result and prepared integrated native-PF candidate](runs/S04-E035-R009.md).
+FEM did not reachU=.4, so conditional PIDL R010 was not launched. Its source,
+same-process environment and UUID-bound deployment are prepared only.
+One repair attempt consumed; no further producer operation or new scienceRunID.
+The original deadline and prior costs remain. Next integrated candidate
+restores all PF Newton blocks, retains physics/criteria, and is unexecuted.
