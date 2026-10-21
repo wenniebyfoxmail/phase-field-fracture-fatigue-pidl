@@ -35,11 +35,12 @@ for file in sorted((a.fem/'mechanics').glob('step_*/stag_*/trace.csv')):
   # to distinct origin/attempt caches and are deliberately left unresolved.
   derived=base+ev if kind!='failure' else None
   mapping.append(dict(trace=str(file.relative_to(a.fem)),row=rownum,event=kind,raw_captured_base=base,local_attempt_ordinal=ev,derived_normal_current_call_id=derived,limitation='failure origin/attempt ID unresolved' if kind=='failure' else 'normal-event count reconstruction; no native replay'))
- report=file.parent/'report.mat';ok=None
+ report=file.parent/'report.mat';ok=None;raw_ok=None;reason=None
  if report.exists():
-  rep=loadmat(report,simplify_cells=True)['report'];ok=bool(rep['ok'])
+  rep=loadmat(report,simplify_cells=True)['report'];raw_ok=bool(rep['ok']);reason=rep['reason']
+  ok=raw_ok and reason=='converged' and rows[-1]['event']=='converged'
   assert int(rep['updates'])==accepted
- summary.append(dict(step=int(file.parent.parent.name.split('_')[1]),stag=int(file.parent.name.split('_')[1]),captured_base=base,local_attempts=maxev,accepted_updates=accepted,report_ok=ok,last_event=rows[-1]['event']))
+ summary.append(dict(step=int(file.parent.parent.name.split('_')[1]),stag=int(file.parent.name.split('_')[1]),captured_base=base,local_attempts=maxev,accepted_updates=accepted,raw_report_ok=raw_ok,report_reason=reason,report_ok=ok,last_event=rows[-1]['event']))
 # Compare reconstructed normally completed mechanical ranges with independently
 # exported outer native counters at every accepted physical state.
 checks=[]

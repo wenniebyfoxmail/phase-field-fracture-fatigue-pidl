@@ -57,7 +57,7 @@ try
         report.reason='newton_limit'; report.message='500 Newton updates exhausted'; emit('failure');
     end
 catch failure
-    report.reason='exception'; report.message=failure.message;
+    report.ok=false; report.reason='exception'; report.message=failure.message;
     report.identifier=failure.identifier;
     % No further assembly, trial or alternate method after a real failure.
     try, emit('failure'); catch trace_failure, report.trace_error=trace_failure.message; end
