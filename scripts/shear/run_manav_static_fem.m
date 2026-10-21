@@ -73,6 +73,7 @@ try
         fprintf(tf,'%d,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%d,%.6f\n',...
             step,U,Rx_top,Rx_bottom,E_el,E_d,res_u,res_pf,min(alpha),max(alpha),max(previous-alpha),stag,toc(started));
         fprintf('ACCEPTED step=%d U=%.4f seconds=%.1f\n',step,U,toc(started));
+        stage='post_accepted_history_update';certificate_valid=false;res_u=NaN;res_pf=NaN;
         previous=alpha;
         [~,~,~,history]=pf(MESH,dofs,GEOM.t,quad,mat,sys.CC,alpha,previous,driver,sys.stress_state.as_number,history);
         check();finish_guard();
