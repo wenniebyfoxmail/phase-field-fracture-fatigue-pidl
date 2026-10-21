@@ -14,6 +14,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('raw', type=Path)
     p.add_argument('output', type=Path)
+    p.add_argument('--baseline', type=Path)
     a = p.parse_args()
     a.output.mkdir(parents=True, exist_ok=True)
     results = json.loads((a.raw / 'results.json').read_text())
@@ -48,6 +49,20 @@ def main():
         row['energy_change_percent'] = 100*(
             sum(zero['final'][k] for k in ('E_el','E_d','E_irr')) /
             sum(control['final'][k] for k in ('E_el','E_d','E_irr'))-1)
+        if a.baseline:
+            import torch
+            best=a.baseline/'best_models'
+            archived=np.load(best/'energy_gradient_terms_vs_cycle.npy')
+            reference=archived[archived[:,0]==step][0,1:4]
+            replay=np.array([control['final'][k] for k in ('E_el','E_d','E_irr')])
+            row['control_replay_energy_max_relerr']=float(np.max(
+                np.abs(replay-reference)/np.maximum(np.abs(reference),1e-30)))
+            old=torch.load(best/f'trained_1NN_{step}.pt',map_location='cpu',weights_only=False)
+            new=torch.load(folders[0]/'final.pt',map_location='cpu',weights_only=False)
+            row['control_replay_weights_maxabs']=max(
+                float((new[k]-old[k]).abs().max()) for k in old)
+            row['control_replay_update_diff']=control['updates']-len(
+                np.load(best/f'trainLoss_1NN_{step}.npy'))
         rows.append(row)
         fields.append((row, [f['d'].copy() for f in finals], folders))
     assert rows, 'No complete matched pair'
@@ -95,9 +110,9 @@ def main():
     x=np.arange(len(rows));labels=[f"c{r['cycle']}\n{'peak' if r['substep']==4 else 'unload'}" for r in rows]
     axes[0].bar(x,[r['d_diff_rms'] for r in rows],color='#D55E00');axes[0].set_ylabel('damage difference RMS')
     for offset,prefix,label,color in [(-.17,'control','L2 = 1e-5','#0072B2'),(.17,'zero','L2 = 0','#D55E00')]:
-        axes[1].bar(x+offset,[100*r[f'{prefix}_sign_change_fraction'] for r in rows],width=.32,label=label,color=color)
+        axes[1].bar(x+offset,[100*r[f'{prefix}_nonzero_opposite_fraction'] for r in rows],width=.32,label=label,color=color)
         axes[2].bar(x+offset,[r[f'{prefix}_gp_retreat_max'] for r in rows],width=.32,label=label,color=color)
-    axes[1].set_ylabel('canonical L2 changes coordinate sign (%)')
+    axes[1].set_ylabel('nonzero physical coordinates with opposite sign (%)')
     axes[2].set_ylabel('maximum tri3 damage retreat')
     for ax in axes:
         ax.set_xticks(x,labels);ax.grid(axis='y',alpha=.2)
