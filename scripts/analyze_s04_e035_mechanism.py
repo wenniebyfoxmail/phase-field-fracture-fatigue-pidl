@@ -42,11 +42,14 @@ def main():
                  initial_nonzero_opposite_fraction=r['initial']['nonzero_opposite_fraction'],
                  initial_zero_fraction=r['initial']['physical_zero_fraction'],
                  initial_total_sign_change_fraction=r['initial']['sign_change_fraction'],
-                 final_vs_initial_energy_ratio=float(ratio[-1]),
-                 max_vs_initial_energy_ratio=float(ratio.max()),
+                 final_vs_initial_energy_ratio=float(10**(r['final']['logE']-r['initial']['logE'])),
+                 max_vs_initial_energy_ratio=float(max(ratio.max(),10**(r['final']['logE']-r['initial']['logE']))),
                  damage_diff_rms=d['d_diff_rms'])
         for n in [361,658,1292]:
-            if len(ratio)>=n: row[f'energy_ratio_at_update_{n}']=float(ratio[n-1])
+            if len(ratio)>n:
+                row[f'energy_ratio_after_{n}_updates']=float(ratio[n])
+            elif len(ratio)==n:
+                row[f'energy_ratio_after_{n}_updates']=row['final_vs_initial_energy_ratio']
         rows.append(row)
     keys=list(dict.fromkeys(k for r in rows for k in r))
     with (a.output/'mechanism_metrics.csv').open('w',newline='') as f:
@@ -56,11 +59,13 @@ def main():
     for ax,step in zip(axes,[5,200,415]):
         for arm,label,color in [('L2_1e-5','L2 = 1e-5','#0072B2'),('L2_zero','L2 = 0','#D55E00')]:
             trace=json.loads((a.raw/f'step_{step:03d}_{arm}'/'loss_trace.json').read_text())
+            receipt=next(r for r in original if r['step']==step and r['arm']==arm)
             y=np.array([t['logE'] for t in trace]);y-=y[0]
-            ax.plot(np.arange(len(y)),y,label=label,c=color,lw=.9,alpha=.9)
-            ax.plot(len(y)-1,y[-1],'o',color=color,ms=4)
+            final=receipt['final']['logE']-receipt['initial']['logE']
+            ax.plot(np.arange(len(y)+1),np.r_[y,final],label=label,c=color,lw=.9,alpha=.9)
+            ax.plot(len(y),final,'o',color=color,ms=4)
         ax.axhline(0,c='grey',lw=.7);ax.grid(alpha=.2)
-        ax.set_title(f'c{(step-1)//5+1} unloaded');ax.set_xlabel('RPROP update (preupdate sample)')
+        ax.set_title(f'c{(step-1)//5+1} unloaded');ax.set_xlabel('completed RPROP updates')
         ax.legend(fontsize=8)
     axes[0].set_ylabel('log10(common energy / initial common energy)')
     fig.suptitle('S04-E035 · all preselected unloaded states · existing traces\n'
