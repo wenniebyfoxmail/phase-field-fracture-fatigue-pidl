@@ -7,11 +7,10 @@ description: Route a road-fracture research review to ChatGPT Chat Pro, an indep
 
 Choose a reviewer by the question it can actually answer and the evidence it can access. A review admits or challenges an identified decision; it does not vote on an Experiment's frozen primary criterion. The HQ owns the final adoption decision and the existing `Storyline -> Experiment -> Run -> Evidence` record remains authoritative.
 
-Small development-data explorations use local tests and a labelled result
-record, not an independent review on every iteration. Route an independent
-review when a candidate enters a formal claim-bearing test or a concrete
-technical risk warrants one. GPU-hour budget checks are resource decisions,
-not scientific review requests.
+Default to the core's fixed task benchmark, not an independent review.
+Use this routing only when the user explicitly requests review of the task.
+Formal-test status, a new commit, a repair or an agent-written Code Ready gate
+does not trigger review. GPU-hour budget checks are resource decisions.
 
 ## Route one bounded review
 
@@ -29,12 +28,12 @@ Choose the channel once per task with the user: recommendation, alternatives,
 usage, material and review scope. Reuse an existing authorised choice; do not
 silently switch after an access/model/quota/transport failure.
 
-Use the core's **Bounded Task Authority**: in-scope repairs and focused review
-through that channel need no repeat human approval. Review changed scientific
-or control risks, not every commit. Card metadata, paths, Run IDs and observed
+Use the core's **Bounded Task Authority**: in-scope repairs and an explicitly
+requested review through that channel need no repeat human approval. Keep the
+review within the requested question, not every commit. Card metadata, paths, Run IDs and observed
 auxiliary versions need consistency checks, not a fresh Code Ready review.
 
-Reuse the Experiment or task record for the request. State only the review question, immutable protocol/commit or external snapshot identity, material actually provided, requested checks, and blocked conclusions. A local path by itself is not evidence that Chat or cloud Work received the file. Give a reviewer the frozen material and questions, not the desired verdict. Keep reviewers read-only; after a material change to a reviewed formal package, request focused review of the changed risk and downstream effects. Reuse unchanged findings rather than restarting the whole review.
+Reuse the Experiment or task record for the request. State only the review question, immutable protocol/commit or external snapshot identity, material actually provided, requested checks, and blocked conclusions. A local path by itself is not evidence that Chat or cloud Work received the file. Give a reviewer the frozen material and questions, not the desired verdict. Keep reviewers read-only. If the user's requested review includes a repair/rereview cycle, revisit only the changed issue; otherwise do not create an automatic rereview loop. Reuse unchanged findings.
 
 ## Receipt and interpretation
 

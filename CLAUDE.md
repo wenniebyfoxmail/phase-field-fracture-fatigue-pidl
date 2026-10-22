@@ -24,7 +24,7 @@
 1. 不建长 todo list。先读 `docs/research_frontier.md`
 2. 声明本 session 的唯一 Current Question
 3. Active Branches 最多 3 个；本 session 只追 1 个
-4. 定义一个 discriminating action（能区分假设的最小动作）
+4. 定义一个 discriminating action（足以改变研究判断的行动，不默认追加最小验证）
 5. 记录 Switch Condition：什么结果会让我切换主线
 6. 未触发 Switch Condition 时，不重写主问题
 7. Side ideas 放 Parking Lot，不追
@@ -51,11 +51,14 @@
 - **Inference**：基于证据推出的解释
 - **Unknown**：缺关键观测，只是工作假设
 
-额外检查：
-- 什么证据会推翻这个解释？
-- 有没有一个同样能解释现象的替代假设？
-- 置信度：confirmed / likely / speculative？
-- 能不能立刻做一个最小验证（查文件/跑命令/看 git log）？能查就先查
+## 只跑固定基准，通过即交付（用户规则，2026-10-22）
+
+- 默认只跑当前任务的一套固定基准，复用既有命令、输入、对照与预期结果。
+- 不自动追加全量回归、历史重跑、多轮smoke、消融、压力测试或独立审核；用户明确要求才做。
+- 文档、措辞、路径和元数据小改只做直接一致性检查，不启动科研计算。
+- 基准通过即交付；失败就修复并重跑失败项，不重跑未受影响的已通过项。
+- 没有现成基准时选一个代表性端到端用例，不先搭一套测试体系。
+- 保留原科学判据、数据/预算/执行与共享机器安全边界；不因上述Self-check另开验证任务。
 
 ---
 

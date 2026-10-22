@@ -118,14 +118,15 @@ after the owning Experiment commits are stable.
 A formal claim-bearing producer receives exactly:
 
 - Experiment ID and Run ID;
-- reviewed commit SHA and protocol revision;
+- task commit SHA, fixed-benchmark result and protocol revision;
 - runner/config/command and authorised producer;
 - input identity and fresh output/archive/log paths;
 - stop rule, minimum evidence and retrieval route.
 
 The producer does not choose a new scientific design or silently edit source.
-Any material change affecting a formal reviewed package returns to a new Mac
-task commit and focused review of the changed risk. An exploratory producer
+A source change returns to a new Mac task commit and the fixed task benchmark;
+independent review is added only when the user explicitly requests it. Do not
+rerun unaffected passing checks or append a historical regression. An exploratory producer
 still needs a task owner, fresh Run ID, code identity, command, authorised
 machine, resource cap, output/log paths, and stop/retrieval route, but not a
 formal protocol or independent code-review PASS for each small iteration.
@@ -137,8 +138,9 @@ Integration occurs from a clean integration worktree:
 
 1. Fetch remote refs and verify the task branch HEAD.
 2. Review the task diff against its declared base and owner.
-3. Verify tests, receipts and archive pointers in proportion to risk.
-4. Cherry-pick or merge only the reviewed task commits.
+3. Reuse the fixed-benchmark result; check existing receipts/archive pointers,
+   without starting another test or review round.
+4. Cherry-pick or merge only the inspected task commits.
 5. Resolve shared indexes last; do not import stale index hunks from an older
    branch.
 6. Push without force and verify local and remote SHAs match.

@@ -22,6 +22,16 @@ boundaries, budgets and execution authority retain their exact conditions.
 Historical skill copies remain for reproducibility, not as current workflow
 entrypoints. Existing D1 work may be reused; a continuation need not restart it.
 
+## 2026-10-22: 只跑固定基准，通过即交付
+
+Use the core's section with that exact title. One fixed task benchmark is the
+default; documentation/metadata edits need only a direct consistency check.
+Do not append full regression, historical reruns, smoke ladders or independent
+review unless the user explicitly requests them. This supersedes older generic
+test/review requirements in AGENTS, adapters and agent-written active cards;
+do not rewrite signed history or remove a review expressly requested by the user.
+HQs pass the benchmark command/result to executors, not a growing checklist.
+
 Use the core's `Keep The Goal Continuous` and `Design Route Changes From First
 Principles（第一性原理）` sections when a route changes or is handed off. Keep the goal and
 mechanism visible; choose evidence that resolves the research decision rather

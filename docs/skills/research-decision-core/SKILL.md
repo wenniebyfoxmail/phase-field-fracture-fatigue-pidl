@@ -10,6 +10,24 @@ action. Reuse the project's existing task and evidence records. Domain-specific
 data semantics, acceptance tolerances, ethics, resources, and execution authority
 come from the user and project rules.
 
+## 只跑固定基准，通过即交付（用户规则，2026-10-22）
+
+- 默认只运行当前任务的一套固定基准测试；开始时在原任务记录里写清命令、
+  代表性输入、对照和预期结果。复用已有基准，不临时扩建测试体系。
+  基准覆盖当前主功能与已声明的科研比较，不把全套历史测试改名为“基准”。
+- 代码更新只跑这套基准，不再自动追加全量回归、历史实验重跑、多轮smoke、
+  消融、压力测试或独立审核。基准通过即交付并推进下一步，不继续“找保险”。
+- 文档、措辞、路径或元数据小改只做直接一致性检查，不运行科研基准。
+- 基准失败就修复并重跑失败项；已通过且未受影响的结果直接复用。没有基准时，
+  选择一个代表性端到端用例作为基准，不先搭建一串微型验证。
+- 额外测试或独立审核仅在用户明确要求时执行；进入正式实验、改commit或加载
+  领域适配器本身都不触发。过去由Agent自加的复审门不算用户要求。
+- 运行许可、预算、保护数据及共享机器安全规则不变；基准通过不等于科学结论成立。
+
+This is the validation default for HQs, executors and adapters. Scientific
+evaluation uses the declared comparator and criterion; it is not permission to
+rerun old experiments or add validation stages.
+
 ## Compose With A Domain Adapter
 
 Read this core once, then the adapter relevant to the actual claim. The core
@@ -133,21 +151,20 @@ or a new experiment under the project's rules.
 ## Choose The Evidence Stage
 
 **Exploration:** state the question, simplest useful comparator, observable,
-resource cap, and next decision. Run relevant local checks and preserve an
+resource cap, and next decision. Run the fixed task benchmark and preserve an
 attributable result. A directional or component gain, working capability, or
 diagnostic that selects a repair can justify a bounded follow-up when it has a
 credible path to the central goal. Show its
 magnitude and available uncertainty. A first prototype need not meet the final
-performance target. Independent review is used for a concrete risk or project
-requirement, not automatically for every small iteration.
+performance target. Do not add independent review unless the user requests it.
 
 **Formal test:** before results, freeze one bounded claim, evaluation units,
 evidence and allowed inputs, comparator, one primary criterion, uncertainty
 handling, budget/stop rule, and required evidence. Justify the criterion using
 baseline variation, reference noise, a meaningful tolerance, or an attainable
 ceiling. For qualitative work, specify the equivalent evidence and decision
-rule rather than inventing a numerical threshold. Use the domain's applicable
-review requirements. Protected evaluation evidence remains outside exploration.
+rule rather than inventing a numerical threshold. Formal status does not add
+automatic review. Protected evaluation evidence remains outside exploration.
 
 Use only validity checks whose failure prevents interpretation. Combine primary
 conditions only when each is necessary for the same claim. Secondary diagnostics
@@ -159,18 +176,18 @@ criterion to rescue an old result.
 
 Approve the task once: goal, allowed code/data, producer, total budget,
 stop/retry limits and result, in the existing card. Conditional execution
-approval covers implementation -> tests/necessary review -> deployment ->
+approval covers implementation -> fixed benchmark -> deployment ->
 automatic admission -> execution. The agent completes that chain without
 asking again for each step. An explicitly plan-only task still permits no run.
 
-- **Agent:** in-scope repairs, chosen-channel review, environment/resources,
+- **Agent:** in-scope repairs, fixed benchmark, environment/resources,
   actual versions, Run IDs, paths, hashes and card instantiation. Verify these
   against the approved envelope/reviewed template. Check compatibility rather
   than imposing exact pins on every auxiliary library. Isolated dependency
   repairs stay within scope; model/data execution is not a metadata check.
-- **Reviewer:** changed scientific behaviour, data interpretation or control
-  safety; carry forward unchanged findings. Metadata-only fields need consistency
-  checks, not another Code Ready review or human approval.
+- **Reviewer (only when requested):** the user's stated question; carry forward
+  unchanged findings. Metadata-only fields need consistency checks, not another
+  Code Ready review or human approval.
 - **User:** one consolidated decision only for a scope/data/producer/expenditure
   or budget expansion, shared-system changes requiring permission, or a scientific
   retry outside the approved limits.

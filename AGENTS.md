@@ -138,7 +138,7 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - Each formal claim-changing Experiment must have one primary Storyline, an immutable
   ID, a folder, a frozen protocol revision, and one `experiment.md`. A change to
   the hypothesis, data semantics, holdout, comparator, primary metric, threshold,
-  or gate requires a dated amendment and renewed review; do not rewrite a used
+  or gate requires a dated amendment; do not rewrite a used
   protocol silently.
 - Each active multi-step research goal must keep a three-to-six-step Decision
   Ladder in its `experiment.md` or task note: purpose/uncertainty, decision-scale
@@ -205,8 +205,8 @@ do not invent a conclusion when there is only preparation or visibility.
   or synthetic data to find a signal, bottleneck, or repair; it cannot access a
   sealed holdout or establish a formal scientific claim. Before an exploratory
   attempt, state its question, simplest useful comparator, expected observable,
-  resource cap, and next decision. Run relevant local sanity checks; independent
-  scientific/code review is not required for each small exploratory iteration.
+  resource cap, and next decision. Run only the fixed task benchmark; independent
+  review is not a default prerequisite.
 - Exploratory acceptance is deliberately permissive: a measured directional or
   component gain, a working capability, or a diagnostic that selects a concrete
   repair can justify another bounded attempt. Show the actual result and its
@@ -214,8 +214,8 @@ do not invent a conclusion when there is only preparation or visibility.
   threshold to an early prototype or kill a route merely because its first
   attempt misses that threshold.
 - Before using a candidate for a formal claim, freeze a prospective protocol,
-  candidate, evaluation units, comparator, and one primary criterion, then
-  obtain the independent review required below. Exploration cannot be promoted
+  candidate, evaluation units, comparator, and one primary criterion. Formal
+  status does not add automatic independent review. Exploration cannot be promoted
   retroactively into confirmation after its results have been seen.
 - Estimate GPU cost as GPU count times wall-clock hours. A planned single run
   of at least 8 GPU-hours triggers a brief capacity/storage/budget check. At
@@ -226,22 +226,34 @@ do not invent a conclusion when there is only preparation or visibility.
 
 ## Research Readiness Gates
 
+### 只跑固定基准，通过即交付（用户规则，2026-10-22）
+
+- Only the current task's fixed benchmark runs by default. Reuse its command,
+  representative inputs, comparator and expected result in the existing record.
+- No automatic full regression, historical reruns, smoke ladders, stress tests,
+  ablations or independent reviews. Add these only when the user explicitly asks.
+- Documentation, wording, path and metadata edits need only direct consistency
+  checks, not scientific runs. If no benchmark exists, use one representative
+  end-to-end case instead of building a new suite.
+- Pass -> deliver and advance. Fail -> repair and rerun the failed item; reuse
+  unaffected passing results. Do not expand validation after a pass.
+- This replaces older generic test/review gates, including agent-written card
+  requirements. Preserve expressly requested reviews, scientific criteria,
+  execution authority, budgets, protected data and shared-machine safety.
+
 ### Bounded Task Authority (user update, 2026-10-20)
 
 Use `research-decision-core`'s **一次授权，机械检查自动完成**: approve a
-task envelope once; agents complete its implementation, relevant review and
+task envelope once; agents complete its implementation, fixed benchmark and
 mechanical admission without serial human approvals. Prospectively replace
 older administrative gates in active cards, preserving scientific/data/budget/
 stop limits and signed history. This governance update itself launches no run;
 escalate a genuine authority change once, not every resolved mechanical field.
 
-- **Code Ready:** before a formal claim-bearing run, search the repository for
-  reusable runners, parsers, plotters, validators, and tests; run relevant local
-  sanity tests; then obtain a read-only independent code review bound to the
-  exact commit, runner, config, data lock, and protocol revision. Any material
-  change affecting the reviewed claim or output requires focused renewed review;
-  unchanged material carries forward. Exploratory iterations use local tests and
-  the record above, not a fresh independent review by default.
+- **Code Ready:** reuse existing code and the fixed task benchmark. Record its
+  result against the task code/config; a pass is sufficient for engineering
+  readiness. Independent review is required only when the user requests it,
+  not automatically for formal work or a changed commit.
 - **Run Ready:** every producer execution uses a fresh Run ID and records the
   producer alias/hostname, commit or immutable snapshot, dirty status, command,
   runtime, GPU or scheduler identity, PID/session/job, output/archive/log paths,
@@ -249,7 +261,7 @@ escalate a genuine authority change once, not every resolved mechanical field.
   not scientific evidence.
 - **Evidence Ready:** an Experiment closes only after retrieval status is
   explicit, its predeclared minimum evidence exists, an independent evidence
-  review is complete when required, the scientific verdict is separated from
+  review is complete if explicitly requested, the scientific verdict is separated from
   execution status, the minimum decision visualization exists for computed or
   measured method validation, and the Storyline receives one dated claim-impact
   entry. Require `README_analysis.md` for that claim-bearing figure set.
@@ -259,7 +271,7 @@ escalate a genuine authority change once, not every resolved mechanical field.
   necessary. Secondary diagnostics explain but never vote, rescue a failure, or
   overturn a pass. Thresholds need an ex-ante physical/decision, uncertainty,
   or meaningful-baseline rationale. A gate may be revised before results with a
-  reviewed amendment. After results are seen, preserve the old verdict and use
+  dated amendment. After results are seen, preserve the old verdict and use
   a new revision or Experiment.
 - **Hashing:** hashes are not routine paperwork. Git-tracked content uses its
   commit identity. Ordinary runs use paths, receipts, file counts/sizes, and
@@ -288,7 +300,7 @@ escalate a genuine authority change once, not every resolved mechanical field.
   needs external evidence, use `docs/skills/deep-research-obsidian/SKILL.md`.
   Archive the report and supporting papers in Obsidian and link the next D step.
   HQs include these current skill paths and the active D step in executor briefs.
-- **Independent review routing:** when a research HQ arranges or interprets a
+- **Independent review routing:** only for a user-requested
   design, Code Ready, or evidence review, read
   `docs/skills/research-review-channels/SKILL.md`. Present the channel choices
   to the user before dispatch unless the user has already chosen and authorized

@@ -18,6 +18,10 @@ Use the shared claim classes, Occam acceptance rule, readiness states, outcome
 map, and output template. Add only the physics-specific fields needed for the
 current claim.
 
+Follow the core's **只跑固定基准，通过即交付**. Detailed physics references
+describe interpretation and the declared scientific benchmark; they do not
+require rerunning every historical validator or adding independent review.
+
 Also use the shared solution-oriented outcome rule. A failed Hard-5, teacher,
 surrogate, or mechanism gate remains negative for that bounded claim, but it
 must be decomposed into reference qualification, representational ceiling,

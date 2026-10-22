@@ -33,7 +33,7 @@ If the pass margin is nearly the entire gap between the baseline and oracle
 ceiling, require strong evidence that it is attainable. If uncertainty is wider
 than the requested improvement, increase information or weaken the claim before
 test access. Never lower a threshold after viewing results to rescue the old
-claim; create a reviewed new contract.
+claim; record a prospective new contract. This does not require another review.
 
 ## Predeclare a progress ladder
 

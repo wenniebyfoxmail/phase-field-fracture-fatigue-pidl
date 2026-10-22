@@ -74,16 +74,15 @@ A formal `experiment.md` freezes:
 Add teacher, inverse-parameter, uncertainty or intervention fields only when
 the claim needs them. Use
 [the project template](../../templates/research_experiment.md).
-Protocol changes after results need a dated reviewed amendment or new
+Protocol changes after results need a dated amendment or new
 Experiment; keep the old result.
 
 ## Project Review And Resource Requirements
 
-Before a formal claim-bearing implementation is used, reuse existing code,
-run relevant checks and obtain independent read-only review bound to the code,
-data and protocol. Review material changes and their effects; unchanged
-material carries forward. Exploration uses local checks by default. Use
-`research-review-channels` when arranging an independent review.
+Use the core's **只跑固定基准，通过即交付** for exploration and formal work.
+Reuse the fixed task benchmark; no automatic full regression, historical rerun
+or independent review. Use `research-review-channels` only when the user asks
+for a review. Domain semantics define what a result means, not extra test stages.
 
 Estimate `GPU-hours = GPU count x wall-clock hours`. In this project a planned
 run of at least 8 GPU-hours needs a brief capacity/storage/budget check;
@@ -113,7 +112,7 @@ Research disposition: advance | repair | redirect | park | stop
 
 Use `mixed` for multiple separately preregistered claims, not to soften one
 primary miss. Close a formal Experiment after retrieval is explicit, minimum
-evidence exists, required review is complete and the Storyline has a dated
+evidence exists, any explicitly requested review is complete and the Storyline has a dated
 claim-impact entry. Execution success alone is not a scientific result.
 
 ## Project Record Locations
