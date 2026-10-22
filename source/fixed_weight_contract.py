@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 from numbers import Integral
-from typing import Callable, Sequence
+from typing import Callable, Iterable, Iterator, Sequence
 
 import torch
 
@@ -26,6 +26,7 @@ BOUNDARY_FAMILY = "clamped_tensile_y"
 # This version is defined only for BOUNDARY_FAMILY; the record retains both
 # identifiers so an adapter cannot label a shear family as vertical tension.
 SEMANTICS = "explicit_substep_post_commit_v1"
+RECOVERED_INITIAL_SEMANTICS = "explicit_recovered_initial_and_post_commit_v2"
 HISTORY_NAMES = ("H", "alpha_bar", "q_prev")
 SPLITS = frozenset(("train", "validation", "test", "protected"))
 
@@ -49,6 +50,15 @@ def _finite_scalar(value: float, name: str) -> None:
              and math.isfinite(value), f"{name} must be a finite scalar")
 
 
+def _validate_key_fields(key: StateKey) -> None:
+    for name in ("trajectory_id", "condition_id", "reference_id", "mesh_id"):
+        _nonempty(getattr(key, name), name)
+    for name in ("cycle", "substep", "ordinal"):
+        _integer(getattr(key, name), name)
+    _require(key.branch in ("initial", "load", "unload", "hold"), "unknown load branch")
+    _finite_scalar(key.load, "load")
+
+
 @dataclass(frozen=True)
 class StateKey:
     trajectory_id: str
@@ -63,13 +73,26 @@ class StateKey:
     timing: str = "post_history_commit"
 
     def validate(self) -> None:
-        for name in ("trajectory_id", "condition_id", "reference_id", "mesh_id"):
-            _nonempty(getattr(self, name), name)
-        for name in ("cycle", "substep", "ordinal"):
-            _integer(getattr(self, name), name)
-        _require(self.branch in ("initial", "load", "unload", "hold"), "unknown load branch")
+        _validate_key_fields(self)
         _require(self.timing == "post_history_commit", "only post-history committed states are supported")
-        _finite_scalar(self.load, "load")
+
+
+@dataclass(frozen=True)
+class RecoveredInitialKey(StateKey):
+    """Explicit native c1/s00 after zero-load recovery, before cyclic steps.
+
+    This retains the producer's pre-cycle timing; it is never relabelled as a
+    post-history-commit state. Later s00 aliases are not recovered initial states.
+    """
+    timing: str = "pre_cycle_committed"
+
+    def validate(self) -> None:
+        _validate_key_fields(self)
+        _require(self.timing == "pre_cycle_committed", "recovered initial timing must remain pre-cycle committed")
+        _require((self.cycle, self.substep, self.ordinal) == (1, 0, 0),
+                 "recovered initial key must be native c0001_s00 at ordinal zero")
+        _require(self.branch == "initial" and self.load == 0.0,
+                 "recovered initial state requires initial branch and zero load")
 
 
 @dataclass(frozen=True)
@@ -146,7 +169,12 @@ class State:
     history: torch.Tensor
 
     def validate(self, mesh: Mesh, material: Material) -> None:
+        _require(not isinstance(self.key, RecoveredInitialKey),
+                 "recovered initial key requires explicit RecoveredInitialState")
         self.key.validate()
+        self._validate_payload(mesh, material)
+
+    def _validate_payload(self, mesh: Mesh, material: Material) -> None:
         mesh.validate()
         material.validate()
         _require(self.key.mesh_id == mesh.mesh_id, "state mesh identity mismatch")
@@ -184,6 +212,25 @@ class State:
 
 
 @dataclass(frozen=True)
+class RecoveredInitialState(State):
+    """Recovered damage with zero displacement and reset fatigue memory.
+
+    Source-specific code must establish native recovery provenance before
+    constructing this type. Its validation checks state compatibility, not
+    convergence of the recovery solve or qualification of a numerical teacher.
+    """
+
+    def validate(self, mesh: Mesh, material: Material) -> None:
+        _require(isinstance(self.key, RecoveredInitialKey),
+                 "recovered initial state requires explicit RecoveredInitialKey")
+        self.key.validate()
+        self._validate_payload(mesh, material)
+        _require(bool((self.u == 0).all()), "recovered initial displacement must be exactly zero")
+        _require(bool((self.history == 0).all()),
+                 "recovered initial H, alpha_bar and q_prev must be exactly zero")
+
+
+@dataclass(frozen=True)
 class TransitionRequest:
     target: StateKey
     delta_load: float
@@ -191,6 +238,11 @@ class TransitionRequest:
     def validate(self, source: StateKey) -> None:
         source.validate()
         self.target.validate()
+        _require(not isinstance(self.target, RecoveredInitialKey),
+                 "recovered initial state can only be a transition source")
+        if isinstance(source, RecoveredInitialKey):
+            _require((self.target.cycle, self.target.substep) == (1, 1),
+                     "recovered initial transition must target native c0001_s01")
         _finite_scalar(self.delta_load, "delta_load")
         for name in ("trajectory_id", "condition_id", "reference_id", "mesh_id"):
             _require(getattr(source, name) == getattr(self.target, name),
@@ -223,7 +275,8 @@ class TrajectoryRecord:
         for name in ("trajectory_id", "condition_id", "reference_id", "mesh_id"):
             _nonempty(getattr(self, name), name)
         _require(self.split in SPLITS, "unknown trajectory split")
-        _require(self.semantics == SEMANTICS, "incompatible state semantics; explicit adapter required")
+        _require(self.semantics in (SEMANTICS, RECOVERED_INITIAL_SEMANTICS),
+                 "incompatible state semantics; explicit adapter required")
         _require(self.boundary_family == BOUNDARY_FAMILY, "unsupported boundary family")
         _require(self.evidence_domain == "synthetic", "this adapter only admits synthetic numerical references")
         if self.expected_state_count is not None:
@@ -256,18 +309,26 @@ class SplitManifest:
         return tuple(record for record in self.records if record.split == split)
 
 
-def load_trajectory(
+def iter_trajectory(
     record: TrajectoryRecord,
-    loader: Callable[[TrajectoryRecord], Sequence[State]],
+    loader: Callable[[TrajectoryRecord], Iterable[State]],
     mesh: Mesh,
     material: Material,
-) -> list[State]:
-    """Validate explicitly decoded tensors; never discover scientific payloads.
+) -> Iterator[State]:
+    """Stream explicit decoded states; admission requires complete exhaustion.
 
     The qualification pointer is an admission assertion supplied by the caller,
     not proof established by this function. An exact count is needed to check full
     coverage; a consecutive cropped window must not masquerade as a trajectory.
     The caller must validate its complete SplitManifest before selecting records.
+    A yielded prefix is not an admitted trajectory: a later state, loader error,
+    or final count can still fail. No training or qualification claim may use a
+    partial iteration. No archive is discovered or opened here.
+
+    Only recurrence fields from the preceding state are retained, with copies
+    so an in-place loader buffer cannot change a previously accepted bound.
+    Mesh validation is retained per state because frozen dataclasses do not
+    make their tensor contents immutable.
     """
     record.validate()
     if record.split == "protected":
@@ -281,21 +342,42 @@ def load_trajectory(
     material.validate()
     expected_material = tuple(getattr(material, name) for name in material.__dataclass_fields__)
     _require(tuple(record.material_values) == expected_material, "material constants differ from manifest")
-    states = list(loader(record))
-    _require(len(states) == record.expected_state_count, "trajectory state count differs from manifest")
-    for ordinal, state in enumerate(states):
+    count = 0
+    old_key = old_d = old_alpha = None
+    for ordinal, state in enumerate(loader(record)):
+        _require(ordinal < record.expected_state_count, "trajectory state count differs from manifest")
         _require(isinstance(state, State), "loader must return State objects")
+        if record.semantics == RECOVERED_INITIAL_SEMANTICS and ordinal == 0:
+            _require(isinstance(state, RecoveredInitialState),
+                     "v2 trajectory must begin with an explicit recovered initial state")
+        else:
+            _require(not isinstance(state, RecoveredInitialState),
+                     "recovered initial state requires v2 semantics and the first trajectory position")
         state.validate(mesh, material)
         for name in ("trajectory_id", "condition_id", "reference_id", "mesh_id"):
             _require(getattr(state.key, name) == getattr(record, name), f"loaded {name} differs from manifest")
         _require(state.key.ordinal == ordinal, "trajectory must cover ordinals from zero without gaps")
         if ordinal:
-            old = states[ordinal - 1]
-            TransitionRequest(state.key, state.key.load - old.key.load).validate(old.key)
-            _require(bool((state.d >= old.d).all()), "reference damage decreases across committed states")
-            _require(bool((state.history[..., 1] >= old.history[..., 1]).all()),
+            TransitionRequest(state.key, state.key.load - old_key.load).validate(old_key)
+            _require(bool((state.d >= old_d).all()), "reference damage decreases across committed states")
+            _require(bool((state.history[..., 1] >= old_alpha).all()),
                      "reference alpha_bar decreases across committed states")
-    return states
+        old_key = state.key
+        old_d = state.d.detach().clone()
+        old_alpha = state.history[..., 1].detach().clone()
+        count += 1
+        yield state
+    _require(count == record.expected_state_count, "trajectory state count differs from manifest")
+
+
+def load_trajectory(
+    record: TrajectoryRecord,
+    loader: Callable[[TrajectoryRecord], Iterable[State]],
+    mesh: Mesh,
+    material: Material,
+) -> list[State]:
+    """Fully exhaust validation before returning the original list-style API."""
+    return list(iter_trajectory(record, loader, mesh, material))
 
 
 def adapt_decoded_stage0a(

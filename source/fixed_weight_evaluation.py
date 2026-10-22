@@ -16,7 +16,7 @@ import torch
 from s09_fem_physics import equilibrium, trial_fatigue
 from s09_q4_quadrature import q4_gradient, q4_interpolate, q4_shape_data
 from s09_stage0a_transition import carrara_f
-from fixed_weight_contract import TransitionRequest
+from fixed_weight_contract import State, TransitionRequest
 
 
 PHYSICS_SEMANTICS = "native_q4_amor_at1_carrara_current_H_post_commit_v1"
@@ -176,8 +176,10 @@ def persistence(source, target_key, mesh):
     _check_tensile_boundary(source, mesh)
     u = source.u + _tensile_lift(mesh, target_key.load - source.key.load)
     u = _with_tensile_boundary(u, mesh, target_key.load)
-    return replace(source, key=target_key, u=u, d=source.d.clone(),
-                   d_lower=source.d_lower.clone(), history=source.history.clone())
+    # A recovered initial is a source-only type. The target has ordinary
+    # post-history timing even when persistence starts from recovery.
+    return State(key=target_key, u=u, d=source.d.clone(),
+                 d_lower=source.d_lower.clone(), history=source.history.clone())
 
 
 def secant(previous, source, target_key, mesh):
