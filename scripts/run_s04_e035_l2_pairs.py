@@ -19,6 +19,8 @@ from fatigue_history import compute_fatigue_degrad, update_fatigue_history
 from fit import fit_with_early_stopping
 from optim import get_optimizer
 
+EXPERIMENT_ID = "S04-E035"
+ARMS = (("L2_1e-5", 1e-5), ("L2_zero", 0.))
 STEPS = (4, 5, 199, 200, 414, 415)
 FACTORS = (.25, .5, .75, 1., 0.)
 FAT = dict(loading_type='cyclic', accum_type='carrara',
@@ -104,12 +106,12 @@ def main():
                   'recovery_step_offset: 1', 'fem_gp_tri3_g_mean'):
         assert token in settings, token
     dump(args.output / 'manifest.json', dict(
-        experiment='S04-E035', protocol='r1', source_commit=args.source_commit,
+        experiment=EXPERIMENT_ID, protocol='r1', source_commit=args.source_commit,
         baseline=str(args.baseline), steps=STEPS, torch=torch.__version__,
         device=torch.cuda.get_device_name(0), arm_seconds=args.arm_seconds,
         total_seconds=args.total_seconds, initialization='shared archived previous-step network',
         history='frozen previous-step postcommit; no trajectory rollout',
-        run_ids=[f'S04-E035-R{i:03d}' for i in range(1,13)]))
+        run_ids=[f'{EXPERIMENT_ID}-R{i:03d}' for i in range(1, len(STEPS)*len(ARMS)+1)]))
     np.savez_compressed(args.output / 'mesh.npz', xy=inp.cpu().numpy(),
                         triangles=conn.cpu().numpy(), area=area.cpu().numpy())
     results = []
@@ -163,7 +165,7 @@ def main():
             return metrics
 
         # Fixed order; pair receives equal caps, not leftover budget.
-        for arm, coefficient in (('L2_1e-5', 1e-5), ('L2_zero', 0.)):
+        for arm, coefficient in ARMS:
             if time.monotonic() - started + args.arm_seconds + 10 > args.total_seconds:
                 dump(args.output / 'budget_stop.json', dict(elapsed=time.monotonic()-started,
                                                           next_step=step, next_arm=arm))
@@ -217,7 +219,7 @@ def main():
             elapsed = time.monotonic() - armstart
             final = evaluate(folder, 'final', coefficient)
             torch.save(net.state_dict(), folder / 'final.pt')
-            receipt = dict(run_id=f'S04-E035-R{len(results)+1:03d}',
+            receipt = dict(run_id=f'{EXPERIMENT_ID}-R{len(results)+1:03d}',
                            step=step, cycle=(step-1)//5+1,
                            substep=(step-1)%5+1, load=float(field.lmbda), arm=arm,
                            coefficient=coefficient, updates=updates[0],
