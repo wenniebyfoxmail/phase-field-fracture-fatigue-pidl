@@ -20,6 +20,7 @@ Important:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -96,7 +97,10 @@ def main() -> int:
         + sub_tag
         + "_RPROP_" + args.rprop_state_mode
     )
-    config.model_path = here / Path(dir_name)
+    archive_base = os.environ.get("PIDL_ARCHIVE_DIR")
+    config.model_path = (
+        Path(archive_base) / dir_name if archive_base else here / Path(dir_name)
+    )
     config.trainedModel_path = config.model_path / Path("best_models/")
     config.intermediateModel_path = config.model_path / Path("intermediate_models/")
     config.model_path.mkdir(parents=True, exist_ok=True)
