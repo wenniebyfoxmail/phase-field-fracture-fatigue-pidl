@@ -47,4 +47,6 @@ The separately bound semantic file has schema `s04_e036_semantic_binding_v1` and
 
 Required CLI arguments are `--audit`, `--audit-sha256`, `--semantic-binding`, `--semantic-binding-sha256`, `--original-source-lock`, `--original-source-lock-sha256`, `--path-map`, `--output`. The path-map JSON is a list of `{source_root, local_root}` mappings; an empty list means paths already exist locally. Output creation is exclusive. Missing or failed original evidence produces no successful validation receipt.
 
+For an original Stage A deployment manifest whose paths start with `code_04/`, supply `--original-source-prefix code_04/`. This selects and removes only that explicitly named directory when comparing repository-relative semantic file identities. The original manifest and its SHA remain unchanged; the successful reuse result records the prefix. Missing prefixes, unsafe paths and normalization collisions are rejected.
+
 The reused scopes are frozen operator equivalence and disabled-transition/readback only. New PIDL control, persistence, diagnostics and scoring require their separate implementation lock, review and tests. No source artifact, historical failure or old authority is rewritten.

@@ -23,11 +23,25 @@ def _same(a, b, label):
         raise ValueError(f'{label} identity mismatch')
 
 
-def _file_map(document):
+def _file_map(document, prefix=''):
     files=document['files']
-    if isinstance(files,dict):return files
-    result={entry['path']:entry['sha256'] for entry in files}
+    result=files if isinstance(files,dict) else {entry['path']:entry['sha256'] for entry in files}
     if len(result)!=len(files):raise ValueError('duplicate source-lock path')
+    if prefix:
+        if (not isinstance(prefix,str) or not prefix.endswith('/') or prefix.startswith('/')
+                or '\\' in prefix or any(part in ('','.','..') for part in prefix[:-1].split('/'))):
+            raise ValueError('source prefix must be an explicit safe relative directory ending in /')
+        normalized={}
+        for name,digest in result.items():
+            if not name.startswith(prefix):continue
+            relative=name[len(prefix):]
+            if (not relative or '\\' in relative or relative.startswith('/')
+                    or any(part in ('','.','..') for part in relative.split('/'))
+                    or relative in normalized or relative in result):
+                raise ValueError('source-prefix normalization collision or unsafe path')
+            normalized[relative]=digest
+        if not normalized:raise ValueError('source prefix matched no original files')
+        result=normalized
     return result
 
 
@@ -78,7 +92,7 @@ def _metadata_contract(native_path, common):
 
 
 def build(*,audit,audit_sha256,semantic_binding,semantic_binding_sha256,original_source_lock,
-          original_source_lock_sha256,path_map,output):
+          original_source_lock_sha256,path_map,output,original_source_prefix=''):
     paths=SavedPaths(read_json(path_map))
     audited=paths.bind(audit,audit_sha256);a=read_json(audited['path'])
     if (a.get('schema')!='e036-stage-a-reuse-audit-v1' or a.get('accepted') is not True
@@ -94,7 +108,7 @@ def build(*,audit,audit_sha256,semantic_binding,semantic_binding_sha256,original
     expected=read_json(expected_spec['path'])
     if expected.get('schema')!='s04_e036_semantic_binding_v1':raise ValueError('wrong semantic binding schema')
     original_lock=paths.bind(original_source_lock,original_source_lock_sha256)
-    source_files=_file_map(read_json(original_lock['path']))
+    source_files=_file_map(read_json(original_lock['path']),original_source_prefix)
     for name in PYTHON_OPERATORS:
         if expected['python_operator_files'].get(name)!=source_files.get(name) or sha256(ROOT/name)!=source_files.get(name):
             raise ValueError(f'original/current Python operator identity differs: {name}')
@@ -167,6 +181,7 @@ def build(*,audit,audit_sha256,semantic_binding,semantic_binding_sha256,original
     evidence['build_receipt']=build_spec
     result=dict(schema='s04_e036_fem_validation_v2',accepted=True,stage_a_reexecuted=False,
         stage_a_owner='01a1603e-8e80-7153-a753-d895b9edb7f5',semantic_binding=expected,evidence=evidence,
+        original_source_prefix=original_source_prefix,
         validated_scopes=dict(frozen_operator_equivalence=True,disabled_transition_readback=True),
         scope='Reuse of preserved operator and disabled readback evidence; no new controller/scorer validation',
         builder_sha256=sha256(Path(__file__)))
@@ -179,4 +194,5 @@ if __name__=='__main__':
     for name in ('audit','audit-sha256','semantic-binding','semantic-binding-sha256','original-source-lock',
                  'original-source-lock-sha256','path-map','output'):
         parser.add_argument('--'+name,required=True)
+    parser.add_argument('--original-source-prefix',default='',help='Explicit original manifest directory, e.g. code_04/; original bytes/hash remain unchanged')
     print(json.dumps(build(**vars(parser.parse_args())),indent=2))
