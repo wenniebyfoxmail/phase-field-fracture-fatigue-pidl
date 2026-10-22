@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'source'))
 from irreversibility_constraints import phr_inequality_term, update_inequality_multiplier
 from bounded_lbfgs import minimize
+from numerical_checks import require_finite, finite_max, require_positive_energy
 from t3_damage_reference import assemble_t3_damage, compare_physics_at_field, solve_t3_damage
 
 
@@ -119,18 +120,23 @@ def main():
         n64 = copy.deepcopy(net).double()
         f64 = FieldComputation(n64, ext.double(), field.lmbda.double(), field.theta.double(), l0=.01)
         result = f64.fieldCalculation(inp.double())[2]
+        require_finite(result)
         gradients64 = None
         if arm is not None:
             el,ed,eh = compute_energy(inp.double(),u.double(),v.double(),result,h.double(),mat,pff,
                 area.double(),conn,fatigue.double(),irreversibility_penalty_cfg=dict(enable=True,mode='fem_gp_tri3'))
             energy=el+ed+(eh if arm=='Pstar' else 0)
-            if not float(energy)>0: raise ValueError('double certification log domain failure')
+            require_positive_energy(energy)
             loge=torch.log10(energy)
             reg=1e-5*sum(p.square().sum() for n,p in n64.named_parameters() if 'weight' in n)
+            require_finite(loge,reg)
             ps=list(n64.parameters())
             def flatten(loss,retain=False):
+                require_finite(loss)
                 gs=torch.autograd.grad(loss,ps,allow_unused=True,retain_graph=retain)
-                return torch.cat([(torch.zeros_like(p) if g is None else g).reshape(-1) for p,g in zip(ps,gs)]).detach()
+                flat=torch.cat([(torch.zeros_like(p) if g is None else g).reshape(-1) for p,g in zip(ps,gs)]).detach()
+                require_finite(flat)
+                return flat
             if separate:
                 gradients64=(flatten(loge,True),flatten(reg))
             else:
@@ -144,7 +150,7 @@ def main():
         return result,gradients64
     d64initial, g64parts = double_check('N',separate=True)
     precision_delta = float((d64initial-d0.double()).abs().max())
-    tau_c = max(config['primal_floor'], 20*precision_delta)
+    tau_c = finite_max(config['primal_floor'], 20*precision_delta)
     dump(args.output / 'input_validation.json', dict(history_min=float(h.min()), history_max=float(h.max()),
         initial_d_min=float(d0.min()), initial_d_max=float(d0.max()), precision_delta=precision_delta,
         primal_tolerance=tau_c, input_hashes=lock, history_timing='recovery postcommit step 0',
@@ -154,20 +160,22 @@ def main():
     dd = d0.detach().clone().requires_grad_()
     et = energies(dd)
     e0 = et[0]+et[1]
-    assert float(e0) > 0
+    require_positive_energy(e0)
     gd0 = torch.autograd.grad(torch.log10(e0), dd)[0].detach()
-    S = max(float((gd0.abs()/wnode).max()), 1e-12)
+    S = finite_max(float((gd0.abs()/wnode).max()), 1e-12)
     rho0 = S / .01
+    require_finite(rho0)
     dscale=field.fieldCalculation(inp)[2]
     es=energies(dscale)
     g32physical=flatgrad(torch.log10(es[0]+es[1])).detach()
     g32reg=flatgrad(reg_terms()[0]).detach()
     parameter_scale=1+xinitial.double().abs()
-    D0=max(float((parameter_scale*g32physical.double()).abs().max()),
+    require_finite(parameter_scale,g32physical,g32reg,*g64parts)
+    D0=finite_max(float((parameter_scale*g32physical.double()).abs().max()),
            float((parameter_scale*g32reg.double()).abs().max()),1e-8)
-    delta_g=max(float((parameter_scale*(g64parts[0]-g32physical.double())).abs().max()),
+    delta_g=finite_max(float((parameter_scale*(g64parts[0]-g32physical.double())).abs().max()),
                 float((parameter_scale*(g64parts[1]-g32reg.double())).abs().max()))/D0
-    tau_theta=max(config['stationarity_floor'],20*delta_g)
+    tau_theta=finite_max(config['stationarity_floor'],20*delta_g)
     if tau_theta>config['stationarity_ceiling']:
         raise ValueError('float32/double gradient discrepancy exceeds fixed precision ceiling')
     # Unscaled inner tolerance implies the final scaled criterion, since min(scale)>=1.
@@ -237,23 +245,26 @@ def main():
             d=field.fieldCalculation(inp)[2]
             el,ed,eh=energies(d)
             reg,uvreg=reg_terms()
+            require_finite(d,el,ed,eh,reg,uvreg)
+            require_positive_energy(el+ed+(eh if arm=='Pstar' else 0))
             base=torch.log10(el+ed+(eh if arm=='Pstar' else 0))+reg
             lag=base
             blocks=constraints(d,arm)
             for (c,w),mu in zip(blocks,dual): lag=lag+(w*mu*c).sum()
             gt=flatgrad(lag).detach()
+            require_finite(lag,gt,*dual)
             d64,gt64=double_check(arm,dual)
             hd=h.double()
             cb64=[-d64,d64-1]
             if arm=='G': cb64.append((hd[conn]@gp_basis64-d64[conn]@gp_basis64).reshape(-1))
             if arm=='N': cb64.append(hd-d64)
-            primal=max(max(float(c.clamp_min(0).max()) for c,w in blocks),max(float(c.clamp_min(0).max()) for c in cb64))
-            comp=max(float((mu*c).abs().max())/S for (c,w),mu in zip(blocks,dual))
-            comp64=max(float((mu.double()*c).abs().max())/S for c,mu in zip(cb64,dual))
-            comp=max(comp,comp64)
-            ncp=max(max(float(torch.minimum(mu/S,-c).abs().max()) for (c,w),mu in zip(blocks,dual)),
-                    max(float(torch.minimum(mu.double()/S,-c).abs().max()) for c,mu in zip(cb64,dual)))
-            stationarity=max(float((parameter_scale*gt.double()).abs().max()),
+            require_finite(*(c for c,w in blocks),*cb64,*(mu/S for mu in dual))
+            primal=finite_max(*(float(c.clamp_min(0).max()) for c,w in blocks),*(float(c.clamp_min(0).max()) for c in cb64))
+            comp=finite_max(*(float((mu*c).abs().max())/S for (c,w),mu in zip(blocks,dual)),
+                            *(float((mu.double()*c).abs().max())/S for c,mu in zip(cb64,dual)))
+            ncp=finite_max(*(float(torch.minimum(mu/S,-c).abs().max()) for (c,w),mu in zip(blocks,dual)),
+                           *(float(torch.minimum(mu.double()/S,-c).abs().max()) for c,mu in zip(cb64,dual)))
+            stationarity=finite_max(float((parameter_scale*gt.double()).abs().max()),
                              float((parameter_scale*gt64).abs().max()))/D0
             stats=dict(E_el=float(el.detach()),E_d=float(ed.detach()),E_hist=float(eh.detach()),
                 L2=float(reg.detach()),L2_uv_only=float(uvreg.detach()),base_objective=float(base.detach()),
@@ -312,9 +323,12 @@ def main():
         np.savez_compressed(folder/'diagnostics.npz',physical_damage_gradient=cpu(gd),
             projected_node_box=cpu(projected),free_u_residual=cpu(gu),free_v_residual=cpu(gv))
         torch.save(net.state_dict(),folder/'final.pt')
+        elapsed=time.monotonic()-armstart
+        budget_overrun=elapsed>config['arm_seconds'] or evalcount>config['max_evaluations']
+        qualified=qualified and not budget_overrun
         receipt=dict(run_id=f'S04-E037-R{len(results)+1:03d}',arm=arm,initial=beginning,final=final,
             qualified_parameter_KKT=qualified,thresholds=dict(primal=tau_c,parameter_stationarity_scaled=tau_theta,NCP=tau_c),
-            evaluations=evalcount,outer_updates=len(outer_trace),seconds=time.monotonic()-armstart,
+            evaluations=evalcount,outer_updates=len(outer_trace),seconds=elapsed,budget_overrun=budget_overrun,
             stop_reason='numerical_KKT' if qualified else 'bounded_inexact_AL_unqualified',no_history_commit=True)
         dump(folder/'receipt.json',receipt)
         results.append(receipt); dump(args.output/'results.json',results)
@@ -331,7 +345,8 @@ def main():
         dump(args.output/f'reference_{mode}.json',metadata)
         print(json.dumps(dict(reference=mode,**metadata),allow_nan=False),flush=True)
     dump(args.output/'completed.json',dict(status='execution_completed',seconds=time.monotonic()-started,
-        arms=len(results),qualified_parameter_KKT={r['arm']:r['qualified_parameter_KKT'] for r in results},
+        arms=len(results),total_budget_overrun=time.monotonic()-started>config['total_seconds'],
+        qualified_parameter_KKT={r['arm']:r['qualified_parameter_KKT'] for r in results},
         no_history_commit=True))
 
 
