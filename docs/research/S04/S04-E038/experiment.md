@@ -28,3 +28,13 @@ new damage support, bounds/GP retreat, weight norm/max, iterations/time and ACTU
 RPROP step sizes/cap fraction. Sample weights/step sizes first/every50/final by
 read-only optimizer post-hook; retain existing same-vector gradient diagnostics.
 No hypothesis is accepted solely from raw weight size or early-stop flag.
+
+## 当前执行卡：已结束（2026-10-22）
+
+固定任务基准为本协议的两组预选求解及
+`scripts/analyze_s04_e038_rprop_cap.py OLD_RAW NEW_RAW ANALYSIS_OUTPUT`。
+两组完成、保存输出核对通过；结论见result.md，本卡没有待运行项。
+只保留本问题的比较与直接一致性核对，不安排全量回归、历史重跑、
+smoke阶梯、每次提交复审或元数据复审。已完成的签名审核保留为历史；
+没有正在执行的helper，也不唤醒历史helper。科学比较、原预算、数据
+及执行授权不变。本修订只落实固定任务基准，通过后交付。
