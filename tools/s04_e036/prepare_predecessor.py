@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
-from window_inputs import bound_file, read_json, sha256, state_key
+from window_inputs import bound_file, read_json, sha256, state_key, native_mesh_coordinates
 
 
 ARRAY_NAMES = ("u", "v", "damage", "history", "active_driver", "f_commit")
@@ -26,7 +26,7 @@ def load_support(mesh_path, common_path):
     if common.get("schema") != "s04_e036_common_problem_v1":
         raise ValueError("unknown common problem schema")
     with np.load(mesh_path, allow_pickle=False) as data:
-        nodes = np.asarray(data["node_coords"], dtype="<f4")
+        nodes = native_mesh_coordinates(data)
         raw_cells = np.asarray(data["connectivity"])
         cells = raw_cells.astype("<i8")
     if nodes.shape != (86756, 2) or cells.shape != (86408, 4):
@@ -34,7 +34,7 @@ def load_support(mesh_path, common_path):
     if (not np.isfinite(nodes).all() or not np.array_equal(raw_cells, cells)
             or cells.min() < 0 or cells.max() >= len(nodes)):
         raise ValueError("invalid ordered mesh")
-    digest = hashlib.sha256(nodes.tobytes() + cells.tobytes()).hexdigest()
+    digest = hashlib.sha256(nodes.astype("<f4").tobytes() + cells.tobytes()).hexdigest()
     if digest != common["ordered_mesh_sha256_f32_i64"]:
         raise ValueError("ordered mesh differs from common problem")
     indices = common["fixed_damage_nodes_zero_based"]
@@ -156,6 +156,63 @@ def read_standard_state(source, key, digest):
     return arrays, "standard_npz_post_commit"
 
 
+def read_e011_state(source, source_kind, key, nodes, cells):
+    """Read the two documented E011 archives without inventing lost channels."""
+    import h5py
+    with h5py.File(source, "r") as handle:
+        group = handle["request28_snapshot"] if source_kind == "e011-request28" else handle
+        source_nodes = _mat_array(group, "node_coords")
+        source_cells = _mat_array(group, "connectivity")
+        if (not np.array_equal(source_nodes, nodes)
+                or not np.array_equal(source_cells, cells + 1)):
+            raise ValueError("E011 native ordered coordinates/connectivity differ from declared support")
+        if source_kind == "e011-request28":
+            actual = (_mat_integer(group, "cycle"), _mat_integer(group, "substep"))
+            if actual != (key["cycle"], key["substep"]) or key["substep"] == 0:
+                raise ValueError("E011 request28 physical cycle/substep mismatch")
+            if any(_mat_integer(group, name) != 1 for name in
+                   ("damage_committed", "history_committed", "cyclemax_updated")):
+                raise ValueError("E011 request28 is not an explicitly committed state")
+            load = _mat_array(group, "load_factor")
+            if load.size != 1 or abs(float(load.item()) * .12 - key["displacement"]) > 1e-12:
+                raise ValueError("E011 request28 saved load differs from physical state")
+            uv, damage = _mat_array(group, "u_node"), _mat_array(group, "d_node").reshape(-1)
+            history = _mat_array(group, "history_vars_old")
+            if uv.shape != (len(nodes), 2):
+                raise ValueError("E011 request28 displacement support mismatch")
+            u, v = uv[:, 0], uv[:, 1]
+            if history.shape != (len(cells), 4, 4):
+                raise ValueError("E011 request28 complete GP history is required")
+            for channel, alias in ((1, "alpha_bar_gp"), (2, "psi_eff_prev_gp"), (3, "f_alpha_gp")):
+                if not np.array_equal(history[:, :, channel], _mat_array(group, alias)):
+                    raise ValueError(f"E011 request28 history alias differs: {alias}")
+            timing = "request28_committed_flags_cycle_substep_load_verified"
+        elif source_kind == "e011-common-initial":
+            if ((key["cycle"], key["substep"]) != (1, 0)
+                    or _mat_integer(handle, "common_meta/cycle") != 1
+                    or _mat_integer(handle, "common_meta/version") != 0
+                    or _mat_integer(handle, "common/version") != 0):
+                raise ValueError("E011 common initial requires explicit cycle1/version0")
+            group = handle["common"]
+            uv = _mat_array(group, "u").reshape(-1)
+            damage = _mat_array(group, "d").reshape(-1)
+            lower = _mat_array(group, "lower").reshape(-1)
+            history = _mat_array(group, "history")
+            raw = _mat_array(group, "raw")
+            if (uv.shape != (2 * len(nodes),) or not np.array_equal(damage, lower)
+                    or history.shape != (len(cells), 4, 4) or np.any(uv != 0)
+                    or np.any(raw != 0) or np.any(history[:, :, :3] != 0)
+                    or np.any(history[:, :, 3] != 1)):
+                raise ValueError("E011 common initial must retain complete zero-load committed fields/history")
+            u, v = uv[:len(nodes)], uv[len(nodes):]
+            timing = "E011_derived_common_U0_version0_not_original_stage0b"
+        else:
+            raise ValueError("unknown E011 saved state schema")
+        arrays = dict(u=u, v=v, damage=damage, history=history[:, :, 1],
+                      active_driver=history[:, :, 2], f_commit=history[:, :, 3])
+    return {name: value.copy() for name, value in arrays.items()}, timing
+
+
 def validate_state(arrays, key, nodes, n_cells, common):
     for name, value in arrays.items():
         shape = (len(nodes),) if name in {"u", "v", "damage"} else (n_cells, 4)
@@ -195,6 +252,9 @@ def prepare(*, source, source_sha256, source_kind, mat_group, mesh, mesh_sha256,
     digest = common["ordered_mesh_sha256_f32_i64"]
     if source_kind == "standard-npz":
         arrays, native_timing = read_standard_state(inputs["source_checkpoint"]["path"], key, digest)
+    elif source_kind in {"e011-common-initial", "e011-request28"}:
+        arrays, native_timing = read_e011_state(inputs["source_checkpoint"]["path"], source_kind,
+                                               key, nodes, cells)
     else:
         arrays, native_timing = read_mat_state(inputs["source_checkpoint"]["path"], source_kind,
                                               mat_group, key, len(nodes), len(cells))
@@ -222,7 +282,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--source-sha256", required=True)
-    parser.add_argument("--source-kind", choices=("step-checkpoint", "stage0b-initial", "standard-npz"), required=True)
+    parser.add_argument("--source-kind", choices=("step-checkpoint", "stage0b-initial", "standard-npz",
+                                                "e011-common-initial", "e011-request28"), required=True)
     parser.add_argument("--mat-group", default="/", help="Explicit saved struct group; '/' for ordinary step checkpoints")
     parser.add_argument("--mesh", type=Path, required=True)
     parser.add_argument("--mesh-sha256", required=True)

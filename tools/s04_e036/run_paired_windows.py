@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -39,7 +40,8 @@ from optim import get_optimizer
 from pff_model import PFFModel
 from q4_quadrature import q4_shape_data
 from trial_fatigue_coupling import PhysicalStepOptimizerBudget, TrialFatigueNotConverged, solve_trial_fatigue_step
-from window_inputs import CASES, LOADS, bound_file, load_case, load_manifest, read_json, sha256, state_key
+from window_inputs import CASES, LOADS, bound_file, load_case, load_manifest, optimizer_work, read_json, sha256, state_key
+from stage_a_reuse import validate_stage_a_reuse
 
 
 def write_json(path, value):
@@ -58,12 +60,68 @@ def cpu_copy(value):
     return copy.deepcopy(value)
 
 
+def objective_precision_record(old, coefficient):
+    """Make the native-history / float32-objective distinction observable."""
+    report = {}
+    for name, value in {**old, "f_solve": coefficient}.items():
+        if value is None:
+            report[name] = None
+            continue
+        native = value.detach().to(dtype=torch.float64)
+        rounded = value.detach().to(dtype=torch.float32).to(dtype=torch.float64)
+        report[name] = dict(source_dtype=str(value.dtype), objective_dtype="torch.float32",
+            float32_roundtrip_maxdelta=float((native - rounded).abs().max().cpu()),
+            actually_cast_for_energy=name in {"damage", "f_solve"})
+    return dict(fields=report, history_arithmetic_dtype="torch.float64",
+        current_active_sampling_dtype="torch.float32",
+        interpretation="old native d/A/r retained for fresh residual; energy casts old d and f_solve to float32; A/r are not energy arguments")
+
+
 def fatigue_config(common):
     return dict(fatigue_on=True, loading_type="cyclic", accum_type="carrara",
                 degrad_type="asymptotic", alpha_T=.5, history_storage="q4_gp4",
                 history_driver_mode="current_active", damage_history_storage="previous_accepted_nodal",
                 explicit_cycle_substeps=5, history_driver_reduction={"enable": True, "mode": "native_q4_gp4"},
                 common_problem=common)
+
+
+def source_provenance(root, implementation_files):
+    """Accept either a checkout or a fully bound minimal standalone snapshot."""
+    root = Path(root).resolve()
+    snapshot_path = root / "source_snapshot.json"
+    if snapshot_path.is_file():
+        snapshot = read_json(snapshot_path)
+        if (set(snapshot) != {"schema", "source_commit", "files"}
+                or snapshot["schema"] != "s04_e036_source_snapshot_v1"
+                or not isinstance(snapshot["source_commit"], str)
+                or re.fullmatch(r"[0-9a-f]{40}", snapshot["source_commit"]) is None
+                or not isinstance(snapshot["files"], dict)):
+            raise ValueError("invalid standalone source snapshot provenance")
+        files = snapshot["files"]
+        if any(files.get(name) != digest for name, digest in implementation_files.items()):
+            raise ValueError("source snapshot does not cover the complete implementation lock")
+        # These are the runtime import roots. A newly copied executable module
+        # cannot silently join a snapshot without both independent byte maps.
+        runtime = {str(path.relative_to(root)) for directory in
+                   (root / "source", root / "SENS_tensile", root / "tools/s04_e036")
+                   for path in directory.rglob("*.py")}
+        if not runtime <= set(implementation_files):
+            raise ValueError("unlocked executable module in standalone source snapshot")
+        for relative, digest in files.items():
+            candidate = root / relative
+            source = candidate.resolve()
+            if (Path(relative).is_absolute() or not source.is_relative_to(root)
+                    or candidate.is_symlink() or not source.is_file()
+                    or not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+                    or sha256(source) != digest):
+                raise ValueError(f"source snapshot file mismatch: {relative}")
+        return dict(source_kind="standalone_snapshot", source_commit=snapshot["source_commit"],
+                    source_snapshot_sha256=sha256(snapshot_path), git_head=None, git_dirty=None)
+    if not (root / ".git").exists():
+        raise ValueError("producer needs its own Git checkout or a verified source_snapshot.json")
+    return dict(source_kind="git_checkout",
+                git_head=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
+                git_dirty=subprocess.check_output(["git", "status", "--porcelain"], cwd=root, text=True))
 
 
 def check_authority(path, manifest_path, device):
@@ -95,15 +153,17 @@ def check_authority(path, manifest_path, device):
                 "source/q4_quadrature.py", "source/network.py", "source/fit.py", "source/optim.py",
                 "source/material_properties.py", "source/pff_model.py",
                 "SENS_tensile/field_computation.py", "SENS_tensile/run_native_q4_one_step_matrix.py",
-                "tools/s04_e036/run_paired_windows.py", "tools/s04_e036/window_inputs.py"}
+                "tools/s04_e036/run_paired_windows.py", "tools/s04_e036/window_inputs.py",
+                "tools/s04_e036/stage_a_reuse.py"}
     if not required <= set(lock["files"]):
         raise ValueError("incomplete implementation lock")
+    provenance = source_provenance(ROOT, lock["files"])
     validation_path = bound_file(authority["fem_validation"], Path(path).resolve().parent)
     validation = read_json(validation_path)
-    if (validation.get("schema") != "s04_e036_fem_validation_v1" or validation.get("accepted") is not True
-            or validation.get("implementation_lock_sha256") != authority["implementation_lock"]["sha256"]):
-        raise ValueError("matching completed FEM validation is required before NN optimization")
-    return authority
+    if validation.get("schema") != "s04_e036_fem_validation_v2" or validation.get("accepted") is not True:
+        raise ValueError("completed Stage A reuse validation v2 is required before NN optimization")
+    bound_file(authority["stage_a_semantic_binding"], Path(path).resolve().parent)
+    return authority, provenance
 
 
 class TimeBudgetExceeded(RuntimeError):
@@ -127,7 +187,8 @@ class WindowProblem:
         self.native_x = torch.as_tensor(nodes.copy(), dtype=torch.float64, device=device)
         self.cells = torch.as_tensor(cells.copy(), dtype=torch.long, device=device)
         self.area = q4_shape_data(self.x, self.cells)[2].sum(1)
-        self.native_area = q4_shape_data(self.native_x, self.cells)[2].sum(1)
+        self.native_shape, self.native_dshape, self.native_weights = q4_shape_data(self.native_x, self.cells)
+        self.native_area = self.native_weights.sum(1)
         self.common = common
         self.fatigue = fatigue_config(common)
         self.mat = MaterialProperties(1., .3, 1., .01)
@@ -144,11 +205,16 @@ class WindowProblem:
                                     config=self.common, fatigue_dict=self.fatigue)
         return field
 
-    def residual(self, field):
+    def residual(self, field, *, history_atol=None, history_rtol=None):
+        policy = dict(self.common["acceptance_config"])
+        if history_atol is not None or history_rtol is not None:
+            if (history_atol, history_rtol) != (1e-10, 0.):
+                raise ValueError("the only history-policy override is native FEM absolute 1e-10")
+            policy.update(history_atol=history_atol, history_rtol=history_rtol)
         return make_sent_final_residual_check(
             inp=self.native_x, T_conn=self.cells, area_T=self.native_area, matprop=self.mat,
             pffmodel=self.model, field_comp=field, irreversibility_penalty_cfg=self.penalty,
-            config=self.common["acceptance_config"], fatigue_dict=self.fatigue)
+            config=policy, fatigue_dict=self.fatigue)
 
     def state(self, field):
         with torch.no_grad():
@@ -159,7 +225,7 @@ class WindowProblem:
                     displacement=field.lmbda.detach())
 
     def old_state(self, arrays, key):
-        old = {name: torch.as_tensor(arrays[source], dtype=torch.float32, device=self.device).clone()
+        old = {name: torch.as_tensor(arrays[source], dtype=torch.float64, device=self.device).clone()
                for name, source in (("damage", "damage"), ("history", "history"), ("active_driver", "active_driver"))}
         # Check the exported committed active driver against its actual field;
         # this is a readout, not a solve and not a replacement for FEM admission.
@@ -209,7 +275,9 @@ class WindowProblem:
                     coefficient_policy_verified=f_ok, physical_replay=receipt)
 
 
-def run_step(problem, field, old, key, arm, directory, caps, total_deadline, provenance):
+def run_step(problem, field, old, key, arm, directory, caps, total_deadline, provenance,
+             *, window_updates_before_step):
+    optimizer_work(0, window_updates_before_step)
     directory.mkdir()
     snapshots = directory / "snapshots"
     snapshots.mkdir()
@@ -218,6 +286,7 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
     losses, event_index = [], []
     plateau_seen = False
     current_coefficient = None
+    current_precision = objective_precision_record(old, None)
     residual_check = None
 
     def check_time():
@@ -235,15 +304,20 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
         # committed state; rejected snapshots must never seed another substep.
         number = len(event_index)
         name = f"{number:03d}_{event['event']}_u{work.rprop_updates:04d}.pt"
+        counts = optimizer_work(work.rprop_updates, window_updates_before_step)
         payload = cpu_copy(dict(event=event, state_key=key, arm=arm, updates=work.rprop_updates,
+                                optimizer_work=counts,
+                                objective_precision=current_precision,
                                 common_problem=problem.common, network_state=field.net.state_dict()))
         with (snapshots / name).open("xb") as stream:
             torch.save(payload, stream)
-        event_index.append(dict(file=name, event=event["event"], updates=work.rprop_updates))
+        event_index.append(dict(file=name, event=event["event"], updates=work.rprop_updates,
+                                optimizer_work=counts))
 
     def optimize(coefficient, outer):
-        nonlocal plateau_seen, current_coefficient
+        nonlocal plateau_seen, current_coefficient, current_precision
         current_coefficient = coefficient.detach().clone()
+        current_precision = objective_precision_record(old, current_coefficient)
         optimizer = get_optimizer(field.parameters(), "RPROP")
         plateau = EarlyStopping(tol_steps=10, min_delta=5e-7, device=problem.device)
         previous = torch.zeros(1, device=problem.device)
@@ -251,7 +325,7 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
             check_time()
             optimizer.zero_grad(set_to_none=True)
             u, v, d = field.fieldCalculation(problem.x)
-            parts = compute_energy(problem.x, u, v, d, old["damage"], problem.mat, problem.model,
+            parts = compute_energy(problem.x, u, v, d, old["damage"].to(dtype=u.dtype), problem.mat, problem.model,
                                    problem.area, problem.cells, f_fatigue=coefficient,
                                    irreversibility_penalty_cfg=problem.penalty)
             energy = sum(parts)
@@ -270,7 +344,8 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
             # Do not start a new field readout after discovering that stop.
             check_time()
             value = loss.detach()
-            losses.append(dict(update=work.rprop_updates, outer=outer, loss_before_update=float(value)))
+            losses.append(dict(update=work.rprop_updates, outer=outer, loss_before_update=float(value),
+                               optimizer_work=optimizer_work(work.rprop_updates, window_updates_before_step)))
             plateau(value, previous)
             if plateau.early_stop and not plateau_seen:
                 snapshot(dict(event="first_legacy_loss_plateau", context=checked_state(),
@@ -293,6 +368,7 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
     try:
         check_time()
         current_coefficient = compute_fatigue_degrad(old["history"], problem.fatigue)
+        current_precision = objective_precision_record(old, current_coefficient)
         check_time()
         residual_check = problem.residual(field)
         check_time()
@@ -308,9 +384,11 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
                        f_solve=result.f_solve, f_commit=result.f_commit, state_key=key,
                        provenance=provenance, acceptance_records=result.records,
                        metadata=dict(arm=arm, coefficient_mode=mode, rprop_updates=work.rprop_updates,
+                                     optimizer_work=optimizer_work(work.rprop_updates, window_updates_before_step),
+                                     objective_precision=current_precision,
                                      history_commit_count=1, legacy_plateau_seen=plateau_seen,
                                      objective="log10(E_el+E_d+E_hist)+1e-5*sum(weight^2)",
-                                     dtype="float32", damage_mapping="legacy_nonsmooth_plus_common_fixed_nodes"))
+                                     dtype="network_and_objective_float32_old_history_float64", damage_mapping="legacy_nonsmooth_plus_common_fixed_nodes"))
 
         def replay(loaded):
             check_time()
@@ -378,6 +456,8 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
         best_effort("rejection receipt", lambda: write_json(directory / "rejected.json", dict(
             accepted=False, history_committed=False, state_key=key, arm=arm, reason=str(error),
             error_type=type(error).__name__, updates=work.rprop_updates,
+            optimizer_work=optimizer_work(work.rprop_updates, window_updates_before_step),
+            objective_precision=current_precision,
             outer_records=getattr(error, "records", []),
             persistence_error=getattr(error, "persistence_error", None),
             diagnostic_error=getattr(error, "diagnostic_error", None))))
@@ -386,7 +466,7 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
 
 def main(args):
     device = torch.device(args.device)
-    authority = check_authority(args.authority, args.manifest, device)
+    authority, source_identity = check_authority(args.authority, args.manifest, device)
     doc, root, nodes, cells, common = load_manifest(args.manifest)
     if args.out.exists():
         raise FileExistsError("a fresh output directory is mandatory; resume is unsupported")
@@ -397,13 +477,17 @@ def main(args):
     torch.set_num_interop_threads(1)
     torch.manual_seed(1)
     torch.use_deterministic_algorithms(True)
-    total = Deadline(doc["budget"]["total_wall_seconds"], "whole comparison")
+    total = Deadline(doc["budget"]["job_wall_seconds"], "this job anti-hang")
     problem = WindowProblem(nodes, cells, common, device)
+    authority_root = Path(args.authority).resolve().parent
+    reused_stage_a = validate_stage_a_reuse(bound_file(authority["fem_validation"], authority_root),
+        bound_file(authority["stage_a_semantic_binding"], authority_root), ROOT, problem)
     receipt = dict(schema="s04_e036_paired_run_v1", started_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
                    host=platform.node(), pid=os.getpid(), command=sys.argv, authority=authority,
                    manifest_sha256=sha256(args.manifest), budget=doc["budget"],
-                   git_head=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-                   git_dirty=subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True),
+                   cumulative_resource_limit=None,
+                   stage_a_reuse=reused_stage_a,
+                   **source_identity,
                    cuda_visible_devices=os.environ["CUDA_VISIBLE_DEVICES"],
                    semantics="conditional windows; no continuous c1-to-c83 prediction; no target supervision")
     write_json(args.out / "run_receipt.json", receipt)
@@ -434,6 +518,7 @@ def main(args):
             outcome(dict(case=name, status="unavailable", reason=str(error)))
             continue
         for arm in ("P1", "P2"):
+            window_updates = 0
             old = {key: value.clone() for key, value in common_old.items()}
             field = problem.field(copy.deepcopy(network), LOADS[substeps[0] - 1])
             arm_dir = folder / arm
@@ -449,7 +534,8 @@ def main(args):
                                   manifest_sha256=sha256(args.manifest),
                                   comparison="common predecessor" if substep == substeps[0] else "own accepted history propagation")
                 try:
-                    loaded = run_step(problem, field, old, key, arm, step_dir, doc["budget"], total, provenance)
+                    loaded = run_step(problem, field, old, key, arm, step_dir, doc["budget"], total, provenance,
+                                      window_updates_before_step=window_updates)
                 except Exception as error:
                     outcome(dict(case=name, arm=arm, substep=substep, status="stopped", reason=str(error)))
                     # Persistence failure is never an accepted continuation, even
@@ -463,13 +549,18 @@ def main(args):
                     # implementation failures, not another scientific arm.
                     raise
                 field = problem.field(loaded["network_state"], key["displacement"])
-                old = dict(damage=loaded["fields"]["d"].to(device), history=loaded["history"].to(device),
-                           active_driver=loaded["fields"]["active_driver"].to(device))
+                expected_work = optimizer_work(loaded["metadata"]["rprop_updates"], window_updates)
+                if loaded["metadata"]["optimizer_work"] != expected_work:
+                    raise ValueError("verified bundle work does not follow its accepted window")
+                window_updates = expected_work["window_updates"]
+                old = dict(damage=loaded["fields"]["d"].to(device=device, dtype=torch.float64),
+                           history=loaded["history"].to(device=device, dtype=torch.float64),
+                           active_driver=loaded["fields"]["active_driver"].to(device=device, dtype=torch.float64))
                 parent = dict(kind="own_verified_bundle", state_key=key,
                               path=str((step_dir / "committed").resolve()),
                               bundle_sha256=sha256(step_dir / "committed" / "bundle.pt"))
                 outcome(dict(case=name, arm=arm, substep=substep, status="persisted_and_replayed",
-                             updates=loaded["metadata"]["rprop_updates"]))
+                             updates=loaded["metadata"]["rprop_updates"], optimizer_work=expected_work))
                 write_json(step_dir / "continuation_source.json", parent)
     write_json(args.out / "outcomes.json", rows)
 

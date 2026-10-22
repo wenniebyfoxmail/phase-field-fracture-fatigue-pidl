@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-SCHEMA = "s04_e036_paired_windows_v1"
+SCHEMA = "s04_e036_paired_windows_v2"
 GP_ORDER = "(+,+),(-,+),(+,-),(-,-)"
 LOADS = (.02999988, .05999988, .08999988, .11999988, 0.)
 CASES = {"c1": (1, (1, 2, 3, 4, 5)), "c83": (83, (1, 2, 3, 4, 5)),
@@ -64,6 +64,22 @@ def predecessor_key(trajectory, cycle, first_substep):
     return state_key(trajectory, 1, 0) if cycle == 1 else state_key(trajectory, cycle - 1, 5)
 
 
+def native_mesh_coordinates(data):
+    """Use saved native precision; never promote rounded float32 as native."""
+    solver = np.asarray(data["node_coords"])
+    if "canonical_node_coords" in data:
+        native = np.asarray(data["canonical_node_coords"])
+        if (native.dtype.kind != "f" or native.dtype.itemsize < 8
+                or native.shape != solver.shape or not np.isfinite(native).all()
+                or not np.array_equal(native.astype("<f4"), solver.astype("<f4"))):
+            raise ValueError("canonical native coordinates disagree with solver-visible coordinates")
+    else:
+        native = solver
+        if native.dtype.kind != "f" or native.dtype.itemsize < 8:
+            raise ValueError("float32 mesh needs saved canonical_node_coords for native replay")
+    return np.asarray(native, dtype="<f8")
+
+
 def load_manifest(path):
     path = Path(path).resolve()
     doc = read_json(path)
@@ -79,7 +95,7 @@ def load_manifest(path):
         # Same names as the existing E011 precrack preparation export.
         # Retain source-coordinate precision for native float64 replay. Only
         # the established ordered-mesh digest uses float32 serialization.
-        nodes = np.asarray(data["node_coords"], dtype="<f8")
+        nodes = native_mesh_coordinates(data)
         raw_cells = np.asarray(data["connectivity"])
         cells = raw_cells.astype("<i8")
     if not np.array_equal(raw_cells, cells):
@@ -108,16 +124,30 @@ def load_manifest(path):
 
 def validate_budget(budget):
     if set(budget) != {"updates_per_block", "max_updates_per_step", "max_outer",
-                       "step_wall_seconds", "total_wall_seconds"}:
+                       "step_wall_seconds", "job_wall_seconds", "cumulative_resource_limit"}:
         raise ValueError("explicit update and wall-clock budgets required")
     if any(type(budget[k]) is not int for k in ("updates_per_block", "max_updates_per_step", "max_outer")):
         raise ValueError("optimizer work limits must be integer counts")
     if (budget["updates_per_block"], budget["max_updates_per_step"], budget["max_outer"]) != (200, 2000, 10):
         raise ValueError("paired E036 arms require identical 10 x 200 update caps")
-    for key, cap in (("step_wall_seconds", 3600), ("total_wall_seconds", 24 * 3600)):
+    if budget["cumulative_resource_limit"] is not None:
+        raise ValueError("current authority has no cumulative resource limit")
+    for key in ("step_wall_seconds", "job_wall_seconds"):
         value = budget[key]
-        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 < value <= cap:
-            raise ValueError(f"invalid {key}; this implementation cannot expand the proposed cap")
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+            raise ValueError(f"invalid explicit per-job anti-hang setting: {key}")
+
+
+def optimizer_work(current_step_updates, window_updates_before_step):
+    """Count completed RPROP updates, including rejected-step diagnostics."""
+    if (type(current_step_updates) is not int or not 0 <= current_step_updates <= 2000
+            or type(window_updates_before_step) is not int
+            or not 0 <= window_updates_before_step <= 8000
+            or window_updates_before_step % 200):
+        raise ValueError("invalid current-step or accepted-window work count")
+    return dict(current_step_updates=current_step_updates,
+                window_updates_before_step=window_updates_before_step,
+                window_updates=window_updates_before_step + current_step_updates)
 
 
 def load_case(name, doc, root, n_nodes, n_cells, common):

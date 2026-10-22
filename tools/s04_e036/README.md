@@ -1,5 +1,11 @@
 # Conditional P1/P2 comparison support
 
+Current 2026-10-22 gap-attribution interfaces are documented in
+[D3_SCORING_AND_REUSE.md](D3_SCORING_AND_REUSE.md): v2 manifest, explicit per-job
+anti-hang controls without a cumulative ceiling, native physical readouts and
+semantic reuse of the timing owner's Stage A evidence. Earlier preparation
+statements below retain their original date and authority scope.
+
 Prepared on 2026-10-21 under **code/document preparation only**. None of the new
 tests, scripts, MATLAB functions, network optimization or deployment was run.
 The historical runner, FYR sources, baseline results and original source lock
@@ -37,9 +43,10 @@ first fixed point and the accepted/exhausted endpoint. A failure during a
 partial update retains the actual last network and old state. When time has
 expired or the objective is invalid, no extra numerical readout is started;
 that failure artifact is explicitly unaccepted and may lack final fields.
-Earlier acceptance can make the arms' actual update counts differ. Equal-work
-comparisons use the intersection of retained update counts, never an assumed
-equality between different terminal counts.
+Earlier acceptance can make the arms' actual update counts differ. Current-step
+equal-work diagnostics use the intersection of that step's retained update
+counts. Cumulative window work is reported separately; equal current-step
+counts do not imply equal costs across earlier accepted steps.
 
 ## Explicit inputs, no future targets
 
@@ -201,3 +208,40 @@ input tests; validate the actual producer numerical stack and FEM same-state
 checks. See `docs/research/S04/S04-E036/FEM_VALIDATION_PLAN.md` for the proposed
 FEM envelope. All test execution and computational budgets remain unapproved
 in this turn.
+
+## PIDL readiness update — 2026-10-22
+
+The current input preparation accepts the explicitly documented E011 derived
+`common_initial` and committed `request28_snapshot` archives. It checks their
+internal cycle, substep, load, complete GP history aliases, and exact native
+ordered mesh before converting them. The derived U0 input is labelled as such;
+it is not relabelled as the original native stage0b checkpoint. Conversion does
+not create native residual or checkpoint-readback admission.
+
+Use saved `canonical_node_coords` for native float64 replay when `node_coords`
+is float32. Promoting already rounded coordinates is rejected. FEM target replay
+uses absolute `1e-10` and zero relative tolerance for active driver, A and f;
+the PIDL replay policy retains its declared `2e-6` tolerances.
+
+Each snapshot and accepted bundle records `optimizer_work` with
+`current_step_updates`, `window_updates_before_step`, and `window_updates`.
+The scorer verifies these against each arm's accepted predecessor chain.
+Its fixed-work join is **current_step_equal_work**; it reports separately whether
+cumulative window work is equal. Later substeps must not be described as a
+whole-window equal-work comparison when their preceding costs differ.
+
+A standalone producer without `.git` requires `source_snapshot.json` with
+`schema="s04_e036_source_snapshot_v1"`, a 40-character `source_commit`, and
+`files` mapping relative paths to SHA256. This map must agree with the complete
+execution implementation lock. All Python files present under `source`,
+`SENS_tensile`, and `tools/s04_e036` must be in that lock; extra runtime modules
+or byte drift are rejected. This provenance record does not replace execution
+authority or completed FEM validation.
+
+The local four-case input package is
+`local_archive/experiments/S04-E036/pidl_readiness_20261022/` in the parent
+repository. Its manifest is explicitly `admission_pending`; its null admission
+hashes intentionally fail closed. See its inventory for actual source and
+network hashes. No scientific solve or training was performed during this
+preparation. The earlier preparation status above is historical; current run
+authority is maintained separately in the experiment record and execution case.

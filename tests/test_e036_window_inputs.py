@@ -10,12 +10,13 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools" / "s04_e036"))
 import prepare_predecessor as prep
 from window_inputs import (CASES, GP_ORDER, SCHEMA, load_case, load_manifest,
+                           native_mesh_coordinates, optimizer_work,
                            predecessor_key, sha256, state_key, validate_budget)
 
 
 def _budget():
     return dict(updates_per_block=200, max_updates_per_step=2000, max_outer=10,
-                step_wall_seconds=600, total_wall_seconds=7200)
+                step_wall_seconds=600, job_wall_seconds=7200, cumulative_resource_limit=None)
 
 
 @pytest.mark.parametrize("cycle,first_substep,expected", [
@@ -39,15 +40,21 @@ def test_nonphysical_or_ambiguous_state_keys_are_rejected(cycle, substep):
 @pytest.mark.parametrize("change", [
     {"max_updates_per_step": 2001}, {"max_outer": 11}, {"updates_per_block": 100},
     {"updates_per_block": 200.0},
-    {"step_wall_seconds": 3601}, {"total_wall_seconds": 86401},
-    {"total_wall_seconds": float("nan")}, {"step_wall_seconds": True},
-    {"total_wall_seconds": 0}, {"extra_budget": "old approval"},
+    {"job_wall_seconds": float("nan")}, {"step_wall_seconds": True},
+    {"job_wall_seconds": 0}, {"extra_budget": "old approval"},
+    {"cumulative_resource_limit": 48 * 3600}, {"total_wall_seconds": 86400},
 ])
 def test_budget_cannot_silently_expand_or_inherit_old_authority(change):
     budget = _budget()
     budget.update(change)
     with pytest.raises(ValueError):
         validate_budget(budget)
+
+
+def test_job_anti_hang_is_explicit_but_not_a_cumulative_resource_cap():
+    budget = _budget()
+    budget.update(step_wall_seconds=7200, job_wall_seconds=72 * 3600)
+    validate_budget(budget)
 
 
 def test_future_target_is_not_a_manifest_solver_input(tmp_path):
@@ -225,3 +232,96 @@ def test_native_admission_from_another_source_checkpoint_is_rejected(tmp_path):
         predecessor=bind(predecessor), admission=bind(admission), network=bind(network))})
     with pytest.raises(ValueError, match="different checkpoints"):
         load_case("c20s4", doc, tmp_path, 4, 2, common)
+
+
+def test_native_coordinates_are_not_float32_promoted_to_float64():
+    native = np.array([[.123456789123, .234567891234]], dtype=np.float64)
+    solver = native.astype(np.float32)
+    assert not np.array_equal(native, solver.astype(np.float64))
+    np.testing.assert_array_equal(native_mesh_coordinates(dict(node_coords=solver,
+                                      canonical_node_coords=native)), native)
+    with pytest.raises(ValueError, match="saved canonical_node_coords"):
+        native_mesh_coordinates(dict(node_coords=solver))
+    with pytest.raises(ValueError, match="disagree"):
+        native_mesh_coordinates(dict(node_coords=solver, canonical_node_coords=native + .01))
+    np.testing.assert_array_equal(native_mesh_coordinates(dict(node_coords=native)), native)
+
+
+def _e011_archive(path, key, initial=False):
+    nodes, arrays, common = _small_state(key)
+    cells = np.array([[0, 1, 3, 2], [1, 3, 2, 0]])
+    native = np.zeros((2, 4, 4))
+    if initial:
+        arrays.update(history=np.zeros((2, 4)), active_driver=np.zeros((2, 4)), f_commit=np.ones((2, 4)))
+    for channel, name in enumerate(("history", "active_driver", "f_commit"), start=1):
+        native[:, :, channel] = arrays[name]
+    def put(group, name, values):
+        values = np.asarray(values)
+        group.create_dataset(name, data=values.transpose(tuple(reversed(range(values.ndim)))))
+    with h5py.File(path, "w") as file:
+        base = file if initial else file.create_group("request28_snapshot")
+        put(base, "node_coords", nodes)
+        put(base, "connectivity", cells + 1)
+        if initial:
+            meta = file.create_group("common_meta")
+            put(meta, "cycle", [[1]])
+            put(meta, "version", [[0]])
+            group = file.create_group("common")
+            for name, value in dict(u=np.r_[arrays["u"], arrays["v"]].reshape(-1, 1),
+                                    d=arrays["damage"].reshape(-1, 1),
+                                    lower=arrays["damage"].reshape(-1, 1), history=native,
+                                    raw=np.zeros((2, 4)), version=np.array([[0]])).items():
+                put(group, name, value)
+        else:
+            for name, value in dict(cycle=[[key["cycle"]]], substep=[[key["substep"]]],
+                                    damage_committed=[[1]], history_committed=[[1]], cyclemax_updated=[[1]],
+                                    load_factor=[[key["displacement"] / .12]],
+                                    u_node=np.column_stack((arrays["u"], arrays["v"])),
+                                    d_node=arrays["damage"].reshape(-1, 1), history_vars_old=native,
+                                    alpha_bar_gp=arrays["history"], psi_eff_prev_gp=arrays["active_driver"],
+                                    f_alpha_gp=arrays["f_commit"]).items():
+                put(base, name, value)
+    return nodes, cells, arrays
+
+
+@pytest.mark.parametrize("initial", [False, True])
+def test_e011_explicit_schemas_preserve_native_arrays(tmp_path, initial):
+    key = state_key("native-u012", 1 if initial else 20, 0 if initial else 3)
+    path = tmp_path / "saved.mat"
+    nodes, cells, arrays = _e011_archive(path, key, initial)
+    kind = "e011-common-initial" if initial else "e011-request28"
+    actual, timing = prep.read_e011_state(path, kind, key, nodes, cells)
+    for name in arrays:
+        np.testing.assert_array_equal(actual[name], arrays[name])
+    assert "not_original_stage0b" in timing if initial else "committed_flags" in timing
+
+
+@pytest.mark.parametrize("field,value,match", [("substep", 4, "cycle/substep"),
+    ("history_committed", 0, "explicitly committed"), ("load_factor", 1., "saved load"),
+    ("alpha_bar_gp", 99., "history alias")])
+def test_e011_request28_rejects_false_state_identity(tmp_path, field, value, match):
+    key = state_key("native-u012", 20, 3)
+    path = tmp_path / "saved.mat"
+    nodes, cells, _ = _e011_archive(path, key)
+    with h5py.File(path, "r+") as file:
+        file["request28_snapshot"][field][...] = value
+    with pytest.raises(ValueError, match=match):
+        prep.read_e011_state(path, "e011-request28", key, nodes, cells)
+
+
+def test_e011_same_float32_digest_does_not_excuse_native_coordinate_drift(tmp_path):
+    key = state_key("native-u012", 20, 3)
+    path = tmp_path / "saved.mat"
+    nodes, cells, _ = _e011_archive(path, key)
+    nodes[0, 0] += 1e-10
+    with pytest.raises(ValueError, match="ordered coordinates"):
+        prep.read_e011_state(path, "e011-request28", key, nodes, cells)
+
+
+def test_work_counter_retains_completed_failed_step_and_window_work():
+    assert optimizer_work(17, 400) == dict(current_step_updates=17,
+                                          window_updates_before_step=400, window_updates=417)
+    assert optimizer_work(2000, 8000)["window_updates"] == 10000
+    for current, before in ((True, 0), (2001, 0), (1, 1), (1, None), (-1, 0), (0, 8200)):
+        with pytest.raises(ValueError):
+            optimizer_work(current, before)

@@ -19,10 +19,11 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(Path(__file__).parent), str(ROOT / "tools/s04_e011_analysis")]
-from run_paired_windows import WindowProblem
+from run_paired_windows import WindowProblem, objective_precision_record
+from native_q4_diagnostics import native_readout, physical_gap
 from cyclic_persistence import load_verified_step
 from run_multicycle_cross_replay import q4_geometry
-from window_inputs import CASES, bound_file, load_case, load_manifest, predecessor_key, read_json, sha256, state_key
+from window_inputs import CASES, bound_file, load_case, load_manifest, optimizer_work, predecessor_key, read_json, sha256, state_key
 
 
 _CALLBACK_FILES = {
@@ -35,6 +36,17 @@ _CALLBACK_FILES = {
 }
 _FIELDS = ("u", "v", "d", "history", "active_driver", "f_solve", "f_commit",
            "old_damage", "old_history", "old_active_driver")
+_TIGHTENING_SLOTS = {"c1/s2", "c1/s4", "c83/s2", "c83/s4"}
+
+
+def tightening_map(value):
+    """Keep the four prospectively declared sensitivities independent."""
+    if not isinstance(value, dict) or set(value) != _TIGHTENING_SLOTS:
+        raise ValueError("reference_tightening needs exactly four declared state slots; unavailable values must be null")
+    for slot, spec in value.items():
+        if spec is not None and (not isinstance(spec, dict) or spec.get("state_slot") != slot):
+            raise ValueError("reference_tightening slot differs from its declared state")
+    return value
 
 
 def _strict_metadata(actual, expected, label):
@@ -58,6 +70,63 @@ def _updates(value):
     if type(value) is not int or not 200 <= value <= 2000 or value % 200:
         raise ValueError("saved work must be a completed 200-update block, at most 2000")
     return value
+
+
+def _verified_work(saved, update, expected_window_before):
+    if expected_window_before is None:
+        raise ValueError("no verified cumulative predecessor work")
+    expected = optimizer_work(_updates(update), expected_window_before)
+    _strict_metadata(saved, expected, "optimizer work")
+    return expected
+
+
+def work_comparison(first, second):
+    """Equal current-step work need not mean equal cumulative window work."""
+    current_equal = first["current_step_updates"] == second["current_step_updates"]
+    window_equal = first["window_updates"] == second["window_updates"]
+    return dict(current_step_equal_work=current_equal, cumulative_window_equal_work=window_equal,
+                P1_optimizer_work=first, P2_optimizer_work=second)
+
+
+def target_readout(problem, target):
+    old = {name: target[source] for name, source in
+           (("damage", "old_damage"), ("history", "old_history"), ("active_driver", "old_active_driver"))}
+    return native_readout(problem, target, old, target["f_solve"], target["history"], target["f_commit"])
+
+
+def tightening_readout(spec, root, key, problem, target, mass, readout):
+    """One separately admitted sensitivity, with exactly the same old state."""
+    slot = f"c{key['cycle']}/s{key['substep']}"
+    if slot not in _TIGHTENING_SLOTS:
+        raise ValueError("tightening is restricted to the four predeclared states")
+    if spec is None:
+        return dict(status="unavailable", state_slot=slot,
+                    scope="this state only; no general reference-error floor")
+    if not isinstance(spec, dict) or set(spec) != {"state_slot", "target", "standard_policy", "tightened_policy"}:
+        raise ValueError("tightening needs a target and its predeclared state and policies")
+    if spec["state_slot"] != slot:
+        raise ValueError("tightening cannot be applied to another state")
+    # Numeric policies are preserved with the two native receipts. The native
+    # target's policy, source and predecessor bindings are independently checked.
+    before, after = spec["standard_policy"], spec["tightened_policy"]
+    if (before != {"u_tol": 1e-6, "joint_tol": 4e-4}
+            or after != {"u_tol": 1e-8, "joint_tol": 4e-6}):
+        raise ValueError("tightening needs the exact predeclared native acceptance tolerances")
+    old = {name: target[source] for name, source in
+           (("damage", "old_damage"), ("history", "old_history"), ("active_driver", "old_active_driver"))}
+    tightened, receipt = load_target(spec["target"], root, key, problem,
+                                    expected_predecessor_sha256=target["predecessor_source_sha256"], expected_old=old)
+    if target["native_solver_policy"] != before or receipt["native_solver_policy"] != after:
+        raise ValueError("native run receipts do not bind the stated standard/tightened solver policies")
+    metrics = receipt["physical_replay"]["metrics"]
+    if (metrics["u_residual_l2"] > after["u_tol"]
+            or metrics["u_residual_l2"] + metrics["phase_box_kkt_l2"] > after["joint_tol"]):
+        raise ValueError("tight target fails its explicitly stricter fresh residual thresholds")
+    return dict(status="verified_same_predecessor_sensitivity", state_key=key,
+                standard_policy=before, tightened_policy=after, admission=receipt,
+                primitive=primitive_gap(tightened, target, mass),
+                physical=physical_gap(problem, target_readout(problem, tightened), readout),
+                scope="this state only; sensitivity to this tolerance change, not an error bound or a shared floor")
 
 
 def primitive_gap(fields, target, mass):
@@ -90,6 +159,11 @@ def load_target(spec, root, key, problem, *, expected_predecessor_sha256, expect
     admission = read_json(admission_path)
     if admission.get("schema") != "s04_e036_target_admission_v1":
         raise ValueError("wrong F1 admission schema")
+    policy = admission.get("solver_policy")
+    allowed = ({"u_tol": 1e-6, "joint_tol": 4e-4}, {"u_tol": 1e-8, "joint_tol": 4e-6})
+    if (not isinstance(policy, dict) or policy not in allowed
+            or any(type(value) not in (int, float) for value in policy.values())):
+        raise ValueError("F1 requires explicit predeclared standard or strict solver_policy")
     for name in ("accepted", "native_residual_checked", "checkpoint_readback_verified"):
         if admission.get(name) is not True:
             raise ValueError(f"F1 lacks explicit {name}")
@@ -115,7 +189,7 @@ def load_target(spec, root, key, problem, *, expected_predecessor_sha256, expect
     tensors = {}
     for name, values in arrays.items():
         shape = (len(problem.x),) if name in {"u", "v", "d", "old_damage"} else (len(problem.cells), 4)
-        if values.dtype.kind not in "fiu" or values.shape != shape or not np.isfinite(values).all():
+        if values.dtype.kind != "f" or values.dtype.itemsize != 8 or values.shape != shape or not np.isfinite(values).all():
             raise ValueError(f"invalid F1 {name}")
         tensors[name] = torch.as_tensor(values, dtype=torch.float64, device=problem.device)
     _same_tensors(dict(damage=tensors["old_damage"], history=tensors["old_history"],
@@ -127,18 +201,20 @@ def load_target(spec, root, key, problem, *, expected_predecessor_sha256, expect
     context = dict(tensors, trial_history=tensors["history"],
                    displacement=torch.tensor([key["displacement"]], dtype=torch.float64, device=problem.device),
                    state_token=uuid.uuid4().hex)
-    receipt = problem.residual(None)(context)
+    receipt = problem.residual(None, history_atol=1e-10, history_rtol=0.)(context)
     scale = 1e-10  # Exact FEM policy: absolute history/coefficient identity.
     if receipt.get("accepted") is not True or not bool(torch.all(abs(tensors["f_solve"] - tensors["f_commit"]) <= scale)):
         raise ValueError("F1 failed fresh physical/coefficient replay")
     return tensors, dict(accepted=True, physical_replay=receipt,
                          snapshot_sha256=spec["snapshot"]["sha256"],
                          coefficient_atol=1e-10, coefficient_rtol=0.,
+                         history_atol=1e-10, history_rtol=0.,
+                         native_solver_policy=policy,
                          predecessor_checkpoint_sha256=admission["predecessor_checkpoint"]["sha256"],
                          source_checkpoint_sha256=admission["source_checkpoint"]["sha256"])
 
 
-def _diagnostic_snapshots(step, key, arm, problem, expected_old):
+def _diagnostic_snapshots(step, key, arm, problem, expected_old, expected_window_before, reference_readout):
     """Only verified network readouts; these remain unaccepted diagnostics."""
     result, errors, duplicate_updates = {}, [], set()
     if not (step / "snapshot_index.json").is_file():
@@ -162,12 +238,34 @@ def _diagnostic_snapshots(step, key, arm, problem, expected_old):
             _strict_metadata(payload["common_problem"], problem.common, "snapshot mapping")
             if payload["arm"] != arm or _updates(payload["updates"]) != update or payload["event"]["event"] != "outer":
                 raise ValueError("snapshot label mismatch")
+            work = _verified_work(payload["optimizer_work"], update, expected_window_before)
+            _strict_metadata(entry["optimizer_work"], work, "snapshot index work")
             saved = payload["event"]["context"]
             _same_tensors(dict(damage=saved["old_damage"], history=saved["old_history"],
                                active_driver=saved["old_active_driver"]), expected_old, "snapshot predecessor")
-            fresh = problem.state(problem.field(payload["network_state"], key["displacement"]))
+            field = problem.field(payload["network_state"], key["displacement"])
+            fresh = problem.state(field)
             _same_tensors({name: saved[name] for name in fresh}, fresh, "snapshot network readout")
-            result[update] = fresh
+            context = {name: (value.to(problem.device) if torch.is_tensor(value) else value)
+                       for name, value in saved.items()}
+            context.update(fresh)
+            fresh_acceptance = problem.residual(field)(context)
+            if (fresh_acceptance.get("fresh_current_state") is not True
+                    or fresh_acceptance.get("state_token") != context["state_token"]
+                    or fresh_acceptance["metrics"].get("fresh_history_consistent") is not True):
+                raise ValueError("diagnostic snapshot history is not reproduced by its final field")
+            old = dict(damage=context["old_damage"], history=context["old_history"],
+                       active_driver=context["old_active_driver"])
+            _strict_metadata(payload["objective_precision"], objective_precision_record(old, context["f_solve"]),
+                             "snapshot objective precision")
+            physical = native_readout(problem, fresh, old, context["f_solve"],
+                                      context["trial_history"], context["f_commit"])
+            result[update] = dict(fields=fresh, optimizer_work=work,
+                objective_precision=payload["objective_precision"],
+                physical=physical_gap(problem, physical, reference_readout),
+                saved_controller_record=payload["event"]["record"], fresh_acceptance=fresh_acceptance,
+                accepted_comparison=False,
+                interpretation="replayed diagnostic snapshot; numerical acceptance here does not create a committed endpoint")
         except Exception as error:
             errors.append(dict(file=entry.get("file"), reason=str(error), status="unverified"))
     return result, errors
@@ -200,6 +298,8 @@ def score(run_root, target_manifest, device):
             raise ValueError(f"physical replay implementation drift: {relative}")
     if scoring.get("scorer_sha256") != sha256(Path(__file__)):
         raise ValueError("scorer version differs from the scoring manifest")
+    if scoring.get("diagnostics_sha256") != sha256(Path(__file__).with_name("native_q4_diagnostics.py")):
+        raise ValueError("native physical diagnostics differ from the scoring manifest")
     if scoring.get("q4_geometry_sha256") != sha256(ROOT / "tools/s04_e011_analysis/run_multicycle_cross_replay.py"):
         raise ValueError("Q4 lumped mass implementation differs")
     doc, training_root, nodes, cells, common = load_manifest(training_path)
@@ -208,6 +308,7 @@ def score(run_root, target_manifest, device):
     expected_targets = {label(case, substep) for case, (_, steps) in CASES.items() for substep in steps}
     if set(scoring["targets"]) != expected_targets:
         raise ValueError("scoring requires the exact twelve declared target slots; unavailable slots may be null")
+    sensitivity_specs = tightening_map(scoring.get("reference_tightening"))
     torch.set_num_threads(1)
     torch.set_num_interop_threads(1)
     torch.use_deterministic_algorithms(True)
@@ -220,11 +321,11 @@ def score(run_root, target_manifest, device):
     rows, eligible = [], []
     for case, (cycle, steps) in CASES.items():
         accepted_parent = {"P1": None, "P2": None}
+        accepted_window_work = {"P1": 0, "P2": 0}
         try:
             arrays, pre_key, _, input_admission = load_case(case, doc, training_root, len(nodes), len(cells), common)
-            # Keep the native FEM lineage separate from each PIDL arm. Build
-            # these values directly from the original NPZ, never via the
-            # float32 predecessor supplied to network optimization.
+            # Preserve the original native common predecessor in both chains;
+            # subsequent FEM and PIDL transitions have separate lineages.
             f1_parent = {name: torch.as_tensor(arrays[name], dtype=torch.float64,
                                               device=problem.device).clone()
                          for name in ("damage", "history", "active_driver")}
@@ -245,7 +346,25 @@ def score(run_root, target_manifest, device):
                 target, target_receipt = load_target(
                     scoring["targets"][slot], root, key, problem,
                     expected_predecessor_sha256=f1_parent_sha, expected_old=f1_parent)
+                _strict_metadata(target_receipt["native_solver_policy"], {"u_tol": 1e-6, "joint_tol": 4e-4},
+                                 "primary F1 solver policy")
                 row["F1"] = target_receipt
+                reference_readout = target_readout(problem, target)
+                row["F1"]["physical_readout"] = reference_readout["summary"]
+                if slot in _TIGHTENING_SLOTS:
+                    # Keep this provenance outside tensor fields used by the
+                    # general native state/old-state checks.
+                    tightening_target = dict(target, predecessor_source_sha256=f1_parent_sha,
+                                             native_solver_policy=target_receipt["native_solver_policy"])
+                    try:
+                        row["reference_sensitivity"] = tightening_readout(
+                            sensitivity_specs[slot], root, key, problem,
+                            tightening_target, mass, reference_readout)
+                    except Exception as error:
+                        row["reference_sensitivity"] = dict(status="unverified", reason=str(error),
+                            scope="this state only; no general reference-error floor")
+                else:
+                    row["reference_sensitivity"] = None
                 f1_parent = dict(damage=target["d"].clone(), history=target["history"].clone(),
                                  active_driver=target["active_driver"].clone())
                 f1_parent_sha = target_receipt["source_checkpoint_sha256"]
@@ -260,6 +379,7 @@ def score(run_root, target_manifest, device):
             for arm in ("P1", "P2"):
                 step = run_root / case / arm / f"s{substep}"
                 expected_old = initial_old if substep == steps[0] else accepted_parent[arm]
+                expected_window_before = accepted_window_work[arm]
                 try:
                     loaded = load_verified_step(step / "committed", problem.replay)
                     _strict_metadata(loaded["state_key"], key, "PIDL state")
@@ -272,28 +392,53 @@ def score(run_root, target_manifest, device):
                         raise ValueError("no verified predecessor; rejected windows cannot continue")
                     _same_tensors(loaded["old_state"], expected_old, "PIDL predecessor")
                     update = _updates(loaded["metadata"]["rprop_updates"])
+                    work = _verified_work(loaded["metadata"]["optimizer_work"], update, expected_window_before)
+                    precision = objective_precision_record(loaded["old_state"], loaded["f_solve"])
+                    _strict_metadata(loaded["metadata"]["objective_precision"], precision, "endpoint objective precision")
                     if target is not None:
-                        row["accepted_endpoints"][arm] = dict(primitive_gap(loaded["fields"], target, mass), updates=update)
+                        row["accepted_endpoints"][arm] = dict(primitive_gap(loaded["fields"], target, mass),
+                                                             updates=update, optimizer_work=work, objective_precision=precision)
+                        endpoint_readout = native_readout(problem, loaded["fields"], loaded["old_state"],
+                                                          loaded["f_solve"], loaded["history"], loaded["f_commit"])
+                        row["accepted_endpoints"][arm]["physical"] = physical_gap(problem, endpoint_readout, reference_readout)
                     else:
-                        row.setdefault("verified_unscored_endpoints", {})[arm] = dict(updates=update)
-                    accepted_parent[arm] = dict(damage=loaded["fields"]["d"], history=loaded["history"],
-                                                active_driver=loaded["fields"]["active_driver"])
+                        row.setdefault("verified_unscored_endpoints", {})[arm] = dict(updates=update, optimizer_work=work,
+                                                                                    objective_precision=precision)
+                    accepted_parent[arm] = dict(damage=loaded["fields"]["d"].to(dtype=torch.float64),
+                                                history=loaded["history"].to(dtype=torch.float64),
+                                                active_driver=loaded["fields"]["active_driver"].to(dtype=torch.float64))
+                    accepted_window_work[arm] = work["window_updates"]
                 except Exception as error:
                     row.setdefault("endpoint_errors", {})[arm] = str(error)
                     accepted_parent[arm] = None
-                snapshots[arm], errors = (_diagnostic_snapshots(step, key, arm, problem, expected_old)
+                    accepted_window_work[arm] = None
+                snapshots[arm], errors = (_diagnostic_snapshots(step, key, arm, problem, expected_old,
+                                                                expected_window_before, reference_readout)
                                           if target is not None else ({}, []))
                 row["unverified_snapshots"][arm] = errors
+                row.setdefault("replayed_snapshot_diagnostics", {})[arm] = [
+                    dict(updates=update, primitive=primitive_gap(value["fields"], target, mass),
+                         **{name: value[name] for name in ("optimizer_work", "objective_precision", "physical", "saved_controller_record",
+                                                          "fresh_acceptance", "accepted_comparison", "interpretation")})
+                    for update, value in sorted(snapshots[arm].items())]
             for update in sorted(set(snapshots["P1"]) & set(snapshots["P2"])):
-                first = primitive_gap(snapshots["P1"][update], target, mass)
-                second = primitive_gap(snapshots["P2"][update], target, mass)
+                first = primitive_gap(snapshots["P1"][update]["fields"], target, mass)
+                second = primitive_gap(snapshots["P2"][update]["fields"], target, mass)
+                comparison = work_comparison(snapshots["P1"][update]["optimizer_work"],
+                                             snapshots["P2"][update]["optimizer_work"])
                 row["fixed_work_diagnostics"].append(dict(updates=update, P1=first, P2=second,
+                    P1_physical=snapshots["P1"][update]["physical"],
+                    P2_physical=snapshots["P2"][update]["physical"],
+                    P1_fresh_acceptance=snapshots["P1"][update]["fresh_acceptance"],
+                    P2_fresh_acceptance=snapshots["P2"][update]["fresh_acceptance"],
+                    **comparison,
                     improvement=_improvement(first["J"], second["J"]), accepted_comparison=False,
-                    interpretation="equal updates; diagnostic only, never an accepted improvement"))
+                    interpretation="current_step_equal_work diagnostic; cumulative window work is reported separately; never an accepted improvement"))
             if set(row["accepted_endpoints"]) == {"P1", "P2"}:
                 first, second = (row["accepted_endpoints"][arm] for arm in ("P1", "P2"))
                 row.update(status="both_endpoints_verified", endpoint_improvement=_improvement(first["J"], second["J"]),
                            endpoint_updates_equal=first["updates"] == second["updates"],
+                           endpoint_work_comparison=work_comparison(first["optimizer_work"], second["optimizer_work"]),
                            endpoint_interpretation="accepted endpoints; actual work may differ")
                 eligible.append((first["J"], second["J"]))
     aggregate = None
@@ -308,6 +453,7 @@ def score(run_root, target_manifest, device):
                 callback_lock_sha256=scoring["callback_lock"]["sha256"],
                 scorer_sha256=scoring["scorer_sha256"], q4_geometry_sha256=scoring["q4_geometry_sha256"],
                 formula="sqrt(sum(m*((du/.12)^2+(dv/.12)^2+dd^2))/(3*sum(m)))",
+                physical_metrics_implementation_sha256=sha256(Path(__file__).with_name("native_q4_diagnostics.py")),
                 states=rows, verified_endpoint_pairs=len(eligible), declared_states=len(expected_targets),
                 fixed_design_aggregate=aggregate,
                 aggregate_boundary="No fixed-design aggregate when any declared endpoint pair is unavailable or unverified.",
