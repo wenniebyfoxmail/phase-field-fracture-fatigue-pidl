@@ -18,6 +18,7 @@ model_train.py  ★ 相比 Manav 原始版本的修改
 """
 
 import numpy as np
+import csv
 import torch
 import time
 from pathlib import Path
@@ -155,6 +156,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_dict is None:
         fatigue_dict = {}
     fatigue_on = fatigue_dict.get('fatigue_on', False)
+    # Numerical optimizer state is a separate channel from physical history.
+    # Keep the historical behaviour unless a runner opts in explicitly.
+    _rprop_state_mode = fatigue_dict.get('rprop_state_mode', 'fresh_per_step')
+    if _rprop_state_mode not in ('fresh_per_step', 'phase_aware'):
+        raise ValueError(
+            "rprop_state_mode must be 'fresh_per_step' or 'phase_aware', "
+            f"got {_rprop_state_mode!r}"
+        )
     if (sidecar_S1_dict or {}).get("enable", False) or (sidecar_S2_dict or {}).get("enable", False):
         raise NotImplementedError(
             "This model_train.py build accepts sidecar_S1/S2 arguments for "
@@ -425,6 +434,28 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _right_bdy_x_min = fatigue_dict.get('right_bdy_x_min',    0.48)
     _right_bdy_mask  = inp[:, 0] > _right_bdy_x_min           # shape (N_nodes,)，bool
 
+    # Carry state only along a strictly ascending load segment.  Any unloading
+    # or equal-amplitude transition starts a fresh optimizer, preventing stale
+    # sign/step-size history from crossing a phase boundary.
+    _rprop_optimizer = None
+    _rprop_prev_disp = None
+    _rprop_log_file = None
+    _rprop_log_writer = None
+    if _rprop_state_mode == 'phase_aware':
+        _rprop_log_path = trainedModel_path.parent / Path('rprop_state_vs_step.csv')
+        _rprop_log_file = _rprop_log_path.open('w', newline='')
+        _rprop_log_writer = csv.DictWriter(
+            _rprop_log_file,
+            fieldnames=[
+                'step_index', 'displacement', 'reused_state',
+                'state_entries', 'step_size_min', 'step_size_median',
+                'step_size_max',
+            ],
+        )
+        _rprop_log_writer.writeheader()
+        _rprop_log_file.flush()
+        print(f"[RPROP] phase_aware state log: {_rprop_log_path}")
+
     # ★ L∞ 裂缝尖端（保留用于日志和后处理，不再作为停止判据）
     _alpha_crack_thr = fatigue_dict.get('x_tip_alpha_thr', 0.90)
     _crack_mouth     = torch.tensor([0.0, 0.0], device=device)  # SENS: 预裂缝尖端
@@ -533,7 +564,20 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         if optimizer_dict["n_epochs_RPROP"] > 0:
             n_epochs  = optimizer_dict["n_epochs_RPROP"]
             NNparams  = field_comp.parameters()
-            optimizer = get_optimizer(NNparams, "RPROP")
+            _disp_value = float(torch.as_tensor(disp_i).detach().cpu().item())
+            _can_reuse_rprop = (
+                _rprop_state_mode == 'phase_aware'
+                and _rprop_optimizer is not None
+                and _rprop_prev_disp is not None
+                and _disp_value > (_rprop_prev_disp + 1e-12)
+            )
+            if _can_reuse_rprop:
+                optimizer = _rprop_optimizer
+            else:
+                optimizer = get_optimizer(NNparams, "RPROP")
+                if _rprop_state_mode == 'phase_aware':
+                    _rprop_optimizer = optimizer
+            _rprop_reused = bool(_can_reuse_rprop)
             _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
             _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
             # ★ δ-1: pass ElementDataset when IS is active for this cycle
@@ -556,6 +600,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
             )
             loss_data = loss_data + loss_data2
+
+            if _rprop_state_mode == 'phase_aware':
+                _rprop_prev_disp = _disp_value
+                _step_sizes = [
+                    state['step_size'].detach().reshape(-1)
+                    for state in optimizer.state.values()
+                    if 'step_size' in state
+                ]
+                if _step_sizes:
+                    _all_step_sizes = torch.cat(_step_sizes)
+                    _rprop_log_writer.writerow({
+                        'step_index': int(j),
+                        'displacement': _disp_value,
+                        'reused_state': int(_rprop_reused),
+                        'state_entries': int(_all_step_sizes.numel()),
+                        'step_size_min': float(_all_step_sizes.min().item()),
+                        'step_size_median': float(_all_step_sizes.median().item()),
+                        'step_size_max': float(_all_step_sizes.max().item()),
+                    })
+                    _rprop_log_file.flush()
 
         end = time.time()
         _cycle_seconds = end - start
@@ -943,3 +1007,5 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _time_history:
         np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                 np.array(_time_history))
+    if _rprop_log_file is not None:
+        _rprop_log_file.close()

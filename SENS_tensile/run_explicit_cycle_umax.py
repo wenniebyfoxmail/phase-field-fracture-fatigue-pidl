@@ -14,6 +14,8 @@ Important:
     produces 50 training steps/checkpoints.
   - intended for N=5 or N=10 smoke only; do not launch production without first
     checking alpha_bar slope and psi+/boundary diagnostics.
+  - `--rprop-state-mode phase_aware` carries RPROP only on strictly ascending
+    displacement substeps; a decrease or equal displacement resets it.
 """
 from __future__ import annotations
 
@@ -37,6 +39,11 @@ def main() -> int:
     p.add_argument("--n-cycles", type=int, default=5,
                    help="Physical cycles; total training steps = n_cycles * len(substeps)")
     p.add_argument("--seed", type=int, default=1)
+    p.add_argument("--epochs-rprop", type=int, default=1000,
+                   help="Maximum RPROP updates per loading substep")
+    p.add_argument("--rprop-state-mode", choices=("fresh_per_step", "phase_aware"),
+                   default="fresh_per_step",
+                   help="Recreate RPROP or reuse it on strictly ascending substeps")
     p.add_argument("--substeps", type=_parse_factors, default=_parse_factors("0,0.5,1,0.5,0"),
                    help="Comma-separated load factors multiplying Umax")
     args = p.parse_args()
@@ -64,6 +71,8 @@ def main() -> int:
     config.fatigue_dict["loading_type"] = "cyclic"
     config.fatigue_dict["explicit_cycle_substeps"] = int(len(factors))
     config.fatigue_dict["explicit_cycle_factors"] = [float(x) for x in factors]
+    config.fatigue_dict["rprop_state_mode"] = args.rprop_state_mode
+    config.optimizer_dict["n_epochs_RPROP"] = int(args.epochs_rprop)
     config.fatigue_dict["log_every_n_cycles"] = 1
     config.disp_cyclic = disp_steps
 
@@ -85,6 +94,7 @@ def main() -> int:
         + "_gradient_" + str(config.numr_dict["gradient_type"])
         + fatigue_tag
         + sub_tag
+        + "_RPROP_" + args.rprop_state_mode
     )
     config.model_path = here / Path(dir_name)
     config.trainedModel_path = config.model_path / Path("best_models/")
@@ -113,6 +123,8 @@ def main() -> int:
         f.write(f"\nn_training_steps: {total_steps}")
         f.write(f"\nexplicit_cycle_substeps: {fat['explicit_cycle_substeps']}")
         f.write(f"\nexplicit_cycle_factors: {fat['explicit_cycle_factors']}")
+        f.write(f"\nrprop_state_mode: {fat['rprop_state_mode']}")
+        f.write(f"\nepochs_rprop: {config.optimizer_dict['n_epochs_RPROP']}")
         f.write(f"\naccum_type: {fat['accum_type']}")
         f.write(f"\ndegrad_type: {fat['degrad_type']}")
         f.write(f"\nalpha_T: {fat['alpha_T']}")
