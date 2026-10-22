@@ -158,3 +158,8 @@ F(\theta)=\log_{10}E_0(\theta)+10^{-5}R_W(\theta),\qquad c_i(\theta)\le0.
 - Wheeler, Wick & Wollner (2014), *An augmented-Lagrangian method for the phase-field approach for pressurized fractures*, CMAME271,69–85, DOI [10.1016/j.cma.2013.12.005](https://doi.org/10.1016/j.cma.2013.12.005)。取得[UT Austin ICES13-25](https://www.oden.utexas.edu/media/reports/2013/1325.pdf)，2013预印本，27PDF页含封面；正文§3 pp.5–8/PDF pp.6–9 Eqs.(5)–(8)/Algorithm1/Remark3.1，正文p.11/PDFp.12 Algorithm2。支持AL机制，不验证神经疲劳或本设计停止规则。
 
 补充检索：2026-10-21 19:08–19:11UTC，query `phase field fracture primal dual active set augmented Lagrangian`；OpenAlex成功；Crossref自由检索空值解析失败，两个精确DOI成功解析；用作者/大学全文核对。新增两份全文由独立设计助手核首页、末页、可读性和关键页（实际模型gpt-6-astra、ultra），主代理整合，未将讨论当实验。PDF原件和定向阅读笔记复用既定Obsidian文献库，研究摘要续写既有重构报告，详细方案以本文为准。
+
+
+## 2026-10-22 计算执行更新
+
+S04-E037 已完成合法前态、完整 runner 和验证方案；首个独立复查后启动在初始前向因 CPU/CUDA 放置错误退出，未有任何优化或参照求解。修复 a706d168 通过已知问题定向复查，但尚未重启；原六态与首次失败均保留。详情见 [首次启动记录](S04-E037/result_20261022.md)。当前等待单次修复重启许可，不把 Code Ready 或合成检查当科学结果。
