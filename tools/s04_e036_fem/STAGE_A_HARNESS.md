@@ -159,3 +159,26 @@ proposal-only files, wrong version, unapproved policy, a self-consistent
 receipt with wrong history algebra, and rejected receipt misuse. These checks
 exercise software guard behavior only. Root should first `checkcode` the new
 files and record the actual results; the prepared case count is not a pass.
+
+## 2026-10-22 prepare_03 file-hash repair (prepared only)
+
+The producer reached MATLAB but stopped before mock/build/native work because
+the old `fread` loop's final `ferror` reported `At end-of-file.`. The replacement
+`e036_sha256_file` uses a Java FileChannel and the new `e036_sha256_stream`
+core: only a read count of -1 means EOF; read exceptions, zero progress,
+inconsistent counts, premature EOF and growth fail without publishing a digest.
+It retains the existing JVM dependency and checks byte count, opened-file size,
+and path size/mtime before returning. These metadata checks are a drift screen,
+not an immutable snapshot guarantee: same-size concurrent rewrites may evade
+them. Existing expected-digest comparisons and publication-time rechecks remain
+necessary.
+
+The preparation driver now runs a separate `e036_sha256_selftest` before the
+unchanged 28-case transaction suite. Its 15 cases cover empty/abc/binary/million-a
+known answers, four one-MiB boundary/multi-block payloads checked against a
+one-shot payload digest, missing/non-file paths, short reads, a simulated
+exception after a partial read, zero progress, truncation and growth. The fault
+cases use the stream core's reader callback; they do not claim a real OS I/O
+fault or concurrent-writer validation. New receipts are recorded under
+`hash_selftest/` and `prepare_result.hash_selftest`. These sources have only been
+edited and statically reviewed locally; producer execution is still required.

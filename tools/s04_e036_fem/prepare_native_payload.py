@@ -40,6 +40,14 @@ EXISTING_MEX = (
 )
 FRESH_MEX = {'AMOR':'phase_field.mex.fem.assembly.equilibrium.AMOR',
              'AT1_PENALTY_FATIGUE':'phase_field.mex.fem.assembly.pf.AT1_PENALTY_FATIGUE'}
+IMPORTER_PATH = 'Sources/+specimen/+external/abaqus_import.m'
+IMPORTER_ORIGINAL_SHA = '30c5e305c14f38424157b6a8c27428762d06b61a567ed094115dca1570d2f639'
+IMPORTER_REPAIRED_SHA = 'd8c6bc885f9f34759f9f1b0f9daa49ffb855e646efe9c5de0cc3ee1cd6470667'
+IMPORTER_REPAIR = dict(schema='e036-e011-importer-repair-v1', original_path=IMPORTER_PATH,
+    original_sha256=IMPORTER_ORIGINAL_SHA, repaired_sha256=IMPORTER_REPAIRED_SHA,
+    base_overlay='overlay_02',
+    base_overlay_receipt_sha256='9e5b7f23c7119671802df63c44e59351e5c308c5efdccf774af1199a89280baf',
+    operation='remove_round4_and_derive_nel_from_connectivity')
 
 
 def sha(path):
@@ -87,6 +95,35 @@ def archive(folder, name):
                 raise ValueError('ZIP byte readback mismatch')
     return dict(path=str(path),sha256=sha(path),bytes=path.stat().st_size,
                 files={name:hashlib.sha256(data).hexdigest() for name,data in files.items()})
+
+
+def overlay_support(support_dir, root):
+    """Select the original overlay or the one exact E011 importer repair."""
+    metadata=read(support_dir/'support.json')
+    if (metadata.get('schema')!='e036-native-support-v1' or metadata.get('source_commit')!=NATIVE_COMMIT
+            or win(metadata['run_root']).lower()!=win(root).lower()):
+        raise ValueError('overlay support belongs to another task/source')
+    name=metadata.get('overlay')
+    if name not in ('overlay_02','overlay_03'):
+        raise ValueError('only the original overlay or declared importer repair is supported')
+    overlay=support_dir/name;receipt=read(overlay/'overlay_receipt.json')
+    repair=metadata.get('mesh_importer_repair')
+    if name=='overlay_02':
+        if repair is not None:
+            raise ValueError('original overlay cannot declare a repair')
+    else:
+        if repair!=IMPORTER_REPAIR or sha(overlay/'overlay_receipt.json')!=IMPORTER_REPAIR['base_overlay_receipt_sha256']:
+            raise ValueError('require the exact declared importer repair and unchanged base receipt')
+        local=Path(__file__).with_name('importer_e011')/'abaqus_import.m'
+        if sha(overlay/IMPORTER_PATH)!=IMPORTER_REPAIRED_SHA or sha(local)!=IMPORTER_REPAIRED_SHA:
+            raise ValueError('full-precision importer differs from the exact E011 byte patch')
+    expected={checked_rel(p) for p in receipt['files']}|{'overlay_receipt.json'}
+    if repair is not None:
+        expected.add(IMPORTER_PATH)
+    actual={p.relative_to(overlay).as_posix() for p in overlay.rglob('*') if p.is_file()}
+    if actual!=expected:
+        raise ValueError('unexpected/missing overlay file')
+    return name,overlay,receipt,repair
 
 
 def support(args):
@@ -212,16 +249,25 @@ def finalize(args):
             raise ValueError('fresh binary path differs from expected package')
         runtime.append(dict(name=qualified,path=win(r['path']),sha256=r['sha256']))
         add(relative(r['path'],root),r['sha256'])
-    overlay=args.support/'overlay_02';overlay_receipt=read(overlay/'overlay_receipt.json')
+    overlay_name,overlay,overlay_receipt,importer_repair=overlay_support(args.support,root)
     for path,digest in overlay_receipt['files'].items():
         path=checked_rel(path)
         if sha(overlay/path)!=digest:
             raise ValueError('prepared overlay changed')
-        add('overlay_02/'+path,digest)
+        add(overlay_name+'/'+path,digest)
         if path.startswith('Sources/'):
             local=Path(__file__).with_name(Path(path).name)
             if sha(local)!=digest:
                 raise ValueError('overlay audit helper no longer matches current source')
+    add(overlay_name+'/overlay_receipt.json',sha(overlay/'overlay_receipt.json'))
+    if importer_repair is not None:
+        if entries[IMPORTER_PATH]['sha256']!=IMPORTER_ORIGINAL_SHA:
+            raise ValueError('original importer differs from the diagnosed native snapshot')
+        matches=[r for r in runtime if r['name']=='specimen.external.abaqus_import']
+        if len(matches)!=1 or matches[0]['sha256']!=IMPORTER_ORIGINAL_SHA:
+            raise ValueError('original importer runtime binding is not unique/exact')
+        matches[0].update(path=root+'/'+overlay_name+'/'+IMPORTER_PATH,sha256=IMPORTER_REPAIRED_SHA)
+        add(overlay_name+'/'+IMPORTER_PATH,IMPORTER_REPAIRED_SHA)
     source_checks=[dict(path=r['path'],sha256=r['sha256']) for r in entries.values() if r['path'].endswith(('.m','.f90'))]
     inputs={PureWindowsPath(r['target']).name:r for r in snapshot['inputs']}
     def original_input(name):
@@ -245,7 +291,7 @@ def finalize(args):
         stream.write(args.authority_file.read_bytes())
     manifest_name=args.label+'_manifest.json';config_name=args.label+'_config.json';entry_name=args.label+'_entry.m'
     write(output/manifest_name,dict(schema='e036-stage-a-native-source-v1',files=sorted(records.values(),key=lambda x:x['path'])))
-    cfg.update(overlay_root=root+'/overlay_02',overlay_solver_sha256=overlay_receipt['files']['Scripts/fatigue_fracture/solve_fatigue_fracture.m'],
+    cfg.update(overlay_root=root+'/'+overlay_name,overlay_solver_sha256=overlay_receipt['files']['Scripts/fatigue_fracture/solve_fatigue_fracture.m'],
         build_completion_sha256=sha(args.build_completion),prepare_result_path=win(cfg['output_dir'])+'/prepare_result.json',
         prepare_result_sha256=sha(args.prepare_result),runtime_bindings=runtime,source_checks=source_checks,
         common_file=win(common['target']),common_sha256=common['sha256'],mesh_file=win(mesh['target']),mesh_sha256=mesh['sha256'],
@@ -255,7 +301,8 @@ def finalize(args):
         provenance=dict(scope='same-state Stage A; no acceptance inferred from archive',
             original_native_source_commit=NATIVE_COMMIT,snapshot_receipt_sha256=sha(args.snapshot_receipt),
             inventory_receipt_sha256=sha(args.inventory),prepare_config_sha256=sha(args.prepare_config),
-            build_receipt_sha256=sha(args.build_receipt),generator_sha256=sha(__file__)))
+            build_receipt_sha256=sha(args.build_receipt),generator_sha256=sha(__file__),
+            overlay_support_sha256=sha(args.support/'support.json'),mesh_importer_repair=importer_repair))
     write(output/config_name,cfg)
     quote=lambda x:"'"+x.replace("'","''")+"'"
     entry='addpath('+quote(win(cfg['code_root'])+'/tools/s04_e036_fem')+",'-begin');\n"

@@ -63,6 +63,10 @@ try
  save(fullfile(c.output_dir,'checkcode.mat'),'checks','-v7.3');
  write_json(fullfile(c.output_dir,'checkcode.json'),struct('checks',{checks}, ...
   'scope','all diagnostics retained; message count is not a scientific acceptance criterion'));
+ stage='hash_selftest';check_time(budget,clock);
+ result.hash_selftest=e036_sha256_selftest(fullfile(c.output_dir,'hash_selftest'));
+ assert(strcmp(result.hash_selftest.status,'passed') && result.hash_selftest.cases==15 && ...
+  result.hash_selftest.native_calls==0,'E036A:HashSelftest','File hashing fixtures did not complete exactly');
  stage='mock';check_time(budget,clock);
  result.mock=e036_stage_a_selftest(fullfile(c.output_dir,'mock'));
  assert(strcmp(result.mock.status,'passed') && result.mock.cases==28 && result.mock.native_solves==0, ...

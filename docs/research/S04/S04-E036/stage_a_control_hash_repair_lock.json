@@ -1,0 +1,43 @@
+{
+  "schema": "e036-control-and-hash-repair-source-lock-v1",
+  "created_utc": "2026-10-22T07:21:33.059891+00:00",
+  "scope": "source identity only; native Stage A not complete",
+  "files": [
+    {
+      "path": "tools/s04_e036_fem/stage_a_watchdog_v4.ps1",
+      "sha256": "c627b12276107a5577e1b372ba4fbe22f2ae2fabda77935e4ecae70d2dddc880"
+    },
+    {
+      "path": "tools/s04_e036_fem/stage_a_compare_watchdog_v4.ps1",
+      "sha256": "c38a6dde4fd7c1b5b2c2b808057bff6be79579e0c86cfbd4bf61e7613d983bf4"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_sha256_file.m",
+      "sha256": "7230434983e93b63927d9a128f5411dcd2afc233b7edc0de2998de0e1a94d47b"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_sha256_stream.m",
+      "sha256": "ffbed972c26dd4e5feea5efcc105ef2aae40555f04cc7521a30e5ea2a1d562cf"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_sha256_selftest.m",
+      "sha256": "e558f5cc1363543b58a9358ac24e0d5386e1f73d3bfe980b4fdc216cdb892a78"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_a_prepare_driver.m",
+      "sha256": "7e10d28dbf4e744676bf07c08c6aa9eb9e6006321223f191106e11639d676fd0"
+    },
+    {
+      "path": "tools/s04_e036_fem/prepare_stage_a_job.py",
+      "sha256": "03fe4129eaf0b808aa9fbae0a279009809519301b12ea52599634168bb545c06"
+    },
+    {
+      "path": "tools/s04_e036_fem/prepare_stage_a_compare_job.py",
+      "sha256": "845f3103a78fed743b9061f02676393a448ed6d23b2d718864eb0c87134da4c5"
+    }
+  ],
+  "deployed_preparation": "code_04 manifest in case/run_workspace/prepare_05/prepare_05_manifest.json; exactly preserved payload",
+  "difference_from_deployed": "e036_sha256_selftest local e558f5 cleanup fix is not deployed/tested; deployed f3db9c test body passed15 with destructor warnings",
+  "actual_prepare_evidence": "analysis/prepare_05_verified.json; 15hash28mock fresh2MEX; zero native solve at prepare stage",
+  "native_status": "disabled05 started; frozen jobs staged; comparisons pending"
+}

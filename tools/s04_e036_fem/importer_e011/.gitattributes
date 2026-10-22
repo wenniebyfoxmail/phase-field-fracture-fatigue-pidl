@@ -1,0 +1,2 @@
+# Preserve the exact producer-bound importer bytes and SHA-256.
+abaqus_import.m -text whitespace=cr-at-eol

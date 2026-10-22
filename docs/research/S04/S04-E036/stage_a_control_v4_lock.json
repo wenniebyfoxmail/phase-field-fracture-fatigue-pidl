@@ -1,0 +1,89 @@
+{
+  "schema": "e036-stage-a-control-v4-lock-v1",
+  "created_utc": "2026-10-22T06:58:43.646751+00:00",
+  "base_commit": "3ee4d7248976383a2186ef553889b9fb65a52bb4",
+  "status": "prepare_03_control_chain_exercised_matlab_eof_hash_failure_stage_a_not_complete",
+  "scope": "Append-only Stage A control repair and current division; no B/training execution in this owner",
+  "preserved_historical_lock": {
+    "path": "docs/research/S04/S04-E036/stage_a_launch_repair_lock.json",
+    "sha256": "1499614e3d5b364b7d6a054da4250a88c8bbf68c65f6fd39f22b720e6e0880a5",
+    "unchanged_from_commit": "3ee4d7248976383a2186ef553889b9fb65a52bb4"
+  },
+  "current_division": {
+    "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E036/stage_a_20261021_2142/analysis/continuation_03_division_authority.json",
+    "sha256": "5a4faf49a36457409109e595b49097f811c6f6153545b5f1ac3f7c07da48fa40",
+    "this_owner_scope": "Complete Stage A only; preserve original criteria, history and unknown outcomes. First inspect existing log_probe_02. No Stage B or training here.",
+    "other_owner_scope": "Reuse verified Stage A; owns Stage B FEM/PIDL paired comparisons and optimization-versus-expression attribution",
+    "aggregate_budget": "none",
+    "safety": "finite per-job hang guard, max4CPU, serial native solve, shared-resource preflight, no global-policy changes"
+  },
+  "files": [
+    {
+      "path": "tools/s04_e036_fem/stage_a_watchdog_v4.ps1",
+      "sha256": "c627b12276107a5577e1b372ba4fbe22f2ae2fabda77935e4ecae70d2dddc880"
+    },
+    {
+      "path": "tools/s04_e036_fem/stage_a_compare_watchdog_v4.ps1",
+      "sha256": "c38a6dde4fd7c1b5b2c2b808057bff6be79579e0c86cfbd4bf61e7613d983bf4"
+    },
+    {
+      "path": "tools/s04_e036_fem/PROCESS_LAUNCH_STATIC_REVIEW_20261022.md",
+      "sha256": "aee2d222b917e312d3c53d27b2c86efabec08f472f9e40f7ac5acfd08803fa71"
+    },
+    {
+      "path": "docs/research/S04/S04-E036/STAGE_A_CONTROL_V4_20261022.md",
+      "sha256": "86fb0367395d1a5eb155a249a596c1e797294ac1387f0b686bca778a7e5dd325"
+    }
+  ],
+  "case_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E036/stage_a_20261021_2142",
+  "evidence": [
+    {
+      "path": "analysis/continuation_03_division_authority.json",
+      "sha256": "5a4faf49a36457409109e595b49097f811c6f6153545b5f1ac3f7c07da48fa40"
+    },
+    {
+      "path": "logs/inspect_prepare_02_first.json",
+      "sha256": "daaa3d16ebb162112c7c941da9831d99bb09d19fc1f1bd40cbcc545b07cf5a9e"
+    },
+    {
+      "path": "logs/stage_prepare_03.json",
+      "sha256": "7d2250556cca0f8f00ace073f03f29c18691ae0eb60141122b7f9c27ad8c0b93"
+    },
+    {
+      "path": "logs/launch_prepare_03.json",
+      "sha256": "d4c19a7d720bef52884549be84cf99133d49717bd5ae2f3a476ac288a154c716"
+    },
+    {
+      "path": "logs/inspect_prepare_03_first.json",
+      "sha256": "e010c0eb90f73d0bd52d6c1c0da1bc10660b18da956e24189fa53999d1e3e8d4"
+    },
+    {
+      "path": "logs/inspect_prepare_03_second.json",
+      "sha256": "1100931dc832c02cdbd0dd3107369c240b7b3507172226b4ed09a8a022b171e6"
+    },
+    {
+      "path": "run_workspace/prepare_03/prepare_03_deployment.json",
+      "sha256": "5ab7f74f46aa41e11392528559aadc516f529041d640265fb07dea2626ee90b1"
+    },
+    {
+      "path": "run_workspace/inspect_prepare_03_v2.ps1",
+      "sha256": "3810d600aab90fafca2ee2a7a3a526570e61a6925f90bb6752db4c9c05e455c5"
+    },
+    {
+      "path": "run_workspace/prepare_03/prepare_03_authority.json",
+      "sha256": "1e2fd22f6337bc149bda02824276f5b79173feb626aba2ea7eeb5ea4506293f6"
+    }
+  ],
+  "execution_boundary": {
+    "prepare_02_exact_cim_mismatch_field": "unknown; fields were not captured",
+    "prepare_03_cim_unknown_field": "image; PID/command/creation matched",
+    "prepare_03_matlab_entry_started": true,
+    "prepare_03_child_exit_code": 1,
+    "prepare_03_failure": "e036_sha256_file line 14 EOF ferror during initial config hash",
+    "prepare_03_checkcode_mock_build_fem_reached": false,
+    "stage_a_scientific_acceptance": false,
+    "last_inspection_utc": "2026-10-22T06:55:48.6428456Z",
+    "global_policy_unchanged": true
+  },
+  "review_boundary": "Independent static review and real control receipts apply only to their stated scopes; helper repair owned by fem_audit remains a separate attempt."
+}

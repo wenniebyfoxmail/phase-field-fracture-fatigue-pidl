@@ -136,3 +136,17 @@ HQ以原直接人方3小时授权为基础，前瞻允许一次≤300秒快照�
 ### 启动修复实际进度
 
 修复代码已经独立复核，实机两个PowerShell脚本解析无错误，45部署文件/51来源文件哈希匹配。主动报错日志负控仅确认WMI创建；随后远端只读日志被自动审批以HQ停止托管为由两次拒绝，等待人方澄清，未绕过。没有启动MATLAB或FEM。详见 [启动修复记录](STAGE_A_LAUNCH_REPAIR_20261022.md)。
+
+### 2026-10-22 人方明确分工后续接（03）
+
+整体复现owner传达人方明确分工：timing本窗口负责完成阶段A，整体对照窗口只读核验并复用A，独自负责阶段B、PIDL对照和优化/表达归因，避免重复运行。本窗口不再启动B或训练；取消累计预算、保留独立防挂、共享资源检查及科学阈值。自动审批已允许重新读取既有log_probe_02，先核查UNKNOWN，不重复提交。授权传达原文见case/analysis/continuation_03_division_authority.json。
+
+### 2026-10-22 实际执行追加：准备成功，原生验证待完成
+
+prepare_04 已通过初始文件 hash，但因 manifest 混合键序在 MATLAB 解码为 cell，于 schema 断言失败；未进入 mock/build/native。prepare_05 保持同一 code_04 和全部 53 条文件路径/SHA，只统一 manifest 键序并绑定新 attempt；实机打印 old04=cell、new05=struct，15 项 hash 和 28 项 mock 通过，全新构建两份 MEX，38 份下载构建产物逐项 SHA 核验，MATLAB exit0、全局策略不变。`fopen('all')` cleanup warning 原样保留；后续本地源码修复未部署/测试，不为清理警告重复构建。
+
+当前仅准备成功，disabled 双臂与四组冻结场比较仍待完成，**Stage A 尚未通过**。本窗口仍只负责 A，B/训练由整体对照 owner 复用后负责，科学阈值及前态边界不变。后续以 [Stage A 实际执行记录](STAGE_A_EXECUTION_20261022.md) 追加实际 receipt、失败与数值结果；旧锁和历史记录不改写。
+
+### 2026-10-22 Stage A 已完成
+
+disabled06两臂13字段/保存读回精确一致，四冻结状态与NumPy/能量梯度的116项检查全部通过。[完成与交接](STAGE_A_COMPLETED_20261022.md) 提供原始数组、终态日志和SHA。整体对照owner复用承接B/训练，本窗口不重复启动；共同FEM参考接受仍按原标准。本阶段没有证明PIDL场误差减少。

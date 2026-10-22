@@ -57,3 +57,26 @@ B 的 step_wall_seconds 仅由 MATLAB cooperative clock 检查，外部硬限是
 B MATLAB evidence 的角色及真实 attempt 绑定属于另一项审查，不由本记录认定通过。
 本记录不宣称 Windows 5.1、Add-Type、Job Object 或生产运行已通过。
 进程创建、操作完成和科学验收须分别取得真实证据。
+
+## prepare_02 实际失败后的 v4 控制补丁
+
+本地保存的 inspect_prepare_02_first.json 显示：watchdog 在 Resume 之前因
+“Suspended process identity differs”退出，native child exit 124，监督器
+exit 1，持久策略前后相同。旧日志没有保存 CIM 各字段，因此不能确定究竟哪项
+缺失或相异；不得将其描述为 MATLAB 计算、MEX 编译或科学验收失败。
+
+新增文件，不覆盖已部署字节：
+
+| 文件 | 源码 SHA256 |
+|---|---|
+| stage_a_watchdog_v4.ps1 | c627b12276107a5577e1b372ba4fbe22f2ae2fabda77935e4ecae70d2dddc880 |
+| stage_a_compare_watchdog_v4.ps1 | c38a6dde4fd7c1b5b2c2b808057bff6be79579e0c86cfbd4bf61e7613d983bf4 |
+
+v4 强制核对持有句柄的 PID、镜像、创建时间及 IsProcessInJob。
+CreateProcess 的命令/CWD 是明确的输入绑定；CIM 改为补充观测。
+恢复执行前保存 identity_observation.json，含 expected、held_handle、
+CIM 原值、逐字段匹配、缺失、非空相异和查询错误；started/final receipt
+绑定其 SHA。日志写入失败或权威句柄检查失败仍终止本任务 Job。
+补丁只经本地静态审查，不由本记录宣称新版本已执行。
+acceptance_audit 已对两份 v4 的完整 diff 和新增 C# ABI 独立只读复核，
+确认上述 SHA，未发现此次改动范围内的必然 PS/Win32 阻断；未执行或改写文件。
