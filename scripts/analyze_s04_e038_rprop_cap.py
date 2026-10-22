@@ -99,7 +99,8 @@ def main():
             y=[10**q['logE']/einit for q in t]+[sum(r['final'][k] for k in KEYS)/einit]
             axs[0].plot(x,y,label=label,c=color,lw=.8)
         axs[0].axhline(1,c='gray',ls=':',lw=.8)
-        axs[0].set_ylabel('common physical energy / initial');axs[0].legend(fontsize=8)
+        axs[0].set_yscale('log')
+        axs[0].set_ylabel('common physical energy / initial (log scale)');axs[0].legend(fontsize=8)
         rr=opt['rows']+[opt['final']]
         axs[1].plot([q['update'] for q in rr],[q['weight_norm'] for q in rr],c=COLORS[2])
         axs[1].set_ylabel('weight norm (small cap only)')
