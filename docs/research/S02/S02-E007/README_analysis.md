@@ -24,6 +24,16 @@ Implementation remains b9b72c5e24f584f2550a50675b14d4c731976f62 and runtime arch
 
 Human-delegated HQ approval and later scheduling release were verified and transparently recorded. The one released batch consumed its authority; no further inference/retry/seed or UQ follows automatically. The old R001 failure and immutable reviewed launcher remain intact. D2 computation/recomputation is complete; D3 concerns the residual publication differences. Observation uncertainty remains deferred as requested.
 
+## Current management entry — 2026-10-22
+
+No active scientific execution card or benchmark run is open. The completed R004–R006 baseline above is delivered; its authority is consumed and observation-uncertainty testing remains deferred. This documentation-only migration grants no computation, retry, new data access or expenditure.
+
+For a future explicitly authorized task, use one existing fixed task benchmark covering its main function and declared scientific comparison; pass means deliver. Do not automatically rerun the historical suite, experiments, a smoke ladder, per-commit reviews or metadata reviews. Fix and rerun only failed benchmark items within the existing execution/first-stop authority; a failed scientific attempt is not renewed retry permission. Wording/path/metadata changes receive direct consistency checks only. No new benchmark is created or run by this update, and the old complete unit suite is not renamed as a benchmark.
+
+The user explicitly selected **“Local read-only Codex review (recommended)”** in the reply to the runner/controller/config/data-lock/protocol review-channel question (question call_1e994659daa645b3b7ef1fa5aac9e53d). That completed code review and all historical findings remain preserved. The selection does not create recurring review requirements for later commits, metadata or result records. Prior Agent-added launcher/evidence-review steps are completed history, not future mandatory stages; additional review requires a new explicit user request.
+
+No active helper was present in the agent-tree inventory, so no ended reviewer was awakened. Current policy is the installed research-decision-core section **只跑固定基准，通过即交付（用户规则，2026-10-22）** and its agent_bootstrap reference. Earlier pending-approval/review wording below belongs to the frozen historical record, not an active handoff. Scientific comparisons, criteria, budgets, protected inputs, original failures and source snapshots are unchanged. Shared Roadmap is outside this migration.
+
 ## Earlier admission and preparation record
 
 # ISTRUST sixth-epoch reproduction: admission stop
