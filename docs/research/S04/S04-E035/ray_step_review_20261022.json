@@ -1,0 +1,15 @@
+{
+  "status": "CODE_MATH_REVIEW_PASS_NOT_EXECUTED",
+  "reviewer": "/root/shear_review",
+  "files": {
+    "proposals/box_q4_ray_step.m": "dc8e03638b34f80ccca9adae2b80f3887fd2af4e4a6916c433195befa4aaa3db",
+    "proposals/box_phase_ray.m": "a1e5abb957c04a4a01dee331bb962a8614294a49b70c223ba3eb0ebd9212cd02",
+    "proposals/run_manav_static_fem_box_ray.m": "3aa598abd8f326c361825f5f821f5c454034bfcaad9231cc2d5f36e0a0de8163",
+    "proposals/test_box_q4_ray_step.m": "ec156a749b49ecfe02801b48df7386d3e5e2ea1e6ce2b5b7ed60148674f4638b",
+    "execute_manav_static_fem_ray.py": "7feb53f072800f1bc6b5e61a9fc0ffc61acc727d6450af706fff3bf190eea9d3",
+    "execute_manav_static_pidl_ray.py": "65eee7c63092001bc39a31155765366ef12d3ed88c1e236c0d2a90d6c757d208"
+  },
+  "scope": "same energy and PDAS; bounded48 rayderivative bisections for initialstep, unchangednativeArmijo13trials/500updates/KKT",
+  "runtime_limit": "Fixtures not executed; integration marker does not replace actual BOX_RAY call or native state certification",
+  "authority_limit": "New absolute window is prospective implementation of latest start request, not old fixed-window continuation; execution permission review required and not granted by code review"
+}
