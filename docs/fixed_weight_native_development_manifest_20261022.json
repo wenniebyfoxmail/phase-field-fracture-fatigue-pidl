@@ -1,0 +1,78 @@
+{
+  "schema": "fixed_weight_native_development_manifest_v1",
+  "code_commit": "5a3b5d8c87b3ba804460dd52c2096c218aafe8e1",
+  "adapter_rule": "native862992_recovered_load_source_f_certified_energy_v1",
+  "qualification_scope": "synthetic fixed-weight state interface, already-exposed development conditions only",
+  "qualification_ref": "docs/fixed_weight_native_adaptation_20261022.json",
+  "evidence_review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/fixed_weight_adapter_20261022/evidence_review.md",
+  "execution_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/fixed_weight_adapter_20261022/execution_receipt.json",
+  "training_started": false,
+  "training_authorized_by_manifest": false,
+  "test_conditions": [],
+  "records": [
+    {
+      "trajectory_id": "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92",
+      "condition_id": "hard5_u0115_stage0b",
+      "reference_id": "862992a60edc7f59335365beacb5c71fc8592a7a",
+      "mesh_id": "q4:88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d:14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+      "split": "train",
+      "qualification_ref": "docs/fixed_weight_native_adaptation_20261022.json#hard5_u0115_stage0b",
+      "semantics": "explicit_recovered_initial_and_post_commit_v2",
+      "evidence_domain": "synthetic",
+      "expected_state_count": 516,
+      "material_values": [
+        1.0,
+        0.3,
+        0.01,
+        0.01,
+        0.5,
+        2.0,
+        0.0,
+        1.0
+      ],
+      "boundary_family": "clamped_tensile_y"
+    },
+    {
+      "trajectory_id": "hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae",
+      "condition_id": "hard5_u0125_stage0b",
+      "reference_id": "862992a60edc7f59335365beacb5c71fc8592a7a",
+      "mesh_id": "q4:88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d:14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+      "split": "validation",
+      "qualification_ref": "docs/fixed_weight_native_adaptation_20261022.json#hard5_u0125_stage0b",
+      "semantics": "explicit_recovered_initial_and_post_commit_v2",
+      "evidence_domain": "synthetic",
+      "expected_state_count": 366,
+      "material_values": [
+        1.0,
+        0.3,
+        0.01,
+        0.01,
+        0.5,
+        2.0,
+        0.0,
+        1.0
+      ],
+      "boundary_family": "clamped_tensile_y"
+    }
+  ],
+  "archives": [
+    {
+      "trajectory_id": "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92",
+      "root": "C:/q4runs/hard5_new_runs_u0115_u0125_20260827_v1/hard5_u0115_stage0b",
+      "index_sha256": "eb1cbacb52252891cb1039ec8df3bcb5cb4ce7ea2fe451476e0e241def10855a",
+      "static_sha256": "a7edb0e430ae84669e3326f777360e7d73488fa41fad8fa09a038e6bbd26985e",
+      "config_sha256": "0075cb117676aeb334e185b4149ea7ceefc5799e01b68d0303a56533e86ea7b5",
+      "preserve_originals": true,
+      "H_q_certified_points": 3
+    },
+    {
+      "trajectory_id": "hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae",
+      "root": "C:/q4runs/hard5_new_runs_u0115_u0125_20260827_v1/hard5_u0125_stage0b",
+      "index_sha256": "3d815b4abc8e4d215b2d6ce747bbc728729d9ed41e7ff7dfe29dbb77695ad1f1",
+      "static_sha256": "b79a36298eabec363fb7a53fb0590db46eb949b05c05dbffb9cb5a8bc0e4b40e",
+      "config_sha256": "c4ee5a79831c7a2a327eec976d36a7ae96945ad1cbf67071e38b8d98ddd511de",
+      "preserve_originals": true,
+      "H_q_certified_points": 2
+    }
+  ]
+}

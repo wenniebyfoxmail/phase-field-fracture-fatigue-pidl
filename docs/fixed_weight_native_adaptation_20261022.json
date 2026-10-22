@@ -1,0 +1,665 @@
+{
+  "status": "full_actual_torch_interface_validation_completed",
+  "code": {
+    "git_commit": "5a3b5d8c87b3ba804460dd52c2096c218aafe8e1",
+    "modules": [
+      "audit_fixed_weight_fem_archive",
+      "s09_stage0a_capability",
+      "s09_stage0a_packet",
+      "s09_stage0a_p1_freeze",
+      "fixed_weight_contract",
+      "s09_q4_quadrature",
+      "s09_stage0a_transition",
+      "s09_equilibrium_operator",
+      "s09_operator",
+      "s09_fem_physics",
+      "fixed_weight_native_adapter",
+      "fixed_weight_roundoff"
+    ],
+    "payload_sha256": "71422c0b2620f1ca0134fcdda91b3750044182c36a3c535ab32cee3adff8b600",
+    "bytes": 137003
+  },
+  "execution": {
+    "run_id": "FW-ADAPT-20261022-R001",
+    "start_utc": "2026-10-22T07:06:57.338019+00:00",
+    "producer": "citpc12-ssh",
+    "code_commit": "5a3b5d8c87b3ba804460dd52c2096c218aafe8e1",
+    "code_bundle_sha256": "71422c0b2620f1ca0134fcdda91b3750044182c36a3c535ab32cee3adff8b600",
+    "command": [
+      "ssh",
+      "-o",
+      "BatchMode=yes",
+      "-o",
+      "ConnectTimeout=15",
+      "citpc12-ssh",
+      "py -3 -B -u - C:\\q4runs\\hard5_new_runs_u0115_u0125_20260827_v1\\hard5_u0115_stage0b C:\\q4runs\\hard5_new_runs_u0115_u0125_20260827_v1\\hard5_u0125_stage0b"
+    ],
+    "review": "independent exact-commit code review approved",
+    "training": false,
+    "solver": false,
+    "originals_modified": false,
+    "cpu_threads": 2,
+    "git_dirty": false,
+    "local_ssh_pid": 72227,
+    "exit_code": 0,
+    "end_utc": "2026-10-22T07:11:25.643754+00:00",
+    "wall_seconds": 268.3047858750215
+  },
+  "environment": {
+    "kind": "environment",
+    "torch": "2.4.1+cpu",
+    "numpy": "2.4.4",
+    "h5py": "3.16.0",
+    "python": "3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)]",
+    "hostname": "CITPC12",
+    "pid": 36184,
+    "threads": 2
+  },
+  "trajectories": [
+    {
+      "archive": "hard5_u0115_stage0b",
+      "admission": {
+        "kind": "admitted",
+        "archive": "hard5_u0115_stage0b",
+        "states": 516,
+        "transitions": 515,
+        "repair_points": 3,
+        "csv_load_differences": 206,
+        "elapsed_seconds": 150.96900000004098,
+        "qualification_scope": "synthetic archive learning, development conditions only",
+        "training_started": false,
+        "solver_started": false,
+        "originals_modified": false
+      },
+      "binding": {
+        "kind": "binding",
+        "archive": "hard5_u0115_stage0b",
+        "record": {
+          "trajectory_id": "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92",
+          "condition_id": "hard5_u0115_stage0b",
+          "reference_id": "862992a60edc7f59335365beacb5c71fc8592a7a",
+          "mesh_id": "q4:88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d:14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+          "split": "train",
+          "qualification_ref": "validation-in-progress:fixed_weight_native_adapter_v1",
+          "semantics": "explicit_recovered_initial_and_post_commit_v2",
+          "evidence_domain": "synthetic",
+          "expected_state_count": 516,
+          "material_values": [
+            1.0,
+            0.3,
+            0.01,
+            0.01,
+            0.5,
+            2.0,
+            0.0,
+            1.0
+          ],
+          "boundary_family": "clamped_tensile_y"
+        },
+        "index_sha256": "eb1cbacb52252891cb1039ec8df3bcb5cb4ce7ea2fe451476e0e241def10855a",
+        "config_sha256": "0075cb117676aeb334e185b4149ea7ceefc5799e01b68d0303a56533e86ea7b5",
+        "static_sha256": "a7edb0e430ae84669e3326f777360e7d73488fa41fad8fa09a038e6bbd26985e",
+        "static_receipt": {
+          "source_static_sha256": "a7edb0e430ae84669e3326f777360e7d73488fa41fad8fa09a038e6bbd26985e",
+          "derivation": "Q4 detJ * gauss_W * thickness; Nxi-consistent nodal lumping",
+          "node_order": "native",
+          "element_order": "native",
+          "gauss_point_order": "native quadrature",
+          "node_coordinates_sha256": "88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d",
+          "cells_0based_sha256": "14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+          "gauss_weight_sha256": "c914e8188e43fff1c96e25283e15b252af0d9f39b469f2d1518915802c756d18",
+          "Nxi_sha256": "ee8a3dcc2ad08d1938852b199d255ad18b91dad87350e8c114c50486bd8b1c84",
+          "dNdxi_sha256": "05bae2f3af7dd6c95fa5259b524c97e0f3a8bb78a5d3903b730bfe6281f25b53",
+          "thickness": 1.0,
+          "nodal_weight_sha256": "5a7d5c901d2db1d7c3bb387192ecacadbfa9d13ed8f5347645c2d3fdc54391a8",
+          "gp_weight_sha256": "c7e00d487837c8fa34eca9aef8638df85e01c49f4a9fef774116624719ab1b59",
+          "nodal_weight_shape": [
+            86756
+          ],
+          "gp_weight_shape": [
+            86408,
+            4
+          ]
+        },
+        "physical_states": 516,
+        "aliases": 102,
+        "manifest_members": 1206,
+        "schedule": [
+          0.028749885000000003,
+          0.05749988500000001,
+          0.086249885,
+          0.114999885,
+          0.0
+        ],
+        "rule": "native862992_recovered_load_source_f_certified_energy_v1"
+      },
+      "first_key": "c0001_s00",
+      "last_key": "c0103_s05",
+      "initial_raw_array_digests": [
+        "7fe9477997fe8fb99fc66fc76e05b298ad659dc788c19504869a9e94084f7c11",
+        "a6a6933e21ef26adc0104262de8252f0ad41ec876216bddbb202eb14ae19d5b1",
+        "0135dcc91481999df7be1c1de302118865e2b6ad04d76060ff206af606460350"
+      ],
+      "source_f_max_relative_error": 2.2198762479353473e-16,
+      "stable_f_max_relative_difference": 9.809887087151194e-15,
+      "raw_f_states_over_old_stable_8eps": 305,
+      "alpha_increment_unchanged_transitions": 515,
+      "repairs": [
+        {
+          "key": "c0058_s05",
+          "payload_sha256": "152007012712c2df89e79a47fabcf7c511bb4400aacb6f11eb2154feac2df2da",
+          "element": 84858,
+          "gp": 1,
+          "schema": "rigid_translation_amor_roundoff_v1",
+          "producer_commit": "862992a60edc7f59335365beacb5c71fc8592a7a",
+          "raw_H": -5.5285296622292597e-73,
+          "raw_q": -5.5285296622292597e-73,
+          "raw_H_hex": "-0x1.f420000000000p-241",
+          "raw_q_hex": "-0x1.f420000000000p-241",
+          "canonical_H": 0.0,
+          "canonical_q": 0.0,
+          "proof": "bitwise constant nodal displacement; exact derivative row sums zero; invertible Q4; d=0; continuum H=q=0",
+          "unit_roundoff": 1.1102230246251565e-16,
+          "gamma_operation_count": 44,
+          "gamma44_upper": 4.884981308350713e-15,
+          "dot_operation_counts": [
+            6,
+            6,
+            16,
+            16
+          ],
+          "determinant_interval": [
+            1.240317604134583e-06,
+            1.240317604135288e-06
+          ],
+          "absolute_bound": 1.3388438289484308e-69,
+          "ratio": 0.0004129331250360647,
+          "branches": {
+            "trace_nonnegative": {
+              "geometry_rounding_bound": 9.496758361070267e-80,
+              "quadratic_scale": 2.7407348039689616e-55,
+              "assembly_rounding_bound": 1.3388438288534632e-69,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 1.3388438289484308e-69,
+              "C_abs_upper": [
+                [
+                  1.3461538461538474,
+                  0.5769230769230773,
+                  0.0
+                ],
+                [
+                  0.5769230769230773,
+                  1.3461538461538474,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.3846153846153851
+                ]
+              ]
+            },
+            "trace_negative": {
+              "geometry_rounding_bound": 5.373154809509771e-80,
+              "quadratic_scale": 1.5776023161243707e-55,
+              "assembly_rounding_bound": 7.706557826278342e-70,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 7.706557826815659e-70,
+              "C_abs_upper": [
+                [
+                  0.5128205128205132,
+                  0.2564102564102566,
+                  0.0
+                ],
+                [
+                  0.2564102564102566,
+                  0.5128205128205132,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.38461538461538486
+                ]
+              ]
+            }
+          },
+          "arithmetic_assumptions": "IEEE binary64 round-to-nearest; gamma bounds include absolute gradual-underflow terms; no overflow or approximate reciprocal",
+          "scope": "fixed E=1, nu=0.3, plane-strain AMOR eta=0; caller binds source and payload; raw arrays unchanged"
+        },
+        {
+          "key": "c0087_s05",
+          "payload_sha256": "36753b192dfe66325b913bcfbfcbb770ec6dd4950cd2b10b2df8a515d97c4f62",
+          "element": 79606,
+          "gp": 2,
+          "schema": "rigid_translation_amor_roundoff_v1",
+          "producer_commit": "862992a60edc7f59335365beacb5c71fc8592a7a",
+          "raw_H": -1.1485413284791204e-72,
+          "raw_q": -1.1485413284791204e-72,
+          "raw_H_hex": "-0x1.03c0000000000p-239",
+          "raw_q_hex": "-0x1.03c0000000000p-239",
+          "canonical_H": 0.0,
+          "canonical_q": 0.0,
+          "proof": "bitwise constant nodal displacement; exact derivative row sums zero; invertible Q4; d=0; continuum H=q=0",
+          "unit_roundoff": 1.1102230246251565e-16,
+          "gamma_operation_count": 44,
+          "gamma44_upper": 4.884981308350713e-15,
+          "dot_operation_counts": [
+            6,
+            6,
+            16,
+            16
+          ],
+          "determinant_interval": [
+            9.506958133428104e-07,
+            9.506958133435864e-07
+          ],
+          "absolute_bound": 1.7791433100157395e-69,
+          "ratio": 0.0006455586360094622,
+          "branches": {
+            "trace_nonnegative": {
+              "geometry_rounding_bound": 3.565796700191255e-79,
+              "quadratic_scale": 3.64206779382712e-55,
+              "assembly_rounding_bound": 1.7791433096591597e-69,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 1.7791433100157395e-69,
+              "C_abs_upper": [
+                [
+                  1.3461538461538474,
+                  0.5769230769230773,
+                  0.0
+                ],
+                [
+                  0.5769230769230773,
+                  1.3461538461538474,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.3846153846153851
+                ]
+              ]
+            },
+            "trace_negative": {
+              "geometry_rounding_bound": 1.566215304396966e-79,
+              "quadratic_scale": 1.971934072998893e-55,
+              "assembly_rounding_bound": 9.632861087899482e-70,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 9.632861089465697e-70,
+              "C_abs_upper": [
+                [
+                  0.5128205128205132,
+                  0.2564102564102566,
+                  0.0
+                ],
+                [
+                  0.2564102564102566,
+                  0.5128205128205132,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.38461538461538486
+                ]
+              ]
+            }
+          },
+          "arithmetic_assumptions": "IEEE binary64 round-to-nearest; gamma bounds include absolute gradual-underflow terms; no overflow or approximate reciprocal",
+          "scope": "fixed E=1, nu=0.3, plane-strain AMOR eta=0; caller binds source and payload; raw arrays unchanged"
+        },
+        {
+          "key": "c0087_s05",
+          "payload_sha256": "36753b192dfe66325b913bcfbfcbb770ec6dd4950cd2b10b2df8a515d97c4f62",
+          "element": 79606,
+          "gp": 3,
+          "schema": "rigid_translation_amor_roundoff_v1",
+          "producer_commit": "862992a60edc7f59335365beacb5c71fc8592a7a",
+          "raw_H": -3.5241094852660595e-72,
+          "raw_q": -3.5241094852660595e-72,
+          "raw_H_hex": "-0x1.8e80000000000p-238",
+          "raw_q_hex": "-0x1.8e80000000000p-238",
+          "canonical_H": 0.0,
+          "canonical_q": 0.0,
+          "proof": "bitwise constant nodal displacement; exact derivative row sums zero; invertible Q4; d=0; continuum H=q=0",
+          "unit_roundoff": 1.1102230246251565e-16,
+          "gamma_operation_count": 44,
+          "gamma44_upper": 4.884981308350713e-15,
+          "dot_operation_counts": [
+            6,
+            6,
+            16,
+            16
+          ],
+          "determinant_interval": [
+            9.510795034971772e-07,
+            9.510795034979533e-07
+          ],
+          "absolute_bound": 1.7781037398741995e-69,
+          "ratio": 0.001981948187969837,
+          "branches": {
+            "trace_nonnegative": {
+              "geometry_rounding_bound": 3.566564000607183e-79,
+              "quadratic_scale": 3.639939699416934e-55,
+              "assembly_rounding_bound": 1.778103739517543e-69,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 1.7781037398741995e-69,
+              "C_abs_upper": [
+                [
+                  1.3461538461538474,
+                  0.5769230769230773,
+                  0.0
+                ],
+                [
+                  0.5769230769230773,
+                  1.3461538461538474,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.3846153846153851
+                ]
+              ]
+            },
+            "trace_negative": {
+              "geometry_rounding_bound": 1.56647210695529e-79,
+              "quadratic_scale": 1.9710361045601266e-55,
+              "assembly_rounding_bound": 9.628474528860619e-70,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 9.628474530427092e-70,
+              "C_abs_upper": [
+                [
+                  0.5128205128205132,
+                  0.2564102564102566,
+                  0.0
+                ],
+                [
+                  0.2564102564102566,
+                  0.5128205128205132,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.38461538461538486
+                ]
+              ]
+            }
+          },
+          "arithmetic_assumptions": "IEEE binary64 round-to-nearest; gamma bounds include absolute gradual-underflow terms; no overflow or approximate reciprocal",
+          "scope": "fixed E=1, nu=0.3, plane-strain AMOR eta=0; caller binds source and payload; raw arrays unchanged"
+        }
+      ]
+    },
+    {
+      "archive": "hard5_u0125_stage0b",
+      "admission": {
+        "kind": "admitted",
+        "archive": "hard5_u0125_stage0b",
+        "states": 366,
+        "transitions": 365,
+        "repair_points": 2,
+        "csv_load_differences": 0,
+        "elapsed_seconds": 113.5930000001099,
+        "qualification_scope": "synthetic archive learning, development conditions only",
+        "training_started": false,
+        "solver_started": false,
+        "originals_modified": false
+      },
+      "binding": {
+        "kind": "binding",
+        "archive": "hard5_u0125_stage0b",
+        "record": {
+          "trajectory_id": "hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae",
+          "condition_id": "hard5_u0125_stage0b",
+          "reference_id": "862992a60edc7f59335365beacb5c71fc8592a7a",
+          "mesh_id": "q4:88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d:14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+          "split": "validation",
+          "qualification_ref": "validation-in-progress:fixed_weight_native_adapter_v1",
+          "semantics": "explicit_recovered_initial_and_post_commit_v2",
+          "evidence_domain": "synthetic",
+          "expected_state_count": 366,
+          "material_values": [
+            1.0,
+            0.3,
+            0.01,
+            0.01,
+            0.5,
+            2.0,
+            0.0,
+            1.0
+          ],
+          "boundary_family": "clamped_tensile_y"
+        },
+        "index_sha256": "3d815b4abc8e4d215b2d6ce747bbc728729d9ed41e7ff7dfe29dbb77695ad1f1",
+        "config_sha256": "c4ee5a79831c7a2a327eec976d36a7ae96945ad1cbf67071e38b8d98ddd511de",
+        "static_sha256": "b79a36298eabec363fb7a53fb0590db46eb949b05c05dbffb9cb5a8bc0e4b40e",
+        "static_receipt": {
+          "source_static_sha256": "b79a36298eabec363fb7a53fb0590db46eb949b05c05dbffb9cb5a8bc0e4b40e",
+          "derivation": "Q4 detJ * gauss_W * thickness; Nxi-consistent nodal lumping",
+          "node_order": "native",
+          "element_order": "native",
+          "gauss_point_order": "native quadrature",
+          "node_coordinates_sha256": "88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d",
+          "cells_0based_sha256": "14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+          "gauss_weight_sha256": "c914e8188e43fff1c96e25283e15b252af0d9f39b469f2d1518915802c756d18",
+          "Nxi_sha256": "ee8a3dcc2ad08d1938852b199d255ad18b91dad87350e8c114c50486bd8b1c84",
+          "dNdxi_sha256": "05bae2f3af7dd6c95fa5259b524c97e0f3a8bb78a5d3903b730bfe6281f25b53",
+          "thickness": 1.0,
+          "nodal_weight_sha256": "5a7d5c901d2db1d7c3bb387192ecacadbfa9d13ed8f5347645c2d3fdc54391a8",
+          "gp_weight_sha256": "c7e00d487837c8fa34eca9aef8638df85e01c49f4a9fef774116624719ab1b59",
+          "nodal_weight_shape": [
+            86756
+          ],
+          "gp_weight_shape": [
+            86408,
+            4
+          ]
+        },
+        "physical_states": 366,
+        "aliases": 72,
+        "manifest_members": 872,
+        "schedule": [
+          0.031249875,
+          0.062499875,
+          0.093749875,
+          0.124999875,
+          0.0
+        ],
+        "rule": "native862992_recovered_load_source_f_certified_energy_v1"
+      },
+      "first_key": "c0001_s00",
+      "last_key": "c0073_s05",
+      "initial_raw_array_digests": [
+        "7fe9477997fe8fb99fc66fc76e05b298ad659dc788c19504869a9e94084f7c11",
+        "a6a6933e21ef26adc0104262de8252f0ad41ec876216bddbb202eb14ae19d5b1",
+        "0135dcc91481999df7be1c1de302118865e2b6ad04d76060ff206af606460350"
+      ],
+      "source_f_max_relative_error": 2.219565611320665e-16,
+      "stable_f_max_relative_difference": 5.25973439605369e-15,
+      "raw_f_states_over_old_stable_8eps": 150,
+      "alpha_increment_unchanged_transitions": 365,
+      "repairs": [
+        {
+          "key": "c0058_s05",
+          "payload_sha256": "2c91b208697d2832b7dce436501282f23fcaac380488b4895505809b5c23f599",
+          "element": 77296,
+          "gp": 1,
+          "schema": "rigid_translation_amor_roundoff_v1",
+          "producer_commit": "862992a60edc7f59335365beacb5c71fc8592a7a",
+          "raw_H": -4.2258499973788136e-73,
+          "raw_q": -4.2258499973788136e-73,
+          "raw_H_hex": "-0x1.7e48000000000p-241",
+          "raw_q_hex": "-0x1.7e48000000000p-241",
+          "canonical_H": 0.0,
+          "canonical_q": 0.0,
+          "proof": "bitwise constant nodal displacement; exact derivative row sums zero; invertible Q4; d=0; continuum H=q=0",
+          "unit_roundoff": 1.1102230246251565e-16,
+          "gamma_operation_count": 44,
+          "gamma44_upper": 4.884981308350713e-15,
+          "dot_operation_counts": [
+            6,
+            6,
+            16,
+            16
+          ],
+          "determinant_interval": [
+            9.518315445386128e-07,
+            9.518315445392961e-07
+          ],
+          "absolute_bound": 6.049314824649359e-70,
+          "ratio": 0.0006985667170370423,
+          "branches": {
+            "trace_nonnegative": {
+              "geometry_rounding_bound": 8.086135093283514e-80,
+              "quadratic_scale": 1.238349635749812e-55,
+              "assembly_rounding_bound": 6.049314823840746e-70,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 6.049314824649359e-70,
+              "C_abs_upper": [
+                [
+                  1.3461538461538474,
+                  0.5769230769230773,
+                  0.0
+                ],
+                [
+                  0.5769230769230773,
+                  1.3461538461538474,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.3846153846153851
+                ]
+              ]
+            },
+            "trace_negative": {
+              "geometry_rounding_bound": 3.871342377020637e-80,
+              "quadratic_scale": 6.973268664474194e-56,
+              "assembly_rounding_bound": 3.4064287084064175e-70,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 3.406428708793552e-70,
+              "C_abs_upper": [
+                [
+                  0.5128205128205132,
+                  0.2564102564102566,
+                  0.0
+                ],
+                [
+                  0.2564102564102566,
+                  0.5128205128205132,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.38461538461538486
+                ]
+              ]
+            }
+          },
+          "arithmetic_assumptions": "IEEE binary64 round-to-nearest; gamma bounds include absolute gradual-underflow terms; no overflow or approximate reciprocal",
+          "scope": "fixed E=1, nu=0.3, plane-strain AMOR eta=0; caller binds source and payload; raw arrays unchanged"
+        },
+        {
+          "key": "c0058_s05",
+          "payload_sha256": "2c91b208697d2832b7dce436501282f23fcaac380488b4895505809b5c23f599",
+          "element": 77296,
+          "gp": 2,
+          "schema": "rigid_translation_amor_roundoff_v1",
+          "producer_commit": "862992a60edc7f59335365beacb5c71fc8592a7a",
+          "raw_H": -1.5666182482312424e-72,
+          "raw_q": -1.5666182482312424e-72,
+          "raw_H_hex": "-0x1.624d000000000p-239",
+          "raw_q_hex": "-0x1.624d000000000p-239",
+          "canonical_H": 0.0,
+          "canonical_q": 0.0,
+          "proof": "bitwise constant nodal displacement; exact derivative row sums zero; invertible Q4; d=0; continuum H=q=0",
+          "unit_roundoff": 1.1102230246251565e-16,
+          "gamma_operation_count": 44,
+          "gamma44_upper": 4.884981308350713e-15,
+          "dot_operation_counts": [
+            6,
+            6,
+            16,
+            16
+          ],
+          "determinant_interval": [
+            9.555047846636287e-07,
+            9.55504784664313e-07
+          ],
+          "absolute_bound": 6.03368320128903e-70,
+          "ratio": 0.002596454265110492,
+          "branches": {
+            "trace_nonnegative": {
+              "geometry_rounding_bound": 8.063707162432324e-80,
+              "quadratic_scale": 1.2351497006075086e-55,
+              "assembly_rounding_bound": 6.033683200482658e-70,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 6.03368320128903e-70,
+              "C_abs_upper": [
+                [
+                  1.3461538461538474,
+                  0.5769230769230773,
+                  0.0
+                ],
+                [
+                  0.5769230769230773,
+                  1.3461538461538474,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.3846153846153851
+                ]
+              ]
+            },
+            "trace_negative": {
+              "geometry_rounding_bound": 3.858538423569787e-80,
+              "quadratic_scale": 6.948134438821409e-56,
+              "assembly_rounding_bound": 3.394150686155045e-70,
+              "absolute_underflow_bound": 2.5e-323,
+              "total_bound": 3.394150686540899e-70,
+              "C_abs_upper": [
+                [
+                  0.5128205128205132,
+                  0.2564102564102566,
+                  0.0
+                ],
+                [
+                  0.2564102564102566,
+                  0.5128205128205132,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.38461538461538486
+                ]
+              ]
+            }
+          },
+          "arithmetic_assumptions": "IEEE binary64 round-to-nearest; gamma bounds include absolute gradual-underflow terms; no overflow or approximate reciprocal",
+          "scope": "fixed E=1, nu=0.3, plane-strain AMOR eta=0; caller binds source and payload; raw arrays unchanged"
+        }
+      ]
+    }
+  ],
+  "raw_log_sha256": "9bef6eb1b3a7d669b646cd663ffa8190ddfd73dd8646bb24d56aa9c302458656",
+  "complete": {
+    "kind": "complete",
+    "archives": 2,
+    "test_conditions": 0,
+    "rule": "native862992_recovered_load_source_f_certified_energy_v1"
+  },
+  "independent_evidence_review": {
+    "status": "PASS",
+    "reviewer": "/root/review_fixed_weight",
+    "record": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/fixed_weight_adapter_20261022/evidence_review.md",
+    "scope": "synthetic interface; development conditions only"
+  }
+}

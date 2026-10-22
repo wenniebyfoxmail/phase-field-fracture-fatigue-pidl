@@ -257,3 +257,18 @@ pending. Proposed D3 scope (not authorized or launched):
 Current authority covers only this local implementation and lightweight tests.
 No training, FEM solve, remote producer run, retry, protected holdout access,
 external message, file transmission or Git push occurred.
+
+
+## 2026-10-22: complete native archive adaptation
+
+The explicit v2 recovered-initial path extends the interface without relabelling
+pre-cycle recovery as a post-history refresh. `iter_trajectory` requires full
+exhaustion; `load_trajectory` retains its eager API. Source-aware archive
+adaptation preserves immutable originals, validates source fatigue arithmetic,
+binds complete-precision loads, and certifies only the five fixed rigid-translation
+negative-energy points. The generic v1 adapter retains its strict rejection rules.
+
+See [the source-aware adaptation report](fixed_weight_native_adaptation_20261022.md)
+for exact source/run identities, the complete 882-state / 880-transition Torch
+validation, independent reviews and the limited development-data scope. No training
+or new FEM solve was launched.

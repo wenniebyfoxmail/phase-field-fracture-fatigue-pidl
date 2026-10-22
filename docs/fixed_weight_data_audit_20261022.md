@@ -156,3 +156,8 @@ U0.125 开发验证仅是完成适配后的候选；当前无已准入三分集�
 - 精确 producer 源目录：`/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012/local_archive/experiments/S09-E008/producer_provenance_20261016/source/`。本轮独立审查确认所用 16 份本地 source blob 与来源 manifest 匹配。
 - 该源目录下：`Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m:164–199`（初态）；`solve_fatigue_fracture.m:182–226`（提交／刷新／捕获）；`Sources/+phase_field/+mex/Modules/fem/assembly/pf/at1_penalty_fatigue.f90:89–99`（H/alpha/q/f）；`Sources/+phase_field/+audit/write_stage0b_static.m:24–88`（静态绑定）。
 - 独立结果审查重新聚合 JSONL，确认全部 882 状态、两组 manifest 存在性、共同 mesh/material/initial 与上述失败计数；最终报告审查无阻塞意见，指出的索引哈希指针已补入 JSON。没有把扫描完成解释为契约全部通过。
+
+
+## 同日后续：显式适配验证
+
+四项适配的实现、全量实际Torch检查和独立复核见 [后续适配报告](fixed_weight_native_adaptation_20261022.md)。本页保留原始数据对旧严格接口的失败结果，不改写为原档本来已通过。
