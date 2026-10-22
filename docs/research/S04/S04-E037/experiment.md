@@ -30,7 +30,7 @@ After updated mu, fresh SAME-point parameter Lagrangian gradient including L2, p
 - max(h-d)<=5e-6: numerical-tolerance irreversibility, not exact pointwise non-healing.
 - scaled complementarity max(abs(mu*c))/(1+max(abs(mu)))<=5e-5.
 - parameter Lagrangian gradient RMS<=5e-5.
-These are exploratory numerical tolerances and do not certify full field KKT/global optimum. Unscaled complementarity and separate lower/upper violations and multiplier maxima are recorded. The physical field projected damage residual (fixed unit step with inverse normalized lumped mass) and unconstrained interior u/v residual are reported separately, with potentially releasable boundary counts. No field-space certificate is inferred from these parameter checks.
+These are exploratory numerical tolerances and do not certify full field KKT/global optimum. Unscaled complementarity and separate lower/upper violations and multiplier maxima are recorded. The physical field projected damage residual (fixed unit step with inverse normalized lumped mass) and unconstrained interior u/v residual are reported separately, with potentially releasable boundary counts. No field-space certificate is inferred from these parameter checks. If the original arm has any h>1, its box projected residual is undefined and stored as null with inconsistent_bound_count, not a fabricated residual. Final updated mu/rho/full constraint arrays are retained for independent recomputation.
 
 The physical energy must be finite and >0 before log; no positivity clipping. Nonfinite arithmetic stops the dispatcher and preserves failure receipt. A failed, capped or invalid new step is NOT committed; no subsequent new step runs. Baseline mismatch against archive stops interpretation rather than repairing it.
 

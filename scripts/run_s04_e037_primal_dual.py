@@ -119,11 +119,15 @@ def main():
         ru,rv,rd=torch.autograd.grad(e0[0]+e0[1],(ud,vd,dd))
         diagnostics['field_gradient_calls']+=1
         invm=weights.reciprocal()
-        pg=dd.detach()-torch.maximum(h,torch.minimum(torch.ones_like(h),dd.detach()-rd.detach()*invm))
+        bad_bounds=int((h>1).sum())
+        pg_inf=None
+        if bad_bounds==0:
+            pg=dd.detach()-torch.maximum(h,torch.minimum(torch.ones_like(h),dd.detach()-rd.detach()*invm))
+            pg_inf=float(pg.abs().max())
         free=(inp[:,1]>-.5+1e-7)&(inp[:,1]<.5-1e-7)
         m=dict(E_el=float(es[0].detach()),E_d=float(es[1].detach()),shadow_E_irr=float(es[2].detach()),
             weighted_L2=float(reg().detach()),parameter_kkt_rms=float(gnorm/np.sqrt(sum(p.numel() for p in params))),
-            parameter_kkt_norm=float(gnorm),field_damage_projected_inf=float(pg.abs().max()),
+            parameter_kkt_norm=float(gnorm),field_damage_projected_inf=pg_inf,inconsistent_bound_count=bad_bounds,
             free_uv_residual_inf=float(torch.maximum(ru[free].abs().max(),rv[free].abs().max())),
             releasable_lower_count=int(((d<=h+5e-6)&(rd<0)&(h<1)).sum()),
             releasable_upper_count=int(((d>=1-5e-6)&(rd>0)&(h<1)).sum()))
@@ -134,7 +138,10 @@ def main():
             ex,ey,exy,_,_=gradients(inp,u,v,d,area,conn)
             tr=ex+ey;bulk=1/(3*(1-2*.3));shear=1/2.6
             raw=.5*bulk*tr.clamp_min(0).square()+shear*(ex.square()+ey.square()+2*exy.square()-tr.square()/3)
-            if mu is not None:m.update(constraint_metrics(d,h,mu))
+            if mu is not None:
+                m.update(constraint_metrics(d,h,mu))
+                np.savez_compressed(folder/'dual_state.npz',mu=mu.cpu().numpy(),rho=np.array(rho),
+                    constraints=torch.stack((h-d,d-1)).cpu().numpy())
             else:m.update(dict(d_min=float(d.min()),d_max=float(d.max()),retreat_max=float((h-d).clamp_min(0).max())))
             np.savez_compressed(folder/'fields.npz',u=u.cpu().numpy(),v=v.cpu().numpy(),d=d.cpu().numpy(),
                 history_d=h.cpu().numpy(),history_A=hfat.cpu().numpy(),history_prev=prev.cpu().numpy(),
