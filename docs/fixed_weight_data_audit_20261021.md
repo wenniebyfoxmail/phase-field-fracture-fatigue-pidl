@@ -4,6 +4,11 @@ Date: 2026-10-21. Owner: `fixed-weight-learning`.
 Contract/code reviewed: `440d4f7dea60175d2ce36deba99692a49e1332ee`,
 `source/fixed_weight_contract.py`, `explicit_substep_post_commit_v1`.
 
+Follow-up: the [2026-10-22 read-only remote audit](fixed_weight_data_audit_20261022.md)
+verified the complete U0.115/U0.125 raw archives and resolved their material,
+mesh and initial-state availability. It found specific strict-admission
+differences; the dated inventory below remains the 10-21 metadata-only record.
+
 ## Decision
 
 **No complete multi-condition corpus has yet been established as admissible

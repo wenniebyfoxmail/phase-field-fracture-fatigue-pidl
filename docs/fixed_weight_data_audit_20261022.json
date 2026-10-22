@@ -1,0 +1,454 @@
+{
+  "runs": {
+    "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92": {
+      "inventory": {
+        "kind": "inventory",
+        "run": "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92",
+        "logical_rows": 618,
+        "unique_states": 516,
+        "manifest_members": 1206,
+        "missing_manifest_members": []
+      },
+      "hash_preflight": {
+        "kind": "hash_preflight",
+        "run": "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92",
+        "verified": 516,
+        "total_bytes": 7644978713,
+        "elapsed": 13.061999999918044
+      },
+      "static": {
+        "kind": "static",
+        "run": "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92",
+        "receipt": {
+          "source_static_sha256": "a7edb0e430ae84669e3326f777360e7d73488fa41fad8fa09a038e6bbd26985e",
+          "derivation": "Q4 detJ * gauss_W * thickness; Nxi-consistent nodal lumping",
+          "node_order": "native",
+          "element_order": "native",
+          "gauss_point_order": "native quadrature",
+          "node_coordinates_sha256": "88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d",
+          "cells_0based_sha256": "14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+          "gauss_weight_sha256": "c914e8188e43fff1c96e25283e15b252af0d9f39b469f2d1518915802c756d18",
+          "Nxi_sha256": "ee8a3dcc2ad08d1938852b199d255ad18b91dad87350e8c114c50486bd8b1c84",
+          "dNdxi_sha256": "05bae2f3af7dd6c95fa5259b524c97e0f3a8bb78a5d3903b730bfe6281f25b53",
+          "thickness": 1.0,
+          "nodal_weight_sha256": "5a7d5c901d2db1d7c3bb387192ecacadbfa9d13ed8f5347645c2d3fdc54391a8",
+          "gp_weight_sha256": "c7e00d487837c8fa34eca9aef8638df85e01c49f4a9fef774116624719ab1b59",
+          "nodal_weight_shape": [
+            86756
+          ],
+          "gp_weight_shape": [
+            86408,
+            4
+          ]
+        },
+        "material": {
+          "E": 1.0,
+          "ni": 0.3,
+          "Gc": 0.01,
+          "ell": 0.01,
+          "alpha_T": 0.5,
+          "p": 2.0,
+          "res_stiff": 0.0,
+          "thickness": 1.0
+        },
+        "numeric_config": {
+          "u_max": [
+            0.115
+          ],
+          "R": [
+            0.0
+          ],
+          "alpha_T": [
+            0.5
+          ],
+          "res_stiff": [
+            0.0
+          ],
+          "n_step": [
+            5.0
+          ],
+          "effective_uy": [
+            0.028749885000000003,
+            0.05749988500000001,
+            0.086249885,
+            0.114999885,
+            0.0
+          ],
+          "nominal_load_factor": [
+            0.25,
+            0.5,
+            0.75,
+            1.0,
+            0.0
+          ],
+          "reset_fatigue_after_recovery": [
+            1
+          ]
+        },
+        "boundary_masks": {
+          "fix_X": {
+            "count": 298,
+            "matches_contract": true
+          },
+          "fix_Y": {
+            "count": 271,
+            "matches_contract": true
+          },
+          "disp_Y": {
+            "count": 27,
+            "matches_contract": true
+          }
+        },
+        "basis_errors": {
+          "N_max_abs": 1.1102230246251565e-16,
+          "dN_max_abs": 5.551115123125783e-17,
+          "gauss_points_max_abs": 1.1102230246251565e-16
+        },
+        "static_file_sha256": "a7edb0e430ae84669e3326f777360e7d73488fa41fad8fa09a038e6bbd26985e",
+        "config_file_sha256": "0075cb117676aeb334e185b4149ea7ceefc5799e01b68d0303a56533e86ea7b5",
+        "minimum_native_gp_weight": 2.9498285754529906e-07,
+        "material_ids": [
+          1
+        ]
+      },
+      "completion": {
+        "kind": "complete",
+        "run": "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92",
+        "elapsed_seconds": 69.15599999995902,
+        "scan": "numpy-float64 predicates; not PyTorch loader execution",
+        "archive_modified": false,
+        "training_started": false,
+        "solver_started": false
+      },
+      "decoded_physical_states": 516,
+      "post_states": 515,
+      "post_states_numeric_predicates_pass": 209,
+      "post_states_strict_decoder_and_numeric_predicates_pass": 129,
+      "decode_errors": [],
+      "strict_decoder_failures": {
+        "scalar mismatch: state_metadata/imposed_displacement": 206
+      },
+      "max_index_raw_load_delta": 6.938893903907228e-18,
+      "all_raw_loads_match_config": true,
+      "nonfinite_state_count": 0,
+      "damage_out_of_bounds_state_count": 0,
+      "negative_history_states": [
+        {
+          "key": "c0058_s05",
+          "history_min": [
+            -5.5285296622292597e-73,
+            0.00021704643357703,
+            -5.5285296622292597e-73
+          ],
+          "history_negative_counts": [
+            1,
+            0,
+            1
+          ]
+        },
+        {
+          "key": "c0087_s05",
+          "history_min": [
+            -3.5241094852660595e-72,
+            0.00021738962842715375,
+            -3.5241094852660595e-72
+          ],
+          "history_negative_counts": [
+            2,
+            0,
+            2
+          ]
+        }
+      ],
+      "f_violating_state_count": 305,
+      "f_violating_gp_count": 1229,
+      "max_f_relative_error": 9.809887087151194e-15,
+      "bc_violating_state_count": 0,
+      "max_bc_error": 6.938893903907228e-18,
+      "d_decrease_intervals": 0,
+      "alpha_decrease_intervals": 0,
+      "H_undgr_max_abs": 0.0,
+      "q_degr_max_abs": 6.716849298982197e-15,
+      "alpha_update_max_abs": 3.219646771412954e-15,
+      "initial": {
+        "u_max_abs": 0.0,
+        "history_max_abs": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "u_hash": "7fe9477997fe8fb99fc66fc76e05b298ad659dc788c19504869a9e94084f7c11",
+        "d_hash": "a6a6933e21ef26adc0104262de8252f0ad41ec876216bddbb202eb14ae19d5b1",
+        "history_hash": "0135dcc91481999df7be1c1de302118865e2b6ad04d76060ff206af606460350"
+      },
+      "state_index_sha256": "eb1cbacb52252891cb1039ec8df3bcb5cb4ce7ea2fe451476e0e241def10855a",
+      "producer_commit": "862992a60edc7f59335365beacb5c71fc8592a7a"
+    },
+    "hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae": {
+      "inventory": {
+        "kind": "inventory",
+        "run": "hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae",
+        "logical_rows": 438,
+        "unique_states": 366,
+        "manifest_members": 872,
+        "missing_manifest_members": []
+      },
+      "hash_preflight": {
+        "kind": "hash_preflight",
+        "run": "hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae",
+        "verified": 366,
+        "total_bytes": 5341579398,
+        "elapsed": 9.422000000020489
+      },
+      "static": {
+        "kind": "static",
+        "run": "hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae",
+        "receipt": {
+          "source_static_sha256": "b79a36298eabec363fb7a53fb0590db46eb949b05c05dbffb9cb5a8bc0e4b40e",
+          "derivation": "Q4 detJ * gauss_W * thickness; Nxi-consistent nodal lumping",
+          "node_order": "native",
+          "element_order": "native",
+          "gauss_point_order": "native quadrature",
+          "node_coordinates_sha256": "88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d",
+          "cells_0based_sha256": "14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+          "gauss_weight_sha256": "c914e8188e43fff1c96e25283e15b252af0d9f39b469f2d1518915802c756d18",
+          "Nxi_sha256": "ee8a3dcc2ad08d1938852b199d255ad18b91dad87350e8c114c50486bd8b1c84",
+          "dNdxi_sha256": "05bae2f3af7dd6c95fa5259b524c97e0f3a8bb78a5d3903b730bfe6281f25b53",
+          "thickness": 1.0,
+          "nodal_weight_sha256": "5a7d5c901d2db1d7c3bb387192ecacadbfa9d13ed8f5347645c2d3fdc54391a8",
+          "gp_weight_sha256": "c7e00d487837c8fa34eca9aef8638df85e01c49f4a9fef774116624719ab1b59",
+          "nodal_weight_shape": [
+            86756
+          ],
+          "gp_weight_shape": [
+            86408,
+            4
+          ]
+        },
+        "material": {
+          "E": 1.0,
+          "ni": 0.3,
+          "Gc": 0.01,
+          "ell": 0.01,
+          "alpha_T": 0.5,
+          "p": 2.0,
+          "res_stiff": 0.0,
+          "thickness": 1.0
+        },
+        "numeric_config": {
+          "u_max": [
+            0.125
+          ],
+          "R": [
+            0.0
+          ],
+          "alpha_T": [
+            0.5
+          ],
+          "res_stiff": [
+            0.0
+          ],
+          "n_step": [
+            5.0
+          ],
+          "effective_uy": [
+            0.031249875,
+            0.062499875,
+            0.093749875,
+            0.124999875,
+            0.0
+          ],
+          "nominal_load_factor": [
+            0.25,
+            0.5,
+            0.75,
+            1.0,
+            0.0
+          ],
+          "reset_fatigue_after_recovery": [
+            1
+          ]
+        },
+        "boundary_masks": {
+          "fix_X": {
+            "count": 298,
+            "matches_contract": true
+          },
+          "fix_Y": {
+            "count": 271,
+            "matches_contract": true
+          },
+          "disp_Y": {
+            "count": 27,
+            "matches_contract": true
+          }
+        },
+        "basis_errors": {
+          "N_max_abs": 1.1102230246251565e-16,
+          "dN_max_abs": 5.551115123125783e-17,
+          "gauss_points_max_abs": 1.1102230246251565e-16
+        },
+        "static_file_sha256": "b79a36298eabec363fb7a53fb0590db46eb949b05c05dbffb9cb5a8bc0e4b40e",
+        "config_file_sha256": "c4ee5a79831c7a2a327eec976d36a7ae96945ad1cbf67071e38b8d98ddd511de",
+        "minimum_native_gp_weight": 2.9498285754529906e-07,
+        "material_ids": [
+          1
+        ]
+      },
+      "completion": {
+        "kind": "complete",
+        "run": "hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae",
+        "elapsed_seconds": 44.937000000150874,
+        "scan": "numpy-float64 predicates; not PyTorch loader execution",
+        "archive_modified": false,
+        "training_started": false,
+        "solver_started": false
+      },
+      "decoded_physical_states": 366,
+      "post_states": 365,
+      "post_states_numeric_predicates_pass": 215,
+      "post_states_strict_decoder_and_numeric_predicates_pass": 215,
+      "decode_errors": [],
+      "strict_decoder_failures": {},
+      "max_index_raw_load_delta": 0.0,
+      "all_raw_loads_match_config": true,
+      "nonfinite_state_count": 0,
+      "damage_out_of_bounds_state_count": 0,
+      "negative_history_states": [
+        {
+          "key": "c0058_s05",
+          "history_min": [
+            -1.5666182482312424e-72,
+            0.0007248887779067898,
+            -1.5666182482312424e-72
+          ],
+          "history_negative_counts": [
+            2,
+            0,
+            2
+          ]
+        }
+      ],
+      "f_violating_state_count": 150,
+      "f_violating_gp_count": 301,
+      "max_f_relative_error": 5.25973439605369e-15,
+      "bc_violating_state_count": 0,
+      "max_bc_error": 6.938893903907228e-18,
+      "d_decrease_intervals": 0,
+      "alpha_decrease_intervals": 0,
+      "H_undgr_max_abs": 0.0,
+      "q_degr_max_abs": 5.9674487573602164e-15,
+      "alpha_update_max_abs": 1.6965595595053173e-15,
+      "initial": {
+        "u_max_abs": 0.0,
+        "history_max_abs": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "u_hash": "7fe9477997fe8fb99fc66fc76e05b298ad659dc788c19504869a9e94084f7c11",
+        "d_hash": "a6a6933e21ef26adc0104262de8252f0ad41ec876216bddbb202eb14ae19d5b1",
+        "history_hash": "0135dcc91481999df7be1c1de302118865e2b6ad04d76060ff206af606460350"
+      },
+      "state_index_sha256": "3d815b4abc8e4d215b2d6ce747bbc728729d9ed41e7ff7dfe29dbb77695ad1f1",
+      "producer_commit": "862992a60edc7f59335365beacb5c71fc8592a7a"
+    }
+  },
+  "cross_run": {
+    "same_mesh_arrays": true,
+    "same_material": true,
+    "same_initial_fields": true
+  },
+  "mode": "read-only numpy predicate scan; not PyTorch full-loader execution",
+  "all_runs_complete": true,
+  "execution": {
+    "start_utc": "2026-10-22T00:14:13.265305+00:00",
+    "code_commit": "201287a9",
+    "review": "independent read-only READY for diagnostic scan",
+    "command": [
+      "ssh",
+      "-o",
+      "BatchMode=yes",
+      "-o",
+      "ConnectTimeout=15",
+      "citpc12-ssh",
+      "py -3 -B -u - C:\\q4runs\\hard5_new_runs_u0115_u0125_20260827_v1\\hard5_u0115_stage0b C:\\q4runs\\hard5_new_runs_u0115_u0125_20260827_v1\\hard5_u0125_stage0b"
+    ],
+    "source_modified": false,
+    "new_fem_solve": false,
+    "training": false,
+    "exit_code": 0,
+    "end_utc": "2026-10-22T00:16:08.835289+00:00",
+    "wall_seconds": 115.56756820797455
+  },
+  "evidence_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/fixed_weight_u0115_u0125_audit_20261022",
+  "code_commit": "201287a9",
+  "torch_scalar_diagnostic": {
+    "torch_version": "2.11.0",
+    "scope": "actual current Carrara helper and nonnegative predicate at six selected diagnostic points, not whole loader",
+    "results": [
+      {
+        "run": "hard5_u0115_stage0b",
+        "key": "c0001_s01",
+        "alpha": 0.0005866633810803767,
+        "export_f": 1.0,
+        "torch_f": 1.0,
+        "torch_relative_error": 0.0,
+        "current_torch_isclose_8eps": true,
+        "negative_history_values_rejected_by_nonnegative_predicate": null
+      },
+      {
+        "run": "hard5_u0115_stage0b",
+        "key": "c0100_s04",
+        "alpha": 31.74907345088553,
+        "export_f": 0.0009615359297028576,
+        "torch_f": 0.0009615359297028481,
+        "torch_relative_error": 9.809887087151194e-15,
+        "current_torch_isclose_8eps": false,
+        "negative_history_values_rejected_by_nonnegative_predicate": null
+      },
+      {
+        "run": "hard5_u0115_stage0b",
+        "key": "c0058_s05",
+        "alpha": 14.157513539653827,
+        "export_f": 0.004654568134117025,
+        "torch_f": 0.004654568134117017,
+        "torch_relative_error": 1.6771170637029459e-15,
+        "current_torch_isclose_8eps": true,
+        "negative_history_values_rejected_by_nonnegative_predicate": true
+      },
+      {
+        "run": "hard5_u0115_stage0b",
+        "key": "c0087_s05",
+        "alpha": 15.944645425639914,
+        "export_f": 0.003697864321581688,
+        "torch_f": 0.003697864321581698,
+        "torch_relative_error": 2.6974110241557354e-15,
+        "current_torch_isclose_8eps": false,
+        "negative_history_values_rejected_by_nonnegative_predicate": true
+      },
+      {
+        "run": "hard5_u0125_stage0b",
+        "key": "c0068_s01",
+        "alpha": 15.916875996947104,
+        "export_f": 0.003710384904489001,
+        "torch_f": 0.0037103849044889813,
+        "torch_relative_error": 5.25973439605369e-15,
+        "current_torch_isclose_8eps": false,
+        "negative_history_values_rejected_by_nonnegative_predicate": null
+      },
+      {
+        "run": "hard5_u0125_stage0b",
+        "key": "c0058_s05",
+        "alpha": 7.7423796615105145,
+        "export_f": 0.014719558016249837,
+        "torch_f": 0.014719558016249808,
+        "torch_relative_error": 2.0034772144007044e-15,
+        "current_torch_isclose_8eps": false,
+        "negative_history_values_rejected_by_nonnegative_predicate": true
+      }
+    ]
+  }
+}

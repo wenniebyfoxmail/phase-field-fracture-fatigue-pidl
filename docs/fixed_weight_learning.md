@@ -120,11 +120,17 @@ It derives the next damage bound from committed damage only under this declared
 strict FEM convention. Existing s00 pre-cycle records and FYR histories are
 not silently converted.
 
-The [2026-10-21 existing-data audit](fixed_weight_data_audit_20261021.md) found
-two complete native Hard5 substep indexes (U0.115 and U0.125), both already
-exposed to development, but no fully admitted multi-condition corpus or matching
-untouched test set for **this** contract. It records reusable assets, missing
-fields, local versus historical remote availability and whole-condition splits.
+The [2026-10-22 remote audit](fixed_weight_data_audit_20261022.md) verified all
+882 physical native Hard5 states in the U0.115 and U0.125 archives, including
+matching mesh/material/initial-field identities. All required fields exist.
+Full trajectories still fail current admission: the initial timing is outside
+the API, U0.115 CSV loads lose a final precision bit, tiny negative H/q occur
+at three unloading states, and the producer/current Carrara arithmetic paths
+exceed the adapter's strict relative tolerance at some points. These are
+recorded without changing the contract or original arrays. No new FEM solve
+or training was started. Both conditions are development-exposed; no matching
+untouched test set is established. The [earlier inventory](fixed_weight_data_audit_20261021.md)
+retains other assets, missing fields and original whole-condition splits.
 Other real multi-condition carriers have cadence/support/semantics mismatches.
 The known S09 exact producer and state adapters
 are useful precedents, but one fixed trajectory, a source/export check or
