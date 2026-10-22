@@ -1,0 +1,19 @@
+{
+  "experiment": "S04-E037",
+  "protocol": "r1",
+  "state": "checkpoint0_postrecovery_to_c1s1_j1_U0.03",
+  "arm_seconds": 200,
+  "total_seconds": 1200,
+  "max_outer": 6,
+  "outer_seconds": 25,
+  "outer_evaluations": 250,
+  "max_evaluations": 2000,
+  "qp_seconds": 100,
+  "primal_floor": 0.00001,
+  "primal_ceiling": 0.0001,
+  "stationarity_floor": 0.001,
+  "stationarity_ceiling": 0.01,
+  "L2": 0.00001,
+  "no_retry": true,
+  "no_history_commit": true
+}

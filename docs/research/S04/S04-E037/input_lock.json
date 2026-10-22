@@ -1,0 +1,35 @@
+{
+  "physics_commit": "e9dc2632457f5f566db95c75b856ad96170fd0e6",
+  "baseline": {
+    "best_models/trained_1NN_0.pt": "09f1fc279007262b1068f0526e36e3aa2005633da271924cb598b7994ba8509a",
+    "best_models/checkpoint_step_0.pt": "aad4ebcb60a41caba6e0d2dbfaaba7cb7cb2ece631da8fbbfcaf3d374fc77aae",
+    "model_settings.txt": "015fe8ddf563b2b9d81b8a681705e2a35f9044206311a6a7e26f40a7dc9c1047",
+    "pre_step0_baseline_diagnostics.npz": "12acc7f39c4fed48d64a7a0b3141d82402247a57b5ece691402e874aeaf1826a",
+    "alpha_snapshots/alpha_cycle_0000.npy": "27772fcf9f62eda52d5e4affe80404088551d4e3965be82183df160793088a34"
+  },
+  "physics": {
+    "SENS_tensile/field_computation.py": "73ac9cd57db9c3b6f1d610437141373fd7a77f3acb14d040ebb39ad99e3f3c8c",
+    "SENS_tensile/meshed_geom_fem_soft_hist0.msh": "16b447e3dd789e300f5181c3cf9b34322e4f27575867b354f55473d2969a9ed8",
+    "source/__init__.py": "c382257fec41061b4d207c88797c8455de9430e888bde295aeee24d58388fdb0",
+    "source/adaptive_sampling.py": "60060a1b8429f5504084134a9b946f406146c45a66f442056c0af62e1b3abb4a",
+    "source/compute_energy.py": "083c9c7263a8c86189a1f38165faa675eeffbfc567a607d2765a8ce0215f431a",
+    "source/construct_model.py": "40d7d2402de039c4c3e7a405fe048d6dd12bff9a31d3922a8db0e8da9a6f045c",
+    "source/dataset_element.py": "8f7a263ad6fb3a79e47756ea520d288f36188765f08bc65e71018d8d3b0e1555",
+    "source/enriched_ansatz.py": "5cf3853aafc59a421482b4eb25c7174397ca68c41fc331d76a438aa1c59ce859",
+    "source/fatigue_history.py": "ae75652a74f987f3ef10e3c8585eb51da9781a3d24f6941707b4c751b6a18918",
+    "source/fem_supervision.py": "f6d84e41f210dd5a3c655b02059d6b19abc1e6a5a42183417236c375d07f23f2",
+    "source/fit.py": "db71d99c7e2862ef6c449fcd61f4e4c56f4500a62028e9dac1439c53d366432c",
+    "source/input_data_from_mesh.py": "debe27671990f12aa3dcf44d0ef879c6b29a4a350138ed085aab2f315b5b5d30",
+    "source/inverse_params.py": "9b3834d8ce4b43910c671bed9f71d94b6b27617d0ba4e8cd801273979673389c",
+    "source/material_properties.py": "52d960be2ad3d3bcaf2cbfc00c1c49bcf748d0c8ca804d916afecdefc567d00c",
+    "source/model_train.py": "0c47b2fdd208594118f1c392c8a18d5004b726434406554ce95e9cb2068ad6cd",
+    "source/network.py": "00d52323a2cdfc55b7b46520d45358c1d26c50113fc2a6d8dd3ed76b77680472",
+    "source/optim.py": "94f699a1cb6181cac7037b81f821161cc5537ff6fa972b6c8b698490a0534398",
+    "source/paper_style.py": "e5ee6aead9b95d8043c7cb1c7b2c82e841b6645d9eab30dd71e5ad161361c977",
+    "source/pff_model.py": "3d88bb40455c687c4d93aca5a9cd684dd7c0120c6e0a32c9860c49f5272c475a",
+    "source/plotting.py": "8041ab2f4347c319a9755d052c63188d8015aa1e02669236864bfc1c4e72eda9",
+    "source/scaling.py": "45f487895e67d49b7eecf1abe9beae1e9fe980801db2582b8bd4be44d4d9192f",
+    "source/utils.py": "9e9e015eed8bc126b111227bd885af7e8988f59afd2a97045801df82e6199c8d",
+    "source/williams_features.py": "efdcbc624db04be9cd11d3e13b1d5360deb7e4625fe806a037af374b55c8e137"
+  }
+}
