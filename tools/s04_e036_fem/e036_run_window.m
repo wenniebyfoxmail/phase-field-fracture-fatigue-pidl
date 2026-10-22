@@ -1,4 +1,4 @@
-function result=e036_run_window(sys,native_eq,native_pf,par,predecessor,request,policy,budget,authority,out_dir)
+function result=e036_run_window(sys,native_eq,native_pf,par,predecessor,request,policy,budget,authority,out_dir,initial_fields)
 %E036_RUN_WINDOW Explicit admitted-predecessor window; no recovery or resume.
 % PREPARED SOURCE ONLY: not executed, checkcode-checked or numerically validated.
 % Reuses the native Newton/staggered interfaces and E011 c1 arm's predictor.
@@ -6,6 +6,7 @@ function result=e036_run_window(sys,native_eq,native_pf,par,predecessor,request,
 % No target/future-reference argument is accepted. Helpers must be on MATLAB's
 % explicitly verified path. External watchdog is mandatory: MATLAB callbacks
 % cannot interrupt a long single MEX/CHOLMOD call or an operating-system hang.
+if nargin<11,initial_fields=[];end
 required(par,{'solver','stag','step','regularize_pf_newton'},'parameters');
 required(request,{'cycle','substeps','role'},'request');
 assert(isequal(sort(fieldnames(request)),sort({'cycle';'substeps';'role'})), ...
@@ -13,11 +14,12 @@ assert(isequal(sort(fieldnames(request)),sort({'cycle';'substeps';'role'})), ...
 integer(request.cycle,1,83);steps=request.substeps(:)';
 assert(isnumeric(steps) && isreal(steps) && all(isfinite(steps)) && ...
  all(steps==fix(steps)) && ~isempty(steps),'E036:Steps','Explicit integer substeps required');
-main=isequal(string(request.role),"main");tight=isequal(string(request.role),"tightening");
+main=isequal(string(request.role),"main");tight=isequal(string(request.role),"tightening");oracle=isequal(string(request.role),"nodal_oracle");
 allowed=main && ((ismember(request.cycle,[1 83]) && isequal(steps,1:5)) || ...
  (ismember(request.cycle,[20 60]) && isequal(steps,4)));
-allowed=allowed || (tight && request.cycle==83 && isequal(steps,4));
+allowed=allowed || ((tight || oracle) && ismember(request.cycle,[1 83]) && isscalar(steps) && ismember(steps,[2 4]));
 assert(allowed,'E036:Scope','Only the declared windows/endpoints/tightening are supported');
+assert(oracle==~isempty(initial_fields),'E036:OracleScope','Initial fields are exclusive to declared oracle jobs');
 required(authority,{'execution_approved','approval_id','producer_hostname', ...
  'run_id','source_commit','manifest_sha256','native_bindings_verified', ...
  'native_eq_name','native_pf_name','thread_controls_verified','watchdog_id', ...
@@ -32,6 +34,10 @@ assert(strlength(string(getenv('COMPUTERNAME')))>0 && ...
  'E036:Producer','This entry requires the explicitly authorized Windows producer');
 hexstring(authority.source_commit,40);hexstring(authority.manifest_sha256,64);
 hexstring(authority.predecessor_sha256,64);
+if oracle
+ required(authority,{'initial_fields_sha256','initial_source_snapshot_sha256','initial_source_completion_sha256'},'oracle authority');
+ hexstring(authority.initial_fields_sha256,64);hexstring(authority.initial_source_snapshot_sha256,64);
+end
 assert(isequal(authority.request,request) && isequal(authority.solver,par.solver) && ...
  isequal(authority.stag,par.stag) && isequal(authority.policy,policy), ...
  'E036:Authority','Actual request/solver/staggered/policy differs from the approved envelope');
@@ -40,7 +46,8 @@ assert(isa(native_eq,'function_handle') && isa(native_pf,'function_handle') && .
  strcmp(func2str(native_pf),authority.native_pf_name), ...
  'E036:Binding','Native function handles do not match the recorded bindings');
 required(budget,{'total_timer','total_wall_seconds','window_wall_seconds', ...
- 'step_wall_seconds','max_outer','max_threads'},'budget');
+ 'step_wall_seconds','max_outer','max_threads','authority_file','authority_sha256', ...
+ 'authority_id','watchdog_id','global_deadline'},'budget');
 positive(budget.total_wall_seconds);positive(budget.window_wall_seconds);
 positive(budget.step_wall_seconds);integer(budget.max_outer,1,1500);integer(budget.max_threads,1,4);
 budget_names={'total_wall_seconds','window_wall_seconds','step_wall_seconds','max_outer','max_threads'};
@@ -50,11 +57,14 @@ for k=1:numel(budget_names)
   'E036:Authority','Actual budget differs from the approved envelope');
 end
 assert(isa(budget.total_timer,'uint64') && isscalar(budget.total_timer), ...
- 'E036:Budget','Shared total_timer must be the caller tic token, not a reset per window');
-assert(budget.window_wall_seconds<=25200 && budget.total_wall_seconds<=25200 && ...
- budget.step_wall_seconds<=1800+1800*tight && ...
- budget.window_wall_seconds<=numel(steps)*budget.step_wall_seconds, ...
- 'E036:Budget','Window/step cap exceeds the proposed Stage B envelope');
+ 'E036:Budget','total_timer must be the current authorized job tic token');
+assert(budget.window_wall_seconds<=budget.total_wall_seconds && ...
+ budget.step_wall_seconds<=budget.window_wall_seconds, ...
+ 'E036:Budget','Step/window timeouts exceed the explicit job guard');
+assert(strcmp(budget.authority_id,authority.approval_id) && ...
+ strcmp(budget.watchdog_id,authority.watchdog_id), ...
+ 'E036:Authority','Window and process authority differ');
+e036_job_clock(budget,budget.total_timer,budget.total_wall_seconds);
 required(par.solver,{'max_iter_displ','tol_displ','max_iter_pf','tol_p_field'},'solver');
 integer(par.solver.max_iter_displ,1,500);integer(par.solver.max_iter_pf,1,250);
 required(par.stag,{'max_iter','tol'},'staggered');
@@ -158,10 +168,24 @@ try
   assert(max(abs((1-d_gp).^2.*pre_raw-pre.history(:,:,3)),[],'all')<=1e-10, ...
    'E036:History','Predecessor active driver differs from its actual native field');
   sys.STIFFNESS_MATRIX.KK=sparse(sys.STIFFNESS_MATRIX.i_row,sys.STIFFNESS_MATRIX.j_col,kv);
-  stage='native_predictor';check_time();
-  [u,res_u,traction]=phase_field.fem.solver.step.pre_iter_update(step,sys,pre.u,par.step);
+  stage='initial_candidate';check_time();
+  if oracle
+   key=pre.state_key;key.cycle=request.cycle;key.substep=step;key.displacement=loads(step);
+   prescribed=zeros(size(pre.u));top=find(sys.MESH.node(:,2)==max(sys.MESH.node(:,2)));
+   prescribed(top+sys.MESH.num_node)=loads(step);
+   [initial,projection]=e036_initial_candidate(initial_fields,pre,key,fixed_u,prescribed(fixed_u), ...
+    fixed_d,authority.initial_source_snapshot_sha256,authority.initial_source_completion_sha256,authority.predecessor_sha256);
+   initial_candidate_file=fullfile(step_dir,'initial_candidate.mat');
+   persist(initial_candidate_file,struct('initial_fields',initial_fields,'projection',projection));
+   initial_candidate_sha256=e036_sha256_file(initial_candidate_file);
+   u=initial.u;d=initial.d;traction=zeros(size(u));
+   [~,res_u,~,~]=eq_counted(sys.MESH,sys.DOFS,sys.GEOM.t,sys.QUADRATURE,sys.MAT_CHAR, ...
+    sys.CC,u,0.0,d,sys.stress_state.as_number,0.0);
+  else
+   [u,res_u,traction]=phase_field.fem.solver.step.pre_iter_update(step,sys,pre.u,par.step);d=pre.d;
+  end
   check_time();assert(all(traction==0),'E036:Traction','Only the declared displacement control is supported');
-  check_bc(u,loads(step));d=pre.d;
+  check_bc(u,loads(step));
   bc=struct('fixed_u',fixed_u,'fixed_d',fixed_d,'u',u(fixed_u),'d',d(fixed_d));
   table_state=phase_field.fem.solver.stag.vars(par.stag);res_u0=norm(res_u(sys.DOFS.active_dof));
   for outer=1:par.stag.max_iter
@@ -230,6 +254,13 @@ try
    'readback','readback.mat','proposal_sha256',readback.proposal_sha256, ...
    'checkpoint_sha256',readback.checkpoint_sha256,'readback_sha256',readback_sha256, ...
    'elapsed_seconds',toc(step_timer),'counts',counts);
+  if oracle
+   completion.initial_candidate='initial_candidate.mat';
+   completion.initial_candidate_sha256=initial_candidate_sha256;
+   completion.declared_initial_fields_sha256=authority.initial_fields_sha256;
+   completion.initial_source_snapshot_sha256=authority.initial_source_snapshot_sha256;
+   completion.initial_source_completion_sha256=authority.initial_source_completion_sha256;
+  end
   % Save a temporary completion record, then check the exact already-verified
   % files again immediately before publishing it. Do not deserialize again.
   check_time();persist(fullfile(step_dir,'completion.mat'),struct('completion',completion),@verify_publication);
@@ -253,12 +284,17 @@ catch ex
    'pre',pre,'candidate',candidate,'last_native_input',last_native, ...
    'audit',e036_audit,'proposal',e036_proposal,'trace',trace));
  catch write_error
-  warning('E036:FailurePersistence','Could not preserve failure: %s',write_error.message);
+  try
+   warning('E036:FailurePersistence','Could not preserve failure: %s',write_error.message);
+  catch
+   % Even warning-as-error policy must retain the original native exception.
+  end
  end
  rethrow(ex);
 end
 
  function check_time()
+  e036_job_clock(budget,budget.total_timer,budget.total_wall_seconds);
   assert(toc(budget.total_timer)<=budget.total_wall_seconds && ...
    toc(window_timer)<=budget.window_wall_seconds && ...
    (isempty(step_timer) || toc(step_timer)<=budget.step_wall_seconds), ...
@@ -270,6 +306,10 @@ end
    strcmp(e036_sha256_file(checkpoint_file),completion.checkpoint_sha256) && ...
    strcmp(e036_sha256_file(readback_file),completion.readback_sha256), ...
    'E036:PublicationDrift','A verified artifact changed before completion publication');
+  if oracle
+   assert(strcmp(e036_sha256_file(initial_candidate_file),completion.initial_candidate_sha256), ...
+    'E036:PublicationDrift','Oracle initial candidate changed before completion publication');
+  end
   check_time();
  end
  function [kv,r,raw,h]=eq_counted(varargin)
