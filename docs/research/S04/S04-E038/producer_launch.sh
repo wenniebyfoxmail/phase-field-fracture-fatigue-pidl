@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -eu
-TASKROOT=/mnt/data2/drtao/wennie/pf_s04e038_rprop_cap_r1_20261022_0722
+TASKROOT=/mnt/data2/drtao/wennie/pf_s04e038_rprop_cap_r1_20261022_0725
 export CUDA_VISIBLE_DEVICES=5
 export TMPDIR="$TASKROOT/tmp"
 export XDG_CACHE_HOME="$TASKROOT/cache"
 export TORCH_EXTENSIONS_DIR="$TASKROOT/.jitcache"
 export MPLCONFIGDIR="$TASKROOT/cache/matplotlib"
-export PIDL_ARCHIVE_DIR=/mnt/data2/drtao/pidl_archives/pf_s04e038_rprop_cap_r1_20261022_0722
+export PIDL_ARCHIVE_DIR=/mnt/data2/drtao/pidl_archives/pf_s04e038_rprop_cap_r1_20261022_0725
 export OMP_NUM_THREADS=4
 mkdir -p "$PIDL_ARCHIVE_DIR"
 cd "$TASKROOT/code"
