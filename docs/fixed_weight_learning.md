@@ -5,6 +5,25 @@ Branch: `codex/fixed-weight-learning-20261021`; explicit remote base:
 `origin/codex/s09-e007-fixed-damage-holdout-20261012` at
 `d61076b61fd92bf09d330c902abe9a1a6e77a79d`.
 
+## Current handoff — 2026-10-22 fixed-benchmark rule
+
+The native-archive adaptation task is complete and delivered; there is no active
+execution card or pending benchmark. Reuse the completed result linked at the
+end of this document. The commands and reviews below are historical evidence,
+not a checklist to repeat after commits, metadata edits or handoffs.
+
+For subsequently authorized work, use the installed research-decision-core
+section “只跑固定基准，通过即交付”: one existing task benchmark, deliver on pass,
+and repair/rerun only failed items. Do not automatically append full regression,
+historical reruns, smoke ladders, per-commit review or metadata review. Documentation
+and metadata edits receive direct consistency checks only. No new benchmark or
+execution authority is created by this handoff update; the scientific comparison,
+budgets and protected-data boundaries below are unchanged.
+
+The completed admission review remains on record because the user explicitly
+requested this instance: “完成验证和独立复核后，确认两条完整轨迹能否准入。”
+That request does not create a standing review requirement for future edits.
+
 **Purpose:** prepare shared-weight models that can evaluate new prescribed
 conditions or continue an accepted numerical state without optimizing their
 weights at every load step. **This delivery:** code, configurations and small
@@ -170,7 +189,8 @@ receipt still require the project's approved handoff. Importing does no work.
 contain configuration, mesh, weights and provenance, with no optimizer state.
 An untrained model stays explicitly marked untrained.
 
-Light checks, all synthetic and no optimizer updates:
+Historical 2026-10-21 check commands (completed; not a default rerun suite), all
+synthetic and no optimizer updates:
 
 ```bash
 python -m pytest -q tests/test_fixed_weight_contract.py tests/test_fixed_weight_learning.py tests/test_fixed_weight_evaluation.py
