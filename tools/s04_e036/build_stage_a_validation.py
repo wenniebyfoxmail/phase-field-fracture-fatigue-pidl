@@ -23,6 +23,24 @@ def _same(a, b, label):
         raise ValueError(f'{label} identity mismatch')
 
 
+def _same_audited_evidence(original, embedded):
+    # MATLAB jsondecode(null)->[] and jsonencode([])->[] for the four
+    # comparison records' deliberately absent config. Preserve the original
+    # bytes/hash and allow only this explicit serializer roundtrip.
+    normalized=json.loads(json.dumps(embedded,allow_nan=False))
+    converted=[]
+    for prior,current in zip(original.get('supervisors',[]),normalized.get('supervisors',[])):
+        if (prior.get('role','').startswith('comparison_')
+                and prior.get('role')==current.get('role')
+                and 'config' in prior and prior['config'] is None
+                and current.get('config')==[]):
+            current['config']=None
+            converted.append(prior['role'])
+    _same(original,normalized,'audited original evidence manifest')
+    return dict(rule='MATLAB embedded comparison config null-to-empty-array only',
+                roles=converted,original_evidence_bytes_changed=False)
+
+
 def _file_map(document, prefix=''):
     files=document['files']
     result=files if isinstance(files,dict) else {entry['path']:entry['sha256'] for entry in files}
@@ -113,7 +131,7 @@ def build(*,audit,audit_sha256,semantic_binding,semantic_binding_sha256,original
         if expected['python_operator_files'].get(name)!=source_files.get(name) or sha256(ROOT/name)!=source_files.get(name):
             raise ValueError(f'original/current Python operator identity differs: {name}')
     evidence_spec=paths.bind(a['stage_a_evidence_file'],a['stage_a_evidence_sha256'])
-    e=read_json(evidence_spec['path']);_same(e,a['stage_a_evidence'],'audited original evidence manifest')
+    e=read_json(evidence_spec['path']);serialization=_same_audited_evidence(e,a['stage_a_evidence'])
     if e.get('schema')!='e036-stage-a-evidence-v1':raise ValueError('wrong original Stage A evidence schema')
     p,pref=paths.record(e['prepare']);d,dref=paths.record(e['disabled'])
     if (p.get('status')!='prepared_build_and_mock_completed_no_native_call'
@@ -182,6 +200,7 @@ def build(*,audit,audit_sha256,semantic_binding,semantic_binding_sha256,original
     result=dict(schema='s04_e036_fem_validation_v2',accepted=True,stage_a_reexecuted=False,
         stage_a_owner='01a1603e-8e80-7153-a753-d895b9edb7f5',semantic_binding=expected,evidence=evidence,
         original_source_prefix=original_source_prefix,
+        audit_embedded_evidence_serialization=serialization,
         validated_scopes=dict(frozen_operator_equivalence=True,disabled_transition_readback=True),
         scope='Reuse of preserved operator and disabled readback evidence; no new controller/scorer validation',
         builder_sha256=sha256(Path(__file__)))
