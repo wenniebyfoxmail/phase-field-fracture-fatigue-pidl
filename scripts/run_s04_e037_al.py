@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'source'))
 from irreversibility_constraints import phr_inequality_term, update_inequality_multiplier
 from bounded_lbfgs import minimize
-from numerical_checks import require_finite, finite_max, require_positive_energy
+from numerical_checks import require_finite, finite_max, require_positive_energy, require_parameter_contract
 from t3_damage_reference import assemble_t3_damage, compare_physics_at_field, solve_t3_damage
 
 
@@ -69,6 +69,7 @@ def main():
         dict(PFF_model='AT1', se_split='volumetric', tol_ir=.005, residual_stiffness=0.),
         dict(mat_E=1., mat_nu=.3, w1=1., l0=.01),
         dict(hidden_layers=8, neurons=400, seed=1, activation='TrainableReLU', init_coeff=1., compile=False), ext, device)
+    net=net.to(device) # construct_model itself returns CPU parameters
     field = FieldComputation(net, ext, torch.tensor(.03, device=device),
                              torch.tensor([np.pi/2], device=device), l0=.01)
     inp, conn, area, _ = prep_input_data(mat, pff,
@@ -87,6 +88,7 @@ def main():
     assert torch.equal(fatigue, torch.ones_like(fatigue))
     initial = load(args.baseline / 'best_models/trained_1NN_0.pt')
     net.load_state_dict(initial, strict=True)
+    require_parameter_contract(net,inp)
     named = list(net.named_parameters())
     params = [p for _,p in named]
     xinitial = parameters_to_vector(params).detach().clone()
@@ -118,6 +120,7 @@ def main():
         return torch.cat([(torch.zeros_like(p) if g is None else g).reshape(-1) for p,g in zip(params,gs)])
     def double_check(arm=None, dual=None, separate=False):
         n64 = copy.deepcopy(net).double()
+        require_parameter_contract(n64,inp.double())
         f64 = FieldComputation(n64, ext.double(), field.lmbda.double(), field.theta.double(), l0=.01)
         result = f64.fieldCalculation(inp.double())[2]
         require_finite(result)

@@ -8,6 +8,26 @@ checks=importlib.util.module_from_spec(spec); spec.loader.exec_module(checks)
 
 
 class CertificateFiniteTests(unittest.TestCase):
+    def test_cpu_constructor_is_not_admitted_to_non_cpu_input(self):
+        # Meta checks device bookkeeping only; no actual network forward or solve.
+        net=torch.nn.Linear(2,1)
+        reference=torch.empty(2,2,device='meta')
+        with self.assertRaises(ValueError): checks.require_parameter_contract(net,reference)
+        net=net.to('meta')
+        checks.require_parameter_contract(net,reference)
+
+    def test_model_dtype_must_match_input(self):
+        with self.assertRaises(ValueError):
+            checks.require_parameter_contract(torch.nn.Linear(2,1),torch.zeros(2,2,dtype=torch.float64))
+        checks.require_parameter_contract(torch.nn.Linear(2,1).double(),torch.zeros(2,2,dtype=torch.float64))
+
+    def test_loading_weights_does_not_move_destination_parameters(self):
+        net=torch.nn.Linear(2,1)
+        state={k:v.clone() for k,v in net.state_dict().items()}
+        net.load_state_dict(state)
+        self.assertEqual(next(net.parameters()).device.type,'cpu')
+        with self.assertRaises(ValueError): checks.require_parameter_contract(net,torch.empty(2,2,device='meta'))
+
     def test_later_nan_cannot_be_hidden_by_finite_float32(self):
         for bad in (float('nan'),float('inf'),-float('inf')):
             with self.subTest(bad=bad),self.assertRaises(ValueError):
