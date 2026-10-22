@@ -9,7 +9,7 @@ if ($null -ne $c.timeout_seconds) { $limitSeconds=[double]$c.timeout_seconds }
 if ($limitSeconds -le 0 -or $limitSeconds -gt 21600) { throw 'Invalid bounded timeout' }
 $totalEnd=[DateTime]::Parse($c.total_deadline_utc).ToUniversalTime()
 $limitSeconds=[Math]::Min($limitSeconds,($totalEnd.AddSeconds(-1800)-[DateTime]::UtcNow).TotalSeconds)
-if ($limitSeconds -lt 7200) { throw 'Insufficient full24-state NN opportunity' }
+if ($limitSeconds -le 0) { throw 'No science budget after original cleanup reserve' }
 $receipt=Join-Path $c.root 'launch.json'
 if (Test-Path -LiteralPath $receipt) { throw 'Launch already recorded; inspect before any retry' }
 if (Test-Path -LiteralPath $c.output) { throw 'Output already exists; fresh run required' }
@@ -49,7 +49,7 @@ $claim.Dispose()
 $started=[DateTime]::UtcNow
 $scienceEnd=$started.AddSeconds($limitSeconds)
 if ($scienceEnd -gt $totalEnd.AddSeconds(-1800)) { $scienceEnd=$totalEnd.AddSeconds(-1800) }
-if(($scienceEnd-[DateTime]::UtcNow).TotalSeconds -lt 7200){throw 'Exact-start NN opportunity below2h'}
+if(($scienceEnd-[DateTime]::UtcNow).TotalSeconds -le 0){throw 'No exact-start science time before original cleanup cutoff'}
 $runnerHours=($scienceEnd-[DateTime]::UtcNow).TotalHours
 if ($runnerHours -le 0) { throw 'No PIDL time left' }
 $hoursString=$runnerHours.ToString('G17',[Globalization.CultureInfo]::InvariantCulture)

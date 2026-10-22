@@ -12,7 +12,7 @@ DEADLINE='2026-10-22T00:20:00Z'
 def remaining_gpu_seconds():
     # No PIDL training in old packages; all known GPU admission costs retained.
     remaining=min(21600-19.465888457,datetime.datetime.fromisoformat(DEADLINE.replace('Z','+00:00')).timestamp()-time.time()-1800)
-    assert remaining>=7200,'Less than protected2h full24-state NN opportunity; no fragment launch'
+    assert __import__('math').isfinite(remaining) and remaining>0,'No PIDL time before original science deadline'
     return remaining
 
 def ps_command(s):

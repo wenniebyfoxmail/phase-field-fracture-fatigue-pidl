@@ -1,0 +1,13 @@
+{
+  "status": "SOURCE_REVIEW_PASS_NOT_EXECUTED",
+  "reviewer": "/root/shear_review",
+  "files": {
+    "execute_manav_static_fem_renewed.py": "36a917e6bd24c9292db475d71d15b2cd54d68b88820454eb63a2fd27821cdeb6",
+    "execute_manav_static_pidl_renewed.py": "cfd2d5515e21c3d2a03e2f62f578f4e370fb09e4c1a8a835ba7d375217897572",
+    "supervise_manav_static_renewed.ps1": "103e6bc846d1ccd4fd0efed3aed403c62cf95a009ee57f105c684a60506d7c77",
+    "supervise_manav_pidl_renewed.ps1": "014838dad4159d7dfa6b313af302237d667187acc36e115d3c92a9e38b72af0f",
+    "proposals/run_manav_static_fem_box_renewed.m": "aa184d5c0dd8f0acaba313ceae9019eb903212c128682fff85b8082ffff8ebcf"
+  },
+  "limits": "fixed00:14:22Zstart/prep00:44:22/science05:44:22/total06:14:22; FEM7200s NN10800s; no science retry; full24 FEM before NN",
+  "scope_check": "phase_opts/mechanics_opts separate; same full-run callback integration after recovery/mechanics; no numerical model/tolerance change; actual fixtures and states still required"
+}

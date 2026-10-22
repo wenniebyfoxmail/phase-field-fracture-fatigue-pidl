@@ -75,3 +75,6 @@ R015 terminal:7/24 common-box states throughU.21 verified; U.24phase energyline 
 Directhuman21:42Zapprovedonecurvature-controlledfullFEMretry withinoriginalcumulativebudget/deadline; R017adapterprepared, no launchyet. Alloriginalnegatives/costsretained; conditionalR016NNnowrequiresfullR017reference. [Run](research/S04/S04-E035/runs/S04-E035-R017.md).
 
 R017 terminal:recoverypassed,0loadedstates; MATLAB nestedmechanics overwrote sharedphaseopts, losingcurvature callback.37fileshashverified,ownPIDsexited,21.507s actualscience(consumed). Namespace-only fix reviewed/prepared, notrun; noPIDL/45. Old2hNNopportunity admissionpoint21:50Zpassed, futuretimearrangementrequiresdecision. [Result](research/S04/S04-E035/runs/S04-E035-R017.md).
+
+
+2026-10-22 renewal: originalsciencewindowclosed,no newstartthere. DirectHQhuman reply verified “批准新6小时计算窗口”; unique00:14:22Z start/prep00:44:22/science05:44:22/total06:14:22. NewFEM≤2h thenconditionalPIDL≤3GPUh, eachoneactualstart/firstfailurestop; samecommonbox/params/resources, alloldcostsretained. R018/R019preparing; originalagent7200sNNfloorremoved, full24FEMstillrequired;45°deferredoutside6h. [Owner](research/S04/S04-E035/experiment.md), [authority/time](research/S04/S04-E035/approval_window_closed_20261022.md).
