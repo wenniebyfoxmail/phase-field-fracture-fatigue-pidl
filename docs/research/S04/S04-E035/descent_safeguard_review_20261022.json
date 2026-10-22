@@ -1,0 +1,13 @@
+{
+  "status": "SOURCE_MATH_REVIEW_PASS_NOT_EXECUTED",
+  "reviewer": "/root/shear_review",
+  "files": {
+    "box_phase_ray_descent.m": "7f42ad0555bc94100906991e7683b065ce4d8a6d0c92db1b797cc2aa34c0e2e9",
+    "run_manav_static_fem_box_descent.m": "b40cff559722a5c3dea49652399867ec14ed12434338788d6bd3234e393172b3",
+    "test_box_phase_ray_descent.m": "502462a06d6d36c3d581078e7b2f70f64a01468cca66f744030a9dad9a7c325b"
+  },
+  "numerical_change": "Choose exact-native-diagonal feasible projected-gradient direction only if its full-target slope is strictly more negative than projected Newton target; otherwise retain Newton. Same ray/nativeArmijo/500/KKT/physics.",
+  "scope_limit": "More negative first-order slope does not guarantee better accepted energy/runtime/full24 or unique R020cause. Fixtures not executed; source review confers no launch authority.",
+  "diagnostics": "Clear perPFcall; record current origin/s/g/two slopes/choice/iteration before helper withlambdaNaN/timing; then update successfullambda before trial; failure catch saves full current witness without perstepdiskwrite",
+  "no_new_runID_or_remote_or_solve": true
+}
