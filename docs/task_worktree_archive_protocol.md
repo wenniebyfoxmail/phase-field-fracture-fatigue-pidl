@@ -107,7 +107,10 @@ For every commit:
 - keep execution status separate from scientific verdict;
 - state whether the change is safe for active producer runs or needs
   coordination;
-- run the smallest relevant static/unit validation and record what was not run.
+- reuse the fixed task benchmark result; documentation edits need only a direct
+  consistency check, not another validation round;
+- at code delivery, report task branch, source commit and push status/link.
+  Local commit, pushed task branch and merged mainline are different states.
 
 Shared ledgers such as `docs/research_frontier.md`,
 `docs/pidl_experiment_inventory.md`, and Storyline indexes are integrated last,

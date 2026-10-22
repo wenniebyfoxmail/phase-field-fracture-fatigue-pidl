@@ -93,6 +93,10 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   owners in one commit or worktree.
 - Stage explicit paths only. Do not use `git add -A` or `git add .` from a mixed
   checkout.
+- Code delivery reports task branch, source commit and actual push status/link.
+  Local commit is not GitHub publication; a pushed task branch need not be merged
+  into main. Preserve completed source on its task branch without changing an
+  active producer's pinned checkout or adding another pre-push test/review round.
 - Before removing a worktree, verify that its branch is pushed or otherwise
   recoverably archived, record the exact HEAD, and require a clean status.
 - Follow `docs/task_worktree_archive_protocol.md` for task naming, commit units,

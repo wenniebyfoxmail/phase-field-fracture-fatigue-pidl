@@ -24,12 +24,14 @@ branch for new tasks.
 ### What Mac CAN do
 - Modify anything under `source/`, `SENS_tensile/`, `docs/`, `fem/` from a
   dedicated task worktree
-- Commit + push the task branch after lightweight import/unit sanity and, when
-  needed, a producer-side smoke
+- Commit + push the task branch after its fixed benchmark; documentation-only
+  changes need only a direct consistency check, not a producer-side smoke
 - Refactor / add features / change signatures — but see §5 "red lines"
 
 ### What Mac MUST do
-- **Before push**: run only lightweight import/unit sanity on Mac, e.g. `python -c "from source.compute_energy import get_psi_plus_per_elem"`. Do **not** run training-loop smoke on Mac.
+- **Before push**: reuse the fixed task benchmark result; do not add another
+  pre-push test/review round. Documentation-only changes need no scientific
+  benchmark. Do **not** run training-loop smoke on Mac.
 - **Training smoke placement**: any command that enters `main.py` training,
   even `--n-cycles 1` or `--n-cycles 30`, must run on a currently authorised
   producer after checking compute and ownership. Record Run ID, producer
@@ -51,7 +53,22 @@ branch for new tasks.
   before pulling — existing trainings will fail on restart.
   ```
 
-- **Loss / architecture / training-loop changes**: open a `[decision]` entry in `docs/shared_research_log.md` BEFORE the push. Wait for Windows to acknowledge (reply in log) — then push.
+- **Loss / architecture / training-loop changes**: record the change in the
+  owning task and push the isolated task branch. Pushing it does not update an
+  active producer's pinned source. Coordinate before deploying changed code
+  into a shared checkout or active run, not before preserving the task on GitHub.
+
+### What GitHub can actually trace
+
+`edit -> fixed task benchmark -> scoped commit -> push task branch`.
+A local commit is recoverable locally, not proof of GitHub publication. A
+branch need not be merged into `main` to be traceable. Completed, in-scope code
+units are committed and pushed to their task branch under the existing source
+sharing policy, not once per keystroke. At a code-delivery milestone, report
+the task branch, source commit and push status/link; mark a
+failed or unperformed push as local-only. Do not require extra tests to fill
+these fields. Keep unfinished work labelled as work in progress, and do not
+bulk-push historical branches, private inputs, checkpoints or unrelated edits.
 
 ### Mac session template
 
@@ -75,7 +92,7 @@ This section preserves its specialised Git-writing rules; it is not standing
 execution authorisation. Confirm current authority in `AGENTS.md` first.
 
 ### What Windows CAN do
-- Materialize the exact reviewed task commit supplied by Mac in a fresh,
+- Materialize the exact task commit supplied by Mac in a fresh,
   attributable run directory
 - Run only the training case authorised by the frozen Experiment
 - Return a compact Run receipt and raw-archive pointer. Producer-side source
@@ -120,7 +137,8 @@ execution authorisation. Confirm current authority in `AGENTS.md` first.
 - ❌ `git rebase -i` on commits already pushed to origin/main
 - ❌ Amend a commit after it's been pushed
 - ❌ Overwrite an existing entry in `docs/shared_research_log.md`
-- ❌ Push training-loop code changes while the OTHER machine is mid-run **without prior shared_log [decision] handshake**
+- ❌ Replace another machine's active source or restart its run without the
+  necessary coordination. A separate task-branch push does not do either.
 - ❌ Commit `paper_draft/`, result files, personal memory (those stay local; see `CLAUDE.md` "不 commit 结果")
 
 ## 6. Escape hatches (rare, with protocol)
