@@ -387,3 +387,10 @@ R020已启动：07:08:17.263Z，CITPC12 MATLAB34280/supervisor46232，实际cap5
 分段能量首步把本共同有界版本有效前缀由R018的6态推进到12态，但仍不是完整U=.4参考。R021尚未部署/准入/训练，0GPUh；45°未启。反力/能量/损伤及末次步长图已目视核验并通过sidecar检查，raw/数组核验/诊断位于parent archive runs/S04-E035-R020/{retrieved,analysis,native_response}。本次已按首失败停止，没有自动科学重跑。
 
 有依据的下一候选：同原生K精确对角投影梯度方向，只有比clipped Newton一阶斜率严格更负才替代；不改物理、回溯、500或KKT。三源码已独审、未运行，且增加完整当前方向失败证据。[具体下一包与预算](descent_safeguard_proposal_20261022.md)。
+
+
+## 前瞻管理清理 — 2026-10-22 固定任务基准
+
+依人方治理原消息01a16286-1ff9-76f2-80c7-d943676007d2及安装版research-decision-core“只跑固定基准，通过即交付”：当前唯一活动下一步计划descent_safeguard_proposal_20261022.md已移除重复旧四fixtures、额外SPD单测阶梯、独立复审及因commit/路径/元数据再审门；既有审查结论/未受影响结果复用。唯一基准是既定完整24态FEM→保存量核验→条件原PIDL→配对分析，命令、输入、对照和预期已写在该原计划。文档小改仅一致性检查。
+
+不修改已执行R018/R020源、签名问答、旧结果/费用/UNKNOWN、科学判据或新增一次科学重跑/预算许可；原HQ问答由人方明确接受“仅各一次完整FEM/PIDL启动、首次失败即停”，其已消费次数保留，不冒称Agent模板。当前producer均退出，helper shear_review已completed，不唤醒历史helper/不派新审查或测试。此管理改动不启停/重启任何科学运行。

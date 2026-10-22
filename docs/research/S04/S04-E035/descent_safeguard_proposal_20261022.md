@@ -6,9 +6,19 @@
 
 已准备并独审3源码：box_phase_ray_descent.m、run_manav_static_fem_box_descent.m、test_box_phase_ray_descent.m。保持原能量、soft罚/材料/网格/BC/24U/PDAS/原ray-firststep/12回溯/500更新/原单位KKT。每次从同一原生K取精确正对角D，构造盒内投影梯度目标，比较两个完整可行目标的一阶斜率；只在投影梯度斜率严格更负时替代Newton方向，无调参theta、无新线性求解或罚项。更负的一阶斜率不保证最终能量或总速度更好，仍由原native能量和KKT决定接受/合格。
 
-实现单包增加一个SPD小矩阵反例检查（clipped Newton名义负斜率近抵消，对角投影梯度有实质下降），不当物理验证。实际完整run依旧从恢复开始，覆盖mechanics→新方向选择→ray→loadedPF。每次PF入口清空方向证据；helper前保存本次alpha/完整方向/原生g/两个斜率/choice/iteration与lambdaNaN，成功后更新时间与lambda；失败catch写出当前记录，避免旧方向冒新证据，无每步磁盘写。
+前瞻执行按2026-10-22人方“只跑固定基准，通过即交付”更新：不再追加SPD小矩阵检查、重复旧四组fixtures、smoke阶梯或独立审核。已有源码审查和未受影响结果直接沿用；反例fixture源码仅存档，不列入待执行基准。固定基准就是下述24态主任务。实际完整run依旧从恢复开始，覆盖mechanics→新方向选择→ray→loadedPF。每次PF入口清空方向证据；helper前保存本次alpha/完整方向/原生g/两个斜率/choice/iteration与lambdaNaN，成功后更新时间与lambda；失败catch写出当前记录，避免旧方向冒新证据，无每步磁盘写。
 
-当前状态：仅源码审查通过，fixtures未执行、未新分配RunID/部署/启动。R020一次真实尝试已消费且按首次失败停止，不能静默重发。具体hash/审查限制见descent_safeguard_review_20261022.json。
+当前状态：已有源码审查结论保留，候选fixture未执行且不列入后续执行；未新分配RunID/部署/启动。适配、路径、commit及元数据小改仅核一致性，不另加复审或科学测试。R020一次真实尝试已消费且按首次失败停止，不能静默重发。具体hash/审查限制见descent_safeguard_review_20261022.json。
+
+## 唯一固定基准（前瞻管理修订，未执行）
+
+代表性输入：同一1×1裂纹试件、共同0≤d≤1、E=1/nu=.3/Gc=.01/ell=.01、原Q4与T3、原24U至.4。对照：完整合格FEM与原8×400/m0=3/seed1 PIDL；原时间点、历史、字段与Gauss/Jacobian支持保持。
+
+1. 在已获实际启动授权和资源准入的producer监督器内，以 `run_manav_static_fem_box_descent('C:/Users/xw436/GRIPHFiTH','<fresh-owned-output>/fem')` 运行这一条完整24态轨迹；不在前面串旧fixtures或smoke。
+2. Mac原脚本 `python scripts/shear/verify_manav_static_reference_box.py --fem <retrieved>/fem --out <run>/analysis` 核验全部24态/complete/exit0。前置资源/传输一致性属于执行动作，不追加独立审核。路径在已批准包内实例化，不因此重复索批。
+3. 仅完整FEM合格后，原绑定GPU监督器执行 `launch_manav_static_pidl_box.py --mesh <original-T3> --output <fresh-owned-output>/pidl --epochs 10000 --hours <bounded-at-most-3>`；原设置不变。之后 `python scripts/shear/analyze_manav_static_pair_box.py --fem <retrieved-FEM>/fem --pidl <retrieved-NN>/pidl --out <pair-analysis>` 完成原配对比较。
+
+通过即交付图/数值/结论，不再追加回归、消融、历史路线、压力测试或独审。失败只修复本任务实际失败项，已通过且未受影响的结果复用。完整24态是本科学目标与路径相关历史要求，不是把历史实验改名基准。原人方HQ问答明确“仅各一次完整FEM/PIDL启动、首次失败即停”，本次已消费的R020及新增科学重跑许可不因管理规则取消；本规则也不新增运行权。
 
 ## 待批准的完整执行范围
 
