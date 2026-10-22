@@ -42,6 +42,11 @@ def main():
         opt = read(a.new/f'optimizer_trace_step_{step:03d}.json')
         assert opt['updates'] == receipts[2]['updates']
         common_n = min(r['updates'] for r in receipts)
+        equal_prefix = 0
+        for old_row, new_row in zip(traces[1], traces[2]):
+            if old_row != new_row:
+                break
+            equal_prefix += 1
         control_e = sum(receipts[0]['final'][k] for k in KEYS)
         hc = np.maximum(finals[0]['d'], finals[0]['hist_alpha'])
         for idx, (folder, r, f, trace) in enumerate(zip(folders, receipts, finals, traces)):
@@ -57,6 +62,9 @@ def main():
             row = dict(step=step,cycle=r['cycle'],arm=LABELS[idx],updates=r['updates'],
                 seconds=r['optimization_seconds'],stop=r['stop_reason'],
                 weight_norm=norm,weight_maxabs=maxabs,energy=energy,
+                initial_weight_norm=float(np.sqrt(r['initial']['canonical_L2']/1e-5)),
+                weight_growth_percent=100*(norm/np.sqrt(r['initial']['canonical_L2']/1e-5)-1),
+                max_logged_energy_vs_initial=max(10**q['logE'] for q in trace)/sum(r['initial'][k] for k in KEYS),
                 energy_vs_control_percent=100*(energy/control_e-1),
                 energy_vs_initial=energy/sum(r['initial'][k] for k in KEYS),
                 d_diff_control_rms=float(np.sqrt(np.mean(diff**2))),
@@ -69,7 +77,7 @@ def main():
                 assert np.isclose(norm,opt['final']['weight_norm'],rtol=1e-5)
                 assert maxabs == opt['final']['weight_abs_max']
                 assert opt['final']['step_max'] <= .001000001
-                row.update(actual_step_max=opt['final']['step_max'],
+                row.update(identical_zeroL2_initial_trace_rows=equal_prefix,actual_step_max=opt['final']['step_max'],
                            actual_cap_fraction=opt['final']['step_at_cap_fraction'])
         data.append((step,receipts,finals,traces,opt))
     (a.output/'metrics.json').write_text(json.dumps(rows,indent=2)+'\n')
