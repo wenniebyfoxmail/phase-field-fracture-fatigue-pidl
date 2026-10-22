@@ -1,8 +1,8 @@
 {
   "experiment_id": "S04-E037",
   "protocol_revision": "r1",
-  "execution_status": "running",
-  "retrieval_status": "pending",
+  "execution_status": "failed",
+  "retrieval_status": "verified",
   "producer_alias": "gpu-taobo",
   "hostname": "GPUServer8",
   "source_commit": "a6bb52ebf30779ae22310b6af474528ed984dc8b",
@@ -30,5 +30,19 @@
   },
   "initial_health": "Original step1 parameters AND history bitwise equal to original archive; 580 updates,20.51s, no source modifications",
   "retrieval_route": "independent SSH compressed tar; paths/counts/sizes checked after completion",
-  "prelaunch_transport": "Two large source transfers were slow, never started code; retained 0710/0715 directories, ended only identified local transfer processes; final0718 uses existing identical original source and12KB new files"
+  "prelaunch_transport": "Two large source transfers were slow, never started code; retained 0710/0715 directories, ended only identified local transfer processes; final0718 uses existing identical original source and12KB new files",
+  "finished_utc": "2026-10-22T07:22:51Z",
+  "exit_code": 1,
+  "dispatcher_wall_seconds": 220.0,
+  "dispatcher_gpu_hours_accounting": 0.06111111111111111,
+  "retrieved_files": 81,
+  "retrieved_bytes": 120206745,
+  "inventory_file": "producer_inventory.json",
+  "worker_exit_verified": true,
+  "postrun_gpu_memory_MiB": 4,
+  "original_result": "15/15 accepted; all parameter/history replay flags bitwise true; total214.761135s",
+  "new_result": "failed during first physical substep before any endpoint snapshot/dual/history commit",
+  "failure_evidence_limit": "Guard combines E0<=0 and nonfinite; no failed trial parameters/numeric energy retained, so actual negative-vs-overflow cause unresolved",
+  "analysis_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E037/analysis",
+  "retry_status": "User approved one R2 new-arm execution <=1GPUh. No retry started: source transfer specifically blocked by automatic approval review; r2_dispatcher_receipt.json tracks it."
 }

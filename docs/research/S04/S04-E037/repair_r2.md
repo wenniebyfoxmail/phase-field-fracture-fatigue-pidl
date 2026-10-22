@@ -28,3 +28,7 @@ Command template (fresh paths and exact committed source filled mechanically aft
 `CUDA_VISIBLE_DEVICES=5 /usr/bin/python3 -u scripts/run_s04_e037_primal_dual_r2.py --baseline <unchanged-standard-U0.12-archive> --reference-result <R001-r1-result-root> --output <fresh-R003-output> --source-commit <R2-commit> --step-seconds 240 --total-seconds 3300`
 
 Return fields, original-versus-new metrics on reached phases and full cost. Early failure is not speedup, and a viable prototype is not full90-cycle or physical validation. No further scientific restart is approved by this document.
+
+## Subsequent authorization status
+
+User approved one repaired new-arm run <=1GPUh. Original R001 will be reused. Automatic approval review blocked the proposed source upload to gpu-taobo before execution; a specific source/destination approval request is pending. No R003 worker has started. See r2_dispatcher_receipt.json and launch_r2.sh. The committed candidate description above records preparation-time status.

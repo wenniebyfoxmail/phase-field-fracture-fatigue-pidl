@@ -27,13 +27,19 @@ def csvsave(p,rows):
         w=csv.DictWriter(h,fieldnames=keys);w.writeheader();w.writerows(rows)
 def values(f):return [np.sqrt(f['strain_xx']**2+f['strain_yy']**2+2*f['strain_xy']**2),f['raw_psi'],f['trial_A']]
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument('raw',type=Path);ap.add_argument('output',type=Path);a=ap.parse_args()
+    ap=argparse.ArgumentParser();ap.add_argument('raw',type=Path);ap.add_argument('output',type=Path)
+    ap.add_argument('--control',type=Path,help='Previously completed original arm; reuse without re-execution')
+    a=ap.parse_args()
     a.output.mkdir(parents=True,exist_ok=True)
     mesh=np.load(a.raw/'mesh.npz');xy=mesh['xy'];tri=mesh['triangles'];area=mesh['area'];cent=xy[tri].mean(1)
-    paths={};records={}
+    paths={};records={};roots={'original':a.control or a.raw/'original','primal_dual':a.raw/'primal_dual'}
+    if a.control:
+        control_mesh=np.load(a.control.parent/'mesh.npz')
+        for key in ['xy','triangles','area','node_weights']:assert np.array_equal(mesh[key],control_mesh[key]),key
     for arm in ['original','primal_dual']:
-        records[arm]=json.loads((a.raw/arm/'steps.json').read_text()) if (a.raw/arm/'steps.json').exists() else []
-        paths[arm]={r['step']:a.raw/arm/f"step_{r['step']:03d}" for r in records[arm]}
+        records[arm]=json.loads((roots[arm]/'steps.json').read_text()) if (roots[arm]/'steps.json').exists() else []
+        paths[arm]={r['step']:roots[arm]/f"step_{r['step']:03d}" for r in records[arm]}
+    dump(a.output/'input_provenance.json',dict(raw=str(a.raw.resolve()),control=str(roots['original'].resolve()),new=str(roots['primal_dual'].resolve()),control_reexecuted=False))
     rows=[];pairs=[]
     for r in records['primal_dual']:
         step=r['step']
@@ -50,7 +56,8 @@ def main():
     # Reuse the verified common-support map; reject differing source geometry.
     target=np.load(PRIOR/'c1_aligned_fields.npz');pr=np.load(MAP);src,dst,weight=[pr[k] for k in ['src','dst','weight']]
     assert len(tri)==90000 and len(target['area'])==len(pr['fem_area'])
-    assert np.max(abs(cent[:,0]-np.load(ROOT/'Baseline/PIDL_hard_d1_u0_recovery_5step/Umax_0.12/original_case/raw/run/element_diagnostics_probe_driver/element_fields_cycle_0004.npz')['elem_x']))<1e-7
+    old=np.load(ROOT/'Baseline/PIDL_hard_d1_u0_recovery_5step/Umax_0.12/original_case/raw/run/element_diagnostics_probe_driver/element_fields_cycle_0004.npz')
+    assert np.max(abs(cent-np.column_stack([old['elem_x'],old['elem_y']])))<1e-7
     den=np.bincount(dst,weights=weight,minlength=len(target['area']))
     def project(v):return np.bincount(dst,weights=np.asarray(v)[src]*weight,minlength=len(den))/den
     tx,ty=target['centers'].T;regions=dict(domain=np.ones(len(tx),bool),initial_tip=np.hypot(tx,ty)<=.02,forward=(tx>=0)&(tx<=.05)&(abs(ty)<=.03))
@@ -95,6 +102,16 @@ def main():
             for ax,key,lim in zip(axes,['primal_max','complementarity_scaled','parameter_kkt_rms'],[5e-6,5e-5,5e-5]):
                 ax.semilogy(xx,[max(t[key],1e-16) for t in trace],'-o',color='#D55E00');ax.axhline(lim,c='black',ls='--',lw=1);ax.set_xlabel('RPROP updates');ax.set_ylabel(key);ax.grid(alpha=.2)
             fig.suptitle(f"Updated-multiplier checks · new step{last['step']} · {last['stop_reason']}");fig.savefig(a.output/'dual_convergence.png',dpi=180);plt.close(fig)
-    summary=dict(pairs=rows,fem=femrows,paths={arm:dict(attempted=len(rr),accepted=sum(r['accepted'] for r in rr),last_step=rr[-1]['step'] if rr else None,last_reason=rr[-1]['stop_reason'] if rr else None,total_seconds=sum(r['step_elapsed_seconds'] for r in rr)) for arm,rr in records.items()})
+    if (a.raw/'fatal.json').exists():
+        fig,axes=plt.subplots(1,2,figsize=(10,3.5))
+        counts=[sum(r['accepted'] for r in records[k]) for k in ['original','primal_dual']]
+        axes[0].barh(['Original','New primal-dual'],counts,color=['#0072B2','#D55E00'])
+        axes[0].set_xlim(0,16);axes[0].set_xticks([0,5,10,15]);axes[0].set_xlabel('Accepted physical substeps (planned 15)')
+        axes[0].text(.5,1,'Stopped at c1/s1 before endpoint',va='center',fontsize=10)
+        rr=records['original'];axes[1].plot([r['step'] for r in rr],np.cumsum([r['step_elapsed_seconds'] for r in rr]),'-o',color='#0072B2',ms=3)
+        axes[1].set_xlabel('Original physical substep');axes[1].set_ylabel('Cumulative time (s)');axes[1].set_title('Original baseline')
+        axes[1].grid(alpha=.2);fig.suptitle('S04-E037 r1 · original 15/15; new method stopped at first substep\nNo new-method field endpoint: accuracy and speedup remain unassessed',fontsize=11);fig.tight_layout(rect=[0,0,1,.83])
+        fig.savefig(a.output/'attempt_outcome.png',dpi=180);plt.close(fig)
+    summary=dict(fatal=json.loads((a.raw/'fatal.json').read_text()) if (a.raw/'fatal.json').exists() else None,pairs=rows,fem=femrows,paths={arm:dict(attempted=len(list(roots[arm].glob('step_*'))),completed_receipts=len(rr),accepted=sum(r['accepted'] for r in rr),last_step=rr[-1]['step'] if rr else None,last_reason=rr[-1]['stop_reason'] if rr else None,total_seconds=sum(r['step_elapsed_seconds'] for r in rr) if rr else None) for arm,rr in records.items()})
     dump(a.output/'summary.json',summary);print(json.dumps(summary,indent=2))
 if __name__=='__main__':main()

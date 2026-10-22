@@ -1,0 +1,18 @@
+{
+  "experiment_id": "S04-E037",
+  "run_id": "S04-E037-R003",
+  "protocol_revision": "r2",
+  "execution_status": "not_started",
+  "source_commit": "0997e32a0b68ca3d8546a4ccce7f1d4d2094185d",
+  "producer_alias": "gpu-taobo",
+  "gpu_id": 5,
+  "remote_root": "/mnt/data2/drtao/wennie/pf_s04e037_u012_pd_r2_20261022_0753",
+  "reference_result": "/mnt/data2/drtao/pidl_archives/pf_s04e037_u012_pd_r1_20261022_0718/results",
+  "run_approval": "User explicitly approved one repaired new-arm run, <=1GPUh; reuse original; cumulative <=2GPUh",
+  "transfer_status": "Blocked by automatic approval review before execution: sensitive source transfer to named producer requires specific authorization; exact source and destination question pending",
+  "command_record": "launch_r2.sh",
+  "outer_timeout_seconds": 3500,
+  "total_runner_seconds": 3300,
+  "step_seconds": 240,
+  "control_reexecuted": false
+}
