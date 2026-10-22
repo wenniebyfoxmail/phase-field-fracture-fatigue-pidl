@@ -44,6 +44,14 @@ def capped_optimizer(params, optimizer_type):
     return optimizer
 
 
+def freeze_completed(optimizer, receipt):
+    saved_optimizer, record = observations[-1]
+    assert saved_optimizer is optimizer and record['step'] == receipt['step']
+    assert record['updates'] == receipt['updates']
+    record['final'] = snapshot(optimizer, record)
+
+
+base.ARM_COMPLETED = freeze_completed
 base.get_optimizer = capped_optimizer
 
 if __name__ == '__main__':
@@ -53,8 +61,9 @@ if __name__ == '__main__':
         output = Path(sys.argv[sys.argv.index('--output') + 1])
         if output.is_dir():
             for optimizer, record in observations:
-                if record['updates']:
-                    record['final'] = snapshot(optimizer, record)
+                # Completed arms were frozen before the shared net was reloaded.
+                if record['updates'] and 'final' not in record:
+                    record['interrupted_final'] = snapshot(optimizer, record)
                 base.dump(output / f"optimizer_trace_step_{record['step']:03d}.json", record)
             base.dump(output / 'cap_configuration.json', dict(
                 max_step=CAP, min_step=1e-10, initial_step=1e-5,

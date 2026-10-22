@@ -20,6 +20,7 @@ from fit import fit_with_early_stopping
 from optim import get_optimizer
 
 EXPERIMENT_ID = "S04-E035"
+ARM_COMPLETED = None
 ARMS = (("L2_1e-5", 1e-5), ("L2_zero", 0.))
 STEPS = (4, 5, 199, 200, 414, 415)
 FACTORS = (.25, .5, .75, 1., 0.)
@@ -225,6 +226,8 @@ def main():
                            coefficient=coefficient, updates=updates[0],
                            optimization_seconds=elapsed, stop_reason=reason,
                            initial=beginning, final=final)
+            if ARM_COMPLETED is not None:
+                ARM_COMPLETED(optimizer, receipt)
             dump(folder / 'receipt.json', receipt)
             dump(folder / 'loss_trace.json', writer.rows)
             dump(folder / 'gradient_trace.json', trace)
