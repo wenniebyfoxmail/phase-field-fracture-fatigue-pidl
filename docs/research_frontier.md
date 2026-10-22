@@ -78,3 +78,7 @@ R017 terminal:recoverypassed,0loadedstates; MATLAB nestedmechanics overwrote sha
 
 
 2026-10-22 renewal: originalsciencewindowclosed,no newstartthere. DirectHQhuman reply verified “批准新6小时计算窗口”; unique00:14:22Z start/prep00:44:22/science05:44:22/total06:14:22. NewFEM≤2h thenconditionalPIDL≤3GPUh, eachoneactualstart/firstfailurestop; samecommonbox/params/resources, alloldcostsretained. R018/R019preparing; originalagent7200sNNfloorremoved, full24FEMstillrequired;45°deferredoutside6h. [Owner](research/S04/S04-E035/experiment.md), [authority/time](research/S04/S04-E035/approval_window_closed_20261022.md).
+
+R018 active00:19:02Z:CITPC12 MATLAB48532/supervisor47392,cap7186.241s/frozenend02:18:49Z; same-batchfixturespassed, full24statespending, noPIDL/45. [R018](research/S04/S04-E035/runs/S04-E035-R018.md).
+
+R018postlaunchremote status auto-review BLOCKED twice before command creation: interprets HQ humanstop-hosting as prohibiting owner runtime monitoring, despite originalHQhandoff checked. No workaround; actualR018FEM start consumed, latestfixturespassed/0loaded observed only, currentcoverage/terminalUNKNOWN. Autonomous ownsupervisor hardend02:18:49Z remains. R019unlaunched/full24referenceabsent; fixed6hclock unchanged. Specificpermissionneededfor originalowner resultverification/retrieval/conditionalPIDL, notnewbudget. [Owner](research/S04/S04-E035/experiment.md).
