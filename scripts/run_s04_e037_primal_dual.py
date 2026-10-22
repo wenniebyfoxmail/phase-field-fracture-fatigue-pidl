@@ -93,25 +93,31 @@ def main():
     results=[]
     def fields():return field.fieldCalculation(inp)
     def reg():return 1e-5*sum(p.square().sum() for n,p in named if 'weight' in n)
-    def objective(h,f,mu=None,rho=None):
+    def objective(h,f,mu=None,rho=None,lagrangian=False):
         u,v,d=fields();es=compute_energy(inp,u,v,d,h,mat,pff,area,conn,f,irreversibility_penalty_cfg=IRR)
         physical=es[0]+es[1]
         if not bool(torch.isfinite(physical)) or not bool(physical>0):
             raise FloatingPointError('Physical energy must be positive and finite; no energy clipping')
         loss=torch.log10(physical)+reg()
         if mu is not None:
-            loss=loss+phr_inequality_term(h-d,mu[0],rho,weights)+phr_inequality_term(d-1,mu[1],rho,weights)
+            if lagrangian:
+                loss=loss+torch.sum(weights*(mu[0]*(h-d)+mu[1]*(d-1)))
+            else:
+                loss=loss+phr_inequality_term(h-d,mu[0],rho,weights)+phr_inequality_term(d-1,mu[1],rho,weights)
         return loss,(u,v,d),es
     def snapshot(folder,h,hfat,prev,f,mu=None,rho=None):
+        snapstart=time.monotonic()
         net.zero_grad(set_to_none=True)
-        loss,(u,v,d),es=objective(h,f,mu,rho)
+        loss,(u,v,d),es=objective(h,f,mu,rho,lagrangian=True)
         gs=torch.autograd.grad(loss,params,allow_unused=True)
+        diagnostics['parameter_gradient_calls']+=1
         gnorm=torch.sqrt(sum((g.square().sum() for g in gs if g is not None)))
         # Field-space diagnostics use independent nodal variables and NO L2.
         # They are not asserted to vanish for a neural parameter optimum.
         ud=u.detach().requires_grad_();vd=v.detach().requires_grad_();dd=d.detach().requires_grad_()
         e0=compute_energy(inp,ud,vd,dd,h,mat,pff,area,conn,f,irreversibility_penalty_cfg=IRR)
         ru,rv,rd=torch.autograd.grad(e0[0]+e0[1],(ud,vd,dd))
+        diagnostics['field_gradient_calls']+=1
         invm=weights.reciprocal()
         pg=dd.detach()-torch.maximum(h,torch.minimum(torch.ones_like(h),dd.detach()-rd.detach()*invm))
         free=(inp[:,1]>-.5+1e-7)&(inp[:,1]<.5-1e-7)
@@ -135,6 +141,7 @@ def main():
                 f_solve=f.cpu().numpy(),strain_xx=ex.cpu().numpy(),strain_yy=ey.cpu().numpy(),strain_xy=exy.cpu().numpy(),
                 raw_psi=raw.cpu().numpy(),active_driver=active.cpu().numpy(),trial_A=trialA.cpu().numpy(),trial_f=trialf.cpu().numpy())
         net.zero_grad(set_to_none=True)
+        diagnostics['seconds']+=time.monotonic()-snapstart
         return m,(d.detach().clone(),trialA.detach().clone(),active.detach().clone())
     for arm in ['original','primal_dual']:
         folder=a.output/arm;folder.mkdir()
@@ -148,13 +155,15 @@ def main():
             field.lmbda=torch.tensor(.12*FACTORS[(step-1)%5],device='cuda')
             f=compute_fatigue_degrad(hfat,FAT);oldh=h.clone();oldA=hfat.clone();oldprev=prev.clone()
             stepstart=time.monotonic();stopat=stepstart+a.step_seconds
-            trace=[];updates=0;reason='not_solved';accepted=False
+            trace=[];updates=0;primal_gradient_calls=0;reason='not_solved';accepted=False
+            diagnostics=dict(seconds=0.,parameter_gradient_calls=0,field_gradient_calls=0)
             mu=torch.zeros((2,len(inp)),device='cuda') if arm=='primal_dual' else None
             rho=100.;outercount=0
             if arm=='original':
                 optimizer=get_optimizer(field.parameters(),'RPROP');realstep=optimizer.step
                 def instrumented(*args,**kw):
-                    nonlocal updates
+                    nonlocal updates,primal_gradient_calls
+                    primal_gradient_calls+=1
                     if time.monotonic()>=stopat:raise Cap
                     result=realstep(*args,**kw);updates+=1
                     return result
@@ -186,7 +195,7 @@ def main():
                             optimizer.zero_grad(set_to_none=True)
                             loss,_,_=objective(h,f,mu,rho)
                             if not bool(torch.isfinite(loss)):raise FloatingPointError('nonfinite primal objective')
-                            loss.backward()
+                            loss.backward();primal_gradient_calls+=1
                             if not all(p.grad is None or bool(torch.isfinite(p.grad).all()) for p in params):raise FloatingPointError('nonfinite gradient')
                             val=float(loss.detach());optimizer.step();updates+=1
                             if inner%50==0:trace.append(dict(outer=outer,update=updates,seconds=time.monotonic()-stepstart,loss=val,rho=rho))
@@ -209,20 +218,34 @@ def main():
                 # Fresh same-point check under UPDATED multipliers, including L2.
                 accepted=accepted and admissible(m)
             assert torch.equal(h,oldh) and torch.equal(hfat,oldA) and torch.equal(prev,oldprev)
-            elapsed=time.monotonic()-stepstart
-            torch.save(net.state_dict(),sf/'network.pt')
-            rec=dict(arm=arm,step=step,cycle=(step-1)//5+1,substep=(step-1)%5+1,load=float(field.lmbda),
-                updates=updates,outer_iterations=outercount,solve_and_export_seconds=elapsed,accepted=accepted,stop_reason=reason,metrics=m)
-            savejson(sf/'receipt.json',rec);savejson(sf/'trace.json',trace);path.append(rec)
-            savejson(folder/'steps.json',path);print(json.dumps(rec,allow_nan=False),flush=True)
-            if not accepted:break
-            # One commit from the cached evaluated state. The ORIGINAL policy is max.
-            d,A,active=state;h=torch.maximum(h,d).detach();hfat=A;prev=active
-            torch.save(dict(hist_alpha=h,hist_fat=hfat,psi_plus_prev=prev),sf/'accepted_history.pt')
-            if arm=='original':
+            if arm=='original' and accepted:
+                d,A,active=state
                 originalck=load(a.baseline/f'best_models/checkpoint_step_{step}.pt')
-                if not all(torch.equal(value,originalck[key]) for key,value in [('hist_alpha',h),('hist_fat',hfat),('psi_plus_prev',prev)]):
-                    raise ValueError(f'Original history replay mismatch at step{step}')
+                history_equal=all(torch.equal(value,originalck[key]) for key,value in
+                    [('hist_alpha',torch.maximum(h,d)),('hist_fat',A),('psi_plus_prev',active)])
+                m['archived_history_bitwise_equal']=history_equal
+                if not history_equal:accepted=False;reason='baseline_history_replay_mismatch'
+            torch.save(net.state_dict(),sf/'network.pt')
+            compute_seconds=time.monotonic()-stepstart
+            # Last check is immediately before the only history commit. Output
+            # accounting has a separate 15s reserve inside the global budget.
+            if time.monotonic()>=min(stopat,deadline):
+                accepted=False;reason='wall_cap_after_final_checks'
+            if accepted:
+                d,A,active=state
+                h=torch.maximum(h,d).detach();hfat=A;prev=active
+                torch.save(dict(hist_alpha=h,hist_fat=hfat,psi_plus_prev=prev),sf/'accepted_history.pt')
+            rec=dict(arm=arm,step=step,cycle=(step-1)//5+1,substep=(step-1)%5+1,load=float(field.lmbda),
+                updates=updates,outer_iterations=outercount,primal_gradient_calls=primal_gradient_calls,
+                diagnostics=diagnostics,solve_checks_and_network_save_seconds=compute_seconds,
+                accepted=accepted,stop_reason=reason,metrics=m)
+            savejson(sf/'trace.json',trace)
+            rec['step_elapsed_seconds']=time.monotonic()-stepstart
+            savejson(sf/'receipt.json',rec);path.append(rec);savejson(folder/'steps.json',path)
+            print(json.dumps(rec,allow_nan=False),flush=True)
+            if not accepted:
+                if arm=='original':raise RuntimeError('Original control not accepted: '+reason)
+                break
         summary=dict(arm=arm,steps_attempted=len(path),steps_accepted=sum(r['accepted'] for r in path),
             completed_three_cycles=len(path)==15 and all(r['accepted'] for r in path),elapsed_seconds=time.monotonic()-armstart)
         savejson(folder/'summary.json',summary);results.append(summary);savejson(a.output/'results.json',results)
