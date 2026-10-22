@@ -1,5 +1,12 @@
 # Stage A producer harness · prepared 2026-10-21
 
+**Current configuration update, 2026-10-22:** subsequent explicit user authority
+replaced the expired cumulative deadline with a hash-bound authority file and
+configurable independent job/arm guards. The current interface is documented
+in [Stage B harness, authority section](STAGE_B_HARNESS.md). The old timings and
+unapproved-stage statements below describe their historical attempts, not the
+latest authority. None of this source preparation establishes an execution pass.
+
 Subsequent same-budget continuation staged the snapshot and code, but its first
 PowerShell wrapper exited before a watchdog attempt or MATLAB/build output was
 recorded. The producer's effective policy was Restricted; the exact child error

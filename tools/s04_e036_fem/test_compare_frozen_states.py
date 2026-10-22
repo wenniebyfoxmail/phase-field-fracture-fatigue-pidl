@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import h5py
 import numpy as np
@@ -198,3 +199,49 @@ def test_mac_full_mesh_guard_prevents_numerical_assembly(tmp_path,monkeypatch):
     monkeypatch.setattr(compare,'compare_arrays',forbidden)
     report=compare.run(path,compare.sha256(path),common,compare.sha256(common),tmp_path/'report')
     assert not report['passed'] and 'Mac is development-only' in report['error']
+
+
+@pytest.mark.parametrize('limit,elapsed,passes',[(900.,700.,True),(None,700.,True),(900.,901.,False)])
+def test_explicit_wall_limit_has_no_hidden_six_hundred_second_cutoff(tmp_path,monkeypatch,limit,elapsed,passes):
+    path=tmp_path/'native.mat';path.write_bytes(b'fixture, never assembled')
+    common=tmp_path/'common.json';common.write_text('{}')
+    state=analytic_state()
+    state.update(state_key={'cycle':1,'substep':4},predecessor_key={'cycle':1,'substep':3},
+                 provenance={'scope':'mock clock only; no native or numerical assembly'},
+                 mesh_digest='mock-clock-fixture')
+    monkeypatch.setattr(compare,'configure_threads',lambda _:None)
+    monkeypatch.setattr(compare,'read_native',lambda _:state)
+    monkeypatch.setattr(compare,'validate_state',lambda *args,**kwargs:state)
+    clock=iter([0.,elapsed,elapsed,elapsed])
+    monkeypatch.setattr(compare,'time',SimpleNamespace(monotonic=lambda:next(clock)))
+    def no_assembly(state,check_time):
+        check_time()
+        return dict(passed=True,channels={}),{}
+    monkeypatch.setattr(compare,'compare_arrays',no_assembly)
+    report=compare.run(path,compare.sha256(path),common,compare.sha256(common),
+                       tmp_path/'report',wall_seconds=limit)
+    assert report['passed'] is passes
+    assert report['wall_seconds_limit']==limit
+    if not passes:
+        assert 'explicit frozen comparison per-job wall limit' in report['error']
+    assert json.loads((tmp_path/'report'/'comparison.json').read_text())['passed'] is passes
+
+
+@pytest.mark.parametrize('limit',[0.,float('nan'),True])
+def test_invalid_wall_authority_is_retained_without_import_or_assembly(tmp_path,monkeypatch,limit):
+    def forbidden(*args,**kwargs):pytest.fail('invalid wall authority must stop before importing numerical dependencies')
+    monkeypatch.setattr(compare,'configure_threads',forbidden)
+    report=compare.run('unused.mat','unused','unused.json','unused',tmp_path/'report',wall_seconds=limit)
+    assert report['error_type']=='ValueError' and not report['passed']
+    assert json.loads((tmp_path/'report'/'comparison.json').read_text())['error_type']=='ValueError'
+
+
+def test_cli_passes_explicit_wall_limit_to_runner(monkeypatch):
+    received={}
+    def fake(*args,**kwargs):
+        received.update(kwargs)
+        return dict(status='matched',passed=True,wall_seconds=0.)
+    monkeypatch.setattr(compare,'run',fake)
+    monkeypatch.setattr(compare.sys,'argv',['compare','--input','a.mat','--input-sha256','0'*64,
+        '--common-problem','a.json','--common-problem-sha256','0'*64,'--output','out','--wall-seconds','1200'])
+    assert compare.main()==0 and received['wall_seconds']==1200.

@@ -3,7 +3,7 @@ function [sys,par,common,binding]=e036_stage_a_context(cfg,options,budget)
 % This performs native setup/assembly only. No Newton, predictor or training.
 % All paths/hashes must be supplied by the producer preflight. E011 U0 is a
 % derived stored state, not a Stage0b native checkpoint. No state is invented.
-clock=tic;e036_stage_a_clock(budget,clock,1800);
+clock=tic;cap=budget.total_wall_seconds;e036_stage_a_clock(budget,clock,cap);
 required(options,{'execution_approved','producer_hostname','source_root', ...
  'mesh_file','mesh_sha256','common_file','common_sha256','source_checks', ...
  'binary_checks','thread_controls_verified','provenance'});
@@ -30,7 +30,7 @@ mandatory=["phase_field.System","phase_field.init.material_characteristic", ...
 assert(all(ismember(mandatory,names)),'E036A:Binding','Missing actual runtime bindings');
 for k=1:numel(options.binary_checks)
  c=options.binary_checks(k);actual=which(c.name);
- assert(strcmpi(actual,c.path) && strcmp(e036_sha256_file(actual),c.sha256), ...
+ assert(strcmpi(canonical(actual),canonical(c.path)) && strcmp(e036_sha256_file(actual),c.sha256), ...
   'E036A:Binding','Actual MATLAB resolution differs from the preflight');
 end
 z=load(options.common_file,'common','common_meta','initial_KK','node_coords', ...
@@ -92,8 +92,8 @@ bc=struct('fixed_u',setdiff((1:numel(common.u))',DOFS.active_dof(:)), ...
  'fixed_d',setdiff((1:numel(common.d))',DOFS.active_dof_pf(:)));
 bc.u=common.u(bc.fixed_u);bc.d=common.d(bc.fixed_d);
 old=struct('lower',common.lower,'history',common.history,'version',0);
-eq_checked=@(varargin)e036_stage_a_native_call(eq,budget,clock,1800,varargin{:});
-pf_checked=@(varargin)e036_stage_a_native_call(pf,budget,clock,1800,varargin{:});
+eq_checked=@(varargin)e036_stage_a_native_call(eq,budget,clock,cap,varargin{:});
+pf_checked=@(varargin)e036_stage_a_native_call(pf,budget,clock,cap,varargin{:});
 [u0_audit,~]=e036_native_candidate(sys,eq_checked,pf_checked,common.u,common.d,1,old,bc,zeros(size(common.u)),policy,[]);
 % A numerical U0 miss makes disabled controls unavailable; frozen-state
 % comparisons remain diagnostic work. It never requests a recovery/retry.
@@ -103,8 +103,11 @@ binding=struct('options',options,'cfg',cfg,'common_meta',z.common_meta,'u0_audit
  'common_sha256',options.common_sha256,'mesh_sha256',options.mesh_sha256, ...
  'u0_scope','stored E011 derived U0; no new recovery','u0_admitted',u0_admitted,'native_solves',0, ...
  'initial_KK_timing',z.common_meta.initial_KK_timing);
-e036_stage_a_clock(budget,clock,1800);
+e036_stage_a_clock(budget,clock,cap);
 end
 function required(s,names)
 assert(isstruct(s) && isscalar(s) && all(isfield(s,names)),'E036A:Schema','Required fields missing');
+end
+function path=canonical(path)
+path=char(java.io.File(char(path)).getCanonicalPath());
 end

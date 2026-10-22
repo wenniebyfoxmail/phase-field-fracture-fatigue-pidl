@@ -8,21 +8,15 @@ c=jsondecode(fileread(config_file));
 required={'run_root','code_root','native_snapshot','overlay_root','overlay_solver_sha256', ...
  'build_root','build_completion_sha256','prepare_result_path','prepare_result_sha256', ...
  'manifest_path','manifest_sha256','runtime_bindings','source_checks','common_file','common_sha256', ...
- 'mesh_file','mesh_sha256','pairs','output_dir','watchdog_id','execution_approved','provenance'};
+ 'mesh_file','mesh_sha256','pairs','output_dir','watchdog_id','execution_approved','provenance', ...
+ 'authority_file','authority_sha256'};
 assert(all(isfield(c,required)),'E036A:DriverConfig','Incomplete native driver config');
-root='C:\Users\xw436\jobs\E036_A_20261021_2142';
-assert(ispc && strcmpi(getenv('COMPUTERNAME'),'CITPC12') && ...
- strcmpi(canonical(c.run_root),canonical(root)) && isequal(c.execution_approved,true), ...
- 'E036A:Authority','Original task/producer and explicit approval required');
+assert(isequal(c.execution_approved,true),'E036A:Authority','Explicit execution approval required');
 assert(ismember(string(mode),["disabled","frozen_c1","frozen_c20","frozen_c60","frozen_c83"]), ...
  'E036A:Scope','Unsupported Stage A operation');
-deadline=datetime('2026-10-22T00:42:35Z','InputFormat','yyyy-MM-dd''T''HH:mm:ss''Z''','TimeZone','UTC');
-remaining=seconds(deadline-datetime('now','TimeZone','UTC'))-60;
-assert(remaining>0,'E036A:WallLimit','Original Stage A cleanup reserve reached');
-budget=struct('total_timer',tic,'total_wall_seconds',min(10800,remaining), ...
- 'max_threads',1,'watchdog_id',c.watchdog_id);
-job_clock=tic;cap=600;if strcmp(mode,'disabled'),cap=min(3600,remaining);end
-check_time(budget,job_clock,cap,deadline);
+[budget,authority]=e036_stage_a_authority(c,strcmp(mode,'disabled'));root=char(c.run_root);
+job_clock=budget.total_timer;cap=budget.total_wall_seconds;
+check_time(budget,job_clock,cap);
 for name={'code_root','native_snapshot','overlay_root','build_root','output_dir','manifest_path', ...
  'common_file','mesh_file','prepare_result_path'}
  assert(startsWith(lower(canonical(c.(name{1}))),[lower(canonical(root)) filesep]), ...
@@ -79,7 +73,7 @@ for k=1:2
  index=find(strcmp({built.binaries.name},pair_names{k}));assert(isscalar(index),'E036A:Build','Missing built kernel');
  b=built.binaries(index);assert(strcmp(e036_sha256_file(b.path),b.sha256),'E036A:Build','Built binary changed');
  at=find(strcmp({runtime.name},qualified{k}));assert(isscalar(at),'E036A:Binding','Runtime manifest lacks one kernel');
- assert(strcmpi(runtime(at).path,b.path) && strcmp(runtime(at).sha256,b.sha256), ...
+ assert(strcmpi(canonical(runtime(at).path),canonical(b.path)) && strcmp(runtime(at).sha256,b.sha256), ...
   'E036A:Binding','Runtime manifest must bind fresh build, never an installed fallback');
 end
 resolutions=cell(numel(runtime),1);
@@ -102,15 +96,15 @@ assert(~isfolder(c.output_dir) && ~isfile(c.output_dir) && isfolder(fileparts(c.
 assert(java.io.File(char(c.output_dir)).mkdir(),'E036A:Output','Could not create native job output');
 cfg=struct('requested_n_step',8,'loading','cyclic','discretization','loading', ...
  'u_max',.12,'R',0,'max_iter_displacement',250,'max_iter_phase',250,'max_iter_staggered',1500);
-options=struct('execution_approved',true,'producer_hostname','CITPC12', ...
+options=struct('execution_approved',true,'producer_hostname',authority.producer_hostname, ...
  'source_root',c.native_snapshot,'mesh_file',c.mesh_file,'mesh_sha256',c.mesh_sha256, ...
  'common_file',c.common_file,'common_sha256',c.common_sha256,'source_checks',c.source_checks, ...
  'binary_checks',runtime,'thread_controls_verified',true,'provenance',c.provenance);
 stage='context';
 try
- save(fullfile(c.output_dir,'driver_binding.mat'),'c','config_sha256','mode','resolutions','cfg','budget','-v7.3');
+ save(fullfile(c.output_dir,'driver_binding.mat'),'c','config_sha256','mode','resolutions','cfg','budget','authority','-v7.3');
  [sys,par,common,binding]=e036_stage_a_context(cfg,options,budget);
- check_time(budget,job_clock,cap,deadline);
+ check_time(budget,job_clock,cap);
  save(fullfile(c.output_dir,'context_binding.mat'),'binding','-v7.3');
  if strcmp(mode,'disabled')
   assert(binding.u0_admitted,'E036A:U0Admission','U0 is unavailable; no replacement recovery');
@@ -124,11 +118,12 @@ try
   stage='frozen_export';result=e036_stage_a_export_frozen(sys,binding,c.pairs(at),budget, ...
    fullfile(c.output_dir,sprintf('native_c%04d_s04.mat',cycle)));
  end
- check_time(budget,job_clock,cap,deadline);
+ check_time(budget,job_clock,cap);
  result.driver_mode=mode;result.driver_seconds=toc(job_clock);result.config_sha256=config_sha256;
+ result.authority=authority;result.authority_sha256=c.authority_sha256;
  save(fullfile(c.output_dir,'native_driver_result.mat'),'result','-v7.3');
  write_json(fullfile(c.output_dir,'native_driver_result.json'),result);
- check_time(budget,job_clock,cap,deadline);
+ check_time(budget,job_clock,cap);
 catch original
  failure=struct('stage',stage,'identifier',original.identifier,'message',original.message, ...
   'mode',mode,'elapsed_seconds',toc(job_clock),'retry_permitted',false);
@@ -136,9 +131,8 @@ catch original
  rethrow(original);
 end
 end
-function check_time(budget,clock,cap,deadline)
+function check_time(budget,clock,cap)
 e036_stage_a_clock(budget,clock,cap);
-assert(datetime('now','TimeZone','UTC')<deadline-seconds(60),'E036A:WallLimit','Original deadline cleanup reserve reached');
 end
 function p=canonical(p)
 p=char(java.io.File(char(p)).getCanonicalPath());

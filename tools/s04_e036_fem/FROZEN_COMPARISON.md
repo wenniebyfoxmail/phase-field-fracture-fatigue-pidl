@@ -16,14 +16,19 @@ python tools/s04_e036_fem/compare_frozen_states.py
   --common-problem-sha256 <reviewed-common-problem-sha256>
   --output /absolute/new-comparison-directory
   --threads 1
+  --wall-seconds <authority.per_job_wall_seconds>
 ```
 
 The command is shown across lines for readability; use the appropriate shell
 continuation syntax or one line. Threads must be 1–4. The entry sets numerical
 library and Torch thread limits before assembly. It checks elapsed time between
-assemblies and after output, with a fixed 600-second limit; the Stage A wrapper
-must also enforce the external wall-clock limit because an individual native
-library operation cannot be interrupted by those Python checks.
+assemblies and after output, using the required explicit `--wall-seconds`
+value. The comparison watchdog requires it to equal the attempt authority's
+`per_job_wall_seconds`; there is no hidden 600-second cutoff. The wrapper
+also enforces the external wall-clock limit because an individual native
+library operation cannot be interrupted by those Python checks. The direct
+Python API defaults to no internal deadline and accepts an explicit
+`wall_seconds` value; production uses the required CLI value and watchdog.
 
 Two CPU float64 implementations are compared separately to the native arrays:
 the existing `compute_energy` derivative with detached fresh trial f, and the

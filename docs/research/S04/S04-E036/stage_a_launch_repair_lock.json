@@ -1,0 +1,124 @@
+{
+  "schema": "e036-launch-repair-lock-v1",
+  "base_commit": "9a763140cde0155a7a28dfbcee2ede5b0da49db4",
+  "created_utc": "2026-10-22T00:26:55.765904+00:00",
+  "scope": "Stage A launch repair, explicit per-job authority, independent comparator wall guard, prepared-only conditional Stage B",
+  "deployed_stage_a_package": {
+    "path": "run_workspace/prepare_02_payload_r2.zip",
+    "sha256": "57c08cf8b2fafac04d37be0e17eb33c3bda2305be58f916a6a7123963f47db68",
+    "manifest_path": "run_workspace/prepare_02_r2/prepare_02_manifest.json",
+    "manifest_sha256": "5e40b6a4f03011f748b84575b7e6d0571f705ddb4a972e0a37ef018ecfc86284"
+  },
+  "execution_status": "native_not_started; log_probe_02 process created but log outcome UNKNOWN due automatic-review refusal",
+  "files": [
+    {
+      "path": "docs/research/S04/S04-E036/STAGE_A_LAUNCH_REPAIR_20261022.md",
+      "sha256": "8924dbba32d438d0bba423f7215f6e904e0f1bef37e160ca71aba20eca5a6ebe"
+    },
+    {
+      "path": "docs/research/S04/S04-E036/experiment.md",
+      "sha256": "e1cf398adb29bc8c41dfb7f78e14e523ce83c6a892902c73e542800c217e0782"
+    },
+    {
+      "path": "tools/s04_e036_fem/FROZEN_COMPARISON.md",
+      "sha256": "a059ce4c0ee5fac2885e4e96219d16ca530814e4efc3b5367b7310c7f584150e"
+    },
+    {
+      "path": "tools/s04_e036_fem/NATIVE_PAYLOAD.md",
+      "sha256": "593ae7a70220ff1f7b69fdbc77ba8908da57317feaed80d34569d8bc97237fb0"
+    },
+    {
+      "path": "tools/s04_e036_fem/PROCESS_LAUNCH_STATIC_REVIEW_20261022.md",
+      "sha256": "b93179de7e1c945f0f2757641adc96ef376c900d853895d4e3e236cc32288d2f"
+    },
+    {
+      "path": "tools/s04_e036_fem/STAGE_A_HARNESS.md",
+      "sha256": "3db931d2d98b27bc36861379fc3ba4384f1a57ed9c39a0c2e67a6206c11c2ed9"
+    },
+    {
+      "path": "tools/s04_e036_fem/STAGE_B_HARNESS.md",
+      "sha256": "e6974a3ecb4e4dc424e2876c4cd40b446b30252c3ae86e7f70a992a34ce0cf5a"
+    },
+    {
+      "path": "tools/s04_e036_fem/compare_frozen_states.py",
+      "sha256": "438e874d5363e25609d216e9d4c38b86e21bf36bd4cab1fba556c855a25ce869"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_run_window.m",
+      "sha256": "bbcefb1ba43fdacee49599717c0f03e97cbc3347f062a518543b41a72b404a09"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_a_authority.m",
+      "sha256": "550d76ffe14ea5e8bd8377e5b7d26cd2e9b927b728905bda8db33565ffb7f269"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_a_clock.m",
+      "sha256": "d3b00398ecde8827df38f92da056a05656b7f6d60e55baa56053a57f61cf789b"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_a_context.m",
+      "sha256": "ae0a3a55f94045209c5731528f2cd5eb68acb105b5618b0010995bb08e90eaed"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_a_disabled_pair.m",
+      "sha256": "66ff8f871d82f3e32be4b8b736d70d674e332938ffe3815ea94085b893f2d5ff"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_a_export_frozen.m",
+      "sha256": "3cd13214bb0fe35bf10babee0642617768ea4e645cc818ad503b3c457d2e99f4"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_a_native_driver.m",
+      "sha256": "e6743bdac5782dca8c3ead61c20f35e07d5417f0bf6be49b77d0bb99c85a34fd"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_a_prepare_driver.m",
+      "sha256": "0c7428253c91a0d18fca937e5ffba2d664a16894e80129c4ea88960cdea8b710"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_b_authority.m",
+      "sha256": "e4c2e375820c17d15edeb3b0c885cc59ff6360a804cab063d333b1b6406cf907"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_b_driver.m",
+      "sha256": "1fd3ebf5310a243df271f12a36b9e98e88dfb7bb6345479bd2db1208d4392196"
+    },
+    {
+      "path": "tools/s04_e036_fem/e036_stage_b_predecessor.m",
+      "sha256": "216a21c8b08c047891d4b5411c518bf00ddc9a840a46d521988900aedbdca496"
+    },
+    {
+      "path": "tools/s04_e036_fem/prepare_native_payload.py",
+      "sha256": "5325fbd1d676e97eed2e63e9fa07a64645d76fb7b1013391c8f0455880e61623"
+    },
+    {
+      "path": "tools/s04_e036_fem/stage_a_compare_watchdog.ps1",
+      "sha256": "d9ac606f2980794432bd04ac99c284d07f3a24bfdb7b59304429caf7fc1c56ae"
+    },
+    {
+      "path": "tools/s04_e036_fem/stage_a_launcher.ps1",
+      "sha256": "23212cbccc3bf18a7f6b722ba12045c22e6416913d14ebcebbea82eaeed24416"
+    },
+    {
+      "path": "tools/s04_e036_fem/stage_a_watchdog.ps1",
+      "sha256": "0f547ac79b23204f207bce663e6847772f876e962d0b7c5a2effd32be200a1c8"
+    },
+    {
+      "path": "tools/s04_e036_fem/stage_b_launcher.ps1",
+      "sha256": "e42db4a111d295abca2ab704611391b98cbcb56009726bfefb74e646b1a4ab2a"
+    },
+    {
+      "path": "tools/s04_e036_fem/stage_b_watchdog.ps1",
+      "sha256": "948da07a23b2131d8fe46db7549b2f36aef3181e29725efd8ba74e93dea5fe55"
+    },
+    {
+      "path": "tools/s04_e036_fem/test_compare_frozen_states.py",
+      "sha256": "a0257611d140f74235e6522222217193e0ba5387ac21cbad8edbe95bc84ec66c"
+    }
+  ],
+  "test_record": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E036/stage_a_20261021_2142/logs/python_compare_wall_validation.md",
+    "sha256": "f5f005376aa2631b6c2f22da82273e299e68673db7a865f4d0b73e9244cab8b7",
+    "claim": "seven new cases covered in two batches; initial fixture failures preserved; not a full42 current suite run"
+  }
+}

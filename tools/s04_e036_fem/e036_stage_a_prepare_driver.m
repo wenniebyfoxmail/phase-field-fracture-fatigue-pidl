@@ -1,17 +1,15 @@
 function result=e036_stage_a_prepare_driver(config_file,config_sha256)
 %E036_STAGE_A_PREPARE_DRIVER Checkcode, mock tests, fresh build; no native call.
-% Prepared-only entry. Root owns one serial 1200s external watchdog. The
-% original absolute Stage A deadline is never reset by this MATLAB process.
+% Root owns the serial external watchdog. Current authority supplies its
+% independent timeout and optional global deadline; no historical fallback.
 assert(strcmp(e036_sha256_file(config_file),config_sha256),'E036A:DriverConfig','Driver config changed');
 c=jsondecode(fileread(config_file));
 required={'run_root','code_root','native_snapshot','build_root','compiler_xml', ...
- 'compiler_xml_sha256','output_dir','manifest_path','manifest_sha256','watchdog_id'};
+ 'compiler_xml_sha256','output_dir','manifest_path','manifest_sha256','watchdog_id', ...
+ 'authority_file','authority_sha256'};
 assert(all(isfield(c,required)),'E036A:DriverConfig','Incomplete preparation config');
-root='C:\Users\xw436\jobs\E036_A_20261021_2142';
-assert(ispc && strcmpi(canonical(c.run_root),canonical(root)) && strcmpi(getenv('COMPUTERNAME'),'CITPC12'), ...
- 'E036A:Producer','Only the original task-owned Windows producer is authorized');
-deadline=datetime('2026-10-22T00:42:35Z','InputFormat','yyyy-MM-dd''T''HH:mm:ss''Z''','TimeZone','UTC');
-clock=tic;check_time(clock,deadline);
+[budget,authority]=e036_stage_a_authority(c,false);root=char(c.run_root);
+clock=budget.total_timer;check_time(budget,clock);
 for name={'code_root','native_snapshot','build_root','output_dir','manifest_path'}
  p=canonical(c.(name{1}));assert(startsWith(lower(p),[lower(canonical(root)) filesep]), ...
   'E036A:DriverPath','Every task input/output must remain under the approved root');
@@ -55,33 +53,33 @@ assert(strcmpi(which('e036_stage_a_prepare_driver'),[mfilename('fullpath') '.m']
 checks=cell(size(files));stage='checkcode';
 result=struct('status','incomplete','scope','checkcode/mock/fresh build only', ...
  'native_calls',0,'native_solves',0,'config_sha256',config_sha256, ...
- 'manifest_sha256',c.manifest_sha256,'absolute_deadline_utc','2026-10-22T00:42:35Z', ...
+ 'manifest_sha256',c.manifest_sha256,'authority',authority,'authority_sha256',c.authority_sha256, ...
  'watchdog_id',c.watchdog_id,'started_utc',utc_now());
 try
  for k=1:numel(files)
-  p=fullfile(files(k).folder,files(k).name);check_time(clock,deadline);
+  p=fullfile(files(k).folder,files(k).name);check_time(budget,clock);
   checks{k}=struct('path',p,'sha256',e036_sha256_file(p),'messages',checkcode(p,'-id'));
  end
  save(fullfile(c.output_dir,'checkcode.mat'),'checks','-v7.3');
  write_json(fullfile(c.output_dir,'checkcode.json'),struct('checks',{checks}, ...
   'scope','all diagnostics retained; message count is not a scientific acceptance criterion'));
- stage='mock';check_time(clock,deadline);
+ stage='mock';check_time(budget,clock);
  result.mock=e036_stage_a_selftest(fullfile(c.output_dir,'mock'));
  assert(strcmp(result.mock.status,'passed') && result.mock.cases==28 && result.mock.native_solves==0, ...
   'E036A:Mock','Prepared mock suite did not complete exactly');
- stage='fresh_build';check_time(clock,deadline);
+ stage='fresh_build';check_time(budget,clock);
  result.build=e036_build_native_pair(c.native_snapshot,c.build_root,c.compiler_xml);
- check_time(clock,deadline);
+ check_time(budget,clock);
  assert(strcmp(result.build.status,'built_not_scientifically_verified'),'E036A:Build','Fresh build did not complete');
  for k=1:numel(m.files)
   f=m.files(k);assert(strcmp(e036_sha256_file(fullfile(root,f.path)),f.sha256),'E036A:Drift','Bound source changed during preparation');
  end
  assert(strcmp(e036_sha256_file(config_file),config_sha256) && ...
   strcmp(e036_sha256_file(c.manifest_path),c.manifest_sha256),'E036A:Drift','Config/manifest drift');
- check_time(clock,deadline);result.status='prepared_build_and_mock_completed_no_native_call';
+ check_time(budget,clock);result.status='prepared_build_and_mock_completed_no_native_call';
  result.elapsed_seconds=toc(clock);result.finished_utc=utc_now();
  save(fullfile(c.output_dir,'prepare_result.mat'),'result','-v7.3');
- write_json(fullfile(c.output_dir,'prepare_result.json'),result);check_time(clock,deadline);
+ write_json(fullfile(c.output_dir,'prepare_result.json'),result);check_time(budget,clock);
 catch original
  failure=struct('stage',stage,'identifier',original.identifier,'message',original.message, ...
   'elapsed_seconds',toc(clock),'retry_permitted',false);
@@ -89,9 +87,8 @@ catch original
  rethrow(original);
 end
 end
-function check_time(clock,deadline)
-assert(toc(clock)<1200 && datetime('now','TimeZone','UTC')<deadline-seconds(60), ...
- 'E036A:WallLimit','Preparation cap or original Stage A cleanup reserve reached');
+function check_time(budget,clock)
+e036_stage_a_clock(budget,clock,budget.total_wall_seconds);
 end
 function p=canonical(p)
 p=char(java.io.File(char(p)).getCanonicalPath());

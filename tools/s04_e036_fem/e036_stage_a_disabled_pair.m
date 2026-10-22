@@ -4,7 +4,10 @@ function report=e036_stage_a_disabled_pair(sys,par,common,binding,overlay_path,o
 % Excludes trajectory loops/postprocessing; saves the six native field/key
 % checkpoint variables locally. This is not a full native resume checkpoint.
 % No fresh acceptance callback is run inside either disabled numerical path.
-pair_clock=tic;e036_stage_a_clock(budget,pair_clock,3600);
+pair_clock=tic;pair_cap=budget.total_wall_seconds;e036_stage_a_clock(budget,pair_clock,pair_cap);
+assert(isfield(budget,'arm_wall_seconds') && isnumeric(budget.arm_wall_seconds) && ...
+ isscalar(budget.arm_wall_seconds) && isfinite(budget.arm_wall_seconds) && budget.arm_wall_seconds>0, ...
+ 'E036A:ArmWatchdog','Explicit per-arm timeout is required');
 assert(isfield(budget,'arm_deadline_dir') && ...
  ~isfolder(budget.arm_deadline_dir) && ~isfile(budget.arm_deadline_dir) && ...
  isfolder(fileparts(budget.arm_deadline_dir)) && ...
@@ -50,7 +53,7 @@ assert(java.io.File(char(budget.arm_deadline_dir)).mkdir(), ...
  'E036A:ArmWatchdog','Could not exclusively create per-arm deadline directory');
 try
  absent=one_arm('absent',sys,par,common,initial_KK,body,budget,fullfile(out_dir,'absent'));
- e036_stage_a_clock(budget,pair_clock,3600);
+ e036_stage_a_clock(budget,pair_clock,pair_cap);
  disabled=one_arm('false',sys,par,common,initial_KK,body,budget,fullfile(out_dir,'false'));
  fields={'displ','p_field','p_field_old','history_vars_old','SOL_CYCL_VAR','i_step_completed', ...
   'SOL_STAG_VAR','res_displ','res_pf','strain_en_undgr','history_vars_new','i_stag','KK'};
@@ -60,13 +63,13 @@ try
  end
  assert(strcmp(e036_sha256_file(overlay_path),overlay_sha256),'E036A:OverlayDrift','Overlay changed during controls');
  report=struct('status','exact_disabled_identity','cycle',1,'substep',1,'native_solves',2, ...
-  'predictor_solves',2,'recovery_solves',0,'per_arm_seconds',1800, ...
+  'predictor_solves',2,'recovery_solves',0,'per_arm_seconds',budget.arm_wall_seconds, ...
   'comparison_fields',{fields},'absent_checkpoint_sha256',absent.checkpoint_sha256, ...
   'false_checkpoint_sha256',disabled.checkpoint_sha256,'elapsed_seconds',toc(pair_clock), ...
   'scope','original native acceptance; disabled compatibility only, not common final-state acceptance');
- e036_stage_a_clock(budget,pair_clock,3600);
+ e036_stage_a_clock(budget,pair_clock,pair_cap);
  save(fullfile(out_dir,'disabled_identity.mat'),'report','-v7.3');
- e036_stage_a_clock(budget,pair_clock,3600);
+ e036_stage_a_clock(budget,pair_clock,pair_cap);
 catch ex
  failure=struct('identifier',ex.identifier,'message',ex.message, ...
   'elapsed_seconds',toc(pair_clock),'retry_permitted',false);
@@ -86,11 +89,12 @@ end
 
 function output=one_arm(mode,sys,par,common,initial_KK,body,budget,out_dir)
 % Deliberately no nested functions: original script variables stay local here.
-started=datetime('now','TimeZone','UTC');clock=tic;
-e036_stage_a_clock(budget,clock,1800);assert(~isfolder(out_dir));mkdir(out_dir);
+started=datetime('now','TimeZone','UTC');clock=tic;arm_cap=budget.arm_wall_seconds;
+e036_stage_a_clock(budget,clock,arm_cap);assert(~isfolder(out_dir));mkdir(out_dir);
 arm=struct('schema','e036-stage-a-arm-v1','watchdog_id',char(budget.watchdog_id), ...
  'matlab_pid',feature('getpid'),'mode',mode,'arm_started_utc',utc_text(started), ...
- 'deadline_utc',utc_text(started+seconds(1800)),'wall_seconds',1800);
+ 'deadline_utc',utc_text(started+seconds(arm_cap)),'wall_seconds',arm_cap, ...
+ 'authority_id',budget.authority_id,'authority_sha256',budget.authority_sha256);
 write_arm_event(budget.arm_deadline_dir,[mode '_started.json'],arm);
 sys.STIFFNESS_MATRIX.KK=initial_KK;
 displ=common.u;p_field=common.d;p_field_old=common.lower;history_vars_old=common.history;
@@ -104,13 +108,13 @@ if strcmp(mode,'false'),e036_final_acceptance=struct('enabled',false); %#ok<NASG
 else,assert(strcmp(mode,'absent'));end
 eq=str2func('phase_field.mex.fem.assembly.equilibrium.AMOR');
 pf=str2func('phase_field.mex.fem.assembly.pf.AT1_PENALTY_FATIGUE');
-assembly_equilibrium_fh=@(varargin)e036_stage_a_native_call(eq,budget,clock,1800,varargin{:}); %#ok<NASGU>
-assembly_pf_fh=@(varargin)e036_stage_a_native_call(pf,budget,clock,1800,varargin{:}); %#ok<NASGU>
+assembly_equilibrium_fh=@(varargin)e036_stage_a_native_call(eq,budget,clock,arm_cap,varargin{:}); %#ok<NASGU>
+assembly_pf_fh=@(varargin)e036_stage_a_native_call(pf,budget,clock,arm_cap,varargin{:}); %#ok<NASGU>
 save(fullfile(out_dir,'predecessor.mat'),'common','mode','initial_KK','-v7.3');
 try
- e036_stage_a_clock(budget,clock,1800);
+ e036_stage_a_clock(budget,clock,arm_cap);
  eval(body); % Exact saved/reviewed original overlay numerical segment only.
- e036_stage_a_clock(budget,clock,1800);
+ e036_stage_a_clock(budget,clock,arm_cap);
  assert(~e036_enabled && stag_converged && i_step==1 && SOL_CYCL_VAR.n_cycle==1, ...
   'E036A:Control','Disabled single-step native path did not complete');
  assert(all(isfinite(displ)) && all(isfinite(p_field)) && ...
@@ -130,11 +134,11 @@ try
  output.checkpoint_sha256=e036_sha256_file(checkpoint);output.elapsed_seconds=toc(clock);
  output.f_last_inner_return=history_vars_new(:,:,4);
  output.scope='six native field/key variables; no full native resume metadata';
- e036_stage_a_clock(budget,clock,1800);
+ e036_stage_a_clock(budget,clock,arm_cap);
  save(fullfile(out_dir,'native_result.mat'),'output','mode','-v7.3');
- e036_stage_a_clock(budget,clock,1800);
+ e036_stage_a_clock(budget,clock,arm_cap);
  finished=datetime('now','TimeZone','UTC');
- assert(finished<started+seconds(1800),'E036A:WallLimit','Arm finished after its external deadline');
+ assert(finished<started+seconds(arm_cap),'E036A:WallLimit','Arm finished after its external deadline');
  arm.arm_finished_utc=utc_text(finished);
  write_arm_event(budget.arm_deadline_dir,[mode '_finished.json'],arm);
 catch ex

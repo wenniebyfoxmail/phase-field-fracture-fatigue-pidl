@@ -1,18 +1,17 @@
-# Prepared and statically reviewed only; no producer execution is claimed.
+# Run through stage_a_launcher.ps1. Receipts, not this source, prove execution.
 param([Parameter(Mandatory=$true)][string]$Root,
       [Parameter(Mandatory=$true)][string]$Label,
       [Parameter(Mandatory=$true)][string]$Entry,
-      [Parameter(Mandatory=$true)][int]$WallSeconds,
+      [Parameter(Mandatory=$true)][string]$AuthorityFile,
+      [Parameter(Mandatory=$true)][string]$AuthoritySha256,
       [ValidateSet('Matlab','Python')][string]$Kind='Matlab',
       [string]$PythonExecutable='', [string]$ArgumentsFile='',
       [switch]$RequireArms)
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
+$stopwatch=[Diagnostics.Stopwatch]::StartNew()
 if ([IntPtr]::Size -ne 8) {throw 'The Stage A watchdog requires 64-bit PowerShell'}
-$deadline=[DateTime]::Parse('2026-10-22T00:42:35Z').ToUniversalTime()
-if ([DateTime]::UtcNow -ge $deadline) {throw 'Global Stage A deadline elapsed'}
-$expected='C:\Users\xw436\jobs\E036_A_20261021_2142'
 $Root=[IO.Path]::GetFullPath($Root).TrimEnd('\');$Entry=[IO.Path]::GetFullPath($Entry)
-if ($Root -ine $expected -or $Label -notmatch '^[a-z0-9_]+$' -or $WallSeconds -lt 1 -or $WallSeconds -gt 3600) {throw 'Invalid bounded Stage A job'}
+if ($Label -notmatch '^[a-z0-9_]+$') {throw 'Invalid Stage A label'}
 function In-Task([string]$path) {return [IO.Path]::GetFullPath($path).StartsWith($Root+'\',[StringComparison]::OrdinalIgnoreCase)}
 if (-not (In-Task $Entry) -or -not (Test-Path -LiteralPath $Entry -PathType Leaf)) {throw 'Task-owned entry required'}
 $logs=Join-Path $Root 'logs';$job=Join-Path $logs $Label;$armDirectory=$job+'_arms'
@@ -31,6 +30,21 @@ function Read-Utc([string]$text) {
  if ($text -notmatch 'Z$') {throw 'Explicit UTC timestamp required'}
  return [DateTime]::Parse($text,[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
 }
+function Positive-Number($value) {
+ return (($value -is [int] -or $value -is [long] -or $value -is [double] -or $value -is [decimal]) -and [double]$value -gt 0 -and -not [double]::IsInfinity([double]$value) -and -not [double]::IsNaN([double]$value))
+}
+$AuthorityFile=[IO.Path]::GetFullPath($AuthorityFile)
+if (-not (In-Task $AuthorityFile) -or $AuthoritySha256 -cnotmatch '^[a-f0-9]{64}$' -or (File-Hash $AuthorityFile) -cne $AuthoritySha256) {throw 'Authority path/hash differs'}
+$authority=Get-Content -LiteralPath $AuthorityFile -Raw|ConvertFrom-Json
+foreach ($field in @('schema','authority_id','stage','run_root','producer_hostname','allowed_labels','authorized_at_utc','human_authorization_ref','max_compute_threads','global_deadline_utc','per_job_wall_seconds','arm_wall_seconds')) {if ($authority.PSObject.Properties.Name -notcontains $field) {throw ('Missing authority field: '+$field)}}
+if ($authority.schema -cne 'e036-stage-a-authority-v1' -or $authority.stage -cne 'A' -or [IO.Path]::GetFullPath([string]$authority.run_root).TrimEnd('\') -ine $Root -or $authority.producer_hostname -ine $env:COMPUTERNAME -or @($authority.allowed_labels) -cnotcontains $Label -or -not $authority.authority_id -or -not $authority.human_authorization_ref) {throw 'Authority identity/scope differs'}
+if (-not (Positive-Number $authority.per_job_wall_seconds) -or -not (Positive-Number $authority.max_compute_threads) -or $authority.max_compute_threads -gt 4 -or [Math]::Floor([double]$authority.max_compute_threads) -ne $authority.max_compute_threads) {throw 'Explicit per-job timeout and integer thread cap 1..4 required'}
+if ((Read-Utc $authority.authorized_at_utc) -gt [DateTime]::UtcNow.AddMinutes(1)) {throw 'Authority timestamp is in the future'}
+$WallSeconds=[double]$authority.per_job_wall_seconds;$maxThreads=[int]$authority.max_compute_threads
+$deadline=$null
+if ($null -ne $authority.global_deadline_utc) {$deadline=Read-Utc $authority.global_deadline_utc;if ([DateTime]::UtcNow -ge $deadline) {throw 'Explicit global deadline elapsed'}}
+$armWall=$null
+if ($RequireArms) {if (-not (Positive-Number $authority.arm_wall_seconds)) {throw 'Native arms require an explicit positive timeout'};$armWall=[double]$authority.arm_wall_seconds}
 # A fresh Windows Job Object contains only our suspended child and its future
 # descendants. Handles avoid PID reuse. Closing the watchdog closes the Job
 # Object and kills that tree, including compiler subprocesses after failures.
@@ -74,13 +88,13 @@ public sealed class E036OwnedJob : IDisposable {
   foreach(char c in text){if(c=='\\'){slash++;continue;}if(c=='"'){b.Append('\\',2*slash+1);b.Append('"');}else{b.Append('\\',slash);b.Append(c);}slash=0;}
   b.Append('\\',2*slash);b.Append('"');return b.ToString();
  }
- public E036OwnedJob(string executable,string command,string cwd,string output,string error) {
+ public E036OwnedJob(string executable,string command,string cwd,string output,string error,int maxCores) {
   Image=Path.GetFullPath(executable);
   try {
    job=CreateJobObject(IntPtr.Zero,null);Check(job!=IntPtr.Zero);
    UIntPtr allowed,system;Check(GetProcessAffinityMask(GetCurrentProcess(),out allowed,out system));
    ulong bits=allowed.ToUInt64(),mask=0;int count=0;
-   for(int i=0;i<64 && count<4;i++)if((bits&(1UL<<i))!=0){mask|=1UL<<i;count++;}
+   for(int i=0;i<64 && count<maxCores;i++)if((bits&(1UL<<i))!=0){mask|=1UL<<i;count++;}
    Check(count>0);AffinityMask=mask;
    var limits=new EXT();limits.basic.flags=0x2000|0x10;limits.basic.affinity=new UIntPtr(mask);
    Check(SetInformationJobObject(job,9,ref limits,Marshal.SizeOf(typeof(EXT))));
@@ -118,7 +132,7 @@ if ($Kind -eq 'Matlab') {
  $entryMatlab=$Entry.Replace('\','/').Replace("'","''")
  $childArgs=@('-singleCompThread','-batch',("run('"+$entryMatlab+"')"),'-logfile',($job+'_matlab.log'))
 } else {
- if ($RequireArms -or $WallSeconds -gt 600 -or [IO.Path]::GetFileName($Entry) -ine 'compare_frozen_states.py') {throw 'Only the frozen Python comparator is admitted, at most 600 seconds'}
+ if ($RequireArms -or [IO.Path]::GetFileName($Entry) -ine 'compare_frozen_states.py') {throw 'Only the frozen Python comparator is admitted'}
  if (-not $PythonExecutable -or -not $ArgumentsFile) {throw 'Explicit Python executable and task argv JSON required'}
  $executable=[IO.Path]::GetFullPath($PythonExecutable);$ArgumentsFile=[IO.Path]::GetFullPath($ArgumentsFile)
  if ([IO.Path]::GetFileName($executable) -ine 'python.exe' -or -not (In-Task $ArgumentsFile)) {throw 'Invalid Python identity/argv path'}
@@ -133,19 +147,19 @@ if ($Kind -eq 'Matlab') {
  foreach ($flag in $allowed[0..4]) {if (-not $seen.ContainsKey($flag)) {throw 'Missing comparator argument'}}
  foreach ($flag in @('--input','--common-problem','--output')) {if (-not (In-Task $seen[$flag])) {throw 'Comparator paths must be task-local'}}
  foreach ($flag in @('--input-sha256','--common-problem-sha256')) {if ($seen[$flag] -cnotmatch '^[a-f0-9]{64}$') {throw 'SHA256 required'}}
- if ($seen.ContainsKey('--threads')) {if ($seen['--threads'] -notmatch '^[1-4]$') {throw 'Thread limit exceeded'};$threads=[int]$seen['--threads']} else {$values+=@('--threads','1')}
+ if ($seen.ContainsKey('--threads')) {if ($seen['--threads'] -notmatch '^[1-4]$' -or [int]$seen['--threads'] -gt $maxThreads) {throw 'Thread limit exceeded'};$threads=[int]$seen['--threads']} else {$values+=@('--threads','1')}
  $argumentsHash=File-Hash $ArgumentsFile;$childArgs=@('-u',$Entry)+$values
 }
 if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {throw 'Executable is unavailable'}
 foreach ($name in @('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS','NUMEXPR_NUM_THREADS','VECLIB_MAXIMUM_THREADS')) {[Environment]::SetEnvironmentVariable($name,[string]$threads,'Process')}
 $env:CUDA_VISIBLE_DEVICES='';$env:MPLBACKEND='Agg'
 $command=([E036OwnedJob]::Quote($executable))+' '+(($childArgs|ForEach-Object {[E036OwnedJob]::Quote([string]$_)}) -join ' ')
-$started=[DateTime]::UtcNow;if ($started -ge $deadline) {throw 'Global Stage A deadline elapsed'}
-$stopwatch=[Diagnostics.Stopwatch]::StartNew();$process=$null;$lock=$null;$reason='not_started';$wrapperFailure=$null;$exitCode=$null;$attemptOwned=$false;$armHashes=@{}
+$started=[DateTime]::UtcNow;if ($null -ne $deadline -and $started -ge $deadline) {throw 'Explicit global deadline elapsed'}
+$process=$null;$lock=$null;$reason='not_started';$wrapperFailure=$null;$exitCode=$null;$attemptOwned=$false;$armHashes=@{}
 function Check-ArmDeadlines([bool]$Final) {
  if (-not (Test-Path -LiteralPath $armDirectory)) {if ($Final -and $RequireArms) {throw 'Required arm receipts missing'};return}
- if ($Kind -ne 'Matlab') {throw 'Python cannot create native arm receipts'}
- $now=[DateTime]::UtcNow
+ if ($Kind -ne 'Matlab' -or -not $RequireArms) {throw 'Unexpected native arm receipts'}
+ $now=[DateTime]::UtcNow;$previousFinished=$null
  foreach ($mode in @('absent','false')) {
   $begin=Join-Path $armDirectory ($mode+'_started.json');$end=Join-Path $armDirectory ($mode+'_finished.json')
   if (-not (Test-Path -LiteralPath $begin)) {if ($Final -or (Test-Path -LiteralPath $end)) {throw ('Incomplete arm: '+$mode)};continue}
@@ -154,34 +168,35 @@ function Check-ArmDeadlines([bool]$Final) {
    if ($armHashes.ContainsKey($path) -and $armHashes[$path] -cne $hash) {throw 'Immutable arm receipt changed'};$armHashes[$path]=$hash
   }
   $arm=Get-Content -LiteralPath $begin -Raw|ConvertFrom-Json
-  if ($arm.schema -cne 'e036-stage-a-arm-v1' -or $arm.watchdog_id -cne $Label -or $arm.mode -cne $mode -or $arm.matlab_pid -ne $process.Id -or $arm.wall_seconds -ne 1800) {throw 'Arm identity differs'}
+  if ($arm.schema -cne 'e036-stage-a-arm-v1' -or $arm.watchdog_id -cne $Label -or $arm.mode -cne $mode -or $arm.matlab_pid -ne $process.Id -or $arm.wall_seconds -ne $armWall -or $arm.authority_id -cne $authority.authority_id -or $arm.authority_sha256 -cne $AuthoritySha256) {throw 'Arm identity differs'}
   $beginTime=Read-Utc $arm.arm_started_utc;$armEnd=Read-Utc $arm.deadline_utc
-  if ([Math]::Abs(($armEnd-$beginTime).TotalSeconds-1800) -gt .001 -or $beginTime -lt $started.AddSeconds(-1) -or $beginTime -gt $now.AddSeconds(1)) {throw 'Invalid arm time window'}
-  if ($mode -eq 'false' -and -not (Test-Path -LiteralPath (Join-Path $armDirectory 'absent_finished.json'))) {throw 'Second arm precedes first completion'}
+  if ([Math]::Abs(($armEnd-$beginTime).TotalSeconds-$armWall) -gt .001 -or $beginTime -lt $started.AddSeconds(-1) -or $beginTime -gt $now.AddSeconds(1)) {throw 'Invalid arm time window'}
+  if ($mode -eq 'false' -and ($null -eq $previousFinished -or $beginTime -lt $previousFinished)) {throw 'Second arm precedes first verified completion'}
   if (Test-Path -LiteralPath $end) {
    $done=Get-Content -LiteralPath $end -Raw|ConvertFrom-Json
-   if ($done.schema -cne $arm.schema -or $done.watchdog_id -cne $Label -or $done.mode -cne $mode -or $done.matlab_pid -ne $process.Id) {throw 'Arm completion identity differs'}
+   if ($done.schema -cne $arm.schema -or $done.watchdog_id -cne $Label -or $done.mode -cne $mode -or $done.matlab_pid -ne $process.Id -or $done.authority_id -cne $authority.authority_id -or $done.authority_sha256 -cne $AuthoritySha256) {throw 'Arm completion identity differs'}
    $finished=Read-Utc $done.arm_finished_utc
    if ($finished -lt $beginTime -or $finished -gt $armEnd -or $finished -gt $now.AddSeconds(1)) {throw ('Arm deadline exceeded: '+$mode)}
+   if ($mode -eq 'absent') {$previousFinished=$finished}
   } elseif ($Final -or $now -ge $armEnd) {throw ('Arm incomplete or timed out: '+$mode)}
  }
 }
 try {
  $lock=[IO.File]::Open((Join-Path $logs 'stage_a_active.lock'),[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
- $attempt=[ordered]@{schema='e036-stage-a-watchdog-v2';label=$Label;kind=$Kind;entry=$Entry;entry_sha256=(File-Hash $Entry);argv_file=$ArgumentsFile;argv_sha256=$argumentsHash;executable=$executable;command=$command;launch_cwd=$Root;created_utc=$started.ToString('o');global_deadline_utc=$deadline.ToString('o');wall_seconds=$WallSeconds;max_compute_threads=$threads;parent_wrapper_pid=$PID}
+ $attempt=[ordered]@{schema='e036-stage-a-watchdog-v3';label=$Label;kind=$Kind;entry=$Entry;entry_sha256=(File-Hash $Entry);argv_file=$ArgumentsFile;argv_sha256=$argumentsHash;executable=$executable;command=$command;launch_cwd=$Root;created_utc=$started.ToString('o');global_deadline_utc=$authority.global_deadline_utc;wall_seconds=$WallSeconds;max_compute_threads=$threads;affinity_cpu_cap=$maxThreads;parent_wrapper_pid=$PID;authority_id=$authority.authority_id;authority_file=$AuthorityFile;authority_sha256=$AuthoritySha256;effective_execution_policy=[string](Get-ExecutionPolicy)}
  Write-NewJson ($job+'_attempt.json') $attempt;$attemptOwned=$true
- $process=[E036OwnedJob]::new($executable,$command,$Root,($job+'_stdout.log'),($job+'_stderr.log'))
+ $process=[E036OwnedJob]::new($executable,$command,$Root,($job+'_stdout.log'),($job+'_stderr.log'),$maxThreads)
  $identity=Get-CimInstance Win32_Process -Filter ('ProcessId='+$process.Id)
  if (-not $identity -or $identity.CommandLine -cne $command -or $identity.ExecutablePath -ine $executable -or [Math]::Abs(($identity.CreationDate.ToUniversalTime()-$process.CreatedUtc).TotalSeconds) -gt 1) {throw 'Suspended process identity differs'}
  $record=[ordered]@{label=$Label;pid=$process.Id;entry=$Entry;command=$identity.CommandLine;creation_utc=$process.CreatedUtc.ToString('o');launch_cwd=$Root;cwd_binding='CreateProcess lpCurrentDirectory; not a live CWD read';max_compute_threads=$threads;affinity_mask=$process.AffinityMask;arm_deadline_dir=$armDirectory;require_arms=[bool]$RequireArms;job_object='fresh kill-on-close, descendants included';state='suspended_identity_verified'}
  Write-NewJson ($job+'_started.json') $record
- if ((File-Hash $Entry) -cne $attempt.entry_sha256 -or [DateTime]::UtcNow -ge $deadline -or $stopwatch.Elapsed.TotalSeconds -ge $WallSeconds) {throw 'Entry changed or budget elapsed before resume'}
+ if ((File-Hash $Entry) -cne $attempt.entry_sha256 -or (File-Hash $AuthorityFile) -cne $AuthoritySha256 -or ($null -ne $deadline -and [DateTime]::UtcNow -ge $deadline) -or $stopwatch.Elapsed.TotalSeconds -ge $WallSeconds) {throw 'Entry/authority changed or timeout elapsed before resume'}
  if ($Kind -eq 'Python' -and (File-Hash $ArgumentsFile) -cne $argumentsHash) {throw 'Comparator argv changed'}
  $process.Resume();$reason='exited';$lastStorage=-10
  while (-not $process.Wait(500)) {
   Check-ArmDeadlines $false
   if ($stopwatch.Elapsed.TotalSeconds -ge $WallSeconds) {$reason='per_job_wall_limit';break}
-  if ([DateTime]::UtcNow -ge $deadline) {$reason='global_wall_limit';break}
+  if ($null -ne $deadline -and [DateTime]::UtcNow -ge $deadline) {$reason='explicit_global_wall_limit';break}
   if ($stopwatch.Elapsed.TotalSeconds-$lastStorage -ge 10) {
    $lastStorage=$stopwatch.Elapsed.TotalSeconds;$used=(Get-ChildItem -LiteralPath $Root -Recurse -File | Measure-Object Length -Sum).Sum
    if ($used -gt 5GB) {$reason='task_storage_limit';break}
@@ -190,7 +205,7 @@ try {
  }
  if ($reason -ne 'exited') {$process.Stop()};$exitCode=$process.ExitCode
  Check-ArmDeadlines $true
- if ($reason -eq 'exited' -and ($stopwatch.Elapsed.TotalSeconds -ge $WallSeconds -or [DateTime]::UtcNow -ge $deadline)) {$reason='deadline_at_exit'}
+ if ($reason -eq 'exited' -and ($stopwatch.Elapsed.TotalSeconds -ge $WallSeconds -or ($null -ne $deadline -and [DateTime]::UtcNow -ge $deadline))) {$reason='deadline_at_exit'}
 } catch {
  $wrapperFailure=$_.Exception.ToString();$reason='watchdog_or_arm_failure'
  if ($null -ne $process) {try {if (-not $process.Wait(0)) {$process.Stop()};$exitCode=$process.ExitCode} catch {$wrapperFailure+='; cleanup: '+$_.Exception.ToString()}}
@@ -198,5 +213,5 @@ try {
  # Unconditional own-Job cleanup also covers identity/receipt/IO exceptions.
  if ($null -ne $process) {$process.Dispose()};if ($null -ne $lock) {$lock.Dispose()}
 }
-if ($attemptOwned) {Write-NewJson ($job+'_finished.json') ([ordered]@{label=$Label;exit_code=$exitCode;stop_reason=$reason;wrapper_error=$wrapperFailure;elapsed_seconds=$stopwatch.Elapsed.TotalSeconds;ended_utc=[DateTime]::UtcNow.ToString('o');arm_receipt_hashes=$armHashes;job_object_closed=$true})}
+if ($attemptOwned) {Write-NewJson ($job+'_finished.json') ([ordered]@{label=$Label;exit_code=$exitCode;stop_reason=$reason;wrapper_error=$wrapperFailure;elapsed_seconds=$stopwatch.Elapsed.TotalSeconds;ended_utc=[DateTime]::UtcNow.ToString('o');arm_receipt_hashes=$armHashes;job_object_closed=$true;authority_id=$authority.authority_id;authority_sha256=$AuthoritySha256})}
 if ($wrapperFailure -or $reason -ne 'exited' -or $exitCode -ne 0) {throw ('Stage A job did not complete within authority: '+$reason+'; exit='+$exitCode+'; '+$wrapperFailure)}

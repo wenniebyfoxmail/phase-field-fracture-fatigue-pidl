@@ -13,6 +13,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -343,7 +344,7 @@ def compare_arrays(state, check_time=lambda: None):
     return dict(passed=passed,channels=comparisons),implementations
 
 
-def run(input_path, input_sha256, common_path, common_sha256, output, *, threads=1):
+def run(input_path, input_sha256, common_path, common_sha256, output, *, threads=1, wall_seconds=None):
     output = Path(output)
     output.mkdir(exist_ok=False)  # Never overwrite an earlier success or failure.
     report = dict(schema='e036_frozen_comparison_v1',status='failed',passed=False,
@@ -351,12 +352,17 @@ def run(input_path, input_sha256, common_path, common_sha256, output, *, threads
                   scope='frozen field software equivalence; no solve, optimization, acceptance or commit',
                   tolerance=dict(atol=ATOL,rtol=RTOL,formula='maxabsdiff <= atol + rtol*maxabsref'),
                   host=platform.node(),platform=sys.platform,threads=threads,input=str(Path(input_path).resolve()),
-                  requested_input_sha256=input_sha256,common_problem=str(Path(common_path).resolve()))
+                  requested_input_sha256=input_sha256,common_problem=str(Path(common_path).resolve()),
+                  wall_seconds_limit=(wall_seconds if wall_seconds is None or
+                      (type(wall_seconds) in (int,float) and math.isfinite(wall_seconds)) else repr(wall_seconds)))
     start = time.monotonic()
     def check_time():
-        if time.monotonic()-start > 600:
-            raise RuntimeError('ten-minute frozen comparison limit reached; no retry or continuation')
+        if wall_seconds is not None and time.monotonic()-start > wall_seconds:
+            raise RuntimeError('explicit frozen comparison per-job wall limit reached; no automatic continuation')
     try:
+        if wall_seconds is not None and (type(wall_seconds) not in (int,float)
+                or not math.isfinite(wall_seconds) or wall_seconds <= 0):
+            raise ValueError('wall_seconds must be a finite positive per-job limit or None')
         configure_threads(threads)
         np = _imports()
         import torch
@@ -401,8 +407,11 @@ def main():
     parser.add_argument('--common-problem-sha256',required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--threads',type=int,default=1,choices=range(1,5))
+    parser.add_argument('--wall-seconds',type=float,required=True,
+                        help='Explicit per-job hang limit; must match the launcher authority')
     args = parser.parse_args()
-    report = run(args.input,args.input_sha256,args.common_problem,args.common_problem_sha256,args.output,threads=args.threads)
+    report = run(args.input,args.input_sha256,args.common_problem,args.common_problem_sha256,args.output,
+                 threads=args.threads,wall_seconds=args.wall_seconds)
     print(json.dumps({k:report[k] for k in ('status','passed','wall_seconds')}))
     return 0 if report['passed'] else 1
 
