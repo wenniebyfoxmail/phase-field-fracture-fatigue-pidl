@@ -1,5 +1,15 @@
 # S04-E039 — phase-aware RPROP state inheritance
 
+## Current workflow — 2026-10-22
+
+Use the installed research-decision-core fixed-benchmark rule. The two existing
+three-cycle arms below are the one task comparison; run each only as already
+authorised, reuse completed outputs, then deliver the paired result. Do not add
+historical reruns, smoke ladders, full regressions, per-commit/metadata review or
+default post-result independent review. Documentation changes need only direct
+consistency checks. Existing source snapshots, results, scientific criteria,
+budget and execution permissions are unchanged; this amendment starts no run.
+
 ## Purpose
 
 Test whether carrying the PyTorch RPROP per-parameter state between strictly
