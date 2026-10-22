@@ -1,0 +1,17 @@
+{
+  "experiment_id": "S04-E038",
+  "protocol_revision": "r1",
+  "execution_status": "not_started",
+  "source_commit": "3a9d7a1ef783a2072c5113fc6c14e552793a55f7",
+  "source_dirty": false,
+  "sync_mode": "Mac git archive",
+  "producer_alias": "gpu-taobo",
+  "remote_root": "/mnt/data2/drtao/wennie/pf_s04e038_rprop_cap_r1_20261022_0722",
+  "remote_archive": "/mnt/data2/drtao/pidl_archives/pf_s04e038_rprop_cap_r1_20261022_0722/results",
+  "remote_log": "/mnt/data2/drtao/wennie/pf_s04e038_rprop_cap_r1_20261022_0722/logs/dispatcher.log",
+  "transport_note": "Reused SSH control connection stalled during staging. No worker launched. Task-specific local stalled transfers stopped, partial0715 root preserved. Fresh independent SSH connection works; source staged anew0722.",
+  "gpu_admission": "GPU5 became occupied before launch; do not share or interrupt. Recheck for an empty card.",
+  "arm_seconds": 240,
+  "total_runner_seconds": 780,
+  "outer_timeout_seconds": 900
+}
