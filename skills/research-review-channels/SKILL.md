@@ -29,10 +29,14 @@ Choose the channel once per task with the user: recommendation, alternatives,
 usage, material and review scope. Reuse an existing authorised choice; do not
 silently switch after an access/model/quota/transport failure.
 
-Use the core's **Bounded Task Authority**: in-scope repairs and an explicitly
-requested review through that channel need no repeat human approval. Keep the
-review within the requested question, not every commit. Card metadata, paths, Run IDs and observed
-auxiliary versions need consistency checks, not a fresh Code Ready review.
+Use the core's **Bounded Task Authority** for in-scope local preparation and
+repairs. An external ChatGPT Pro or Work review is still a file/message send:
+prepare the final packet, account/channel/model, complete prompt and attachments,
+then obtain the user's explicit approval for that submission under the global
+`AGENTS.md`. A local read-only Codex review has no external-send step. Keep the
+review within the requested question, not every commit. Card metadata, paths,
+Run IDs and observed auxiliary versions need consistency checks, not a fresh
+Code Ready review.
 
 Reuse the Experiment or task record for the request. State only the review question, immutable protocol/commit or external snapshot identity, material actually provided, requested checks, and blocked conclusions. A local path by itself is not evidence that Chat or cloud Work received the file. Give a reviewer the frozen material and questions, not the desired verdict. Keep reviewers read-only. If the user's requested review includes a repair/rereview cycle, revisit only the changed issue; otherwise do not create an automatic rereview loop. Reuse unchanged findings.
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Research Review Channels"
+  short_description: "Explicit review routing for a bounded research question."
+  default_prompt: "Use $research-review-channels to prepare one bounded independent review and show any external submission packet for approval."
+policy:
+  allow_implicit_invocation: false
