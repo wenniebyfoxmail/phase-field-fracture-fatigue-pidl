@@ -71,3 +71,10 @@ taobo.md
 
 # ── Local-only references (PDFs + private README, not for git) ──
 references/
+
+# Reusable Codex skill references are source instructions, not local research
+# payloads. Keep them versioned with their owning skill.
+!skills/
+!skills/*/
+!skills/*/references/
+!skills/*/references/**

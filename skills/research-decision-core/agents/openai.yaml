@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Decision Core"
+  short_description: "Design mechanism-led, decisive research validation."
+  default_prompt: "使用 $research-decision-core，从第一性原理出发分析目标、机制与瓶颈，设计足以改变路线判断的验证，并复用已有证据。"
