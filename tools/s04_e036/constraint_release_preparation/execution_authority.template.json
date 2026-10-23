@@ -1,0 +1,23 @@
+{
+  "schema": "s04_e036_execution_authority_v1",
+  "approved": false,
+  "approval_reference": null,
+  "manifest_sha256": "600009c049758468833f756ce13c2582b38e2676178db1eb333a475e52528e38",
+  "hostname": "GPUServer8",
+  "cuda_visible_devices": "5",
+  "gpu_uuid": null,
+  "implementation_lock": null,
+  "fem_validation": null,
+  "stage_a_semantic_binding": null,
+  "requested_case": "c1s2",
+  "mechanism_phase": "constraint_release",
+  "method": "nodal_damage_raw_preimage_release_v1",
+  "source_binding": null,
+  "release_config": null,
+  "owner_scope": null,
+  "base_source_commit": "68291a0ae9d8723c8747ba87ab8c6a077ac0f9a7",
+  "release_source_commit": null,
+  "job_wall_seconds": 86400,
+  "cumulative_resource_limit": null,
+  "no_automatic_retry": true
+}

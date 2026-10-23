@@ -254,7 +254,9 @@ finite per-job watchdog and exclusive attempt ownership. It also records
 `method=nodal_damage_raw_preimage_release_v1` and the release work separately from
 old physical L-BFGS counts. No launcher/authority manifest has been created here.
 
-Before execution, the owner still needs that small producer adapter and a
+The producer adapter is now prepared in `run_release.py`; `README.md` documents
+the actual terminal late-binding step and deliberately unapproved authority
+template. Before execution, the owner still needs the real source binding and
 prospective amendment. This is part of the already authorized research objective;
 the execution decision depends on the pending continuation result, not another
 request for cumulative resources. The resident queue is never edited/interrupted

@@ -1,6 +1,6 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-23 23:11 UTC）
+## 实际进展（2026-10-23 23:31 UTC）
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -12,11 +12,17 @@ D3 c1 两臂均在s1的2000次更新后拒绝，零历史提交；2000个loss与
 
 四份D3拒绝末态保存字段也已取回：原terminal_failure没有context，已逐张量确认最后outer@2000与terminal的权重、旧态、固定f、状态键和工作量完全相同后，才提取既有u/v/d；没有新forward或物理装配。c1s1两臂场逐字相等，J=.0009264810995；c83s1 P1/P2的J分别=.0083610595671/.0093011103179，步内更新的诊断场差反增11.2432%。这不产生接受轨迹收益，十二态总体改善仍不可计算。证据 `raw_archive/d3_saved_terminal_fields_20261024_transport02/transfer_receipt.json`、`analysis/d3_saved_array_contrast_20261024.json` 与 `figures/d3_saved_field_contrast_20261024.png`；原Obsidian mesh笔记已写回同一结论。
 
+c83保存场的通道/空间分解进一步定位到damage：P2的u/v平方误差均稍降，damage平方项从6.12619e-5增至7.84251e-5，抵消了位移改善；damage占P2总J²的90.65%。约3.99%集中面积的`|y|<=.02`带承载94.36%的damage平方误差。该分解是已保存场的描述性统计，不是网络表达下界或机制因果贡献率。证据 `analysis/d3_c83_damage_localisation_20261024.json`，图 `figures/d3_c83_damage_localisation_20261024.png`；未进行新网络计算或物理装配。
+
 D4 c1s2四臂各2000次更新已完成并全量取回端点，均未通过物理检查。L+/L0/C+/C0的机械残差分别为.00572262/.00634259/.00156178/.000990620；纯保存数组J分别为.00906525/.00900829/.03797762/.03795155。加入clamp消除了约束违反但场差扩大；两clamp臂全部86756节点d逐字等于旧damage，raw全部处于下界或以下；已保存force诊断确认4646个可行增损伤下降方向被挡，覆盖100%的该末态phase KKT平方，暴露出投影饱和的优化障碍。不能以残差降低宣称场差改善，也不能以此证明原网络表达不足。详见 `analysis/c1s2_matrix_saved_array_diagnostic_20261023.json` 和 `analysis/c1s2_matrix_clamp_activity_20261023.json`。
 
 当前D4继续已预定的同结构C0优化与原结构seen-target拟合，并完成剩余独立状态；拟合成功提供可表达的实证上界，拟合失败仍不能证明容量下界。全部生产源码固定68291a0a，GPU5串行；Mac只做保存数组/元数据处理。c1s2 C0 continuation已于22:38:02部署核验，尚未计算；原映射全参数float64目标拟合已于22:37:42启动（supervisor1698192）。间歇SSH中断只影响可见性，已启动任务不重发。
 
-22:58真实读数：原结构拟合636个L-BFGS accepted steps/1309 closures，J=.00358372183116、G=.0140776780031、maxd=.1156161583，仍未满足拟合停止条件或物理验收。相比物理L+端点J=.00906525391491更接近，但这只是已见目标的近似见证，不是已接受的physics-only改进率。实际拟合直接使用持续L-BFGS，无RPROP热身。
+23:16:26真实读数：原结构拟合1204个L-BFGS accepted steps/2508 closures，J=.00332631415575、G=.0115222054138、maxd=.1239734028，仍未满足拟合停止条件或物理验收。相比物理L+端点J=.00906525391491更接近，但这只是已见目标的近似见证，不是已接受的physics-only改进率；全域J下降也没有让局部最大damage误差单调下降。实际拟合直接使用持续L-BFGS，无RPROP热身。队列仍等待该拟合，未halt，尚未运行后续作业。
+
+已回收非终态step1200的真实字段和completion：J=.0033163080，最大v误差.04211884、最大d误差.12395025，都定位在预裂纹内部x约−.277、y近0。该保存读出仍有Ru=.0349792、phase KKT=14.5883、愈合幅.0247315，历史罚能占总能量98.82%；近似更好不等于物理合格。纯数组套用既定C0投影后的J=.0031764397，仅为同保存输出的代数反事实，未装配残差，也不作为物理延续初值。`analysis/fit_c1s2_step1200_saved_analysis_20261024.json`保存该边界。
+
+F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生在dx=.002，是本步U=.05999988的94.09%。拟合已解析其中部分变化，但窄局部转折仍有误差。该现象提出参考精度/支路敏感性问题，不能直接称FEM错误、非唯一性或网络容量不足；既定strict c1s2与NN-start oracle将用于区分。纯节点邻接检查也确认没有四节点d全为1的单元，不能仅凭裂纹节点d=1就断言存在完全零刚度模态。证据 `analysis/c1s2_precrack_line_profile_20261024.json/.csv` 和 `figures/c1s2_precrack_line_profile_20261024.png`。
 
 固定六作业resident队列于22:54:51真实启动（PID1724403），22:58回读确认独占attempt且无halt；一次SSH回显丢失后仅查询，没有重发启动。计划SHA为51ebeb7bdd13fae8e8c0bbf7a9fc962ea82c0dad248949f1d145b6d712270049，脚本SHA为fe72208fbc3d3a6f467aae6e33f5949fc26d118ae02ba6ecbb29cfb055f076f2。先等待现有c1s2 fit有效结束与进程清理，再依次执行c1s2 C0 continuation、c1s4/c83s2/c83s4四臂矩阵、c83s2/c83s4原结构拟合；每个任务沿用原声明算法和86400秒防挂，无累计上限、无自动重试。root在队列持有GPU调度时不再手工并行启动。部署/启动/回读原始证据位于 `run_workspace/resident_queue_20261023/`。
 
@@ -36,7 +42,7 @@ F2完整源码已固定于4482f97a939470e3be32fa42d55f4f7cfab83a32，独立目�
 
 同结构修复准备在 `tools/s04_e036/constraint_release_preparation/`：固定实际saved f_solve和immutable旧态，先用节点损伤力作一个真正可行且降能的投影步，再让原完整网络拟合其raw预像与实际场。保留C0 clamp、原参数数目及边界；raw代理项的梯度明确不是物理能量梯度，也没有straight-through替换。只有实际clamped场严格可行、同f能量下降及被挡方向实际实现均达到预声明份额，且保存读回完成，才保留新权重；否则全量回滚。独立fresh KKT/f验收仍沿用原规则，释放成功不等于复现成功。
 
-此准备不读取FEM未来目标、不接入或改变resident队列。目前仅源码/方案；须等真实c1s2 C0 continuation终结并确认仍有该障碍，再决定绑定其真实完整末态、形成新方法作业。若原continuation已成功或阻挡消失，不因代码已写而追加此试验。未运行本地NN/native或新科学测试。
+此准备不读取FEM未来目标、不接入或改变resident队列。producer adapter现已准备：用原61文件底座加5个命名overlay文件，纯I/O late binder只接受真实失败的float64 C0终态，保留原时钟、权重、old、f_solve和work；释放成功后最多调用一次原物理L-BFGS，失败完整回滚并留档。authority模板仍未批准，真实终态尚未绑定；须等c1s2 C0 continuation终结并确认仍有该障碍，再形成新方法作业。若原continuation已成功或阻挡消失，不因代码已写而追加此试验。只做源码接口/语法和元数据一致性核对，未运行本地NN/native或新科学测试。
 
 ## 当前范围（2026-10-22 人方分工更新）
 

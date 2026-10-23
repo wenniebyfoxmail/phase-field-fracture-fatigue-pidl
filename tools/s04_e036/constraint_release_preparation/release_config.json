@@ -1,0 +1,40 @@
+{
+  "schema": "s04_e036_constraint_release_config_v1",
+  "method": "nodal_damage_raw_preimage_release_v1",
+  "case": "c1s2",
+  "source_job": "d4_c1s2_continue_01",
+  "base_source_commit": "68291a0ae9d8723c8747ba87ab8c6a077ac0f9a7",
+  "physics_manifest_sha256": "600009c049758468833f756ce13c2582b38e2676178db1eb333a475e52528e38",
+  "source_must_be": "completed_failed_C0_continuation_float64_terminal",
+  "source_scientific_stops": [
+    "fixed_f_numerical_stagnation_not_stationarity_proof",
+    "line_search_limit_restored_previous_state"
+  ],
+  "future_target_used": false,
+  "teacher_initialized": false,
+  "history_commit_count": 0,
+  "release_plan": {
+    "damage_trust_radius": 0.02,
+    "node_armijo": 0.0001,
+    "node_backtracks": 25,
+    "energy_fraction": 0.1,
+    "blocked_work_fraction": 0.1,
+    "lbfgs_history": 100,
+    "closures_per_step": 25,
+    "stagnant_steps": 20,
+    "proxy_relative_change": 1e-10
+  },
+  "physical_continuation_once": true,
+  "physical_solver": {
+    "lbfgs_history_size": 100,
+    "lbfgs_closures_per_step": 25,
+    "lbfgs_fixed_f_steps": 200,
+    "lbfgs_stagnation_steps": 20,
+    "physics_relative_energy_change": 1e-10
+  },
+  "continuation_failure_retained_state": "verified_release_candidate",
+  "release_failure_retained_state": "verified_source_terminal",
+  "no_automatic_retry": true,
+  "job_wall_seconds": 86400,
+  "cumulative_resource_limit": null
+}
