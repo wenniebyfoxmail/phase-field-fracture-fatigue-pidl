@@ -403,3 +403,5 @@ R020已启动：07:08:17.263Z，CITPC12 MATLAB34280/supervisor46232，实际cap5
 方向选择沿用已审查box_phase_ray_descent原字节；只新增取消时限的runner/supervisor/controller。原物理参数、网格、载荷、软不可逆性、KKT/平衡/愈合判据及数值迭代限保持，真实数值失败需保存诊断，不能放宽标准追认。4线程/16GiB主机RSS/20GiB CUDA/10GiB自有输出及Mac仅分析保留。有限网络I/O超时仅限制连接/传输，不限制计算。
 
 仅运行固定主基准，不重跑旧fixtures、不新设独立复审。R022现场CITPC12/AD\\xw436、无MATLAB进程、磁盘58,246,828,032bytes、native2098dc9、新目录不存在，已只读核验；实际启动状态随后记入R022。归档authority: parent local_archive/experiments/S04-E035/descent_no_compute_cap_20261023/authority.json。
+
+R022实际15:36:02.6073106Z在CITPC12启动MATLAB23108/supervisor43372，运行源2b16b779。已核验launch.json无限时，正在完整FEM；尚无U=.4或PIDL结论。

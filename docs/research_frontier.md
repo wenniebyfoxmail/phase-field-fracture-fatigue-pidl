@@ -95,3 +95,5 @@ R020 terminal:12/24validtoU.28; U.29/stag25/PFiter9 ray actualslopes allnonnegat
 
 
 2026-10-23 S04-E035: 人方批准方向保障修复完整重跑、取消计算预算上限；R022准备完整24态共同有界FEM，全部通过U=.4才继续R023原PIDL。旧窗口不再执行，科学判据/资源安全限保持；45°在主比较之后。[owner](research/S04/S04-E035/experiment.md)。
+
+R022 actual: CITPC12 MATLAB23108 started15:36:02Z Oct23, unlimited_compute=true. Full24-state verification pending; noPIDL yet. [Run](research/S04/S04-E035/runs/S04-E035-R022.md).

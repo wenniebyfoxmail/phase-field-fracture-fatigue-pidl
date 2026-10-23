@@ -25,6 +25,7 @@ try {
   if([double]$v[1] -lt 24576 -or [double]$v[2] -gt 5){throw 'GPU busy or insufficient headroom'}
   $apps=@(& nvidia-smi --query-compute-apps=gpu_uuid,pid --format=csv,noheader,nounits|Where-Object {$_ -match $c.gpu_uuid})
   if($apps.Count){throw 'Competing GPU process'}
+  if(@(Get-CimInstance Win32_Process|Where-Object {$_.Name -like 'python*'}).Count){throw 'Competing Python process'}
   $env:CUDA_VISIBLE_DEVICES=$c.gpu_uuid
   $env:PYTHONPATH=Join-Path $c.root 'deps'
   $env:PYTHONUNBUFFERED='1'
@@ -32,6 +33,8 @@ try {
  foreach($name in @('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS')){[Environment]::SetEnvironmentVariable($name,'4','Process')}
  $env:TEMP=Join-Path $c.root 'tmp';$env:TMP=$env:TEMP
  New-Item -ItemType Directory $env:TEMP|Out-Null
+ foreach($name in @('MPLCONFIGDIR','TORCH_HOME','TORCHINDUCTOR_CACHE_DIR','TRITON_CACHE_DIR','CUDA_CACHE_PATH')){[Environment]::SetEnvironmentVariable($name,$env:TEMP,'Process')}
+ $env:PYTHONDONTWRITEBYTECODE='1'
  $claim=[IO.File]::Open(($c.root+'/launch_claim'),[IO.FileMode]::CreateNew);$claim.Dispose()
  $started=[DateTime]::UtcNow
  $proc=Start-Process -FilePath $c.executable -ArgumentList $c.arguments -WorkingDirectory $c.root -RedirectStandardOutput ($c.root+'/stdout.log') -RedirectStandardError ($c.root+'/stderr.log') -PassThru
