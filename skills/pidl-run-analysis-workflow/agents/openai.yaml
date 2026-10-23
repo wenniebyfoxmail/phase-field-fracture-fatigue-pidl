@@ -1,6 +1,6 @@
 interface:
   display_name: "PIDL Run Analysis Workflow"
   short_description: "Strict PIDL/FEM evidence-package workflow"
-  default_prompt: "Use $pidl-run-analysis-workflow to determine whether a PIDL/FEM case needs a strict state-mapped evidence package; otherwise preserve the compact receipt and fast decision snapshot."
+  default_prompt: "Use $pidl-run-analysis-workflow only when a frozen protocol explicitly requires a strict PIDL/FEM evidence package; otherwise use the core plus adapter and preserve the compact receipt and fast decision snapshot."
 policy:
   allow_implicit_invocation: false
