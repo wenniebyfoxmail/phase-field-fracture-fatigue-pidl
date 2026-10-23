@@ -5,7 +5,21 @@ Branch: `codex/fixed-weight-learning-20261021`; explicit remote base:
 `origin/codex/s09-e007-fixed-damage-holdout-20261012` at
 `d61076b61fd92bf09d330c902abe9a1a6e77a79d`.
 
-## Current handoff — 2026-10-22 fixed-benchmark rule
+## Current decision — 2026-10-23 evidence inventory
+
+Mode: C1 read-only evidence inventory and minimal completion design, requested
+by the user; no training, FEM production, protected-target access or benchmark
+replay. [The current gap report](fixed_weight_reference_gaps_20261023.md)
+identifies the existing sealed U0.1175 v10 candidate and older full-native
+U0.11/.12/.13 packages. U0.1175 independence remains conditional on same-condition
+partial access and the original protected-use policy; no new test admission is
+asserted. Reuse the completed v5 capture check and current interface results;
+accepted-state numerical convergence and independent physical validation remain
+separate missing evidence. The report gives a zero-new-trajectory reuse path
+and the conditional one-new-condition fallback. This inventory is complete;
+its proposed computations and training remain unstarted.
+
+## Prior handoff — 2026-10-22 fixed-benchmark rule
 
 The native-archive adaptation task is complete and delivered; there is no active
 execution card or pending benchmark. Reuse the completed result linked at the

@@ -206,3 +206,13 @@ remote. No array payloads were opened to construct this inventory.
 - October U0.1175 status: `/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/docs/handovers/windows_fem_outbox.md:29–53,92–107`. August Request31: `/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-loao-gno-20260826/docs/experiments/at1_fatigue_mesh_pino_stage0b_hard5_request31_decision_20260826.md:5–43`.
 - SYNMEM: `/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/synthetic-memory-mechanism-20261020/docs/research/S04/S04-E027-SYNMEM/experiment.md:24–55`.
 - Other reference boundaries: `/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/solver_repair_v11/result.md:3–12`; `/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/fem-teacher-records-recovery-20261017/docs/experiments/moose_fem_teacher_candidate_track.md:47–53`; `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/handoffs/ferrite_hard5_locked_handoff_20260801_staging/README.md:67–71`.
+
+
+## 2026-10-23 dated correction and continuation
+
+The earlier exclusions describe the inspected old carriers and the then-used
+handover record. Live metadata now establishes later complete native Stage0b
+indexes for U0.11/.12/.13 and a completed, sealed U0.1175 fresh-v10 archive.
+These are reuse candidates, not current-contract admission or independence
+assertions. See [the current evidence and minimum completion plan](fixed_weight_reference_gaps_20261023.md).
+The original dated observations and protected roles remain on record.
