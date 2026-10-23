@@ -24,9 +24,24 @@ try {
   if($line.Count -ne 1){throw 'GPU UUID missing'}
   $v=$line[0] -split ','
   if([double]$v[1] -lt 24576 -or [double]$v[2] -gt 5){throw 'GPU busy or insufficient headroom'}
-  $apps=@(& nvidia-smi --query-compute-apps=gpu_uuid,pid --format=csv,noheader,nounits|Where-Object {$_ -match $c.gpu_uuid})
+  $apps=@(& nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name --format=csv,noheader,nounits)
   if($LASTEXITCODE -ne 0){throw 'GPU process query failed'}
-  if($apps.Count){throw 'Competing GPU process'}
+  # WDDM reports ordinary desktop C+G contexts as compute-app entries.
+  # Admit only recognized desktop executables at system/application paths;
+  # unknown CUDA consumers and any Python process still block admission.
+  $desktopNames=@('chatgpt.exe','dwm.exe','explorer.exe','logonui.exe','shellexperiencehost.exe','msedgewebview2.exe','ms-teams.exe','shellhost.exe','crossdeviceresume.exe','startmenuexperiencehost.exe','searchhost.exe','applicationframehost.exe','lockapp.exe','chrome.exe','windowsterminal.exe','systemsettings.exe','codex-computer-use-swift.exe')
+  $desktopContexts=@()
+  foreach($entry in $apps){
+   $parts=$entry -split ',',3
+   if($parts.Count -lt 3 -or $parts[0].Trim() -ne $c.gpu_uuid){continue}
+   $appPid=[int]$parts[1].Trim();$reportedPath=$parts[2].Trim();$base=[IO.Path]::GetFileName($reportedPath).ToLowerInvariant()
+   $live=Get-CimInstance Win32_Process -Filter "ProcessId=$appPid"
+   if($null -eq $live){continue}
+   $systemPath=$reportedPath -like 'C:\Windows\*' -or $reportedPath -like 'C:\Program Files\*' -or $reportedPath -like 'C:\Program Files (x86)\*' -or $reportedPath -like 'C:\Users\xw436\AppData\Local\OpenAI\Codex\runtimes\*'
+   if($base -notin $desktopNames -or -not $systemPath -or $live.Name.ToLowerInvariant() -ne $base){throw ('Unclassified GPU consumer: '+$reportedPath)}
+   $desktopContexts+=@{pid=$appPid;path=$reportedPath;classification='existing_desktop_graphics_context'}
+  }
+  @{utc=[DateTime]::UtcNow.ToString('o');gpu_uuid=$c.gpu_uuid;free_MiB=[double]$v[1];utilization_percent=[double]$v[2];desktop_contexts=$desktopContexts;unclassified_compute_consumers=0}|ConvertTo-Json -Depth 4|Set-Content ($c.root+'/GPU_admission.json')
   if(@(Get-CimInstance Win32_Process|Where-Object {$_.Name -like 'python*'}).Count){throw 'Competing Python process'}
   $env:CUDA_VISIBLE_DEVICES=$c.gpu_uuid
   $env:PYTHONPATH=Join-Path $c.root 'deps'

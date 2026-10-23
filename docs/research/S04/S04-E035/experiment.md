@@ -458,3 +458,8 @@ R024实际17:17:22.1008539→17:50:29.1800246Z，exit0/COMPLETED，续算wall198
 有限流程已尝试R025衔接，但启动器误引用supervise_manav_pidl_renewed.ps1旧限时版本，17:51:25Z在DateTime.Parse缺失截止字段时异常，worker_started=false。17:57:13Z现场核验D-26-09/AD\xw436无Python，R025无launch.json/launch_claim/pidl目录；GPU固定UUID空闲、可用97269MiB，新R026目录不存在。此为部署引用错误，FEM无需重算，R025没有训练进程/GPU计算结果，原失效控制记录全部保留。
 
 已修正两个无上限PIDL控制器的监督器引用，并准备新R026原PIDL（物理/网络/seed/容差/早停规则不变，无计算或迭代预算），正确控制文件逐文件哈希校验且直接检查无旧DateTime.Parse。只复用已经通过的R024核验，不重跑FEM或其验证阶梯。新有限后半程脚本continue_manav_static_after_fem.py只处理合格R024→R026→原保存量配对分析。归档pidl_after_fem_20261023，待实际启动。
+
+
+PIDL现场准入修正（继续原授权，无新科学比较）：R026已用正确无期限监督器，但原通用“GPU进程数量必须为0”检查把WDDM桌面C+G上下文误判为竞争计算，18:00Z核验固定GPU仅Windows explorer/dwm/LogonUI/ShellExperience/EdgeWebView/Teams/Codex，利用率0%，无Python、无R026launch/claim/训练输出，child_pid=null。R026也未开始训练，其记录保留。
+
+原冻结资源原则保留：UUID不变、≥24GiB空闲/≤5%负载/无Python、4线程/16GiBhostRSS/20GiBCUDA/10GiBoutput。修正为对已见桌面程序名+系统/应用安装路径+现场实际进程名三项匹配的图形上下文作记录，未知CUDA使用者仍阻止，不杀任何其他用户进程。新R027科学payload与R026相同，只修正资源分类；一次实际训练尚未发生。完整R024不重算、不重验，后半程流程仍取回及原保存量比较，计算/迭代预算均无上限。
