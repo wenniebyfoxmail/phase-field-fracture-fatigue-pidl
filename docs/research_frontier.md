@@ -92,3 +92,6 @@ Latestdirect“请启动计算”: R020/R021 sameenergy piecewiserayinitialstep 
 R020 active07:08:17Z:MATLAB34280/supervisor46232,CITPC12,cap5838.221s/frozenend08:45:35Z,commit ed5766a6; prospective lateststartrequest executionapproved, waitedforotherMATLABrelease. Fixturesreturned/actualBOX_RAYseen, full24qualificationpending; noNN. [Run](research/S04/S04-E035/runs/S04-E035-R020.md).
 
 R020 terminal:12/24validtoU.28; U.29/stag25/PFiter9 ray actualslopes allnonnegative/energyunchanged, KKT1.13297e-6>1e-6.573.016s/RSS1.633GiB/CPUUNKNOWN,77files72,364,190byteshashmatched,ownPIDsgone; notdeadline. NoNN/45. Directionfirst-orderdescent safeguard+fullcurrentwitness prepared/source-reviewedonly; R020actualattemptconsumed, newactualretry/timeenvelopependinghuman. [Result](research/S04/S04-E035/runs/S04-E035-R020.md), [nextproposal](research/S04/S04-E035/descent_safeguard_proposal_20261022.md).
+
+
+2026-10-23 S04-E035: 人方批准方向保障修复完整重跑、取消计算预算上限；R022准备完整24态共同有界FEM，全部通过U=.4才继续R023原PIDL。旧窗口不再执行，科学判据/资源安全限保持；45°在主比较之后。[owner](research/S04/S04-E035/experiment.md)。

@@ -394,3 +394,12 @@ R020已启动：07:08:17.263Z，CITPC12 MATLAB34280/supervisor46232，实际cap5
 依人方治理原消息01a16286-1ff9-76f2-80c7-d943676007d2及安装版research-decision-core“只跑固定基准，通过即交付”：当前唯一活动下一步计划descent_safeguard_proposal_20261022.md已移除重复旧四fixtures、额外SPD单测阶梯、独立复审及因commit/路径/元数据再审门；既有审查结论/未受影响结果复用。唯一基准是既定完整24态FEM→保存量核验→条件原PIDL→配对分析，命令、输入、对照和预期已写在该原计划。文档小改仅一致性检查。
 
 不修改已执行R018/R020源、签名问答、旧结果/费用/UNKNOWN、科学判据或新增一次科学重跑/预算许可；原HQ问答由人方明确接受“仅各一次完整FEM/PIDL启动、首次失败即停”，其已消费次数保留，不冒称Agent模板。当前producer均退出，helper shear_review已completed，不唤醒历史helper/不派新审查或测试。此管理改动不启停/重启任何科学运行。
+
+
+## 2026-10-23 人方批准方向保障完整重跑，无计算上限
+
+人方原文：“批准这次方向保障修复后的完整重跑。没有计算上限”。本次R022从恢复状态完整跑24态0°共同有界FEM；保存量核验全部通过到U=.4后，R023运行原PIDL并完成逐状态比较。45°仍在完整主比较后。此前窗口、费用与失败结果作为历史保留，不再约束本次总时长、单步时长、GPU时长或本地分析CPU。
+
+方向选择沿用已审查box_phase_ray_descent原字节；只新增取消时限的runner/supervisor/controller。原物理参数、网格、载荷、软不可逆性、KKT/平衡/愈合判据及数值迭代限保持，真实数值失败需保存诊断，不能放宽标准追认。4线程/16GiB主机RSS/20GiB CUDA/10GiB自有输出及Mac仅分析保留。有限网络I/O超时仅限制连接/传输，不限制计算。
+
+仅运行固定主基准，不重跑旧fixtures、不新设独立复审。R022现场CITPC12/AD\\xw436、无MATLAB进程、磁盘58,246,828,032bytes、native2098dc9、新目录不存在，已只读核验；实际启动状态随后记入R022。归档authority: parent local_archive/experiments/S04-E035/descent_no_compute_cap_20261023/authority.json。
