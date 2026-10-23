@@ -590,7 +590,9 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
     loss_prev = torch.tensor([0.0], device=area_T.device)
 
     # Loop over epochs
-    for epoch in range(num_epochs):
+    # None means no epoch budget; preserve the original EarlyStopping rule.
+    import itertools
+    for epoch in (itertools.count() if num_epochs is None else range(num_epochs)):
         loop = tqdm(training_set_collocation, miniters=25, disable=True)
         # Loop over batches
         for j, (inp_train, outp_train)  in enumerate(loop):

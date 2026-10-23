@@ -422,3 +422,16 @@ R022已通过U=.29（第262外层，Ru9.7433940241e-5、PF3.2266392896e-7、最�
 85文件100,416,524bytes已全部取回并逐文件SHA256/大小匹配。流程16:39:04Z记录stopped_incomplete_FEM后正常停止；R023未调用、未部署/训练，45°未启动。完整U=.4参考不存在，不开始条件PIDL、不将失败U=.33算作合格。原始R022及历史结果保留，无新科学重跑。
 
 结果：parent local_archive/experiments/S04-E035/runs/S04-E035-R022/{outcome.json,analysis/reference_verification.json,analysis/iteration_stop.json,analysis/figures/phase_iteration_stop.png}。图已目视检查。下一判别是以同一原生能量比较两方向经过各自exact-ray/原Armijo后的实际可接受下降；这只是未执行修复候选，无容差放宽或新启动。
+
+
+## 2026-10-23 明确取消次数上限，修复实际步长停滞并续算
+
+人方原文要求“解决U=0.33的收敛停滞，保持原方程和容差继续算到U=0.4，通过后接着跑PIDL并完成比较，不用再逐步问我”。承认上轮仅取消时长而遗留PF500/力学500/外层1000次数截断，现将其全部移除；也移除NN的10000epoch及LBFGS内部迭代/评估预算，保留原RPROP相对loss5e-6连续10步及LBFGS原epsilon收敛标准。有限浮点不可表示步/非有限数/原约束或资源失败仍如实停止，绝不追认未达标点。
+
+方向修复：同一当前原生K/R/能量，分别计算投影Newton与原生精确对角投影梯度目标，各自走原piecewise exact-ray及原native-energy Armijo(c1=1e-4)。从实际合格trial中选原生能量较低者；无改能量/材料/网格/BC/历史/盒约束/KKT1e-6/耦合1e-4/愈合.005。回溯也不再按12次预算截断，仅到合格或浮点不再有可表示步。
+
+唯一任务基准：R024在CITPC12沿用R022已核验state000–016原字节（0°U≤.32），精确重放原postaccepted历史更新并校验恢复后的native driver完全相等，再续算17–24态至U=.4。不重跑已通过16态、不加旧fixtures、smoke或独立复审。源前缀的coupling诊断删除原失败U=.33行，其他保存科学状态原字节保留。独立原脚本verify_manav_static_reference_box.py核验组合24态及exit0/complete，之后R025在原绑定GPU跑独立原T3/8×400/seed1 PIDL。analyze_manav_static_pair_converged.py仅更新无epoch预算的设置一致性，保留原所有科学/配对检查。
+
+新源码：box_phase_ray_progress.m、unlimited_mechanical_newton.m、run_manav_static_fem_progress.m及对应progress控制器/有限衔接脚本。只做直接代码一致性/语法检查，实际验证是上述主基准，无额外测试门。R024/R025仍保留4线程/16GiB主机RSS/20GiB CUDA/10GiB输出/本地分析2GiB限制；无时长/CPU/GPU小时/迭代次数预算。新authority与流程在parent archive progress_resume_20261023/，R022及其失败费用原样保留。
+
+现场17:11:22Z：CITPC12/AD\xw436无MATLAB，磁盘57,876,934,656bytes，native2098dc9不变，新R024目录不存在。新启动回执待实际执行。
