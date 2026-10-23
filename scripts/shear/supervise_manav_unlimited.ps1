@@ -19,11 +19,13 @@ try {
   $ref=(Get-Content ($c.root+'/GPU_RELEASED.json') -Raw|ConvertFrom-Json).reference
   if(-not $ref.complete_valid_reference -or $ref.accepted_prefix -ne 24){throw 'Full reference required'}
   $gpu=@(& nvidia-smi --query-gpu=uuid,memory.free,utilization.gpu --format=csv,noheader,nounits)
+  if($LASTEXITCODE -ne 0){throw 'GPU query failed'}
   $line=@($gpu|Where-Object {($_ -split ',')[0].Trim() -eq $c.gpu_uuid})
   if($line.Count -ne 1){throw 'GPU UUID missing'}
   $v=$line[0] -split ','
   if([double]$v[1] -lt 24576 -or [double]$v[2] -gt 5){throw 'GPU busy or insufficient headroom'}
   $apps=@(& nvidia-smi --query-compute-apps=gpu_uuid,pid --format=csv,noheader,nounits|Where-Object {$_ -match $c.gpu_uuid})
+  if($LASTEXITCODE -ne 0){throw 'GPU process query failed'}
   if($apps.Count){throw 'Competing GPU process'}
   if(@(Get-CimInstance Win32_Process|Where-Object {$_.Name -like 'python*'}).Count){throw 'Competing Python process'}
   $env:CUDA_VISIBLE_DEVICES=$c.gpu_uuid
