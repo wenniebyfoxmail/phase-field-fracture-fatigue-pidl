@@ -163,3 +163,13 @@ Linux/GPUServer8／drtao／/usr/bin/python3 CPU2包装完成，全部88输入238
 三态12profiles／13保护／永久中心／原data与Taobo producer／CPU2和300+1800+900+120≤3120秒／两份删除对象／科学首停与无重试不改，base81.937549秒不重置。前瞻机械重查最多2轮／15秒且计入原300与总预算，只有明确零科学启动、无未知结果且当前实现支持时可用；零启动资源等待记NO_START_RESOURCE_WAIT，不改写科学失败，不越过现有claim或首停。原精确辅助pin等属Agent实现约束，不是逐项人方许可，冻结包此次仍不修改或放宽。
 
 结论：文档治理已同步；唯一当前人方边界是首次整包执行及私有输入传输许可。本轮未做远端操作、安装／探针、求解／训练、新审查或true权限，未重写签名快照或旧失败。共享Roadmap由总部处理。
+
+## 2026-10-23 — D013 Mac v1用户明确批准后单次启动，监督权限首停，未形成科学结果
+
+目的／授权：用户对原Mac CPU2 v1问句明确回复“审批请执行，没有预算让上限”。按引用的精确原manifest7c77c4db记录一次本地固定模型离线分析许可／机器角色例外，不转为Taobo v2私有传输或神经训练；预算尾句未用于无限扩张，本次停止无关预算。旧Mac暂停／Taobo准备记录保留为历史。
+
+本轮：原包、环境元数据、88输入238110147B、source18d0e7cb／clean树／收据通过；dispatcher47813、scientific-parent47844于英国夏令时16:09:55单次启动。监督器psutil.children调用sysctl(KERN_PROC_ALL)遭当前沙箱拒绝；原首停终止parent exit−15，launcher总0.757213458s／监督0.043628166s。结果根未创建，0场前向／0solve／0NN更新／0完成profile，12行incomplete；两个精确PID均已确认退出。这是执行启动失败，非物理负结果或零收益。
+
+已完成权限定位：允许自有进程监督的require_escalated执行模式下，同一只读能力核验成功，无需改科学代码或装依赖。原批准／失败／claim／source均保留；未自动重启。仅准备metadata／新路径／累计成本／合并存储修订r2，科学18d0e7cb、三态／12profiles／13保护／永久中心与原限额／科学首停不变，未自加新评审／测试链。新manifest14513093…46c550，launcher0752d29e…1017d；累计base92.675601s不重置。当前入口为[最小权限修复与单次重投审批](physical_field_budget_recovery_approval_20261023.md)，新authfalse、control/output未创建。
+
+结论／下一步：原v1单次authority已消费，不覆盖旧目录或以治理修订绕过不重试条款。待人方一次重投许可后，按已准备新包／正常进程监督权限单次执行并跟进真实三态分区收益、物理代价与成本；当前仍无D013科学结论。Taobo v2未授权／未发送。原始收据见physical_field_budget_v1_execution_20261023.json。
