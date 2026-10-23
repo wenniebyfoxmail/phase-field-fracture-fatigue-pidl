@@ -90,7 +90,7 @@ def launch():
 
 def status():
     s="$ProgressPreference='SilentlyContinue';$r='"+REMOTE+"';$o=@{root_exists=(Test-Path $r)};foreach($n in @('launch.json','exit.json','supervisor_submission.json','supervisor_exception.json')){if(Test-Path ($r+'/'+$n)){$o[$n]=Get-Content ($r+'/'+$n) -Raw|ConvertFrom-Json}};$o['states']=@(Get-ChildItem ($r+'/pidl/state_*.npz') -ErrorAction SilentlyContinue).Count;$o['stdout_tail']=[string]::Join([Environment]::NewLine,[string[]]@(Get-Content ($r+'/stdout.log') -Tail 4 -ErrorAction SilentlyContinue));$o['stderr_tail']=[string]::Join([Environment]::NewLine,[string[]]@(Get-Content ($r+'/stderr.log') -Tail 12 -ErrorAction SilentlyContinue));$o|ConvertTo-Json -Depth 4 -Compress"
-    label='status_'+datetime.datetime.now(datetime.timezone.utc).strftime('%H%M%S')
+    label='status_'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S_%f')
     p=call(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=25',HOST,ps_command(s)],30,label)
     print(p.stdout,p.stderr[-300:]);assert p.returncode==0
     state=json.loads(p.stdout)
