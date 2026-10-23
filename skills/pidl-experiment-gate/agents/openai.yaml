@@ -1,4 +1,6 @@
 interface:
-  display_name: "PIDL/FEM Experiment Gate"
-  short_description: "Gate and repair PIDL/FEM physics routes."
-  default_prompt: "Use $pidl-experiment-gate with the research core to identify the governing physics bottleneck and design decisive field or evolution validation for a coherent repair or redesign."
+  display_name: "PIDL/FEM Physics Module"
+  short_description: "Internal physics semantics for a Road-routed claim."
+  default_prompt: "Use $pidl-experiment-gate only as the PIDL/FEM physics module within a Road-routed claim, then identify the binding physics mechanism and a decisive field or evolution validation."
+policy:
+  allow_implicit_invocation: false

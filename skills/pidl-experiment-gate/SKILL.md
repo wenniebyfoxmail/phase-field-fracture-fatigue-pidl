@@ -1,22 +1,20 @@
 ---
 name: pidl-experiment-gate
-description: Apply the project experiment gate specifically to PIDL, FEM, teacher qualification, field-mechanism comparison, residual correction, GNO/PINO, and synthetic surrogate work. Use this compatibility entry for physics-specific state semantics or Hard-5 validation; use road-fracture-experiment-gate directly for observation, measurement, inverse, or real-road forecasting work without a physics/surrogate claim.
+description: Internal PIDL/FEM physics module for a road-fracture claim already routed through road-fracture-experiment-gate. Load only when FEM/PIDL, Hard-5, teacher, field/state, or synthetic-surrogate semantics materially affect the claim; it is not a second experiment gate.
 ---
 
-# PIDL/FEM Experiment Gate
+# PIDL/FEM Physics Module
 
-This is the physics-route compatibility entry, not the project-wide research
-gate.
+`road-fracture-experiment-gate` owns claim class, experiment contract,
+acceptance criterion, record, and conclusion. Its physics-and-surrogates
+reference loads this module only when detailed FEM/PIDL, Hard-5, or field/state
+semantics are material. This module adds those semantics; it does not open a
+second claim route, experiment contract, or review.
 
-First read the road adapter, which loads `research-decision-core`, then the
-physics reference (read each source once):
-
-- [`../road-fracture-experiment-gate/SKILL.md`](../road-fracture-experiment-gate/SKILL.md)
-- [`../road-fracture-experiment-gate/references/physics_surrogate.md`](../road-fracture-experiment-gate/references/physics_surrogate.md)
-
-Use the shared claim classes, Occam acceptance rule, readiness states, outcome
-map, and output template. Add only the physics-specific fields needed for the
-current claim.
+When explicitly invoked, preserve those Road-owned fields and add only the
+physics-specific information needed for the current claim. Do not load this
+module for observation, measurement, inverse, or real-road forecasting work
+without a physics/surrogate claim.
 
 Follow the core's **只跑固定基准，通过即交付**. Detailed physics references
 describe interpretation and the declared scientific benchmark; they do not

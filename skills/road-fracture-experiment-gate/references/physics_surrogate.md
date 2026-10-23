@@ -1,4 +1,4 @@
-# Physics, FEM/PIDL, And Surrogate Adapter
+# Physics, FEM/PIDL, And Surrogate Reference
 
 Read this reference for FEM/PIDL numerical or mechanism studies, teacher
 qualification, residual correction, neural operators, GNO/PINO, and synthetic
@@ -49,7 +49,7 @@ from one physical trajectory do not establish independent transfer.
 
 ## Routing
 
-For Hard-5 or detailed FEM/PIDL field validation, also use
-`pidl-experiment-gate`; its dedicated reference owns legacy event/state and
-metric guidance. Producer selection and remote safety remain in project
-`AGENTS.md`, not in this scientific adapter.
+For Hard-5 or detailed FEM/PIDL field validation, load the internal
+`pidl-experiment-gate` physics module. It adds legacy event/state and metric
+guidance only; it does not create a new claim route, experiment contract, or
+review. Producer selection and remote safety remain in project `AGENTS.md`.

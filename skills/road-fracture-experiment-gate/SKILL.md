@@ -49,8 +49,9 @@ intervals do not establish decision utility.
 - FEM/PIDL qualification, teacher use, residual correction, GNO/PINO or
   synthetic surrogates:
   [physics and surrogates](references/physics_surrogate.md).
-  Also read [pidl-experiment-gate](../pidl-experiment-gate/SKILL.md) for
-  Hard-5 or detailed physics state/field comparisons.
+  That reference loads the internal [PIDL/FEM physics module](../pidl-experiment-gate/SKILL.md)
+  only when Hard-5 or detailed field/state semantics materially affect the
+  claim.
 
 Read multiple references only if the claim crosses those interfaces.
 An upstream result does not automatically validate its downstream use.

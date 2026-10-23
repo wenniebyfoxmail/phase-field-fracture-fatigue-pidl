@@ -7,8 +7,10 @@ description: Conduct or archive a research-direction or bottleneck deep research
 
 The deliverable is a reusable research report connected to its source material
 and the next decision. Use this with `research-decision-core`; add a domain
-adapter when the question needs one. The user may request research, archive an
-existing report, or resume after manually downloading papers.
+adapter when the question needs one. The core/HQ retains the Decision Ladder,
+route choice, task authority, and Experiment verdict. The user may request
+research, archive an existing report, or resume after manually downloading
+papers.
 
 ## When To Use It
 
@@ -44,10 +46,14 @@ user-owned chat or cloud research task without the user's request for one.
 
 ## Research And Acquire Materials
 
-Use `research-evidence-workflow` for multi-source discovery and synthesis;
-choose a mode whose coverage answers the live question. Reuse its registry rather
-than creating another source ledger. Use suitable scholarly search/retrieval
-skills for primary papers, official code, datasets and technical reports.
+Use `research-evidence-workflow` as this operator's internal multi-source
+discovery and synthesis tool; choose a mode whose coverage answers the live
+question. Reuse its registry rather than creating another source ledger. Use
+`paper-reading-obsidian` and `paper-deep-reader` as internal paper-level
+operations when needed, plus suitable scholarly search/retrieval tools for
+primary papers, official code, datasets and technical reports. These tools
+contribute source coverage and evidence; they do not open another governance
+route or change an Experiment verdict.
 
 Acquire the papers and files that support the report, rather than downloading
 every search hit. Prefer the publisher, author or institutional repository;
@@ -56,7 +62,8 @@ full texts using the relevant reading workflow; substantive findings need a
 page, section, figure, equation or equivalent locator. Distinguish what a source
 reports from our inference and proposed transfer. Preserve contrary evidence.
 
-For publication files and Obsidian paper notes, use `paper-reading-obsidian`.
+For publication files and Obsidian paper notes, use the internal
+`paper-reading-obsidian` operation.
 Deduplicate by DOI and version; reuse verified existing PDFs and analyses.
 Check title/authors/identity, completeness and readability before labelling
 material full text. A downloaded webpage or preview is not a complete paper.
