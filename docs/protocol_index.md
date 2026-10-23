@@ -17,9 +17,10 @@ For Taobo GPU launch or monitoring discipline, start with:
 - `docs/taobo_gpu_submission_protocol.md`
 - `docs/git_workflow.md`
 
-For Codex agent execution rules, use the local skill:
+For a frozen protocol that explicitly requires a strict PIDL/FEM evidence
+package, use the tracked skill source:
 
-- `/Users/wenxiaofang/.codex/skills/pidl-run-analysis-workflow/SKILL.md`
+- `skills/pidl-run-analysis-workflow/SKILL.md`
 
 For any longitudinal real-road natural-evolution dataset, start with:
 
@@ -37,7 +38,7 @@ case must support before it can be used.
 | `docs/pidl_fem_diagnostic_analysis_protocol_2026-06-21.md` | Current | Case-level PIDL/FEM evidence analysis | Uses schedule-dependent state mapping. |
 | `docs/taobo_gpu_submission_protocol.md` | Current | Taobo GPU launch, sync and monitoring discipline | Operational protocol, not analysis evidence. |
 | `docs/git_workflow.md` | Current | Mac/Windows/Taobo source-control workflow | Shared code-truth and sync rules. |
-| `/Users/wenxiaofang/.codex/skills/pidl-run-analysis-workflow/SKILL.md` | Current local Codex skill | Agent execution workflow | Local to this Mac, not part of the GitHub repo. |
+| `skills/pidl-run-analysis-workflow/SKILL.md` | Current project skill source | Strict PIDL/FEM evidence-package workflow | Installed locally through the `~/.codex/skills` symlink. |
 | `docs/real_road_natural_evolution_episode_policy_20260806.md` | Current | Episode construction, intervention/reset boundaries, and terminal censoring for real-road trajectories | Maintenance is a boundary, not a default feature; intervention studies require a separate track. |
 
 ## Schedule And Alignment History
