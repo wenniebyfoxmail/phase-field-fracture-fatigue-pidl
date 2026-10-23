@@ -187,3 +187,11 @@ Linux/GPUServer8／drtao／/usr/bin/python3 CPU2包装完成，全部88输入238
 结论：三态全场／损伤／背景／窗口内背景UV、应变、瞬时driver误差以及全局真实ρ_u均精确保留E023，变化0%。12个SLSQP均到200迭代且代理返回不合格；非资源首停，不证明物理不可行。已有c60 D012头以同定义通过13实际保护、Q=.0749395135，全场UV−.253570%、ρ_u−.254899%、driver−1.116290%，背景也改善；这份既有见证不能计作本轮新收益。c20/c83旧头仍违反背景应变保护。
 
 最小下一提案：仅合格可行头初始化并保留incumbent，仍以原E023为累计预算中心／阈值，记录和重放种子；未实现或启动。实测数值560.583s＋重放336.504s＋绘图21.576s=918.664s，单进程观测RSS峰值1.630GiB；0训练／history-fatigue更新，.001仅历史诊断。完整精确表、解释、成本与执行摘要见 [本轮结果](physical_field_budget_result_20261023.md)。原生数值重放已完成，本轮未新增独立agent审查或对外发送。
+
+## 2026-10-24 — E024-D014：已验证可行头初始化与保留实现，未科学运行
+
+基于D013 r3的结论，当前实现把保存D012头视为候选初始incumbent，而不是新基线。它先经当前raw producer路径重建并以永久原E023中心检查全部13项保护及Q<=.1；只有严格合格且按`(全场UV平方误差,Q,来源优先级,量化头hash)`优于E023时才会采用。每个profile写入种子来源／资格／量化头／初始选择，所有后续有限步仍按自己的保护组和Q核验；无代理可行返回或无新有限步时保留最后已访问、实际合格的incumbent。E023的误差尺度、阈值、D、BC、窗口、reference、history和fatigue均未移动。
+
+固定人工基准通过：合格种子会在无代理返回时保留，不合格的过预算种子回退E023，profile及state replay重建资格并拒绝被篡改的选择头；`1 passed, 50 deselected in 0.33s`。此检查没有加载真实模型／FEM资产、没有真实SLSQP或候选前向、没有训练、history/fatigue更新、远端操作或科学三态结果。它不是新的Code Ready或真实c60复验。
+
+未来D014若执行，仍需重新按绑定输入资格核对c20/c60/c83：既有D013证据只说明c60**预计**可能成为种子，c20/c83保存头仍预计因背景／窗口内背景应变不合格而从E023开始。D014的计划、契约和实现边界见[修订](physical_field_budget_seeded_incumbent_amendment_20261024.md)、[计划](physical_field_budget_seeded_incumbent_plan_20261024.md)、[契约](physical_field_budget_seeded_incumbent_contract_20261024.json)及[实现记录](physical_field_budget_seeded_incumbent_implementation_20261024.md)；需要新的精确源码Code Ready、非训练收据和逐次最终执行批准。`.001`仍只是历史诊断，未获得损伤／裂纹／疲劳应用结论。

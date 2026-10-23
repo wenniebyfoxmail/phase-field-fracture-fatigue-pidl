@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""D013 explicitly approved future offline execution. Default CLI cannot run science."""
+"""D014 explicitly approved future offline execution. Default CLI cannot run science."""
 import argparse
 import json
 import os
@@ -10,7 +10,7 @@ import time
 import numpy as np
 from threadpoolctl import threadpool_limits
 from s04_e024_field_budget import (STATES, PROFILES, InvalidEvidence, ResourceStop,
-    run_profile, safe_json)
+    run_profile, qualify_saved_seed, safe_json)
 from s04_e024_field_runtime import (SOURCE, CAPS, PhaseLedger, LocalGuard, sha, write_json,
     validate_approval, worker_context, supervise, peak_rss,code_tree_sha,persist_event,runtime_provenance)
 
@@ -34,8 +34,14 @@ def worker(a):
     write_json(case/'origin.json',dict(assets=adapter.assets,report=adapter.physical_report(adapter.origin)))
     np.savez_compressed(case/'origin.npz',**adapter.origin)
     np.savez_compressed(case/'geometry.npz',xy=adapter.data['xy'],conn=adapter.data['conn'],damage=adapter.data['damage'],reference_uv=adapter.data['equilibrated_uv'],window=adapter.window,us=adapter.us)
-    historical_fields=adapter.realize(adapter.d012_head.astype(adapter.theta.dtype))
-    adapter.check_realization(adapter.d012_head.astype(adapter.theta.dtype),historical_fields,adapter.metrics)
+    saved_seed=qualify_saved_seed(adapter,adapter.metrics,adapter.d012_head,check,
+        provenance=getattr(adapter,'d012_provenance',None))
+    # An exact E023 UV state is a no-correction branch; retain the historical
+    # comparator report without permitting it to seed a correction.
+    historical_fields=saved_seed['fields']
+    if historical_fields is None:
+        historical_fields=adapter.realize(adapter.d012_head.astype(adapter.theta.dtype))
+        adapter.check_realization(adapter.d012_head.astype(adapter.theta.dtype),historical_fields,adapter.metrics)
     historical=adapter.physical_report(historical_fields)
     profiles={}
     for name,eta,strict in PROFILES:
@@ -44,9 +50,11 @@ def worker(a):
         with events.open('x') as out:
             def emit(event):
                 check();out.write(json.dumps(persist_event(folder,event),allow_nan=False)+'\n');out.flush();check()
-            head,fields,counts=run_profile(adapter,adapter.metrics,eta,strict,check,emit)
+            head,fields,counts=run_profile(adapter,adapter.metrics,eta,strict,check,emit,
+                saved_seed=saved_seed)
         check()
-        np.savez_compressed(folder/'final.npz',head=head,original_head=adapter.theta,
+        initial_head=np.asarray(counts['initialization']['selected']['head'],dtype=adapter.theta.dtype)
+        np.savez_compressed(folder/'final.npz',head=head,original_head=adapter.theta,initial_head=initial_head,
                             window=adapter.window,**fields)
         report=adapter.physical_report(fields)
         write_json(folder/'final.json',dict(eta=eta,strict=strict,counts=counts,report=report,
@@ -57,6 +65,7 @@ def worker(a):
     adapter.final_identity();check()
     record=dict(provenance=runtime_provenance(),state=a.worker_state,source_commit=a.expected_commit,code_tree_sha256=code_tree_sha(),
         assets=adapter.assets,profiles=profiles,D012_report=historical,
+        seeded_incumbent_protocol=True,saved_seed_qualification=saved_seed['record'],
         wall_seconds=time.monotonic()-start,load_wall_seconds=load_wall,peak_rss_bytes=peak_rss(),
         offline_solver_calls=sum(x['solves'] for x in profiles.values()),
         actual_candidate_trials=sum(x['trials'] for x in profiles.values()),
@@ -70,7 +79,7 @@ def parent(a):
     preflight_start=time.monotonic()
     approval,nontraining_used=validate_approval(a.approval,a.expected_commit)
     allowed=a.project.resolve()/'local_archive/experiments/S04-E024'
-    if a.out.resolve().parent!=allowed or not a.out.name.startswith('physical_field_budget_execution_'):
+    if a.out.resolve().parent!=allowed or not a.out.name.startswith('physical_field_budget_seeded_incumbent_execution_'):
         raise InvalidEvidence('fresh attributable local_archive output path required')
     a.out.mkdir(parents=True,exist_ok=False)
     ledger=PhaseLedger(nontraining_used);tick=preflight_start;phase='numeric';children=[]

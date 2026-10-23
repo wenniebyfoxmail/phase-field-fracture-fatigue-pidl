@@ -1,4 +1,4 @@
-"""D013 physical-field trust region. Pure algebra; no model loading or training."""
+"""D014 physical-field trust region. Pure algebra; no model loading or training."""
 from dataclasses import dataclass
 import hashlib
 import math
@@ -16,8 +16,14 @@ BUDGETS = ('uv_change', 'strain_change', 'driver_change', 'force_change')
 PROFILES = (('strict_eta_0.1', .1, True), ('strict_eta_0.3', .3, True),
             ('strict_eta_1.0', 1., True), ('seven_guard_eta_0.3', .3, False))
 STATES = ('c20s4', 'c60s4', 'c83s4')
-PLAN_SHA = '0441e6cc847c501b822c5bb1fbf0ed816bd8a97bc5c526178a0d88aa50280d32'
-CONTRACT_SHA = '8bc35175839dc69ee4fcab618903a5043401d871f45cdfc104c88f6527834236'
+PLAN_FILE = 'physical_field_budget_seeded_incumbent_plan_20261024.md'
+CONTRACT_FILE = 'physical_field_budget_seeded_incumbent_contract_20261024.json'
+EXECUTION_SCOPE = 'E024-D014-seeded-feasible-incumbent-12-profiles'
+PLAN_SHA = '8b02d002476a07fe38264b23018f230c6a13382e73c9b95e4c63e6422d27730a'
+CONTRACT_SHA = '7fb76a2264faaa15192cff5668714e0d477f8040622efefdb7e2e9b65797af24'
+SEED_SOURCE = 'D012_SAVED'
+SEED_QUALIFICATION_ETA = .1
+SEED_RULE = 'all13_eta_0.1_then_lexicographic_actual_full_uv_Q_source_digest'
 
 
 class InvalidEvidence(ValueError):
@@ -241,6 +247,74 @@ def quantize_head(head,dtype):
     return q.copy()
 
 
+def _incumbent_record(source, head, evaluation, *, provenance, eligible, failures, realization):
+    """Portable evidence for a raw, representable head; no field arrays in JSON."""
+    if head.shape==() or not isinstance(source,str) or not source:
+        raise InvalidEvidence('incumbent identity schema')
+    if evaluation is None:
+        score=None
+    else:
+        if tuple(evaluation['guards'])!=GUARDS:raise InvalidEvidence('incumbent guard schema')
+        finite(list(evaluation['guards'].values()))
+        score=[float(evaluation['guards']['uv_full']),float(evaluation['budget_q']),
+               0 if source=='E023_ORIGIN' else 1,digest_array(head)]
+    return dict(source=source,head_shape=list(head.shape),head_dtype=head.dtype.str,
+                head_sha256=digest_array(head),source_provenance=dict(provenance or {}),
+                qualification_eta=SEED_QUALIFICATION_ETA,qualification_strict=True,
+                actual=evaluation,realization=realization,failures=list(failures),
+                eligible=bool(eligible),selection_key=score)
+
+
+def origin_incumbent(adapter,metrics):
+    """The E023 centre is always representable and never redefined by a seed."""
+    head=quantize_head(adapter.theta,adapter.theta.dtype)
+    np.testing.assert_array_equal(head,adapter.theta)
+    evaluation=metrics.evaluate(adapter.origin)
+    return dict(head=head,fields=adapter.origin,evaluation=evaluation,
+                record=_incumbent_record('E023_ORIGIN',head,evaluation,
+                    provenance=dict(basis='immutable_own_E023'),eligible=True,failures=[],
+                    realization=dict(basis='immutable_cached_E023_raw_field')))
+
+
+def qualify_saved_seed(adapter,metrics,head,check=lambda:None,source=SEED_SOURCE,provenance=None):
+    """Qualify a saved head through the same raw path as a real finite candidate.
+
+    The strict all-13, eta=.1 check intentionally does not inherit a later
+    diagnostic profile's seven-guard relaxation.
+    """
+    qhead=quantize_head(head,adapter.theta.dtype)
+    if qhead.shape!=adapter.theta.shape:raise InvalidEvidence('saved seed head shape')
+    if metrics.ceilings[0]==0:
+        record=_incumbent_record(source,qhead,None,provenance=provenance,eligible=False,
+            failures=['origin_uv_exact_no_correction'],realization=None)
+        return dict(head=qhead,fields=None,evaluation=None,record=record)
+    check();adapter.check_identity()
+    fields=adapter.realize(qhead);adapter.check_identity();check()
+    realization=adapter.check_realization(qhead,fields,metrics)
+    evaluation=metrics.evaluate(fields)
+    failures=metrics.violations(evaluation,SEED_QUALIFICATION_ETA,True)
+    record=_incumbent_record(source,qhead,evaluation,provenance=provenance,
+        eligible=not failures,failures=failures,realization=realization)
+    return dict(head=qhead,fields=fields,evaluation=evaluation,record=record)
+
+
+def select_initial_incumbent(adapter,metrics,saved_seed=None):
+    """Choose only between E023 and a fully re-qualified pinned saved head."""
+    origin=origin_incumbent(adapter,metrics)
+    selected=origin
+    seed_record=None if saved_seed is None else saved_seed['record']
+    if saved_seed is not None and seed_record['eligible']:
+        if tuple(seed_record['selection_key'])<tuple(origin['record']['selection_key']):
+            selected=saved_seed
+    event=dict(kind='initialization',rule=SEED_RULE,origin=origin['record'],
+        saved_seed=seed_record,
+        selected=dict(source=selected['record']['source'],head=selected['head'].tolist(),
+                      head_sha256=selected['record']['head_sha256'],
+                      selection_key=selected['record']['selection_key']),
+        retain_last_actual_feasible_incumbent=True)
+    return selected,event
+
+
 def branch_change(fields,origin):
     trace=fields['strain'][...,:2].sum(axis=-1)
     original=origin['strain'][...,:2].sum(axis=-1)
@@ -249,12 +323,26 @@ def branch_change(fields,origin):
     return float(np.mean((trace>=0)!=(original>=0)))
 
 
-def run_profile(adapter,metrics,eta,strict,check,emit,solver=solve_proxy):
+def run_profile(adapter,metrics,eta,strict,check,emit,solver=solve_proxy,saved_seed=None):
     """Up to3 models/9 halvings; authoritative forward precedes every actual test."""
-    theta0=adapter.theta.copy();current=theta0.copy();fields=adapter.origin
-    current_ev=metrics.evaluate(fields)
+    theta0=adapter.theta.copy()
+    initialization=None
+    if saved_seed is None:
+        selected=origin_incumbent(adapter,metrics)
+    else:
+        selected,initialization=select_initial_incumbent(adapter,metrics,saved_seed)
+        initialization=safe_json(initialization);emit(initialization)
+    current=selected['head'].copy();fields=selected['fields'];current_ev=selected['evaluation']
+    current_source=selected['record']['source']
+    def counts(stop,solves,trials,accepted):
+        result=dict(stop=stop,solves=solves,trials=trials,accepted_steps=accepted)
+        if initialization is not None:
+            result['initialization']=initialization
+            result['final_incumbent']=dict(source=current_source,head_sha256=digest_array(current),
+                actual=current_ev,retained_initial_incumbent=accepted==0)
+        return result
     if metrics.ceilings[0]==0:
-        return current,fields,dict(stop='NO_CORRECTION_ALREADY_EXACT',solves=0,trials=0,accepted_steps=0)
+        return current,fields,counts('NO_CORRECTION_ALREADY_EXACT',0,0,0)
     accepted=0;visited=0;solves=0;stop='MAX_RELINEARIZATIONS'
     for outer in range(3):
         check();adapter.check_identity()
@@ -288,7 +376,8 @@ def run_profile(adapter,metrics,eta,strict,check,emit,solver=solve_proxy):
                 failures=failures,relative_head_change=float(np.linalg.norm(head-theta0)/np.linalg.norm(theta0))
                 if np.linalg.norm(theta0)>0 else None))
             if ok:
-                current=head;fields=f;current_ev=ev;accepted+=1;chosen=True;break
+                current=head;fields=f;current_ev=ev;current_source='solver_trial_outer_%d_k_%d'%(outer,k)
+                accepted+=1;chosen=True;break
         if not chosen:stop='ALL_NINE_REJECTED';break
     adapter.check_identity();check()
-    return current,fields,dict(stop=stop,solves=solves,trials=visited,accepted_steps=accepted)
+    return current,fields,counts(stop,solves,visited,accepted)

@@ -1,0 +1,59 @@
+{
+  "step": "E024-D014",
+  "status": "IMPLEMENTATION_ONLY_NO_SCIENTIFIC_EXECUTION",
+  "scope": "E024-D014-seeded-feasible-incumbent-12-profiles",
+  "predecessor": {
+    "step": "E024-D013",
+    "result": "D013 r3 visited zero finite candidates because its zero-origin proxy solves returned infeasible; this is not physical infeasibility.",
+    "immutable_record": "physical_field_budget_result_20261023.md"
+  },
+  "states": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "profiles": [
+    "strict_eta_0.1",
+    "strict_eta_0.3",
+    "strict_eta_1.0",
+    "seven_guard_eta_0.3"
+  ],
+  "pairing": "Each state remains paired to its own E023 joint10000 seed7 output head and FEM field.",
+  "immutable_centre": "own E023; the saved D012 head never changes error ceilings, Q scales, masks, geometry, BC, D, reference or reporting origin",
+  "saved_head": {
+    "source": "D012_SAVED",
+    "qualification": "raw producer reconstruction, exact realization/identity, all 13 guards and Q <= 0.1 around own E023",
+    "selection": "strictly lower (full UV squared error, Q, fixed source priority, quantized head SHA256) than E023; E023 wins ties",
+    "expected_current_assets": "c60 eligible; c20 and c83 ineligible due to background and inside-background strain protection, subject to re-evaluation from pinned inputs"
+  },
+  "incumbent_policy": "Start each profile from its selected actual-feasible incumbent. Retain the best visited actual-feasible incumbent when no later finite candidate is accepted. Seed adoption is not an optimizer step, a trial, or a new scientific gain.",
+  "candidate_policy": "Existing one-start SLSQP, all 568 coordinates, current profile radius/guard policy, ordered nine halvings and raw finite-candidate checks are unchanged.",
+  "invariants": [
+    "producer_D",
+    "hidden_features",
+    "backbone",
+    "leak",
+    "coordinate_map",
+    "BC",
+    "compact_window",
+    "nodal_damage",
+    "history",
+    "fatigue",
+    "FEM_reference",
+    "nodal_and_GP_masks",
+    "native_mass_and_GP_weights"
+  ],
+  "prohibited_in_this_task": [
+    "real model or FEM forward",
+    "scientific proxy solve",
+    "training",
+    "history/fatigue/damage update",
+    "remote execution",
+    "external send",
+    "scientific execution approval generation"
+  ],
+  "nontraining_check": "artificial ScalarAdapter verifies qualified-seed retention, rejected-seed fallback, deterministic replay and tamper rejection",
+  "future_execution": "requires a new exact-source Code Ready receipt, zero-real-forward nontraining receipt and separately approved final execution receipt bound to this contract",
+  "legacy_001_role": "historical diagnostic only",
+  "application_tolerance": null
+}

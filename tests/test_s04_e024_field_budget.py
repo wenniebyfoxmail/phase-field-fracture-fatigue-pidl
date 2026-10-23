@@ -9,7 +9,8 @@ import numpy as np
 import pytest
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'SENS_tensile'))
 from s04_e024_field_budget import (Metrics, Quadratics, GUARDS, PROFILES, InvalidEvidence,
-    ResourceStop, ratio_norm, solve_proxy, run_profile, safe_json, quantize_head)
+    ResourceStop, ratio_norm, solve_proxy, run_profile, safe_json, quantize_head,
+    preconditioner, qualify_saved_seed)
 from s04_e024_field_physics import FieldAdapter
 from s04_e024_field_runtime import PhaseLedger,supervise,write_json,validate_approval,persist_event
 from summarize_s04_e024_field_budget import replay_profile
@@ -45,12 +46,15 @@ def fixed_direction(value):
     return solver
 
 
-def save_profile(tmp,adapter,eta=.1,strict=True,solver=solve_proxy):
+def save_profile(tmp,adapter,eta=.1,strict=True,solver=solve_proxy,saved_seed=None):
     tmp.mkdir();events=[]
     def emit(e):events.append(persist_event(tmp,e))
-    head,f,counts=run_profile(adapter,adapter.metrics,eta,strict,lambda:None,emit,solver)
+    head,f,counts=run_profile(adapter,adapter.metrics,eta,strict,lambda:None,emit,solver,saved_seed=saved_seed)
     (tmp/'events.jsonl').write_text(''.join(json.dumps(e)+'\n' for e in events))
-    np.savez_compressed(tmp/'final.npz',head=head,original_head=adapter.theta,**f)
+    initial={}
+    if 'initialization' in counts:
+        initial['initial_head']=np.asarray(counts['initialization']['selected']['head'],dtype=adapter.theta.dtype)
+    np.savez_compressed(tmp/'final.npz',head=head,original_head=adapter.theta,**initial,**f)
     write_json(tmp/'final.json',dict(eta=eta,strict=strict,counts=counts,report=adapter.physical_report(f),centre_digest=adapter.metrics.centre_digest))
     return head,f,counts,events
 
@@ -100,6 +104,76 @@ def test_genuine_solver_profile_passes_independent_no_optimizer_replay(tmp_path)
     a=ScalarAdapter();head,f,c,events=save_profile(tmp_path/'p',a)
     replay=replay_profile(ScalarAdapter(),tmp_path/'p',.1,True)
     assert replay['trials']==c['trials'] and replay['accepted_steps']==c['accepted_steps']
+
+
+def test_seeded_incumbent_is_strictly_qualified_retained_and_replay_bound(tmp_path):
+    """One artificial fixed benchmark: no model/FEM load, solve or training."""
+    def no_proxy(pack,metrics,eta,strict,check):
+        transform,spectrum=preconditioner(pack,metrics.scales_sq)
+        return None,dict(feasible=False,preconditioner=spectrum,preconditioner_transform=transform,
+                         scope='artificial unresolved proxy')
+
+    a=ScalarAdapter();a.d012_head=a.theta+np.array([[.08,0.]])
+    a.d012_provenance=dict(fixture='qualified_seed')
+    seed=qualify_saved_seed(a,a.metrics,a.d012_head,provenance=a.d012_provenance)
+    assert seed['record']['eligible'] and seed['record']['failures']==[]
+    head,fields,counts,events=save_profile(tmp_path/'qualified',a,solver=no_proxy,saved_seed=seed)
+    assert [e['kind'] for e in events]==['initialization','solver']
+    assert counts['accepted_steps']==counts['trials']==0 and counts['solves']==1
+    assert counts['initialization']['selected']['source']=='D012_SAVED'
+    assert counts['final_incumbent']['retained_initial_incumbent']
+    np.testing.assert_array_equal(head,a.d012_head)
+    assert fields['uv'][0,0]==pytest.approx(.08)
+
+    fresh=ScalarAdapter();fresh.d012_head=fresh.theta+np.array([[.08,0.]])
+    fresh.d012_provenance=dict(fixture='qualified_seed')
+    replay=replay_profile(fresh,tmp_path/'qualified',.1,True,require_initialization=True)
+    assert replay['initialization']['selected']['source']=='D012_SAVED'
+    assert replay['accepted_steps']==0
+
+    tampered=list(events);tampered[0]=copy.deepcopy(tampered[0]);tampered[0]['selected']['head'][0][0]+=.01
+    (tmp_path/'qualified/events.jsonl').write_text(''.join(json.dumps(e)+'\n' for e in tampered))
+    with pytest.raises((InvalidEvidence,AssertionError)):
+        replay_profile(fresh,tmp_path/'qualified',.1,True,require_initialization=True)
+
+    rejected=ScalarAdapter();rejected.d012_head=rejected.theta+np.array([[.2,0.]])
+    rejected.d012_provenance=dict(fixture='over_budget_seed')
+    bad_seed=qualify_saved_seed(rejected,rejected.metrics,rejected.d012_head,provenance=rejected.d012_provenance)
+    assert not bad_seed['record']['eligible'] and 'physical_budget' in bad_seed['record']['failures']
+    bad_head,_,bad_counts,_=save_profile(tmp_path/'rejected',rejected,solver=no_proxy,saved_seed=bad_seed)
+    assert bad_counts['initialization']['selected']['source']=='E023_ORIGIN'
+    np.testing.assert_array_equal(bad_head,rejected.theta)
+
+    # Exercise the worker-receipt/replay binding without a real endpoint.
+    from s04_e024_field_runtime import sha,code_tree_sha
+    from summarize_s04_e024_field_budget import replay_state
+    state='c20s4';root=tmp_path/'state_replay';case=root/'states'/state;case.mkdir(parents=True)
+    archived=ScalarAdapter();archived.d012_head=archived.theta+np.array([[.08,0.]])
+    archived.d012_provenance=dict(fixture='qualified_seed');archived.assets=dict(synthetic_only=True,state=state)
+    archived.final_identity=lambda:None
+    archived.data=dict(xy=np.zeros((1,2)),conn=np.zeros((0,4),dtype=int),damage=np.zeros(1),
+        equilibrated_uv=archived.metrics.reference['uv'])
+    archived.window=np.ones(1);archived.us=1.
+    archive_seed=qualify_saved_seed(archived,archived.metrics,archived.d012_head,
+        provenance=archived.d012_provenance)
+    np.savez_compressed(case/'origin.npz',**archived.origin)
+    np.savez_compressed(case/'geometry.npz',xy=archived.data['xy'],conn=archived.data['conn'],damage=archived.data['damage'],
+        reference_uv=archived.data['equilibrated_uv'],window=archived.window,us=archived.us)
+    state_profiles={}
+    for name,eta,strict in PROFILES:
+        _,_,state_profiles[name],_=save_profile(case/name,archived,eta,strict,no_proxy,saved_seed=archive_seed)
+    write_json(case/'origin.json',dict(report=archived.physical_report(archived.origin)))
+    files={str(p.relative_to(case)):sha(p) for p in case.rglob('*') if p.is_file()}
+    write_json(case/'receipt.json',dict(state=state,source_commit='fixture',code_tree_sha256=code_tree_sha(),
+        assets=archived.assets,profiles=state_profiles,D012_report=archived.physical_report(archive_seed['fields']),
+        seeded_incumbent_protocol=True,saved_seed_qualification=archive_seed['record'],
+        NN_optimizer_steps=0,original_checkpoint_writes=0,history_fatigue_damage_updates=0,remote_actions=0,
+        offline_solver_calls=4,actual_candidate_trials=0,files=files))
+    replay_adapter=ScalarAdapter();replay_adapter.d012_head=replay_adapter.theta+np.array([[.08,0.]])
+    replay_adapter.d012_provenance=dict(fixture='qualified_seed');replay_adapter.assets=archived.assets
+    replay_adapter.final_identity=lambda:None;replay_adapter.data=archived.data;replay_adapter.window=archived.window;replay_adapter.us=1.
+    state_replay=replay_state(replay_adapter,root,state,lambda:None,expected_commit='fixture')
+    assert state_replay['seeded_incumbent_protocol'] and state_replay['replayed_solvers']==4
 
 
 def test_raw_actual_strain_can_reject_an_affine_good_head():
@@ -287,14 +361,14 @@ def test_all12_synthetic_profiles_replayed_aggregated_and_rendered(tmp_path):
 
 def test_approval_checks_exact_receipt_hash_scope_and_zero_training(tmp_path,monkeypatch):
     import s04_e024_field_runtime as rt
-    from s04_e024_field_budget import CONTRACT_SHA
+    from s04_e024_field_budget import CONTRACT_SHA,EXECUTION_SCOPE
     monkeypatch.setattr(rt,'validate_source',lambda *args:None)
     monkeypatch.setattr(rt,'code_tree_sha',lambda *args:'synthetic_tree')
     code=tmp_path/'code.json';checks=tmp_path/'checks.json'
     write_json(code,dict(verdict='CODE_READY_PASS',code_tree_sha256='synthetic_tree'))
     write_json(checks,dict(verdict='NONTRAINING_CHECKS_PASS',code_tree_sha256='synthetic_tree',
         real_model_or_FEM_forward_count=0,NN_optimizer_steps=0,wall_seconds=10.))
-    approval=dict(user_approved_final_execution=True,scope='E024-D013-physical-field-budget-12-profiles',
+    approval=dict(user_approved_final_execution=True,scope=EXECUTION_SCOPE,
         execution_commit='synthetic_commit',contract_sha256=CONTRACT_SHA,
         code_ready=dict(path=str(code),sha256=rt.sha(code)),nontraining=dict(path=str(checks),sha256=rt.sha(checks)))
     path=tmp_path/'approval.json';write_json(path,approval)

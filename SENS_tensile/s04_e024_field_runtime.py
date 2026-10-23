@@ -1,4 +1,4 @@
-"""D013 source/approval and parent-enforced phase limits. No scientific imports."""
+"""D014 source/approval and parent-enforced phase limits. No scientific imports."""
 from datetime import datetime, timezone
 from importlib import metadata
 import socket
@@ -13,8 +13,8 @@ import resource
 import subprocess
 import sys
 import time
-from s04_e024_field_budget import (CONTRACT_SHA, PLAN_SHA, InvalidEvidence,
-    ResourceStop, safe_json)
+from s04_e024_field_budget import (CONTRACT_SHA, PLAN_SHA, CONTRACT_FILE, PLAN_FILE,
+    EXECUTION_SCOPE, InvalidEvidence, ResourceStop, safe_json)
 
 CAPS=dict(nontraining=300.,numeric=1800.,replay=900.,render=120.)
 RSS_CAP=3*1024**3
@@ -56,8 +56,8 @@ def persist_event(folder,event):
 def code_tree_sha(source=SOURCE):
     files=subprocess.check_output(['git','-C',str(source),'ls-files','SENS_tensile','scripts','tests'],text=True).splitlines()
     files=[p for p in files if p.endswith('.py')]
-    files+=['docs/research/S04/S04-E024/physical_field_budget_plan.md',
-            'docs/research/S04/S04-E024/physical_field_budget_contract.json']
+    files+=['docs/research/S04/S04-E024/'+PLAN_FILE,
+            'docs/research/S04/S04-E024/'+CONTRACT_FILE]
     return hashlib.sha256(json.dumps({p:sha(source/p) for p in sorted(files)},sort_keys=True).encode()).hexdigest()
 
 
@@ -67,14 +67,14 @@ def validate_source(expected,source=SOURCE,clean=True):
     if clean and subprocess.check_output(['git','-C',str(source),'status','--porcelain'],text=True):
         raise InvalidEvidence('execution requires clean source checkout')
     d=source/'docs/research/S04/S04-E024'
-    if sha(d/'physical_field_budget_plan.md')!=PLAN_SHA or sha(d/'physical_field_budget_contract.json')!=CONTRACT_SHA:
+    if sha(d/PLAN_FILE)!=PLAN_SHA or sha(d/CONTRACT_FILE)!=CONTRACT_SHA:
         raise InvalidEvidence('reviewed design byte identity')
 
 
 def validate_approval(path,expected,source=SOURCE):
     """Only an explicitly approved future final package may enter scientific paths."""
     a=json.loads(Path(path).read_text())
-    if a.get('user_approved_final_execution') is not True or a.get('scope')!='E024-D013-physical-field-budget-12-profiles':
+    if a.get('user_approved_final_execution') is not True or a.get('scope')!=EXECUTION_SCOPE:
         raise InvalidEvidence('explicit final user-approved execution receipt required')
     if a.get('execution_commit')!=expected or a.get('contract_sha256')!=CONTRACT_SHA:
         raise InvalidEvidence('approval does not bind exact source/design')

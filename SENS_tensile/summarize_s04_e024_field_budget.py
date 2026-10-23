@@ -1,9 +1,10 @@
-"""D013 no-optimizer replay and full/region summary. Never chooses a new head."""
+"""D014 no-optimizer replay and full/region summary. Never chooses a new head."""
 import json
 from pathlib import Path
 import numpy as np
 from s04_e024_field_budget import (PROFILES, STATES, GUARDS, InvalidEvidence,
-    quantize_head, safe_json, finite,preconditioner,digest_array,branch_change,ratio_norm,BUDGETS,REGIONS)
+    quantize_head, safe_json, finite,preconditioner,digest_array,branch_change,ratio_norm,BUDGETS,REGIONS,
+    qualify_saved_seed,select_initial_incumbent)
 from s04_e024_field_runtime import sha,write_json,code_tree_sha
 
 
@@ -21,14 +22,28 @@ def close_record(actual,saved):
         np.testing.assert_allclose(actual,saved,rtol=1e-12,atol=0)
 
 
-def replay_profile(adapter,folder,eta,strict,check=lambda:None):
+def replay_profile(adapter,folder,eta,strict,check=lambda:None,require_initialization=False,saved_seed=None):
     """Rebuild each visited proxy once and replay every recorded quantized field."""
     metrics=adapter.metrics;theta0=adapter.theta;current=theta0.copy();fields=adapter.origin
     final=json.loads((folder/'final.json').read_text())
     events=[json.loads(line) for line in (folder/'events.jsonl').read_text().splitlines()]
+    initialization=None;current_ev=metrics.evaluate(fields);current_source='E023_ORIGIN';event_start=0
+    if events and events[0]['kind']=='initialization':
+        if saved_seed is None:
+            if not hasattr(adapter,'d012_head'):raise InvalidEvidence('seeded replay missing saved head')
+            saved_seed=qualify_saved_seed(adapter,metrics,adapter.d012_head,check,
+                provenance=getattr(adapter,'d012_provenance',None))
+        selected,expected=select_initial_incumbent(adapter,metrics,saved_seed)
+        expected=safe_json(expected);close_record(expected,events[0])
+        initialization=expected;current=selected['head'].copy();fields=selected['fields']
+        current_ev=selected['evaluation'];current_source=selected['record']['source'];event_start=1
+    elif require_initialization:
+        raise InvalidEvidence('seeded replay missing first initialization event')
+    if require_initialization and initialization is None:
+        raise InvalidEvidence('seeded replay initialization unavailable')
     outer=-1;trials=0;solves=0;accepted=0;next_k=0;was_accepted=False
     direction=None;pack=None;last_feasible=None
-    for ev in events:
+    for ev in events[event_start:]:
         check()
         if ev['kind']=='solver':
             if outer>=0 and not was_accepted:raise InvalidEvidence('continued after rejected/failed profile')
@@ -78,7 +93,7 @@ def replay_profile(adapter,folder,eta,strict,check=lambda:None):
             close_record(branch_change(f,metrics.origin),ev['branch_changed_GP_fraction'])
             actual_ev=metrics.evaluate(f)
             failures=metrics.violations(actual_ev,eta,strict)
-            actual=(metrics.evaluate(fields)['guards']['uv_full']-actual_ev['guards']['uv_full'])/metrics.ceilings[0]
+            actual=(current_ev['guards']['uv_full']-actual_ev['guards']['uv_full'])/metrics.ceilings[0]
             pred=(pack.c[0]-pack.values(step)[0])/metrics.ceilings[0]
             ratio=actual/pred if pred>0 else -np.inf
             if actual<=1e-8 or pred<=1e-8 or ratio<.1:failures.append('insufficient_actual_or_predicted_gain')
@@ -91,14 +106,17 @@ def replay_profile(adapter,folder,eta,strict,check=lambda:None):
             close_record(safe_json(float(ratio)),ev['agreement_ratio'])
             close_record(pack.values(step),ev['proxy_values'])
             trials+=1;next_k+=1
-            if ok:current=head;fields=f;accepted+=1;was_accepted=True
+            if ok:
+                current=head;fields=f;current_ev=actual_ev
+                current_source='solver_trial_outer_%d_k_%d'%(outer,next_k-1)
+                accepted+=1;was_accepted=True
         else:raise InvalidEvidence('unknown trajectory event')
     counts=dict(solves=solves,trials=trials,accepted_steps=accepted)
     for k,v in counts.items():
         if final['counts'][k]!=v:raise InvalidEvidence('profile count mismatch')
     stop=final['counts']['stop']
     if metrics.ceilings[0]==0:
-        if events or stop!='NO_CORRECTION_ALREADY_EXACT':raise InvalidEvidence('zero-UV stop branch')
+        if events[event_start:] or stop!='NO_CORRECTION_ALREADY_EXACT':raise InvalidEvidence('zero-UV stop branch')
     elif stop=='MAX_RELINEARIZATIONS':
         if solves!=3 or not was_accepted:raise InvalidEvidence('premature/extra outer stop')
     elif stop=='NO_PROXY_FEASIBLE_RETURN':
@@ -108,6 +126,10 @@ def replay_profile(adapter,folder,eta,strict,check=lambda:None):
     else:raise InvalidEvidence('unregistered stop rule')
     with np.load(folder/'final.npz',allow_pickle=False) as z:
         np.testing.assert_array_equal(z['original_head'],theta0)
+        if initialization is not None:
+            np.testing.assert_array_equal(z['initial_head'],np.asarray(initialization['selected']['head'],dtype=theta0.dtype))
+        elif 'initial_head' in z.files:
+            raise InvalidEvidence('legacy replay has unexpected initial head')
         np.testing.assert_array_equal(z['head'],current)
         for k in fields:np.testing.assert_array_equal(z[k],fields[k])
     report=adapter.physical_report(fields)
@@ -115,6 +137,16 @@ def replay_profile(adapter,folder,eta,strict,check=lambda:None):
     if metrics.violations(metrics.evaluate(fields),eta,strict):raise InvalidEvidence('final actual policy')
     if final['eta']!=eta or final['strict'] is not strict:raise InvalidEvidence('profile label swap')
     if final['centre_digest']!=metrics.centre_digest:raise InvalidEvidence('cumulative centre moved')
+    if initialization is not None:
+        if 'initialization' not in final['counts'] or 'final_incumbent' not in final['counts']:
+            raise InvalidEvidence('seeded profile receipt missing incumbent evidence')
+        close_record(initialization,final['counts']['initialization'])
+        expected_final=dict(source=current_source,head_sha256=digest_array(current),actual=current_ev,
+            retained_initial_incumbent=accepted==0)
+        close_record(safe_json(expected_final),final['counts']['final_incumbent'])
+        counts.update(initialization=initialization,final_incumbent=safe_json(expected_final))
+    elif 'initialization' in final['counts'] or 'final_incumbent' in final['counts']:
+        raise InvalidEvidence('legacy profile contains seeded incumbent evidence')
     check();return dict(**counts,stop=stop,head=current,report=report)
 
 
@@ -134,14 +166,30 @@ def replay_state(adapter,root,state,check,expected_commit=None):
         np.testing.assert_array_equal(z['reference_uv'],adapter.data['equilibrated_uv'])
         np.testing.assert_array_equal(z['window'],adapter.window)
         if float(z['us'])!=adapter.us:raise InvalidEvidence('render scale')
+    seeded=meta.get('seeded_incumbent_protocol',False)
+    if type(seeded) is not bool:raise InvalidEvidence('seeded incumbent protocol flag')
+    saved_seed=None
+    if seeded:
+        if not hasattr(adapter,'d012_head'):raise InvalidEvidence('seeded worker missing saved head')
+        saved_seed=qualify_saved_seed(adapter,adapter.metrics,adapter.d012_head,check,
+            provenance=getattr(adapter,'d012_provenance',None))
+        if 'saved_seed_qualification' not in meta:raise InvalidEvidence('missing saved seed qualification')
+        close_record(safe_json(saved_seed['record']),meta['saved_seed_qualification'])
     results={};total_solves=total_trials=0
     for name,eta,strict in PROFILES:
-        results[name]=replay_profile(adapter,case/name,eta,strict,check)
+        results[name]=replay_profile(adapter,case/name,eta,strict,check,
+            require_initialization=seeded,saved_seed=saved_seed)
         for key in ('solves','trials','accepted_steps','stop'):
             if results[name][key]!=meta['profiles'][name][key]:raise InvalidEvidence('worker/profile count or stop mismatch')
+        if seeded:
+            close_record(results[name]['initialization'],meta['profiles'][name]['initialization'])
+            close_record(results[name]['final_incumbent'],meta['profiles'][name]['final_incumbent'])
         total_solves+=results[name]['solves'];total_trials+=results[name]['trials']
     if total_solves>12 or total_trials>108 or total_solves!=meta['offline_solver_calls'] or total_trials!=meta['actual_candidate_trials']:raise InvalidEvidence('per-state compute counts')
-    historical=adapter.physical_report(adapter.realize(adapter.d012_head.astype(adapter.theta.dtype)))
+    historical_fields=None if saved_seed is None else saved_seed['fields']
+    if historical_fields is None:
+        historical_fields=adapter.realize(adapter.d012_head.astype(adapter.theta.dtype))
+    historical=adapter.physical_report(historical_fields)
     close_record(safe_json(historical),meta['D012_report'])
     a=results['strict_eta_0.3'];b=results['seven_guard_eta_0.3']
     ev={'guards':b['report']['guards'],'budget_q':b['report']['budget_q']}
@@ -155,6 +203,8 @@ def replay_state(adapter,root,state,check,expected_commit=None):
         central_cross_guard_failures=cross,central_interpretation=interpretation,
         baseline=adapter.physical_report(adapter.origin),D012_report=historical,
         replayed_solvers=total_solves,replayed_trials=total_trials,new_optimizations=0,
+        seeded_incumbent_protocol=seeded,
+        saved_seed_qualification=None if saved_seed is None else safe_json(saved_seed['record']),
         scope='all recorded actual trials and saved endpoints replayed; no new candidate selected')
 
 
@@ -244,6 +294,13 @@ def bound_numeric(root,state,record,expected_commit,check):
     for key in ('NN_optimizer_steps','original_checkpoint_writes','history_fatigue_damage_updates','remote_actions'):
         count(meta[key],key,0)
     if list(meta['profiles'])!=[x[0] for x in PROFILES]:raise InvalidEvidence('numeric profile order')
+    seeded=meta.get('seeded_incumbent_protocol',False)
+    if type(seeded) is not bool or record.get('seeded_incumbent_protocol',False)!=seeded:
+        raise InvalidEvidence('seeded incumbent numeric/replay identity')
+    if seeded:
+        if 'saved_seed_qualification' not in meta or 'saved_seed_qualification' not in record:
+            raise InvalidEvidence('seeded qualification receipt missing')
+        close_record(record['saved_seed_qualification'],meta['saved_seed_qualification'])
     close_record(record['baseline'],json.loads((case/'origin.json').read_text())['report'])
     close_record(record['D012_report'],meta['D012_report'])
     for name,_,_ in PROFILES:
@@ -252,6 +309,11 @@ def bound_numeric(root,state,record,expected_commit,check):
         for k in ('solves','trials','accepted_steps','stop'):
             if record['profiles'][name][k]!=meta['profiles'][name][k] or record['profiles'][name][k]!=final['counts'][k]:
                 raise InvalidEvidence('bound profile counts/stops')
+        if seeded:
+            close_record(record['profiles'][name]['initialization'],meta['profiles'][name]['initialization'])
+            close_record(record['profiles'][name]['final_incumbent'],meta['profiles'][name]['final_incumbent'])
+            close_record(record['profiles'][name]['initialization'],final['counts']['initialization'])
+            close_record(record['profiles'][name]['final_incumbent'],final['counts']['final_incumbent'])
     return meta
 
 
@@ -280,8 +342,13 @@ def aggregate(root,expected_commit,check=lambda:None):
                 value=p['report']['guards'][key];ceiling=base['guards'][key];finite(value,ceiling)
                 if value<0 or ceiling<0 or ((strict or i<7) and value>ceiling):raise InvalidEvidence('aggregate actual guard')
             if p['report']['budget_q']>eta:raise InvalidEvidence('aggregate physical budget')
+            initial=p.get('initialization',{}).get('selected',{}).get('source','E023_ORIGIN')
+            final_source=p.get('final_incumbent',{}).get('source','E023_ORIGIN')
+            retained=p.get('final_incumbent',{}).get('retained_initial_incumbent',False)
             for region in ('full','damage','background','inside_background'):
-                row=dict(state=state,profile=name,eta=eta,primary=strict,region=region)
+                row=dict(state=state,profile=name,eta=eta,primary=strict,region=region,
+                         initial_incumbent_source=initial,final_incumbent_source=final_source,
+                         retained_initial_incumbent=retained)
                 for quantity in ('uv','strain','driver'):
                     key=quantity+'_'+region
                     e=p['report']['region_metrics'][key]['error_RMS'];e0=base['region_metrics'][key]['error_RMS']
@@ -307,9 +374,10 @@ def aggregate(root,expected_commit,check=lambda:None):
         legacy001='historical_only',application_tolerance=None,NN_optimizer_steps=0,
         original_checkpoint_writes=0,history_fatigue_damage_updates=0,remote_actions=0,
         inputs={str(root/'replay'/s/'verified.json'):sha(root/'replay'/s/'verified.json') for s in STATES},
+        seeded_incumbent_protocol={r['state']:r.get('seeded_incumbent_protocol',False) for r in records},
         central_cross_checks={r['state']:{'failures':r['central_cross_guard_failures'],'interpretation':r['central_interpretation']} for r in records})
     write_json(out/'receipt.json',receipt)
-    (out/'README_analysis.md').write_text('# D013 complete replay summary\n\nAll12 fixed profiles are reported; no state/radius winner selection. Negative percent means lower error. Four raw physical change budgets remain centred at own original E023. Diagnostic seven-guard rows are not primary repairs. Regional protection is not pointwise or coupled-history validation. No .001 route verdict.\n\nSee regions.csv, per-state raw replay receipts, original events/coefficients and source/approval/resource records.\n')
+    (out/'README_analysis.md').write_text('# D014 complete replay summary\n\nAll12 fixed profiles are reported; no state/radius winner selection. Negative percent means lower error. Four raw physical change budgets remain centred at own original E023. A qualified saved incumbent may be retained after an unresolved local proxy, but it is not a new centre or a global optimum. Diagnostic seven-guard rows are not primary repairs. Regional protection is not pointwise or coupled-history validation. No .001 route verdict.\n\nSee regions.csv, per-state raw replay receipts, original events/coefficients and source/approval/resource records.\n')
     check();return receipt
 
 
@@ -327,7 +395,7 @@ def render(root,check=lambda:None):
     def pin(p):inputs[str(p)]=sha(p)
     pin(summary/'regions.csv');pin(summary/'receipt.json')
     def sidecar(name,body):
-        (folder/(name+'.md')).write_text('# '+fixture+'D013 '+name+'\n\n## Data provenance\n\n'+body+'\n\n## How to read\n\nAll12 prespecified profiles are retained in the table. Curves connect only three evaluated radii; the seven-guard central diagnostic is a distinct unfilled marker, never a selected replacement. Negative percent means a lower error than each own E023.\n\n## Limitations\n\nThese states share one exposed synthetic trajectory, fixed D/BC/window/damage and frozen history/fatigue. A regional gain is not pointwise dominance, physical teacher qualification or coupled damage/crack/fatigue validation. Radii are error-normalized exploration scales, not application tolerances. See summary receipt, per-state replay records and figure_inputs.json for exact files/hashes. No unvisited field is rendered.\n')
+        (folder/(name+'.md')).write_text('# '+fixture+'D014 '+name+'\n\n## Data provenance\n\n'+body+'\n\n## How to read\n\nAll12 prespecified profiles are retained in the table. Curves connect only three evaluated radii; the seven-guard central diagnostic is a distinct unfilled marker, never a selected replacement. Negative percent means a lower error than each own E023.\n\n## Limitations\n\nThese states share one exposed synthetic trajectory, fixed D/BC/window/damage and frozen history/fatigue. A retained qualified seed is an already checked point, not a global optimum or an evolved-history result. A regional gain is not pointwise dominance, physical teacher qualification or coupled damage/crack/fatigue validation. Radii are error-normalized exploration scales, not application tolerances. See summary receipt, per-state replay records and figure_inputs.json for exact files/hashes. No unvisited field is rendered.\n')
     fig,axes=plt.subplots(1,3,figsize=(15,4.5),sharey=True)
     for ax,state in zip(axes,STATES):
         for region in ('full','damage','background','inside_background'):
@@ -337,7 +405,7 @@ def render(root,check=lambda:None):
         ax.scatter([.3],[float(d['uv_change_percent']) if d['uv_change_percent'] else np.nan],marker='D',facecolors='none',edgecolors='black',label='seven-guard full')
         ax.axhline(0,color='gray',lw=.8);ax.set_title(state);ax.set_xlabel('Physical radius eta');ax.grid(alpha=.2)
     axes[0].set_ylabel('UV RMS change vs own E023 (%)');axes[-1].legend(fontsize=7)
-    fig.suptitle(fixture+'D013: actual field-budget gains, primary13 guards and central7-guard diagnostic');fig.tight_layout()
+    fig.suptitle(fixture+'D014: actual field-budget gains, primary13 guards and central7-guard diagnostic');fig.tight_layout()
     fig.savefig(folder/'field_budget_profile.png',dpi=150);plt.close(fig)
     sidecar('field_budget_profile','Source: regions.csv rebuilt from all quantized raw heads and native-Q4 metrics. Panels show c20/c60/c83 four-domain UV changes against physical radius; shared vertical scale and original E023 references. It is a gain/cost profile, not a curve of optimized capacity. Missing/undefined percentages are left blank. Main numerical takeaways are the exact values in regions.csv; no tolerance or route threshold is overlaid.')
     check()
@@ -356,7 +424,7 @@ def render(root,check=lambda:None):
             ax.scatter([.3],[val(diagnostic)],marker='D',facecolors='none',edgecolors=color)
         ax.axhline(0,color='gray',lw=.8);ax.grid(alpha=.2);ax.set_title(quantity+' '+region)
         ax.set_xlabel('physical radius eta');ax.set_ylabel('change vs own E023 (%)')
-    axes[0,0].legend(fontsize=8);fig.suptitle(fixture+'D013 physical gains / background costs | open diamonds = seven-guard diagnostic')
+    axes[0,0].legend(fontsize=8);fig.suptitle(fixture+'D014 physical gains / background costs | open diamonds = seven-guard diagnostic')
     fig.tight_layout();fig.savefig(folder/'physical_tradeoff.png',dpi=150);plt.close(fig)
     sidecar('physical_tradeoff','Panels: actual weak rho, background strain, window-interior background strain, damage elastic-driver error, background driver error and window-interior background driver error. Each panel directly compares all three states on its shared percent axis; axes between quantities have separate ranges. Solid curves are three primary13-guard radii; open diamonds show only the prespecified central7-guard diagnostic. Positive values are costs, negative are improvements; zero is original own E023. This view prevents UV improvement from hiding background strain cost. Exact numerical values come from regions.csv; unlike a new forward or optimizer sweep, rendering only reads verified stored outputs.')
     check()
@@ -388,7 +456,7 @@ def render(root,check=lambda:None):
                 ax.tricontour(mesh,(geo['window']>0).astype(float),levels=[.5],colors='cyan',linewidths=.7)
                 ax.set_title(('E023','strict eta=.3','change: blue lower / red higher')[j]+'\n'+label,fontsize=8)
                 ax.set_xlabel('x');ax.set_ylabel('y');fig.colorbar(im,ax=ax,shrink=.7)
-        fig.suptitle(fixture+'D013 '+state+' | fixed preselected central primary profile | FEM damage>0.1 hatched; window cyan')
+        fig.suptitle(fixture+'D014 '+state+' | fixed preselected central primary profile | FEM damage>0.1 hatched; window cyan')
         fig.tight_layout();fig.savefig(folder/(state+'_fields.png'),dpi=150);plt.close(fig)
         sidecar(state+'_fields','Preselected example: strict eta=.3 for '+state+', not the best-performing radius. Geometry/target/window, original raw E023 and final stored actual fields are pinned in figure_inputs.json. Top row: baseline and candidate nodal vector UV error / absUs (shared log scale), then signed difference. Bottom: squared scaled mass-dual free-force contribution at free nodes (shared log scale), then signed difference. Each bottom map sums to the actual native rho_u squared; this is not a strong-form point residual or causal regional force attribution. Black hatch/contour is nodal damage>.1, cyan is fixed support. Full mesh is used; axes may have unequal display aspect and Gouraud interpolation is visual only. Log floor is display-only at1e-12 of row maximum; signed symlog is symmetric and includes all extrema. Full table values, including aggregate background costs, govern interpretation; local red/blue spots can coexist with a regional improvement. Numeric rows are in regions.csv and per-state replay receipts.')
         check()

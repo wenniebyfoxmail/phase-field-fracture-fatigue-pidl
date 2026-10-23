@@ -178,7 +178,7 @@ def load_real_adapter(project,state,check=lambda:None):
     from s04_e024_head_tail import HEAD_LOCKS
     from run_s04_e024_head_tail_screen import state_digest,US
     from s04_e018_global_local import compact_window
-    from s04_e024_field_budget import STATES
+    from s04_e024_field_budget import STATES,digest_array
     if state not in STATES:raise InvalidEvidence('unregistered state')
     check();torch.set_default_dtype(torch.float64);torch.set_num_threads(2)
     root=project/'local_archive/experiments';source=Path(__file__).resolve().parents[1]
@@ -222,9 +222,14 @@ def load_real_adapter(project,state,check=lambda:None):
     if sha(ip)!=manifest[str(ip.relative_to(d012))]['sha256']:raise InvalidEvidence('D012 head pin')
     with np.load(ip,allow_pickle=False) as z:
         np.testing.assert_array_equal(theta,z['original_coefficients']);adapter.d012_head=z['head_coefficients'].copy()
+    adapter.d012_provenance=dict(source='D012_SAVED',state=state,
+        archive_manifest_sha256=sha(d012/'ARCHIVE_MANIFEST.json'),
+        head_file_sha256=sha(ip),head_array_sha256=digest_array(adapter.d012_head),
+        original_head_sha256=digest_array(theta))
     adapter.assets=dict(state=state,**asset,original_files=before,model_digest=original_digest,
         reference_shape=list(data['equilibrated_uv'].shape),head_dtype=theta.dtype.str,
-        d012_input_sha256={str(ip):sha(ip)},saved_vs_raw_origin_max_abs=adapter.realization_baseline_saved_max_gap,
+        d012_input_sha256={str(ip):sha(ip)},d012_provenance=adapter.d012_provenance,
+        saved_vs_raw_origin_max_abs=adapter.realization_baseline_saved_max_gap,
         baseline='own unchanged E023 head, authoritative local raw reconstruction; native saved-field gap retained; not strict cross-platform admission',
         origin_field_sha256=adapter.metrics.centre_digest,guard_ceilings=adapter.metrics.ceilings.tolist(),budget_scales_squared=adapter.metrics.scales_sq.tolist())
     original_final=adapter.final_identity
