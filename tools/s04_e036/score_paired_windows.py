@@ -9,6 +9,8 @@ to stdout; source runs and target archives are not modified.
 from __future__ import annotations
 
 import argparse
+import ast
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -24,6 +26,7 @@ from native_q4_diagnostics import native_readout, physical_gap
 from cyclic_persistence import load_verified_step
 from run_multicycle_cross_replay import q4_geometry
 from window_inputs import CASES, bound_file, load_case, load_manifest, optimizer_work, predecessor_key, read_json, sha256, state_key
+from window_inputs import execution_cases
 
 
 _CALLBACK_FILES = {
@@ -271,12 +274,53 @@ def _diagnostic_snapshots(step, key, arm, problem, expected_old, expected_window
     return result, errors
 
 
-def score(run_root, target_manifest, device):
-    run_root, target_manifest = Path(run_root).resolve(), Path(target_manifest).resolve()
-    scoring = read_json(target_manifest)
+def verify_scoring_control_split(producer_source):
+    """Permit dispatch edits only; protect every original metric/replay helper and case body."""
+    old = ast.parse(Path(producer_source).read_text())
+    current = ast.parse(Path(__file__).read_text())
+    protected = ("tightening_map", "_strict_metadata", "_same_tensors", "_updates", "_verified_work",
+                 "work_comparison", "target_readout", "tightening_readout", "primitive_gap",
+                 "_improvement", "load_target", "_diagnostic_snapshots")
+    def functions(tree):
+        return {node.name: node for node in tree.body if isinstance(node, ast.FunctionDef)}
+    before, after = functions(old), functions(current)
+    digest = lambda node: hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+    identities = {}
+    for name in protected:
+        if name not in before or name not in after or digest(before[name]) != digest(after[name]):
+            raise ValueError(f"producer/current protected scoring implementation differs: {name}")
+        identities[name] = digest(after[name])
+    def case_body(mapping):
+        function = mapping.get("score_bound_run", mapping["score"])
+        loop = next(node for node in function.body if isinstance(node, ast.For)
+                    and isinstance(node.target, ast.Tuple) and isinstance(node.target.elts[0], ast.Name)
+                    and node.target.elts[0].id == "case")
+        return ast.Module(body=loop.body, type_ignores=[])
+    if digest(case_body(before)) != digest(case_body(after)):
+        raise ValueError("producer/current per-case scoring body differs")
+    for name in ("_CALLBACK_FILES", "_FIELDS", "_TIGHTENING_SLOTS"):
+        def assignment(tree):
+            return next(node for node in tree.body if isinstance(node, ast.Assign)
+                        and any(isinstance(target, ast.Name) and target.id == name for target in node.targets))
+        if digest(assignment(old)) != digest(assignment(current)):
+            raise ValueError(f"protected scoring constant differs: {name}")
+    old_imports = {ast.dump(node, include_attributes=False) for node in old.body
+                   if isinstance(node, (ast.Import, ast.ImportFrom))}
+    new_imports = {ast.dump(node, include_attributes=False) for node in current.body
+                   if isinstance(node, (ast.Import, ast.ImportFrom))}
+    if not old_imports <= new_imports:
+        raise ValueError("an original scoring import changed")
+    return dict(producer_source_sha256=sha256(producer_source), current_source_sha256=sha256(Path(__file__)),
+                protected_function_ast_sha256=identities, case_body_ast_sha256=digest(case_body(after)),
+                scope="postprocessing dispatch separation only; protected scientific scoring unchanged")
+
+
+def score_bound_run(run_root, scoring, root, device, *, target_manifest_sha256,
+                    requested_case=None, configure_runtime=True, producer_scorer=None):
+    """Score actual bound artifacts, optionally for one receipt's execution partition."""
+    run_root, root = Path(run_root).resolve(), Path(root).resolve()
     if scoring.get("schema") != "s04_e036_scoring_v1":
         raise ValueError("wrong scoring manifest")
-    root = target_manifest.parent
     training_path = bound_file(scoring["training_manifest"], root)
     receipt_path = bound_file(scoring["run_receipt"], root)
     if receipt_path != run_root / "run_receipt.json":
@@ -292,7 +336,15 @@ def score(run_root, target_manifest, device):
     lock = read_json(lock_path)
     if lock.get("schema") != "s04_e036_implementation_lock_v1" or not _CALLBACK_FILES <= set(lock["files"]):
         raise ValueError("incomplete physical replay implementation lock")
+    control_split = None
+    if producer_scorer is not None:
+        original = bound_file(producer_scorer, root)
+        if sha256(original) != lock["files"].get("tools/s04_e036/score_paired_windows.py"):
+            raise ValueError("producer scorer source differs from its actual implementation lock")
+        control_split = verify_scoring_control_split(original)
     for relative, digest in lock["files"].items():
+        if relative == "tools/s04_e036/score_paired_windows.py" and control_split is not None:
+            continue
         source = (ROOT / relative).resolve()
         if not source.is_relative_to(ROOT) or sha256(source) != digest:
             raise ValueError(f"physical replay implementation drift: {relative}")
@@ -302,16 +354,23 @@ def score(run_root, target_manifest, device):
         raise ValueError("native physical diagnostics differ from the scoring manifest")
     if scoring.get("q4_geometry_sha256") != sha256(ROOT / "tools/s04_e011_analysis/run_multicycle_cross_replay.py"):
         raise ValueError("Q4 lumped mass implementation differs")
-    doc, training_root, nodes, cells, common = load_manifest(training_path)
+    selected = execution_cases(requested_case)
+    if requested_case is not None:
+        _strict_metadata(receipt.get("requested_case"), requested_case, "run execution partition")
+        _strict_metadata(receipt["authority"].get("requested_case"), requested_case, "authorized partition")
+        _strict_metadata(receipt.get("execution_cases"), list(selected), "executed cases")
+        _strict_metadata(receipt.get("declared_cases"), list(CASES), "declared cases")
+    doc, training_root, nodes, cells, common = load_manifest(training_path, requested_case=requested_case)
     # Endpoint case names already contain s4; use one unambiguous label.
     label = lambda case, substep: f"{case}/s{substep}"
     expected_targets = {label(case, substep) for case, (_, steps) in CASES.items() for substep in steps}
     if set(scoring["targets"]) != expected_targets:
         raise ValueError("scoring requires the exact twelve declared target slots; unavailable slots may be null")
     sensitivity_specs = tightening_map(scoring.get("reference_tightening"))
-    torch.set_num_threads(1)
-    torch.set_num_interop_threads(1)
-    torch.use_deterministic_algorithms(True)
+    if configure_runtime:
+        torch.set_num_threads(1)
+        torch.set_num_interop_threads(1)
+        torch.use_deterministic_algorithms(True)
     problem = WindowProblem(nodes, cells, common, torch.device(device))
     shape, _, weights, _ = q4_geometry(nodes.astype(np.float64), cells)
     mass = np.zeros(len(nodes), dtype=np.float64)
@@ -319,7 +378,7 @@ def score(run_root, target_manifest, device):
     if not np.isfinite(mass).all() or np.any(mass <= 0):
         raise ValueError("invalid native Q4 lumped nodal area")
     rows, eligible = [], []
-    for case, (cycle, steps) in CASES.items():
+    for case, (cycle, steps) in ((name, CASES[name]) for name in selected):
         accepted_parent = {"P1": None, "P2": None}
         accepted_window_work = {"P1": 0, "P2": 0}
         try:
@@ -449,7 +508,8 @@ def score(run_root, target_manifest, device):
                          weighting="equal weight for all twelve declared states",
                          interpretation="accepted endpoints; not an equal-work estimate")
     return dict(schema="s04_e036_scoring_result_v1", training_manifest_sha256=scoring["training_manifest"]["sha256"],
-                target_manifest_sha256=sha256(target_manifest), replay_device=str(device),
+                target_manifest_sha256=target_manifest_sha256, replay_device=str(device),
+                requested_case=requested_case, execution_cases=list(selected), scoring_control_split=control_split,
                 callback_lock_sha256=scoring["callback_lock"]["sha256"],
                 scorer_sha256=scoring["scorer_sha256"], q4_geometry_sha256=scoring["q4_geometry_sha256"],
                 formula="sqrt(sum(m*((du/.12)^2+(dv/.12)^2+dd^2))/(3*sum(m)))",
@@ -458,6 +518,12 @@ def score(run_root, target_manifest, device):
                 fixed_design_aggregate=aggregate,
                 aggregate_boundary="No fixed-design aggregate when any declared endpoint pair is unavailable or unverified.",
                 claim_boundary="Conditional windows; coupling plus history propagation, not isolated timing causality or fatigue life.")
+
+
+def score(run_root, target_manifest, device):
+    target_manifest = Path(target_manifest).resolve()
+    return score_bound_run(run_root, read_json(target_manifest), target_manifest.parent, device,
+                           target_manifest_sha256=sha256(target_manifest))
 
 
 if __name__ == "__main__":

@@ -53,13 +53,17 @@ Each bundle retains its actual case, manifest SHA, initial network and parent
 lineage. Later manifests may fill deferred inputs, but must not replace or
 reinterpret an earlier job's bound manifest.
 
-## Minimal future scorer collection (proposal only)
+## Per-case scorer collection
 
-The existing scorer accepts one run receipt/manifest/root and is **not yet a
-multi-case collector**. Do not present four jobs as one fictional receipt or
-copy their output into a fabricated common run. A minimal new collection can
-retain the current scoring target catalog and replace its singular run binding
-with these per-case records:
+Implemented in `collect_paired_windows.py`; see `D3_COLLECTION.md` for the exact
+current schema and CLI. Each case additionally binds `producer_scorer` so the
+old/current protected replay and metric AST can be compared before scientific
+scoring. The sketch below records the original proposal, not a runnable input.
+
+The single-run scorer retains one actual receipt/manifest/root at a time.
+Do not present four jobs as one fictional receipt or copy their output into a
+fabricated common run. The collector retains the fixed target catalog and
+the individual run bindings, extending the original sketch below:
 
 ```json
 {
@@ -91,7 +95,8 @@ case rather than selecting the best result. A missing case remains missing;
 failed endpoints remain diagnostic. No four-case overall aggregate until all
 four genuine case records and required paired evidence are present.
 
-This proposal does not modify the scorer. Target arrays stay in scoring only.
+The collector now reuses the scorer through an explicit single-case control
+entry. Target arrays stay in scoring only.
 The existing fixed benchmark result is reused. This control-only change uses
 one direct metadata/source consistency check and no NN/FEM execution, additional
 scientific test matrix, or review ladder.
