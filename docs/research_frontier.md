@@ -99,3 +99,5 @@ R020 terminal:12/24validtoU.28; U.29/stag25/PFiter9 ray actualslopes allnonnegat
 R022 actual: CITPC12 MATLAB23108 started15:36:02Z Oct23, unlimited_compute=true. Full24-state verification pending; noPIDL yet. [Run](research/S04/S04-E035/runs/S04-E035-R022.md).
 
 R022/R023 finite continuation active via localPID51733 (f9c0ef36): retrieve/hash/qualify all24FEM states, then conditional originalPIDL and paired saved-field analysis.15:55Z R022 has12accepted loads throughU=.28; U=.29coupling active/stag69, no complete reference or NN result yet. No time/compute budget cap; scientific criteria and resource limits retained. [Owner](research/S04/S04-E035/experiment.md).
+
+2026-10-23 R022 terminal: U=.29passed,16/24saved states throughU=.32 independently verified; U=.33/stag9 PF500 limit, actual savedKKT2.2209600853e-6>1e-6. All85files/100,416,524bytes hash matched;3762.208s, not wall/resource stop. Finite continuation stopped; noR023/PIDL/45°. FullU=.4reference absent. Next candidate: compare actual acceptable native ray energy descent rather than full-target slopes, unexecuted. [Owner](research/S04/S04-E035/experiment.md).
