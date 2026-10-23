@@ -479,3 +479,10 @@ R027身份检查在训练前退出：Python launcher17336于18:03:28Z创建、18
 worker_processes.json已同时包含launcher27304→真实解释器51252父子链及本R028绝对命令，两者归入原4核/16GiBhostRSS范围；CUDA20GiB/输出10GiB限制保持。实测settings hours=null/max_epochs=null/solver_iteration_budget=none，RPROP原relative loss5e-6/10stable steps不变。计算与迭代次数无预算。
 
 FEM24态参考R024保持合格，反力/弹性能/断裂能完整曲线与U=.4损伤图已由保存量生成、目视检查并通过sidecar一致性，路径R024/native_response/figures。当前没有FEM–PIDL数值比较结论。R028结束后既定有限流程直接取回逐文件哈希核验、用原科学检查/相同U与时点/Gauss-T3支持生成比较图表，状态pidl_cuda_identity_20261023/pipeline_state.json。
+
+
+## 2026-10-23 删除旧限时监控入口
+
+按人方“请删除旧的限时监控脚本，以绝后患”，从活动源码删除10个旧限时PowerShell监督脚本及直接引用它们的18个过期启动器；没有把旧run启动器自动转接到无上限监督器。保留唯一当前监督器supervise_manav_unlimited.ps1及R024/R028现用启动和取回比较入口，逐文件哈希确认其内容不变。删除清单和原SHA256见retired_time_monitors_20261023.json；历史执行归档和Git原版本保留。直接检查剩余启动器的监督源码路径均存在，无旧截止时间解析或限时监督器引用；不重跑科学计算。
+
+同步核实R028在18:18:03.0486305Z实际exit1：U=.32/step16最大愈合.006704211235046387超过原.005，候选保留并被分析排除，非限时/次数停止。FEM仍24/24通过U=.4；PIDL有效损伤/BC/历史配对前缀15/24到U=.31，尚未完整通过U=.4，优化器loss停止不等于平衡合格。取回后已有paired_R024_R028保存量分析，不能将pipeline的paired_analysis_finished误写为完整科学成功。

@@ -1,0 +1,154 @@
+{
+  "removed_utc": "2026-10-23T18:21:08.844918+00:00",
+  "request": "Delete obsolete time-limited monitoring scripts and prevent accidental reuse",
+  "source_commit_before_removal": "aa634414f69677d9b9299680ed365ec9c441152a",
+  "scope": "Active scripts/shear sources only; historical execution archives unchanged",
+  "removed_files": [
+    {
+      "path": "scripts/shear/supervise.ps1",
+      "sha256": "ad36f1a436a6ebbad23170e6a19cb92886bfb98074bd6882ab90821b289ff8ee",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_manav_pidl.ps1",
+      "sha256": "b8a44209c03f807ef6c88c266bbb1f30b071e9dd49f16cb3b8b86fef3484c3e8",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_manav_pidl_angle.ps1",
+      "sha256": "1c9a1217a750af4d72bfc75d2953c2598adca9a8cdc94c76de24c12a35af406a",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_manav_pidl_box.ps1",
+      "sha256": "3c79f8ade697b853dc7df042dfd2f56dc9390ea4fccc2d2ec7db95e87d5ef2d5",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_manav_pidl_renewed.ps1",
+      "sha256": "014838dad4159d7dfa6b313af302237d667187acc36e115d3c92a9e38b72af0f",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_manav_static.ps1",
+      "sha256": "0d5003a479e4505b18c310ad9fb3871164c0389ab19d618467ba07adf2de0163",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_manav_static_angle.ps1",
+      "sha256": "0ed15086d3ef8b3af9251fa450bed02487027bd3d60d116adb9c0ed60d8de499",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_manav_static_box.ps1",
+      "sha256": "423a43d8531fc76f27b32f752cf6742aedbca719c197fa40233d6f6807f07191",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_manav_static_renewed.ps1",
+      "sha256": "103e6bc846d1ccd4fd0efed3aed403c62cf95a009ee57f105c684a60506d7c77",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/supervise_r007.ps1",
+      "sha256": "31fe2c36ebbc499ab49ee13bef1e2e4a063911f8beb62b4909bebf608b5ca092",
+      "role": "expired_time_supervisor"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem.py",
+      "sha256": "e45dea5d5ae8106af3ba14e6d173907f56b44114ac5aa571060e01e9bf6b76db",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem_angle.py",
+      "sha256": "d1e69f1ef30dedd5c395eafaa36f19a6bfc5047eb40cc9672e76f96b4df6c985",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem_box.py",
+      "sha256": "c843a34a56a382defd77527bb4e70270b5bec35ebee7b29c0c3f73624b467c78",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem_consistent.py",
+      "sha256": "d81714e12d582f1fdb944658cb8ec1a819e2e9f78c14397eecd76ab6c3571f92",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem_curvature.py",
+      "sha256": "b6e621756fc720c587261e091ec47ac93b53cb1548291d2b92403a94767b42a2",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem_native.py",
+      "sha256": "29863923baa972a65c13f00d5efe0f7be027c7b8d88a4c29d896cf0aef9faf48",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem_ray.py",
+      "sha256": "7feb53f072800f1bc6b5e61a9fc0ffc61acc727d6450af706fff3bf190eea9d3",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem_renewed.py",
+      "sha256": "36a917e6bd24c9292db475d71d15b2cd54d68b88820454eb63a2fd27821cdeb6",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_fem_repair.py",
+      "sha256": "7c2d86b12526bee614bc6babacc1a675a9da5cb061db282be64438e528516928",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_pidl.py",
+      "sha256": "d15e3ef4bbc03b0fbadebeeaee3a32245e5b25c8cc18ef3cb3db5fe1d227a97f",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_pidl_angle.py",
+      "sha256": "b111ae0666169a67d038a11b9364396128b03b285e77349f89986f8d143b1d9f",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_pidl_box.py",
+      "sha256": "2f58aa60bf2016f111fe3ba022585479380152f791d7d1148a8c71b8da2a36bb",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_pidl_ray.py",
+      "sha256": "65eee7c63092001bc39a31155765366ef12d3ed88c1e236c0d2a90d6c757d208",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_manav_static_pidl_renewed.py",
+      "sha256": "cfd2d5515e21c3d2a03e2f62f578f4e370fb09e4c1a8a835ba7d375217897572",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_paired_fem.py",
+      "sha256": "bc6e748d6276e3cc852eea5f8a06c59b7956452abf15e44e22467d872bf8e434",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_paired_fem_r006.py",
+      "sha256": "e17296a16d677bd343a9b9e12b7add6865abaa7b48a935429cc6b4974b5f3728",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_paired_fem_r007.py",
+      "sha256": "5dd3d1c1650e7afd43d413253e5b995d29a3f5a7b0325ed6c7c4705c0ac215e3",
+      "role": "obsolete_dependent_launcher"
+    },
+    {
+      "path": "scripts/shear/execute_shear_diagnostic.py",
+      "sha256": "06f971ff65b2657288f8202a89ef317127d73ea2c673d1ae74de976b94a2a938",
+      "role": "obsolete_dependent_launcher"
+    }
+  ],
+  "retained_current_sources": {
+    "supervise_manav_unlimited.ps1": "52e513471ae9525e73e3cba27f8e58b0a0e9738dc5a0d56d80536a3e4b8fbfc8",
+    "execute_manav_static_fem_progress.py": "3bf58ea205c5b3f43f2b91a0f8cd49f3bda099670655866b467e1ef50128a7ba",
+    "execute_manav_static_pidl_after_fem.py": "8426c938223e756e02ff4100ab64dde4fc7693841a8114235cb011c1219a1ea9",
+    "continue_manav_static_after_fem.py": "7f0a2e819182b6d83fb7e94ac1489f9bdb9fb276658f9dc0ae1445fdb068e2ec"
+  }
+}
