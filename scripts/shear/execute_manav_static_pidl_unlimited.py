@@ -50,7 +50,7 @@ def prepare():
     bundle_sha=hashlib.sha256(bundle.read_bytes()).hexdigest()
     args='-B -u "'+REMOTE+'/code/scripts/shear/launch_manav_static_pidl_unlimited.py" --mesh "'+REMOTE+'/mesh.msh" --output "'+REMOTE+'/pidl" --epochs 10000'
     config=dict(kind='pidl',root=REMOTE,output=REMOTE+'/pidl',executable='C:/Users/xw436/pavetrack_env/Scripts/python.exe',arguments=args,commit=commit,host='D-26-09',unlimited_compute=True,authority_sha256=hashlib.sha256(AUTHORITY.read_bytes()).hexdigest(),gpu_uuid='GPU-2d0f6f7a-f29f-fc3e-0007-7e2a321cadf7',reference_sha256='REFERENCE_SHA')
-    payload={'supervise.ps1':(WORK/'scripts/shear/supervise_manav_pidl_renewed.ps1').read_bytes(),'config.json':json.dumps(config,indent=2).encode(),'authority.json':AUTHORITY.read_bytes()}
+    payload={'supervise.ps1':(WORK/'scripts/shear/supervise_manav_unlimited.ps1').read_bytes(),'config.json':json.dumps(config,indent=2).encode(),'authority.json':AUTHORITY.read_bytes()}
     lines=["$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'", "$r='"+REMOTE+"'", "if($env:COMPUTERNAME -ne 'D-26-09'){throw 'Wrong host'}", "if(Test-Path $r){throw 'Existing root, no retry'}", "if((Get-PSDrive C).Free -lt 15GB){throw 'Disk headroom'}", "if((Get-FileHash 'BUNDLE_PATH').Hash.ToLower() -ne '"+bundle_sha+"'){throw 'Bundle transfer mismatch'}", "New-Item -ItemType Directory $r|Out-Null", "Expand-Archive -LiteralPath 'BUNDLE_PATH' -DestinationPath $r"]
     for name,sha in hashes.items():
         lines.append("if((Get-FileHash ($r+'/%s')).Hash.ToLower() -ne '%s'){throw 'Bundle file mismatch'}"%(name,sha))
