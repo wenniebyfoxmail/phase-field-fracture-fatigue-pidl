@@ -43,6 +43,67 @@ def write_new(path,value):
     with Path(path).open('x') as f:f.write(data)
 
 
+PUBLISHED_MAIN = ('main_config','main_driver_binding','main_input_binding','main_authority','main_manifest')
+
+
+def validate_published_main_spec(pred,request,local,root):
+    """Check original JSON identity and relocated proof paths; MATLAB checks arrays.
+
+    This path asserts publication of an old step only, never completion of its
+    parent window. Original JSON/MAT paths remain unchanged inside copied bytes.
+    """
+    fields={name+suffix for name in PUBLISHED_MAIN for suffix in ('_file','_sha256')}
+    if not fields.intersection(pred):return None
+    require(fields.issubset(pred),'all five published-main file/hash pairs are required')
+    steps=request['substeps'];steps=steps if isinstance(steps,list) else [steps]
+    require(pred['kind']=='verified_window_step' and request['role'] in ('tightening','nodal_oracle')
+            and request['cycle'] in (1,83) and steps in ([2],[4])
+            and not {'main_window_result_file','main_window_result_sha256'}.intersection(pred),
+            'published main proof is exclusive to strict/oracle old-step admission')
+    for name in PUBLISHED_MAIN:
+        path,digest=pred[name+'_file'],pred[name+'_sha256']
+        relative(path,root)
+        require(re.fullmatch('[0-9a-f]{64}',digest) and sha(local(path))==digest,
+                'published main bytes differ: '+name)
+    c=read(local(pred['main_config_file']));a=read(local(pred['main_authority_file']))
+    m=read(local(pred['main_manifest_file']));label=c['watchdog_id'];original=win(c['run_root'])
+    expected=dict(cycle=request['cycle'],substeps=[1,2,3,4,5],role='main')
+    require(c['request']==expected and c['execution_approved'] is True
+            and re.fullmatch('[a-z0-9_]+',label)
+            and win(c['output_dir'])==original+'/output/'+label,
+            'original config must name the same-cycle main five-step request')
+    require(c['authority_sha256']==pred['main_authority_sha256']
+            and c['manifest_sha256']==pred['main_manifest_sha256']
+            and win(c['authority_file'])==original+'/'+label+'_authority.json'
+            and win(c['manifest_path'])==original+'/'+label+'_manifest.json',
+            'original config authority/manifest identity differs')
+    require(a['schema']=='e036-stage-b-authority-v1' and a['stage']=='B'
+            and a['request']==expected and a['allowed_labels']==[label]
+            and win(a['run_root'])==original
+            and a['stage_a_evidence_sha256']==c['stage_a_evidence_sha256'],
+            'original main authority differs')
+    require(m['schema']=='e036-stage-b-source-v1','original main source manifest required')
+    rows=[r for r in m['files'] if r['path']==label+'_authority.json']
+    require(len(rows)==1 and rows[0]['sha256']==c['authority_sha256'],
+            'original manifest must bind its original authority')
+    proof=win(PureWindowsPath(pred['main_config_file']).parent)
+    expected_paths=dict(main_config=proof+'/'+label+'_config.json',
+        main_authority=proof+'/'+label+'_authority.json',main_manifest=proof+'/'+label+'_manifest.json',
+        main_driver_binding=proof+'/output/'+label+'/driver_binding.mat',
+        main_input_binding=proof+'/output/'+label+'/window/input_binding.mat')
+    for name,path in expected_paths.items():
+        require(win(pred[name+'_file']).casefold()==path.casefold(),'relocated main proof layout differs: '+name)
+    key=pred['state_key'];step=steps[0]-1
+    expected_key=dict(trajectory=c['predecessor']['state_key']['trajectory'],nominal_umax=.12,
+        cycle=request['cycle'],substep=step,displacement=[.02999988,.05999988,.08999988][step-1],
+        timing='post_commit',gp_order='(+,+),(-,+),(+,-),(-,-)')
+    require(key==expected_key,'published main source must be the exact immediate predecessor')
+    folder=proof+f'/output/{label}/window/c{request["cycle"]:04d}_s{step:02d}'
+    for name,filename in (('path','step_checkpoint.mat'),('proposal_file','proposal.mat'),('completion_file','completion.mat')):
+        require(win(pred[name]).casefold()==(folder+'/'+filename).casefold(),'selected old-step path differs')
+    return c
+
+
 def prepare(args):
     a=read(args.stage_a_config);authority=read(args.authority);pred=read(args.predecessor_spec)
     evidence=read(args.stage_a_evidence);root=win(authority['run_root']);a_root=win(a['run_root'])
@@ -85,6 +146,10 @@ def prepare(args):
     checked(pred['path'],pred['sha256'])
     for prefix in ('origin','proposal','completion','main_window_result'):
         if prefix+'_file' in pred:checked(pred[prefix+'_file'],pred[prefix+'_sha256'])
+    original_main=validate_published_main_spec(pred,request,local,root)
+    if original_main is not None:
+        require(original_main['common_sha256']==c['common_sha256'] and
+                original_main['mesh_sha256']==c['mesh_sha256'],'main and strict/oracle support differ')
     for helper in ('e036_final_candidate','e036_native_candidate','e036_policy'):
         h=sha(local(c['code_root']+'/tools/s04_e036_fem/'+helper+'.m'))
         checked(c['overlay_root']+'/Sources/+phase_field/+audit/'+helper+'.m',h)
