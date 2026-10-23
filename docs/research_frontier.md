@@ -113,3 +113,5 @@ R024 progress17:27Z: actual U=.33 accepted (Ru9.93044e-5/PF1.99815e-7), U=.34 ac
 R026 also preworker-only: WDDM desktop graphics contexts falsely blocked strict zero-context guard, noPython/no training. Classifier repaired while original GPUUUID/free/util/Python/resource controls retained; freshR027same scientificPIDL prepared against completeR024, no newFEM or testladder. [Owner](research/S04/S04-E035/experiment.md).
 
 R027 stopped beforetraining on UUID formatting only (Torch omitsGPU-; fullUUID/PCI bits match original GPU). Normalize UUID and monitor actual owned Windows interpreter tree; freshR028samePIDL prepared, fullR02424-state reference retained. No numerical tolerance change or FEM rerun. [Owner](research/S04/S04-E035/experiment.md).
+
+R028 actualtraining: scientificPID51252/launcher27304 since18:12:23Z, fixedGPU fullUUID verified/Torch2.11cu128.18:13:57Z GPU68%/5993MiB, initialstate only; U=.03firstsolve active. No wall/iteration/epoch budget, original RPROP5e-6/10/LBFGSeps and equations unchanged. CompleteR024 qualified; finiteflow70553 will retrieve/analyzeR028 against it. No paired verdict yet. [Owner](research/S04/S04-E035/experiment.md).
