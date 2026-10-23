@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 SCHEMA = "s04_e036_paired_windows_v2"
+PARTITION_SCHEMA = "s04_e036_paired_windows_v3"
 GP_ORDER = "(+,+),(-,+),(+,-),(-,-)"
 LOADS = (.02999988, .05999988, .08999988, .11999988, 0.)
 CASES = {"c1": (1, (1, 2, 3, 4, 5)), "c83": (83, (1, 2, 3, 4, 5)),
@@ -80,14 +81,49 @@ def native_mesh_coordinates(data):
     return np.asarray(native, dtype="<f8")
 
 
-def load_manifest(path):
+def execution_cases(requested_case):
+    """Execution partition only; scientific cases remain the fixed four."""
+    if requested_case is not None and requested_case not in CASES:
+        raise ValueError("unknown requested case")
+    return tuple(CASES) if requested_case is None else (requested_case,)
+
+
+def validate_case_partition(doc, root, requested_case):
+    """Bind all networks; permit paired null preimages only outside this job."""
+    selected = execution_cases(requested_case)
+    if set(doc.get("cases", {})) != set(CASES):
+        raise ValueError("all four scientific cases must remain declared")
+    missing = []
+    for name, spec in doc["cases"].items():
+        if not isinstance(spec, dict) or set(spec) != {"predecessor", "admission", "network"}:
+            raise ValueError("case requires predecessor, admission and initial network only")
+        if not isinstance(spec["network"], dict):
+            raise ValueError("every declared case needs a real fixed network binding")
+        bound_file(spec["network"], root)
+        nulls = [spec[key] is None for key in ("predecessor", "admission")]
+        if any(nulls):
+            if not all(nulls):
+                raise ValueError("unavailable predecessor and admission must both be null")
+            if doc["schema"] != PARTITION_SCHEMA or name in selected:
+                raise ValueError("null predecessor/admission permitted only for unselected v3 cases")
+            missing.append(name)
+        else:
+            for key in ("predecessor", "admission"):
+                if not isinstance(spec[key], dict):
+                    raise ValueError("available predecessor/admission require real file bindings")
+                bound_file(spec[key], root)
+    return tuple(missing)
+
+
+def load_manifest(path, *, requested_case=None):
     path = Path(path).resolve()
     doc = read_json(path)
-    if doc.get("schema") != SCHEMA or set(doc.get("cases", {})) != set(CASES):
+    if doc.get("schema") not in {SCHEMA, PARTITION_SCHEMA} or set(doc.get("cases", {})) != set(CASES):
         raise ValueError("requires exactly c1/c83 windows and c20s4/c60s4 endpoints")
     if set(doc) != {"schema", "trajectory", "mesh", "common_problem", "cases", "budget"}:
         raise ValueError("unexpected manifest keys (future targets are not solver inputs)")
     root = path.parent
+    validate_case_partition(doc, root, requested_case)
     mesh_path = bound_file(doc["mesh"], root)
     common_path = bound_file(doc["common_problem"], root)
     common = read_json(common_path)
@@ -155,6 +191,8 @@ def load_case(name, doc, root, n_nodes, n_cells, common):
     spec = doc["cases"][name]
     if set(spec) != {"predecessor", "admission", "network"}:
         raise ValueError("case requires predecessor, admission and initial network only")
+    if spec["predecessor"] is None or spec["admission"] is None:
+        raise ValueError("selected case has no admitted predecessor; no substitution")
     paths = {key: bound_file(value, root) for key, value in spec.items()}
     cycle, steps = CASES[name]
     key = predecessor_key(doc["trajectory"], cycle, steps[0])

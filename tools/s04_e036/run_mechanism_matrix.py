@@ -126,7 +126,7 @@ def append_event(path, value):
         stream.flush()
 
 
-def validate_manifest(doc):
+def validate_manifest(doc, requested_case=None):
     if set(doc) != {"schema", "trajectory", "mesh", "common_problem", "cases", "solver", "job_wall_seconds"}:
         raise ValueError("physics manifest admits predecessors only; no future target or arbitrary option")
     if doc["schema"] != "s04_e036_mechanism_inputs_v1" or set(doc["cases"]) != set(CASES):
@@ -135,20 +135,44 @@ def validate_manifest(doc):
     wall = doc["job_wall_seconds"]
     if type(wall) not in (int, float) or not math.isfinite(wall) or wall <= 0:
         raise ValueError("finite positive per-job anti-hang setting required")
+    selected = execution_cases(requested_case)
+    deferred = []
     for name, (cycle, substep) in CASES.items():
         spec = doc["cases"][name]
         if set(spec) != {"state_key", "predecessor", "admission", "network"}:
             raise ValueError("each physical case contains only qualified predecessor and fixed theta0")
         exact_metadata(spec["state_key"], state_key(doc["trajectory"], cycle, substep), "physical state")
+        absent = (spec["predecessor"] is None, spec["admission"] is None)
+        if absent[0] != absent[1]:
+            raise ValueError("deferred predecessor and admission must be paired null")
+        if absent[0]:
+            if name in selected:
+                raise ValueError("selected case requires complete predecessor and admission: " + name)
+            deferred.append(name)
+        for field in ("network",) if absent[0] else ("network", "predecessor", "admission"):
+            ref = spec[field]
+            if (not isinstance(ref, dict) or set(ref) != {"path", "sha256"}
+                    or not isinstance(ref["path"], str) or not ref["path"]
+                    or not isinstance(ref["sha256"], str) or len(ref["sha256"]) != 64
+                    or any(c not in "0123456789abcdef" for c in ref["sha256"])):
+                raise ValueError("complete hash-bound input required: " + name + "/" + field)
         if spec["network"]["sha256"] != NETWORK_SHA[name]:
             raise ValueError("canonical predecessor network changed; no replacement selection")
+    return dict(deferred_cases=deferred, execution_cases=list(selected), declared_cases=list(CASES))
 
 
-def load_problem(path, device):
+def load_problem(path, device, requested_case=None):
     path = Path(path).resolve()
     doc = read_json(path)
-    validate_manifest(doc)
+    validate_manifest(doc, requested_case)
     root = path.parent
+    # Missing input bytes reject before geometry construction or any forward.
+    # All four predetermined theta0 files remain bound even for a single case.
+    for spec in doc["cases"].values():
+        bound_file(spec["network"], root)
+        if spec["predecessor"] is not None:
+            bound_file(spec["predecessor"], root)
+            bound_file(spec["admission"], root)
     common = read_json(bound_file(doc["common_problem"], root))
     with np.load(bound_file(doc["mesh"], root), allow_pickle=False) as data:
         nodes = native_mesh_coordinates(data)
@@ -734,6 +758,7 @@ def phase_authority(args, doc, problem):
     authority, source = check_authority(args.authority, args.manifest, problem.device)
     exact_metadata(authority.get("mechanism_phase"), args.phase, "authorized mechanism phase")
     exact_metadata(authority.get("requested_case", "missing"), args.case, "authorized state partition")
+    availability = validate_manifest(doc, args.case)
     if authority.get("job_wall_seconds") != doc["job_wall_seconds"] or authority.get("cumulative_resource_limit", "missing") is not None:
         raise ValueError("explicit per-job setting and no cumulative resource cap required")
     root = Path(args.authority).resolve().parent
@@ -751,7 +776,8 @@ def phase_authority(args, doc, problem):
             raise ValueError("phase-specific input must be separately authorized and hash-bound")
         if args.phase != "target_fit" and args.targets is not None:
             raise ValueError("physics continuation must not receive target fields")
-    return dict(authority=authority, source=source, stage_a_reuse=stage_a)
+    return dict(authority=authority, source=source, stage_a_reuse=stage_a,
+                input_availability=availability)
 
 
 def execution_cases(requested_case):
@@ -777,8 +803,9 @@ def main(args):
     device = torch.device(args.device)
     # check_authority is intentionally before load_problem: a CPU or Mac caller
     # cannot accidentally instantiate even the full geometry of a science job.
-    check_authority(args.authority, args.manifest, device)
-    doc, root, problem = load_problem(args.manifest, device)
+    authority, _ = check_authority(args.authority, args.manifest, device)
+    exact_metadata(authority.get("requested_case", "missing"), args.case, "authorized state partition")
+    doc, root, problem = load_problem(args.manifest, device, requested_case=args.case)
     provenance = phase_authority(args, doc, problem)
     deadline = Deadline(doc["job_wall_seconds"], "mechanism job")
     if args.out.exists():
@@ -786,6 +813,7 @@ def main(args):
     args.out.mkdir(parents=True)
     new_json(args.out / "attempt.json", dict(schema="s04_e036_mechanism_attempt_v1", phase=args.phase,
         requested_case=args.case, declared_cases=list(CASES), execution_cases=list(execution_cases(args.case)),
+        deferred_cases=provenance["input_availability"]["deferred_cases"],
         manifest_sha256=sha256(args.manifest), provenance=provenance, command=sys.argv,
         job_wall_seconds=doc["job_wall_seconds"], cumulative_resource_limit=None, pid=os.getpid(),
         started_unix=time.time(), history_commit_count=0))
@@ -848,6 +876,7 @@ def main(args):
             new_json(args.out / f"outcome_{len(outcomes):02d}.json", outcomes[-1])
     new_json(args.out / "finished.json", dict(status="program_completed", phase=args.phase, outcomes=outcomes,
         requested_case=args.case, declared_cases=list(CASES), execution_cases=list(execution_cases(args.case)),
+        deferred_cases=provenance["input_availability"]["deferred_cases"],
         complete_four_state_program=args.case is None,
         history_commit_count=0, scientific_interpretation="conditional independent endpoints; no capacity lower bound or fatigue-life claim"))
 
@@ -862,7 +891,7 @@ if __name__ == "__main__":
     parser.add_argument("--targets", type=Path)
     parser.add_argument("--source-endpoints", type=Path)
     parser.add_argument("--case", choices=tuple(CASES),
-                        help="Execution partition only; full manifest stays fixed and authority binds this case (null for all)")
+                        help="Execute one fixed state; other predecessor/admission pairs may be null. Authority binds this case; omission requires all four inputs.")
     arguments = parser.parse_args()
     try:
         main(arguments)

@@ -29,7 +29,14 @@ of a representation limit. No phase automatically retries a failure.
 Optional `--case c1s2|c1s4|c83s2|c83s4` partitions execution across independent
 owned GPU jobs. The manifest still names all four states; authority must bind
 `requested_case` exactly (`null` means all four). Attempt/finished receipts
-record declared and executed cases. A one-state job never labels itself a
+record declared, executed, and deferred cases. For an unexecuted case, its
+`predecessor` and `admission` may both be `null` until the native F1 predecessor
+has been exported. Its physical key and canonical network remain declared;
+all four canonical network files are hash-checked before geometry construction.
+The selected case requires both predecessor files, their actual SHA-bound bytes,
+and the existing admission checks. Omitting `--case` requires all four complete
+input pairs; any missing pair/file is rejected before a network forward. An
+authority for one case cannot authorize an all-case job. A one-state job never labels itself a
 complete four-state program. All four predetermined results, including failures,
 must be gathered before an overall interpretation; no outcome-driven partition
 selection is authorized by this interface.
@@ -64,6 +71,9 @@ The physics manifest has **exactly** these keys:
 
 The illustrative strings above are not runnable defaults. Each `{}` file
 reference is exactly `{path,sha256}`. `state_key` uses `window_inputs.state_key`.
+Only an unexecuted predecessor/admission pair may be `null`; a half-populated
+pair is invalid. Each newly completed manifest is separately hash-bound by its
+execution authority, and earlier manifests/receipts remain immutable.
 `solver` is an object, exactly the reviewed `SOLVER` constant, including a null
 `cumulative_resource_limit`. No future target reference is permitted in this
 manifest. The four network hashes are fixed in `NETWORK_SHA`: canonical

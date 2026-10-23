@@ -40,7 +40,7 @@ from optim import get_optimizer
 from pff_model import PFFModel
 from q4_quadrature import q4_shape_data
 from trial_fatigue_coupling import PhysicalStepOptimizerBudget, TrialFatigueNotConverged, solve_trial_fatigue_step
-from window_inputs import CASES, LOADS, bound_file, load_case, load_manifest, optimizer_work, read_json, sha256, state_key
+from window_inputs import CASES, LOADS, bound_file, execution_cases, load_case, load_manifest, optimizer_work, read_json, sha256, state_key
 from stage_a_reuse import validate_stage_a_reuse
 
 
@@ -467,7 +467,11 @@ def run_step(problem, field, old, key, arm, directory, caps, total_deadline, pro
 def main(args):
     device = torch.device(args.device)
     authority, source_identity = check_authority(args.authority, args.manifest, device)
-    doc, root, nodes, cells, common = load_manifest(args.manifest)
+    requested_case = args.case
+    selected = execution_cases(requested_case)
+    if "requested_case" not in authority or authority["requested_case"] != requested_case:
+        raise ValueError("authority requested_case must explicitly match --case (null for all)")
+    doc, root, nodes, cells, common = load_manifest(args.manifest, requested_case=requested_case)
     if args.out.exists():
         raise FileExistsError("a fresh output directory is mandatory; resume is unsupported")
     if shutil.disk_usage(args.out.parent).free < 20 * 1024 ** 3:
@@ -485,6 +489,10 @@ def main(args):
     receipt = dict(schema="s04_e036_paired_run_v1", started_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
                    host=platform.node(), pid=os.getpid(), command=sys.argv, authority=authority,
                    manifest_sha256=sha256(args.manifest), budget=doc["budget"],
+                   requested_case=requested_case, declared_cases=list(CASES), execution_cases=list(selected),
+                   deferred_cases=[name for name in CASES if name not in selected],
+                   missing_unselected_predecessors=[name for name in CASES if doc["cases"][name]["predecessor"] is None],
+                   all_four_cases_selected=requested_case is None,
                    cumulative_resource_limit=None,
                    stage_a_reuse=reused_stage_a,
                    **source_identity,
@@ -501,7 +509,8 @@ def main(args):
             stream.write(json.dumps(row, allow_nan=False) + "\n")
             stream.flush()
             os.fsync(stream.fileno())
-    for name, (cycle, substeps) in CASES.items():
+    for name in selected:
+        cycle, substeps = CASES[name]
         total.check()
         folder = args.out / name
         folder.mkdir()
@@ -563,6 +572,11 @@ def main(args):
                              updates=loaded["metadata"]["rprop_updates"], optimizer_work=expected_work))
                 write_json(step_dir / "continuation_source.json", parent)
     write_json(args.out / "outcomes.json", rows)
+    write_json(args.out / "finished.json", dict(status="selected_cases_finished", outcomes=rows,
+        requested_case=requested_case, declared_cases=list(CASES), execution_cases=list(selected),
+        deferred_cases=[name for name in CASES if name not in selected],
+        all_four_cases_selected=requested_case is None,
+        interpretation="execution coverage only; acceptance is recorded per arm and physical step"))
 
 
 if __name__ == "__main__":
@@ -571,4 +585,6 @@ if __name__ == "__main__":
     parser.add_argument("--authority", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--case", choices=tuple(CASES),
+                        help="Run one declared case only; authority requested_case must match (null for all)")
     main(parser.parse_args())
