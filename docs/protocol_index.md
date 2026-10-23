@@ -17,18 +17,19 @@ For Taobo GPU launch or monitoring discipline, start with:
 - `docs/taobo_gpu_submission_protocol.md`
 - `docs/git_workflow.md`
 
-For Codex agent execution rules, use the local skill:
+For strict PIDL/FEM evidence-package execution, use:
 
-- `/Users/wenxiaofang/.codex/skills/pidl-run-analysis-workflow/SKILL.md`
+- `docs/skills/pidl-run-analysis-workflow/SKILL.md`
 
 For any longitudinal real-road natural-evolution dataset, start with:
 
 - `docs/real_road_natural_evolution_episode_policy_20260806.md`
 
-The Codex skill is an agent workflow: folder layout, provenance capture,
-download checks, analysis package generation and decision output. The docs
-protocol is the shared scientific analysis protocol: what evidence a PIDL/FEM
-case must support before it can be used.
+The skill applies the complete package only to frozen strict-alignment or
+claim-bearing cases, or when the user explicitly asks. Ordinary PIDL runs use
+the research core, relevant adapter, producer protocol, compact receipt, and
+fast result snapshot. The docs protocol remains the shared scientific analysis
+protocol: what evidence a PIDL/FEM case must support before it can be used.
 
 ## Current Entrypoints
 
@@ -37,7 +38,7 @@ case must support before it can be used.
 | `docs/pidl_fem_diagnostic_analysis_protocol_2026-06-21.md` | Current | Case-level PIDL/FEM evidence analysis | Uses schedule-dependent state mapping. |
 | `docs/taobo_gpu_submission_protocol.md` | Current | Taobo GPU launch, sync and monitoring discipline | Operational protocol, not analysis evidence. |
 | `docs/git_workflow.md` | Current | Mac/Windows/Taobo source-control workflow | Shared code-truth and sync rules. |
-| `/Users/wenxiaofang/.codex/skills/pidl-run-analysis-workflow/SKILL.md` | Current local Codex skill | Agent execution workflow | Local to this Mac, not part of the GitHub repo. |
+| `docs/skills/pidl-run-analysis-workflow/SKILL.md` | Current | Strict PIDL/FEM evidence-package workflow | Git-tracked source; installed locally as the same skill. |
 | `docs/real_road_natural_evolution_episode_policy_20260806.md` | Current | Episode construction, intervention/reset boundaries, and terminal censoring for real-road trajectories | Maintenance is a boundary, not a default feature; intervention studies require a separate track. |
 
 ## Schedule And Alignment History

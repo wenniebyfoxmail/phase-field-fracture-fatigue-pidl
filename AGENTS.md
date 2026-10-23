@@ -102,186 +102,93 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - Follow `docs/task_worktree_archive_protocol.md` for task naming, commit units,
   producer handoff, integration, and archive rules.
 
-## Research Figure Documentation
+## Research Result Snapshots
 
-- When reporting a computed or measured result in Obsidian, copy only the
-  decision-facing rendered PNG(s) to `attachments/<storyline>/<date>/` and
-  embed them below the result in the corresponding task note with
-  `![[figure.png]]`. Add a short source/Run caption and verify the embed
-  resolves; keep raw outputs in the repository or producer archive.
+The installed `research-decision-core` owns the research workflow and visual
+interpretation. This entry keeps only the cross-machine result policy.
 
-- Every method-validation Experiment with computed or measured outcomes must
-  include at least one decision-facing visualization made from the exact scored
-  outputs. It must show the method against the simplest comparator and make the
-  primary criterion visible. Missing visualization means the evidence package
-  is incomplete; it does not change the frozen scientific gate. Follow the
-  `Show And Explain The Evidence` section of `research-decision-core` and
-  the relevant domain adapter.
-- Every claim-bearing figure set must have one `README_analysis.md` that states
-  the scientific question, evidence source, intended reading order, what each
-  figure shows, the cross-figure interpretation, the allowed conclusion, the
-  blocked conclusion, and the storyline impact. Use
-  `docs/templates/research_analysis_readme.md`.
-- For any research figure work, read
-  `docs/skills/research-figure-workflow/SKILL.md`. It owns figure presentation
-  and the short plain-language explanation of what a displayed figure supports.
-- A same-stem `.md` sidecar is required only when a figure will be cited,
-  submitted, handed off, or read independently of its figure set. Multiple
-  render formats of the same figure may share that sidecar. Intermediate
-  diagnostic figures may be covered by the figure-set `README_analysis.md`.
-- Prefer generating tables and provenance fields from the analysis script so
-  values cannot drift. Inspect rendered figures for blank panels, wrong state
-  mapping, flipped coordinates, misleading colour limits, and unreadable labels.
+- At a route decision or interpretable computed/measured result, make one fast
+  decision visual from already evaluated or retrieved output. It adds no new
+  computation, review, or full analysis package. Copy the rendered PNG to
+  `attachments/<storyline>/<date>/`, embed it below the result in the existing
+  Obsidian task note, and add a short source/Run caption plus a plain-language
+  `See` and `Therefore` interpretation. Keep raw output in the repository or
+  producer archive.
+- A second visual is useful only when it answers another necessary decision.
+  Pure documentation/configuration work or an uninterpretable output does not
+  require a figure.
+- A complete figure set, CSV package, `README_analysis.md`, or standalone
+  sidecar is required only for strict-alignment evidence, a claim-bearing
+  result, citation/submission/handoff/independent reading, or an explicit user
+  request. Daily or exploratory snapshots may stop at the visual, concise note,
+  compact Run receipt, and raw-output pointer.
+- When a figure is made, inspect it for blank panels, wrong state mapping,
+  flipped coordinates, misleading colour limits, and unreadable labels. This
+  check must not create a new computation or review round.
 
 ## Research Track Documentation
 
-- New and actively touched research uses the four-level structure defined in
-  `docs/research/INDEX.md`: `Storyline -> Experiment -> Run -> Evidence` for
-  formal, claim-bearing work. A diagnostic exploration may use a task note or
-  draft Experiment without pretending its results are confirmatory.
-- Each formal claim-changing Experiment must have one primary Storyline, an immutable
-  ID, a folder, a frozen protocol revision, and one `experiment.md`. A change to
-  the hypothesis, data semantics, holdout, comparator, primary metric, threshold,
-  or gate requires a dated amendment; do not rewrite a used
-  protocol silently.
-- Each active multi-step research goal must keep a three-to-six-step Decision
-  Ladder in its `experiment.md` or task note: purpose/uncertainty, decision-scale
-  action and evidence asset, advance condition, and redirect condition. Mark
-  one active `D#` and one next step. D steps organise choices; they are not
-  extra scientific gates, Runs, or ledger objects. Add them when work is
-  created or next touched; do not bulk-retrofit historical records.
-- At a material route adjustment, use the core's first-principles design:
-  goal, governing mechanism/information, binding bottleneck, competing
-  hypotheses and a validation large enough to choose the route. Do not impose
-  a micro-test staircase or reduce the question to the cheapest available task.
-  Small checks resolve actual blockers; coherent redesigns and direct
-  decision-scale comparisons are allowed within existing authority and budget.
-- Before substantive research or implementation work, complete the active
-  ladder's D1 source/overlap/reuse screen: search the relevant local research
-  records, Obsidian notes, docs, and likely code entrypoints. State the concise
-  reuse decision (`reuse | continue | fork | redirect | stop`) in the task
-  record. Keep the search proportionate; routine edits do not require a broad
-  repository audit.
-- Each actual producer execution has a fresh Run ID and a compact tracked run
-  receipt. Seeds, arms, retries, failed launches, and hardware reruns are Runs;
-  a changed scientific design is a new Experiment.
-- Raw data, checkpoints, logs, and generated payloads live under
-  `local_archive/experiments/<experiment_id>/` or an external producer store.
-  Git tracks code, experiment records, compact receipts, small claim-critical
-  evidence, and pointers to raw assets.
-- `docs/research_frontier.md`, `docs/research_storylines.md`, existing track
-  documents, and registries are legacy evidence. Do not bulk-move, rewrite, or
-  delete them. Migrate an active item only when it is next touched.
+- The core owns local reuse, the Decision Ladder, first-principles route design,
+  stage-appropriate criteria, progress summaries, and concise Obsidian
+  milestones. Run that shared workflow once; domain adapters add only
+  claim-specific scientific semantics.
+- Formal, claim-bearing work uses `Storyline -> Experiment -> Run -> Evidence`
+  under `docs/research/INDEX.md`. It keeps a frozen protocol revision and a
+  dated amendment for changed hypotheses, data boundaries, comparators, primary
+  criteria, or gates. Diagnostic exploration may use a task note without being
+  relabelled as confirmation.
+- Every actual producer execution has a fresh Run ID and compact receipt:
+  producer, code identity, command/config, output/log/archive locations,
+  retrieval route, and start/terminal status. Git tracks source, small receipts
+  and evidence pointers; raw payloads stay in a local archive or producer store.
+- Legacy registries remain evidence, not mandatory entrypoints. Migrate an
+  active record only when it is next touched.
 
-## Research Progress Updates
+## Research Updates And Obsidian
 
-When a research conversation has made a substantive move (for example, an
-analysis, design choice, implementation, run, review, or interpreted result),
-include this three-line plain-language summary in the user-facing update or
-handoff:
+For substantive progress, follow the core's short `目的 / 本轮 / 结论` update.
+At a chosen route or interpretable attempt result, append one 2–4 line
+milestone to the existing Obsidian task note: result/decision, evidence pointer,
+active D step, and next action. Update its single Roadmap link and embed the
+fast result visual when one exists. Do not create one note per turn or copy a
+chat transcript. Obsidian is the decision index; formal evidence records remain
+the scientific source of truth.
 
-- **目的：** the research question or decision being advanced.
-- **本轮：** the material work completed in this turn.
-- **结论：** the evidence-backed result and resulting next state.
+## Research Modes And Boundaries
 
-Keep each line to one short sentence. Omit the block for ordinary discussion,
-clarifying questions, routine file inspection, and unchanged quiet monitoring;
-do not invent a conclusion when there is only preparation or visibility.
+The core is the only generic research workflow. Select one mode in the existing
+task record; the modes are alternatives, not a compulsory ladder.
 
-## Obsidian Research Milestones
+- **Daily iteration:** implement, repair, or make an exploratory comparison
+  within the current route. Run the fixed task benchmark and report actual
+  engineering/research progress; it is not a new scientific claim by default.
+- **Scientific validation:** answer the current research decision with the
+  core's exploration or formal-test contract. A formal test freezes its claim,
+  comparator, criterion, evidence, budget, and stop rule; formal status does
+  not create a review by default.
+- **Formal review:** answer a user-requested, submission-facing, or explicitly
+  contracted review question. It reviews defined material and does not itself
+  require a new run.
 
-- For each research task, keep one concise living Obsidian note under the
-  appropriate `01 Research Tracks/` topic; reuse it across chats rather than
-  copying transcripts or making a note per turn.
-- Sync only when a concrete route is chosen or an attempt has a clear outcome.
-  Each update is normally 2–4 short lines: decision/result, an evidence pointer,
-  and next action. Keep detailed methods, metrics, logs and raw outputs in the
-  repository or producer archive.
-- Update exactly one basename wikilink and brief status phrase in
-  `01 Research Tracks/000 research note/Road crack prediction/0 Roadmap.md`.
-  Verify that the link and any selected figure embed resolve. Obsidian is the
-  decision index; `Storyline -> Experiment -> Run -> Evidence` remains the
-  scientific source of truth.
+A changed commit, completed run, benchmark pass, or desire for more confidence
+never upgrades a mode automatically. A result may recommend another mode, but
+only the user or an already-authorised task contract may select it. Do not
+relabel seen exploratory data as prospective confirmation.
 
-## Exploration And Formal Evidence
+Use one fixed task benchmark by default: pass -> deliver; fail -> repair and
+rerun only the failed item; reuse unaffected passing evidence. Documentation,
+wording, path, or metadata changes need only a direct consistency check. Do not
+add full regression, history reruns, smoke ladders, stress tests, ablations, or
+independent review unless the user explicitly asks. The core's bounded-task
+authority covers mechanical checks within the approved envelope; it never
+changes scientific, data, budget, producer, or stop/retry boundaries.
 
-- Classify by intended use, not model or run size. Exploration uses development
-  or synthetic data to find a signal, bottleneck, or repair; it cannot access a
-  sealed holdout or establish a formal scientific claim. Before an exploratory
-  attempt, state its question, simplest useful comparator, expected observable,
-  resource cap, and next decision. Run only the fixed task benchmark; independent
-  review is not a default prerequisite.
-- Exploratory acceptance is deliberately permissive: a measured directional or
-  component gain, a working capability, or a diagnostic that selects a concrete
-  repair can justify another bounded attempt. Show the actual result and its
-  uncertainty or limitations. Do not apply a downstream final-performance
-  threshold to an early prototype or kill a route merely because its first
-  attempt misses that threshold.
-- Before using a candidate for a formal claim, freeze a prospective protocol,
-  candidate, evaluation units, comparator, and one primary criterion. Formal
-  status does not add automatic independent review. Exploration cannot be promoted
-  retroactively into confirmation after its results have been seen.
-- Estimate GPU cost as GPU count times wall-clock hours. A planned single run
-  of at least 8 GPU-hours triggers a brief capacity/storage/budget check. At
-  least 24 GPU-hours cumulative for one exploratory question triggers a
-  direction review before further runs. Neither is an extra scientific review.
-  Shared-GPU conflict, insufficient storage, or protected data needs its own
-  check regardless of GPU-hours.
-
-## Research Readiness Gates
-
-### 只跑固定基准，通过即交付（用户规则，2026-10-22）
-
-- Only the current task's fixed benchmark runs by default. Reuse its command,
-  representative inputs, comparator and expected result in the existing record.
-- No automatic full regression, historical reruns, smoke ladders, stress tests,
-  ablations or independent reviews. Add these only when the user explicitly asks.
-- Documentation, wording, path and metadata edits need only direct consistency
-  checks, not scientific runs. If no benchmark exists, use one representative
-  end-to-end case instead of building a new suite.
-- Pass -> deliver and advance. Fail -> repair and rerun the failed item; reuse
-  unaffected passing results. Do not expand validation after a pass.
-- This replaces older generic test/review gates, including agent-written card
-  requirements. Preserve expressly requested reviews, scientific criteria,
-  execution authority, budgets, protected data and shared-machine safety.
-
-### Bounded Task Authority (user update, 2026-10-20)
-
-Use `research-decision-core`'s **一次授权，机械检查自动完成**: approve a
-task envelope once; agents complete its implementation, fixed benchmark and
-mechanical admission without serial human approvals. Prospectively replace
-older administrative gates in active cards, preserving scientific/data/budget/
-stop limits and signed history. This governance update itself launches no run;
-escalate a genuine authority change once, not every resolved mechanical field.
-
-- **Code Ready:** reuse existing code and the fixed task benchmark. Record its
-  result against the task code/config; a pass is sufficient for engineering
-  readiness. Independent review is required only when the user requests it,
-  not automatically for formal work or a changed commit.
-- **Run Ready:** every producer execution uses a fresh Run ID and records the
-  producer alias/hostname, commit or immutable snapshot, dirty status, command,
-  runtime, GPU or scheduler identity, PID/session/job, output/archive/log paths,
-  retrieval route, and start time. Starting successfully is execution evidence,
-  not scientific evidence.
-- **Evidence Ready:** an Experiment closes only after retrieval status is
-  explicit, its predeclared minimum evidence exists, an independent evidence
-  review is complete if explicitly requested, the scientific verdict is separated from
-  execution status, the minimum decision visualization exists for computed or
-  measured method validation, and the Storyline receives one dated claim-impact
-  entry. Require `README_analysis.md` for that claim-bearing figure set.
-- **Gate design:** include only validity failures that make the result
-  uninterpretable. Use one smallest decisive primary criterion for the target
-  claim; a conjunction is allowed only when each clause is independently
-  necessary. Secondary diagnostics explain but never vote, rescue a failure, or
-  overturn a pass. Thresholds need an ex-ante physical/decision, uncertainty,
-  or meaningful-baseline rationale. A gate may be revised before results with a
-  dated amendment. After results are seen, preserve the old verdict and use
-  a new revision or Experiment.
-- **Hashing:** hashes are not routine paperwork. Git-tracked content uses its
-  commit identity. Ordinary runs use paths, receipts, file counts/sizes, and
-  retrieval verification. Freeze one hash only when an external dataset/holdout
-  needs an identity lock or when a genuinely breakthrough result is promoted to
-  a durable canonical evidence package.
+Estimate GPU cost as GPU count times wall-clock hours. A planned single run of
+at least 8 GPU-hours needs a brief capacity/storage/budget check; at least 24
+GPU-hours cumulative for one exploratory question needs a direction check before
+further runs. Neither is an extra scientific review. Shared-GPU conflicts,
+insufficient storage, or protected data retain their own checks regardless of
+GPU-hours.
 
 ## Where Details Live
 
@@ -327,6 +234,10 @@ escalate a genuine authority change once, not every resolved mechanical field.
   it delegates the common decision contract to the road-fracture gate.
 - `docs/skills/research-figure-workflow/SKILL.md` — planning, visual QA,
   captions, and the compact user-facing interpretation of research figures.
+- `docs/skills/pidl-run-analysis-workflow/SKILL.md` — strict-alignment or
+  explicitly requested full PIDL/FEM evidence packages. Ordinary PIDL runs use
+  the core, relevant domain adapter, producer protocol, compact Run receipt,
+  and fast result snapshot instead.
 - `docs/skills/project_skill_inventory_2026-07-06.md` — current map from
   project skills/workflows to code entrypoints and producer machines.
 - `docs/skills/paper-ledger-to-paper/SKILL.md` — use for evolving mechanism

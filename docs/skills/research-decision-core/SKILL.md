@@ -148,7 +148,26 @@ finished results intact when future steps change. A changed formal question,
 data boundary, comparator, or primary criterion needs a prospective amendment
 or a new experiment under the project's rules.
 
-## Choose The Evidence Stage
+## Choose Work Mode Once
+
+Record one mode in the existing owner record before work starts:
+
+- **Daily iteration:** implement or repair within the current route, run the
+  fixed task benchmark, and report the engineering or research progress. It is
+  not a new scientific claim by default.
+- **Scientific validation:** obtain evidence for the current research decision,
+  using the exploration or formal-test contract below as appropriate. It does
+  not create a review by default.
+- **Formal review:** answer a user-requested, submission-facing, or explicitly
+  contracted review question. It does not itself require a new run.
+
+These are selectable modes, not automatic stages. A result may recommend a mode
+change, but an agent must not upgrade a task because a commit changed, a
+benchmark passed, a run finished, or more confidence would be desirable. The
+user or an already-authorised task contract selects and records any change.
+Formal scientific testing is scientific validation, not formal review.
+
+## Scientific Validation: Choose The Evidence Stage
 
 **Exploration:** state the question, simplest useful comparator, observable,
 resource cap, and next decision. Run the fixed task benchmark and preserve an
@@ -230,6 +249,10 @@ cumulative work is reducing the central gap, not just producing completed
 subtasks. Park if no action is currently available; stop if the route is invalid,
 its ceiling inadequate, or budget spent.
 
+A result may recommend the next action, but it does not by itself authorise a
+new run, retry, data access, budget, or mode change. Start one only when the
+existing approved task envelope explicitly covers it or the user authorises it.
+
 When useful, follow [the repair guide](references/solution_oriented_outcomes.md).
 For a requested solution-search sub-agent, give the goal, bottleneck evidence,
 baseline, assumptions open to redesign, and budget; use `research-evidence-workflow` for
@@ -241,13 +264,20 @@ effort; record the actual choice in the handoff.
 
 ## Show And Explain The Evidence
 
-For computed or measured method results, display at least one decision-facing
-visual from the exact evaluated outputs. Show the simplest comparator, relevant
-variation, units and evidence scope; use a stated example-selection rule.
-For CV show predictions on the evaluated images; for fields show aligned
-reference, prediction and error with comparable scales; for forecasting show
-origin-to-horizon trajectories. A non-numerical result may use a compact
-evidence/decision table or diagram where useful.
+At a clear result or route decision, make one fast decision visual from already
+evaluated or retrieved output when it is interpretable. This presents existing
+evidence; it must not trigger new computation, training, simulation, data
+access, analysis sweeps, or review. A second visual is useful only when it
+answers another necessary decision.
+
+For an interpretable computed or measured method result, show the simplest
+comparator, relevant variation, units and evidence scope; use a stated
+example-selection rule. For CV show predictions on the evaluated images; for
+fields show aligned reference, prediction and error with comparable scales; for
+forecasting show origin-to-horizon trajectories. A non-numerical result may use
+a compact evidence/decision table or diagram where useful. Pure
+documentation/configuration work or an uninterpretable output does not require
+a figure.
 
 Immediately below the visual, use two or three short lines in the user's language:
 
@@ -256,9 +286,11 @@ Immediately below the visual, use two or three short lines in the user's languag
 - **Does not show:** only when a material over-interpretation is likely.
 
 Explain practical meaning rather than repeating metric labels or the caption.
-Use `research-figure-workflow` for figure production. Missing visuals are a
-presentation gap, not a scientific failure; a visually attractive result cannot
-override the measured criterion.
+For a fast decision snapshot, use only `research-figure-workflow`'s source-trace,
+basic visual-sanity, and See/Therefore rules. Its planning, caption, manuscript,
+and handoff sections apply only to claim-bearing or standalone figure work.
+Missing visuals are a presentation gap, not a scientific failure; a visually
+attractive result cannot override the measured criterion.
 
 ## Update People And Records
 
@@ -273,6 +305,11 @@ pointer, active D step and next action. Embed the selected rendered figure with
 its short interpretation and verify the image/link resolves. Keep raw outputs
 in the project's evidence store; use project-specific vault paths. If no vault
 is configured, use the existing project note rather than inventing a directory.
+
+This fast visual and its two-to-three-line interpretation are the normal result
+snapshot. A full figure set, analysis README, sidecar, or archival package is
+required only when the result is claim-bearing, must stand alone for citation,
+submission or handoff, or the user explicitly asks.
 
 For an exploratory task, a short plan/record suffices:
 
