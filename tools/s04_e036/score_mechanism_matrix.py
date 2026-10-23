@@ -393,6 +393,10 @@ def main(args):
     device = torch.device(args.device)
     authority, source = runner.check_authority(args.authority, args.inventory, device)
     doc = read_json(args.inventory); validate_inventory(doc)
+    requested_case = getattr(args, "case", None)
+    selected_cases = runner.execution_cases(requested_case)
+    if authority.get("requested_case") != requested_case:
+        raise ValueError("score authority requested_case differs from --case")
     if (authority.get("mechanism_phase") != "score" or authority.get("job_wall_seconds") != doc["job_wall_seconds"]
             or authority.get("cumulative_resource_limit", "missing") is not None):
         raise ValueError("explicit score phase and finite per-job authority required")
@@ -405,7 +409,7 @@ def main(args):
     torch.use_deterministic_algorithms(True)
     physics_path = bound_file(doc["physics_manifest"], root)
     target_path = bound_file(doc["target_manifest"], root)
-    physics, physics_root, problem = runner.load_problem(physics_path, device)
+    physics, physics_root, problem = runner.load_problem(physics_path, device, requested_case=requested_case)
     targets = read_json(target_path)
     if (set(targets) != {"schema", "physics_manifest", "targets"} or targets["schema"] != "s04_e036_mechanism_targets_v1"
             or set(targets["targets"]) != set(CASES)
@@ -420,16 +424,18 @@ def main(args):
     mass.index_add_(0, problem.cells.reshape(-1), torch.einsum("eg,gn->en", problem.native_weights, problem.native_shape).reshape(-1))
     report = dict(schema="s04_e036_mechanism_scores_v1", inventory_sha256=sha256(args.inventory),
                   physics_manifest_sha256=sha256(physics_path), target_manifest_sha256=sha256(target_path),
-                  source=source, stage_a_reuse=reuse, score_implementation_lock=authority["implementation_lock"], states={})
+                  source=source, stage_a_reuse=reuse, score_implementation_lock=authority["implementation_lock"],
+                  requested_case=requested_case, execution_cases=list(selected_cases), states={})
     fields = {}
     for name in CASES:
         deadline.check()
         spec, case = physics["cases"][name], doc["cases"][name]
-        if targets["targets"][name] is None:
-            absent = lambda: dict(status="unscored_target_unavailable", endpoint=None, curve=[])
+        if name not in selected_cases or targets["targets"][name] is None:
+            missing_reason = "case deferred by explicit partition" if name not in selected_cases else "predeclared F1 target unavailable"
+            absent = lambda: dict(status="unscored_case_deferred" if name not in selected_cases else "unscored_target_unavailable", endpoint=None, curve=[])
             state = dict(target=None, matrix={arm: absent() for arm in ARMS}, target_fit=absent(),
                          C0_continuation=absent(), supplied_inputs=case,
-                         factorial=dict(status="unavailable", reason="predeclared F1 target unavailable"))
+                         factorial=dict(status="unavailable", reason=missing_reason))
             report["states"][name], fields[name] = state, {}
             runner.new_json(args.out / (name + "_scores.json"), state)
             continue
@@ -475,4 +481,5 @@ if __name__ == "__main__":
     for flag in ("inventory", "authority", "out"):
         parser.add_argument("--" + flag, type=Path, required=True)
     parser.add_argument("--device", required=True)
+    parser.add_argument("--case", choices=tuple(CASES), help="Score one declared case using its real production manifest; retain other cases as deferred.")
     main(parser.parse_args())

@@ -127,3 +127,19 @@ optimizer update or FEM solve. Expected: known constant-d J, zero raw-energy gap
 under unchanged displacement, nonzero active/reaction gaps, correct effect sign,
 missing-state/arm aggregation suppression, and all PNG/PDF/sidecars. Existing
 runner tests are reused, not rerun; no added regression/smoke/review ladder.
+
+## Actual case partitions (2026-10-23)
+
+Use `--case c1s2` (or another declared case) with an authority carrying the same
+`requested_case`. This loads that case's actual production manifest, even when
+unselected predecessors are explicitly null. All four output slots remain
+present; unselected cases are marked deferred and cannot enter an overall
+four-state effect. The target manifest must still be the exact one bound by
+that case's fit attempt. Different production or target manifests are never
+rewritten into a fictitious common attempt. A postprocessing source snapshot
+may replace only this scorer; retain the original 68291a0a production bytes of
+every dependency, including `score_paired_windows.py`, for its existing checks.
+
+This change only routes the existing scoring body. Direct AST comparison with
+68291a0a confirms all ten scoring, replay, reduction and plotting helpers are
+unchanged; no scientific benchmark was rerun for this control-only change.
