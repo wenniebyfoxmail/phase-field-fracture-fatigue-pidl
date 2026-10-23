@@ -435,3 +435,8 @@ R022已通过U=.29（第262外层，Ru9.7433940241e-5、PF3.2266392896e-7、最�
 新源码：box_phase_ray_progress.m、unlimited_mechanical_newton.m、run_manav_static_fem_progress.m及对应progress控制器/有限衔接脚本。只做直接代码一致性/语法检查，实际验证是上述主基准，无额外测试门。R024/R025仍保留4线程/16GiB主机RSS/20GiB CUDA/10GiB输出/本地分析2GiB限制；无时长/CPU/GPU小时/迭代次数预算。新authority与流程在parent archive progress_resume_20261023/，R022及其失败费用原样保留。
 
 现场17:11:22Z：CITPC12/AD\xw436无MATLAB，磁盘57,876,934,656bytes，native2098dc9不变，新R024目录不存在。新启动回执待实际执行。
+
+
+R024实际启动：2026-10-23T17:17:22.1008539Z，CITPC12 MATLAB PID16200，supervisor44724，源码30d81d58ff1cf1e622128ea5a39320caca800479；无deadline/iterationbudget。初次日志已见从R022前缀恢复成功，U=.33进入stag13（已越过旧stag9 PF500失败位置），内层KKT9.98210059e-7已达原标准，Ru1.61531355e-4尚不达外层接受。当前16/24态，未宣称U=.33合格。
+
+本次有限衔接进程PID62975已运行，只处理R024→完整24态原保存量核验→条件R025→配对分析；现场状态在parent archive progress_resume_20261023/pipeline_state.json，失败/未知须保留诊断，不能追认。最新快照2026-10-23T17:19:57.591928+00:00。
