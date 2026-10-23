@@ -1,5 +1,11 @@
 # Agent Rules for `upload code/`
 
+## External communication
+
+Follow the current global `~/.codex/AGENTS.md` for every external message,
+form, publication, and file send, including a ChatGPT Pro review. It is the
+sole approval policy; no project-local exception applies.
+
 This file is the cross-agent entry point for the shared GitHub repo. It applies to Codex, Claude, and any other agent working from this repository.
 
 ## Non-Negotiable Machine Roles
@@ -63,15 +69,10 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 
 ## Research Figure Documentation
 
-- Every newly generated research figure (`.png`, `.pdf`, `.svg`, `.jpg`, or
-  `.jpeg`) must have a same-stem `.md` sidecar in the same directory. Multiple
-  render formats of the same figure may share that one sidecar.
-- The sidecar must explain the figure question, exact data provenance, how to
-  read axes/colours/lines, every panel, the main numerical takeaway, limitations,
-  and the claim boundary. Use `docs/templates/research_figure_sidecar.md`.
-- Prefer generating the sidecar from the plotting script so values cannot drift
-  from the rendered figure. Before handoff, run
-  `python source/validate_figure_sidecars.py <figure-directory>`.
+The core and selected domain adapter own when a visual is needed and how it is
+interpreted. A same-stem `.md` sidecar is needed only for a cited, submitted,
+handed-off, or independently read figure set; use
+`docs/templates/research_figure_sidecar.md` when it exists.
 
 ## Research Track Documentation
 
@@ -100,16 +101,15 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - `docs/research_frontier.md` — current research frontier.
 - `docs/handovers/` — cross-machine task inbox/outbox.
 
-## Project-Local Skills
+## Research Workflow And Skills
 
-- `docs/skills/pidl-experiment-gate/SKILL.md` — use before proposing,
-  launching, reviewing, cleaning, or registering any PIDL/FEM/surrogate
-  experiment. It enforces the five-question experiment gate and prevents orphan
-  runs.
-- `docs/skills/project_skill_inventory_2026-07-06.md` — current map from
-  project skills/workflows to code entrypoints and producer machines.
-- `docs/skills/paper-ledger-to-paper/SKILL.md` — use for evolving mechanism
-  result sections before compressing them into paper prose.
+- Read the installed `research-decision-core` and its local
+  `references/agent_bootstrap.md` for current routing. It owns research process;
+  this file owns project machine, repository, and storage rules.
+- The tracked canonical sources are `skills/<skill-name>/`; installed skills
+  resolve from them. `docs/skills/` is retired and must not route current work.
+- Use the installed `paper-ledger-to-paper` skill for evolving mechanism result
+  sections before compressing them into paper prose.
 - `docs/aligned_result_registry_2026-07-06.md` — daily curated evidence
   registry after strict-setting cleanup; use the large
   `docs/pidl_experiment_inventory.md` only as the full audit ledger.
