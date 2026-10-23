@@ -405,3 +405,9 @@ R020已启动：07:08:17.263Z，CITPC12 MATLAB34280/supervisor46232，实际cap5
 仅运行固定主基准，不重跑旧fixtures、不新设独立复审。R022现场CITPC12/AD\\xw436、无MATLAB进程、磁盘58,246,828,032bytes、native2098dc9、新目录不存在，已只读核验；实际启动状态随后记入R022。归档authority: parent local_archive/experiments/S04-E035/descent_no_compute_cap_20261023/authority.json。
 
 R022实际15:36:02.6073106Z在CITPC12启动MATLAB23108/supervisor43372，运行源2b16b779。已核验launch.json无限时，正在完整FEM；尚无U=.4或PIDL结论。
+
+### 本次有限计算流程已实际衔接
+
+2026-10-23T15:52:58Z起，本机流程PID51733（continue_manav_static_unlimited.py，commit f9c0ef3659402197568e9ace4d0365f7916272ed）只处理R022→逐文件取回SHA256→原保存量24态核验→条件R023→取回/原配对分析。不是HQ或周期托管；不循环重试科学任务。状态/日志在descent_no_compute_cap_20261023/{pipeline_state.json,pipeline.log,pipeline_dispatch.json}。Mac仅监测/哈希/2GiB数组分析，原Windows计算资源不变。真实数值失败或控制异常记录后停止流程；SSH丢失不能推断worker已退出。
+
+最新15:55:18Z快照：12/24已保存加载态至U=.28；U=.29外层69轮，Ru2.39385968e-4、相场KKT3.26586542e-8，尚未接受当前加载态。无完整FEM、无PIDL结果结论。R023最新本地prepared源f9c0ef36，112文件/4,391,965bytes，仍待完整FEM资格与现场GPU资源检查。
