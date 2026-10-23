@@ -1,4 +1,4 @@
-"""Continue only approved R024 -> qualified R027 -> saved-field comparison.
+"""Continue only approved R024 -> qualified R028 -> saved-field comparison.
 
 Finite task orchestration, not a recurring monitor. Never retries a producer.
 No PDE assembly or training is entered on this Mac.
@@ -16,7 +16,7 @@ import traceback
 
 WORK=Path(__file__).resolve().parents[2]
 CASE=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E035')
-FLOW=CASE/'pidl_desktop_admission_20261023'
+FLOW=CASE/'pidl_cuda_identity_20261023'
 PYTHON='/Users/wenxiaofang/miniconda3/bin/python3'
 
 
@@ -60,7 +60,7 @@ def analyze(label, arguments):
 
 def main():
     with (FLOW/'pipeline_claim.json').open('x') as f:
-        json.dump(dict(pid=os.getpid(),utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),scope='R024 -> verified24 -> R027 -> paired saved-field analysis',unlimited_compute=True),f)
+        json.dump(dict(pid=os.getpid(),utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),scope='R024 -> verified24 -> R028 -> paired saved-field analysis',unlimited_compute=True),f)
     fem=controller('fem');nn=controller('pidl')
     # Reuse already passed R024 retrieval/reference checks, no repeat solve/validator.
     reference_path=fem.RUN/'analysis/reference_verification.json'
@@ -74,10 +74,10 @@ def main():
     terminal=await_terminal(nn,'pidl')
     nn.retrieve()
     record('pidl_retrieved',terminal=terminal)
-    out=CASE/'paired_R024_R027'
-    analyze('R024_R027_comparison',[WORK/'scripts/shear/analyze_manav_static_pair_converged.py','--fem',fem.RUN/'retrieved/fem','--pidl',nn.RUN/'retrieved/pidl','--out',out])
+    out=CASE/'paired_R024_R028'
+    analyze('R024_R028_comparison',[WORK/'scripts/shear/analyze_manav_static_pair_converged.py','--fem',fem.RUN/'retrieved/fem','--pidl',nn.RUN/'retrieved/pidl','--out',out])
     figures=out/'figures'
-    if figures.is_dir():analyze('R024_R027_figure_sidecars',[WORK/'source/validate_figure_sidecars.py',figures])
+    if figures.is_dir():analyze('R024_R028_figure_sidecars',[WORK/'source/validate_figure_sidecars.py',figures])
     record('paired_analysis_finished',output=str(out),PIDL_terminal=terminal,visual_inspection_pending=True,scientific_verdict='See analyzer saved-state validity and equilibrium metrics; execution completion alone is not physical validation')
 
 

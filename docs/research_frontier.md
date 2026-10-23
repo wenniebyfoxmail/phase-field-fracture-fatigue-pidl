@@ -111,3 +111,5 @@ R024 progress17:27Z: actual U=.33 accepted (Ru9.93044e-5/PF1.99815e-7), U=.34 ac
 2026-10-23 R024 complete:24/24states independently qualified throughU=.4, exit0/COMPLETED;99files213,953,742bytes hashmatched. R025 failedbeforePython because controller referenced olddeadline supervisor; noGPUtraining. Corrected binding/freshR026prepared, sameoriginalequations/tolerances, no compute/count budgets; reuseFEM unchanged. [Owner](research/S04/S04-E035/experiment.md).
 
 R026 also preworker-only: WDDM desktop graphics contexts falsely blocked strict zero-context guard, noPython/no training. Classifier repaired while original GPUUUID/free/util/Python/resource controls retained; freshR027same scientificPIDL prepared against completeR024, no newFEM or testladder. [Owner](research/S04/S04-E035/experiment.md).
+
+R027 stopped beforetraining on UUID formatting only (Torch omitsGPU-; fullUUID/PCI bits match original GPU). Normalize UUID and monitor actual owned Windows interpreter tree; freshR028samePIDL prepared, fullR02424-state reference retained. No numerical tolerance change or FEM rerun. [Owner](research/S04/S04-E035/experiment.md).

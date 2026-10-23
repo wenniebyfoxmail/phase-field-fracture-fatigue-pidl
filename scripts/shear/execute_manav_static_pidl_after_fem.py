@@ -4,11 +4,11 @@ import zipfile,argparse,base64,datetime,hashlib,json,subprocess,time,uuid,math
 
 CASE=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E035')
 WORK=Path(__file__).resolve().parents[2]
-RUN=CASE/'runs/S04-E035-R027'
-REMOTE='C:/q4runs/S04-E035-R027-20261023'
+RUN=CASE/'runs/S04-E035-R028'
+REMOTE='C:/q4runs/S04-E035-R028-20261023'
 NATIVE='C:/Users/xw436/GRIPHFiTH'
 HOST='gpu-server'
-AUTHORITY=CASE/'pidl_desktop_admission_20261023/authority.json'
+AUTHORITY=CASE/'pidl_cuda_identity_20261023/authority.json'
 
 def ps_command(s):
     return 'powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand '+base64.b64encode(s.encode('utf-16le')).decode()
@@ -76,7 +76,7 @@ def launch():
     (RUN/'GPU_RELEASED.json').write_bytes(reference)
     with (RUN/'invocation.json').open('x') as f:
         json.dump(dict(no_retry=True,authority=str(AUTHORITY),unlimited_compute=True,utc=datetime.datetime.now(datetime.timezone.utc).isoformat()),f)
-    remote='C:/Users/xw436/S04E035_R027_'+uuid.uuid4().hex+'.ps1'
+    remote='C:/Users/xw436/S04E035_R028_'+uuid.uuid4().hex+'.ps1'
     bundle_remote=remote+'.zip'
     script=(RUN/'stage_and_launch.template.ps1').read_text().replace('BUNDLE_PATH',bundle_remote).replace('REFERENCE_SHA_VALUE',hashlib.sha256(reference).hexdigest()).replace('REFERENCE_BASE64',base64.b64encode(reference).decode())
     local=RUN/'stage_and_launch.ps1';local.write_text(script)

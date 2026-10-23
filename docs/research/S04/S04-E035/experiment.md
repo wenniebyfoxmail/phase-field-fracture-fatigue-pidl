@@ -463,3 +463,10 @@ R024实际17:17:22.1008539→17:50:29.1800246Z，exit0/COMPLETED，续算wall198
 PIDL现场准入修正（继续原授权，无新科学比较）：R026已用正确无期限监督器，但原通用“GPU进程数量必须为0”检查把WDDM桌面C+G上下文误判为竞争计算，18:00Z核验固定GPU仅Windows explorer/dwm/LogonUI/ShellExperience/EdgeWebView/Teams/Codex，利用率0%，无Python、无R026launch/claim/训练输出，child_pid=null。R026也未开始训练，其记录保留。
 
 原冻结资源原则保留：UUID不变、≥24GiB空闲/≤5%负载/无Python、4线程/16GiBhostRSS/20GiBCUDA/10GiBoutput。修正为对已见桌面程序名+系统/应用安装路径+现场实际进程名三项匹配的图形上下文作记录，未知CUDA使用者仍阻止，不杀任何其他用户进程。新R027科学payload与R026相同，只修正资源分类；一次实际训练尚未发生。完整R024不重算、不重验，后半程流程仍取回及原保存量比较，计算/迭代预算均无上限。
+
+
+R027身份检查在训练前退出：Python launcher17336于18:03:28Z创建、18:03:34Z exit1，未创建pidl数据/训练态。实测Torch2.11.0+cu128返回uuid对象字符串不含NVML的GPU-前缀；CUDA_VISIBLE_DEVICES恰为原固定UUID、可见1卡，原始UUID位数值完全相同，pci_bus_id17(0x11)与NVML11:00.0一致。已以uuid.UUID规范化前缀/格式并严格比较全部UUID位，同时保留原始字符串、规范化完整UUID和PCI记录，未放宽物理设备身份。
+
+并将资源采样覆盖Windows虚拟环境redirector及携带本run绝对命令的解释器后代，固定4核、RSS总和16GiB；仅终止以新建父子链/创建时点/run命令标识的本任务Process句柄。旧R027的CPU0/4MiBRSS仅对应launcher，不能当完整科学解释器费用；新记录CPU未知及采样下界，RSS为自有进程树峰采样。原20GiB CUDA/10GiBoutput等限制保留，计算时长/迭代均无预算。
+
+新R028沿用原网络/方程/材料/容差/优化器停止与完整R024，不重复FEM。新flow pidl_cuda_identity_20261023，待实际启动。R025/26/27记录全部保留，均无训练结果，不冒称已做PIDL比较。

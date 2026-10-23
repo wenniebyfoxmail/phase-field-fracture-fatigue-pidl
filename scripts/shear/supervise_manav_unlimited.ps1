@@ -3,6 +3,34 @@ $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
 $c=Get-Content -LiteralPath $Config -Raw | ConvertFrom-Json
 $proc=$null
+$owned=@{}
+$ownedCPU=@{}
+$ownedMeta=@{}
+function Find-OwnedChildren {
+ $found=$true
+ $all=@(Get-CimInstance Win32_Process)
+ while($found){
+  $found=$false
+  foreach($row in $all){
+   $childId=[int]$row.ProcessId
+   if($owned.ContainsKey([int]$row.ParentProcessId) -and -not $owned.ContainsKey($childId) -and $row.CreationDate.ToUniversalTime() -ge $started){
+    # The Windows venv redirector's real interpreter retains this absolute command.
+    if(([string]$row.CommandLine).Replace('/','\') -notlike ('*'+$c.root.Replace('/','\')+'*')){continue}
+    try{$child=[Diagnostics.Process]::GetProcessById($childId);$held=$child.Handle}catch{continue}
+    $child.ProcessorAffinity=[IntPtr]15
+    $owned[$childId]=$child
+    $ownedMeta[$childId]=@{pid=$childId;parent_pid=[int]$row.ParentProcessId;command=$row.CommandLine;created_utc=$row.CreationDate.ToUniversalTime().ToString('o')}
+    $found=$true
+   }
+  }
+ }
+ @($ownedMeta.Values)|ConvertTo-Json -Depth 4|Set-Content ($c.root+'/worker_processes.json')
+}
+function Stop-OwnedProcesses {
+ foreach($item in @($owned.Values)|Sort-Object Id -Descending){
+  try{if(-not $item.HasExited){$item.Kill();$item.WaitForExit()}}catch{}
+ }
+}
 try {
  if($c.unlimited_compute -ne $true){throw 'Explicit unlimited authorization required'}
  if($env:COMPUTERNAME -ne $c.host){throw 'Wrong producer'}
@@ -57,19 +85,31 @@ try {
  $proc=Start-Process -FilePath $c.executable -ArgumentList $c.arguments -WorkingDirectory $c.root -RedirectStandardOutput ($c.root+'/stdout.log') -RedirectStandardError ($c.root+'/stderr.log') -PassThru
  $handle=$proc.Handle
  $proc.ProcessorAffinity=[IntPtr]15
- @{pid=$proc.Id;started_utc=$started.ToString('o');host=$env:COMPUTERNAME;kind=$c.kind;executable=$c.executable;arguments=$c.arguments;root=$c.root;output=$c.output;code_commit=$c.commit;deadline_seconds=$null;unlimited_compute=$true;authority_sha256=$c.authority_sha256;output_limit_GiB=10;RSS_limit_GiB=16;threads=4}|ConvertTo-Json|Set-Content ($c.root+'/launch.json')
+
+ $owned[$proc.Id]=$proc
+ $ownedMeta[$proc.Id]=@{pid=$proc.Id;parent_pid=$PID;command=$c.arguments;created_utc=$started.ToString('o');role='launcher_or_direct_worker'}
  $peakRSS=0;$reason='exited'
- while(-not $proc.WaitForExit(1000)){
-  $proc.Refresh();$peakRSS=[Math]::Max($peakRSS,$proc.PeakWorkingSet64)
-  if($peakRSS -gt 16GB){$reason='memory_stopped';$proc.Kill();$proc.WaitForExit();break}
+ @{pid=$proc.Id;started_utc=$started.ToString('o');host=$env:COMPUTERNAME;kind=$c.kind;executable=$c.executable;arguments=$c.arguments;root=$c.root;output=$c.output;code_commit=$c.commit;deadline_seconds=$null;unlimited_compute=$true;authority_sha256=$c.authority_sha256;output_limit_GiB=10;RSS_limit_GiB=16;threads=4;memory_scope='owned_launcher_and_interpreter_descendants'}|ConvertTo-Json|Set-Content ($c.root+'/launch.json')
+ while($true){
+  Find-OwnedChildren
+  $rss=0L;$active=0
+  foreach($item in @($owned.Values)){
+   $item.Refresh()
+   if(-not $item.HasExited){$rss+=$item.WorkingSet64;$active+=1;try{$ownedCPU[$item.Id]=[Math]::Max([double]$ownedCPU[$item.Id],$item.TotalProcessorTime.TotalSeconds)}catch{}}
+  }
+  $peakRSS=[Math]::Max($peakRSS,$rss)
+  if($rss -gt 16GB){$reason='memory_stopped';Stop-OwnedProcesses;break}
   $bytes=(Get-ChildItem -LiteralPath $c.root -Recurse -File -ErrorAction Stop|Measure-Object Length -Sum).Sum
-  if($bytes -gt 10GB){$reason='output_storage_stopped';$proc.Kill();$proc.WaitForExit();break}
+  if($bytes -gt 10GB){$reason='output_storage_stopped';Stop-OwnedProcesses;break}
+  if($active -eq 0){break}
+  Start-Sleep -Milliseconds 1000
  }
- $proc.Refresh();$peakRSS=[Math]::Max($peakRSS,$proc.PeakWorkingSet64)
- $cpu='UNKNOWN';try{$cpu=$proc.TotalProcessorTime.TotalSeconds}catch{}
- @{pid=$proc.Id;finished_utc=[DateTime]::UtcNow.ToString('o');exit_code=$proc.ExitCode;wall_seconds=([DateTime]::UtcNow-$started).TotalSeconds;cpu_seconds=$cpu;peak_RSS_bytes=$peakRSS;cpu_affinity=15;reason=$reason;unlimited_compute=$true;completed_marker=(Test-Path ($c.output+'/COMPLETED.txt'))}|ConvertTo-Json|Set-Content ($c.root+'/exit.json')
+ $proc.Refresh()
+ $cpuFloor=($ownedCPU.Values|Measure-Object -Sum).Sum
+ @{pid=$proc.Id;finished_utc=[DateTime]::UtcNow.ToString('o');exit_code=$proc.ExitCode;wall_seconds=([DateTime]::UtcNow-$started).TotalSeconds;cpu_seconds='UNKNOWN';sampled_owned_cpu_lower_bound_seconds=$cpuFloor;peak_RSS_bytes=$peakRSS;cpu_affinity=15;reason=$reason;unlimited_compute=$true;resource_scope='owned_process_tree';completed_marker=(Test-Path ($c.output+'/COMPLETED.txt'))}|ConvertTo-Json|Set-Content ($c.root+'/exit.json')
 }catch{
  $failure=$_.Exception.ToString()
+ Stop-OwnedProcesses
  if($null -ne $proc -and -not $proc.HasExited){$proc.Kill();$proc.WaitForExit()}
  @{exception=$failure;utc=[DateTime]::UtcNow.ToString('o');child_pid=$(if($null -ne $proc){$proc.Id}else{$null})}|ConvertTo-Json|Set-Content ($c.root+'/supervisor_exception.json')
  throw

@@ -6,6 +6,7 @@ from pathlib import Path
 import runpy
 import sys
 import traceback
+import uuid
 
 CODE = Path(__file__).resolve().parents[2]
 RUN = CODE.parent
@@ -25,9 +26,14 @@ def main():
     import tqdm
     import gmshparser
     assert torch.cuda.is_available()
-    assert str(torch.cuda.get_device_properties(0).uuid)==expected, 'CUDA physical GPU identity differs'
+    props=torch.cuda.get_device_properties(0)
+    def canonical(value):
+        raw=str(value)
+        if raw.lower().startswith('gpu-'):raw=raw[4:]
+        return str(uuid.UUID(raw))
+    assert canonical(props.uuid)==canonical(expected), 'CUDA physical GPU identity differs'
     info = dict(pid=os.getpid(), executable=sys.executable, cwd=str(Path.cwd()),
-                argv=sys.argv, cuda_visible_devices=os.environ['CUDA_VISIBLE_DEVICES'], actual_gpu_uuid=str(torch.cuda.get_device_properties(0).uuid),
+                argv=sys.argv, cuda_visible_devices=os.environ['CUDA_VISIBLE_DEVICES'], actual_gpu_uuid='GPU-'+canonical(props.uuid), actual_gpu_uuid_raw=str(props.uuid), gpu_pci_bus_id=props.pci_bus_id,
                 device=torch.cuda.get_device_name(0), torch=torch.__version__,
                 packages={})
     for m in [torch, numpy, scipy, tqdm, gmshparser]:
