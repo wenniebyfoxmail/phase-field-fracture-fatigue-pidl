@@ -29,6 +29,8 @@ Command template (fresh paths and exact committed source filled mechanically aft
 
 Return fields, original-versus-new metrics on reached phases and full cost. Early failure is not speedup, and a viable prototype is not full90-cycle or physical validation. No further scientific restart is approved by this document.
 
-## Subsequent authorization status
+## Subsequent authorization and result
 
-User approved one repaired new-arm run <=1GPUh. Original R001 will be reused. Automatic approval review blocked the proposed source upload to gpu-taobo before execution; a specific source/destination approval request is pending. No R003 worker has started. See r2_dispatcher_receipt.json and launch_r2.sh. The committed candidate description above records preparation-time status.
+2026-10-23: user explicitly approved upload of source `0997e32a` and the launcher to the stated isolated `gpu-taobo` directory, then one repaired new-arm execution reusing original R001. R003 started at 21:57:40 UTC and exited normally at 21:59:08 UTC. The source transfer completed and the remote source was made read-only.
+
+The repair prevented R002's immediate energy-domain stop and retained a finite first diagnostic trial, but R003 did not accept c1/s1 after its declared eight outer loops. No new history was committed and no additional retry is authorized. See [R2 result](result_r2.md) and `r2_dispatcher_receipt.json`. The preparation-time text above remains historical context.
