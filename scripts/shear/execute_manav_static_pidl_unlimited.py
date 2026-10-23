@@ -112,10 +112,20 @@ def retrieve():
     assert (RUN/'producer_terminal.json').exists(),'Verify terminal receipt before copying a producer tree'
     dest=RUN/'retrieved'
     assert not dest.exists(),'Existing retrieval; verify before another transfer'
+    remote_manifest="$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$r='"+REMOTE+"';@(Get-ChildItem -LiteralPath $r -Recurse -File|ForEach-Object {@{path=$_.FullName.Substring($r.Length+1).Replace([char]92,'/');bytes=$_.Length;sha256=(Get-FileHash -LiteralPath $_.FullName).Hash.ToLower()}})|ConvertTo-Json -Depth 3 -Compress"
+    m=call(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=25',HOST,ps_command(remote_manifest)],120,'remote_manifest')
+    assert m.returncode==0
+    expected=json.loads(m.stdout)
+    (RUN/'remote_file_manifest.json').write_text(json.dumps(expected,indent=2))
     p=call(['scp','-q','-r','-o','BatchMode=yes','-o','ConnectTimeout=25',HOST+':'+REMOTE,str(dest)],540,'retrieval')
     assert p.returncode==0,'Partial retrieval preserved; inspect before further actions'
     files=[x for x in dest.rglob('*') if x.is_file()]
-    record=dict(files=len(files),bytes=sum(x.stat().st_size for x in files),exit=json.loads((dest/'exit.json').read_text()),completed=(dest/'pidl/COMPLETED.txt').exists())
+    bypath={str(x.relative_to(dest)):x for x in files}
+    assert set(bypath)=={x['path'] for x in expected},'Retrieved file set mismatch'
+    for item in expected:
+        local=bypath[item['path']]
+        assert local.stat().st_size==item['bytes'] and hashlib.sha256(local.read_bytes()).hexdigest()==item['sha256'],'Retrieved bytes mismatch: '+item['path']
+    record=dict(all_remote_hashes_matched=True,files=len(files),bytes=sum(x.stat().st_size for x in files),exit=json.loads((dest/'exit.json').read_text()),completed=(dest/'pidl/COMPLETED.txt').exists())
     (RUN/'retrieval_verification.json').write_text(json.dumps(record,indent=2));print(json.dumps(record,indent=2))
 
 if __name__=='__main__':
