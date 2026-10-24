@@ -1,0 +1,308 @@
+{
+  "card_id": "S04-E011-UVH-C1-FN776-CARD-r4",
+  "approval_index": "S04-E011-FN776-r4-A1",
+  "run_id": "pf_s04e011_uvh_c1_fn776_r4_20261024",
+  "development_source": "2a71db70fa898635b0bd664f63f398fb41855470",
+  "producer_source": "f808c9ae96fdd68fe94f59b0a1d3d360ce7977ff",
+  "controller_blob": "ea0ccc6a44d47abbaed38f5ed5eaecc8106d163a",
+  "bundle": {
+    "bytes": 198396,
+    "sha256": "b3831ae9a00aeeb369cbeb27dd6395c6f65eaa97e1c8bb9561dd2cb0c06b00da",
+    "ref": "refs/codex/fn776-gpu7-2a71db70fa89"
+  },
+  "automatic_execution": false,
+  "retry_allowed": false,
+  "diagnostic_envelope_bytes": 1048576,
+  "controller_execution_context": {
+    "network_required": true,
+    "reason": "r3's local controller reached no TCP or remote shell because its SSH child was denied by the Mac execution sandbox before connection.",
+    "rule": "Run this exact controller only from an approved network-capable execution context; do not modify SSH settings, add a probe, or retry a failed step."
+  },
+  "steps": {
+    "local_package": {
+      "argv": [
+        "python3",
+        "-B",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code/tools/s04_e011_fn776/verify_code_package.py",
+        "--code",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+        "--expected-source",
+        "f808c9ae96fdd68fe94f59b0a1d3d360ce7977ff"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "timeout_seconds": 30
+    },
+    "preflight": {
+      "argv": [
+        "ssh",
+        "-T",
+        "-v",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectionAttempts=1",
+        "-o",
+        "ConnectTimeout=15",
+        "-o",
+        "ControlMaster=no",
+        "-o",
+        "ControlPath=none",
+        "-o",
+        "ControlPersist=no",
+        "-o",
+        "ClearAllForwardings=yes",
+        "-o",
+        "PermitLocalCommand=no",
+        "gpu-taobo",
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - preflight"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "stdin": {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 20292,
+        "sha256": "a4710b69e071c96daa03b569c1fd8037c22694258601dad6b96d36c0e873a626"
+      },
+      "timeout_seconds": 60,
+      "requires": [
+        "local_package"
+      ],
+      "success_status": "PREDEPLOY_ADMISSION_PASS",
+      "fresh_thread_receipt": "thread_duplicate_check.json"
+    },
+    "upload": {
+      "argv": [
+        "ssh",
+        "-T",
+        "-v",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectionAttempts=1",
+        "-o",
+        "ConnectTimeout=15",
+        "-o",
+        "ControlMaster=no",
+        "-o",
+        "ControlPath=none",
+        "-o",
+        "ControlPersist=no",
+        "-o",
+        "ClearAllForwardings=yes",
+        "-o",
+        "PermitLocalCommand=no",
+        "gpu-taobo",
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B -c 'from pathlib import Path\nimport datetime as dt,hashlib,json,sys\nroot=Path('\"'\"'/mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_fn776_r4_20261024'\"'\"')\ndef emit(event,**fields):print(json.dumps(dict(event=event,utc=dt.datetime.now(dt.timezone.utc).isoformat(),**fields)),file=sys.stderr,flush=True)\ntry:\n emit('\"'\"'mkdir_begin'\"'\"',path=str(root));root.mkdir(mode=0o700,exist_ok=False);emit('\"'\"'mkdir_end'\"'\"',status='\"'\"'completed'\"'\"')\n emit('\"'\"'bundle_write_begin'\"'\"',path=str(root/'\"'\"'source.bundle'\"'\"'));h=hashlib.sha256();n=0\n with (root/'\"'\"'source.bundle'\"'\"').open('\"'\"'xb'\"'\"') as out:\n  for b in iter(lambda:sys.stdin.buffer.read(65536),b'\"'\"''\"'\"'):out.write(b);h.update(b);n+=len(b)\n emit('\"'\"'bundle_write_end'\"'\"',bytes=n,sha256=h.hexdigest())\n assert n==198396 and h.hexdigest()=='\"'\"'b3831ae9a00aeeb369cbeb27dd6395c6f65eaa97e1c8bb9561dd2cb0c06b00da'\"'\"'\n print(json.dumps(dict(status='\"'\"'UPLOAD_PASS'\"'\"',bytes=n,sha256=h.hexdigest())),flush=True)\nexcept BaseException as error:\n emit('\"'\"'upload_terminal_failure'\"'\"',error=repr(error),retry_allowed=False);raise\n'"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "stdin": {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/code.bundle",
+        "bytes": 198396,
+        "sha256": "b3831ae9a00aeeb369cbeb27dd6395c6f65eaa97e1c8bb9561dd2cb0c06b00da"
+      },
+      "timeout_seconds": 60,
+      "requires": [
+        "preflight"
+      ],
+      "success_status": "UPLOAD_PASS"
+    },
+    "deployment": {
+      "argv": [
+        "ssh",
+        "-T",
+        "-v",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectionAttempts=1",
+        "-o",
+        "ConnectTimeout=15",
+        "-o",
+        "ControlMaster=no",
+        "-o",
+        "ControlPath=none",
+        "-o",
+        "ControlPersist=no",
+        "-o",
+        "ClearAllForwardings=yes",
+        "-o",
+        "PermitLocalCommand=no",
+        "gpu-taobo",
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - deploy f808c9ae96fdd68fe94f59b0a1d3d360ce7977ff refs/codex/fn776-gpu7-2a71db70fa89 b3831ae9a00aeeb369cbeb27dd6395c6f65eaa97e1c8bb9561dd2cb0c06b00da 198396"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "stdin": {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 20292,
+        "sha256": "a4710b69e071c96daa03b569c1fd8037c22694258601dad6b96d36c0e873a626"
+      },
+      "timeout_seconds": 60,
+      "requires": [
+        "upload"
+      ],
+      "success_status": "DEPLOYMENT_PASS"
+    },
+    "launch": {
+      "argv": [
+        "ssh",
+        "-T",
+        "-v",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectionAttempts=1",
+        "-o",
+        "ConnectTimeout=15",
+        "-o",
+        "ControlMaster=no",
+        "-o",
+        "ControlPath=none",
+        "-o",
+        "ControlPersist=no",
+        "-o",
+        "ClearAllForwardings=yes",
+        "-o",
+        "PermitLocalCommand=no",
+        "gpu-taobo",
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - launch f808c9ae96fdd68fe94f59b0a1d3d360ce7977ff"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "stdin": {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 20292,
+        "sha256": "a4710b69e071c96daa03b569c1fd8037c22694258601dad6b96d36c0e873a626"
+      },
+      "timeout_seconds": 30,
+      "requires": [
+        "deployment"
+      ],
+      "success_status": "LAUNCH_SUBMITTED",
+      "fresh_thread_receipt": "launch_duplicate_check.json"
+    },
+    "monitor": {
+      "argv": [
+        "ssh",
+        "-T",
+        "-v",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectionAttempts=1",
+        "-o",
+        "ConnectTimeout=15",
+        "-o",
+        "ControlMaster=no",
+        "-o",
+        "ControlPath=none",
+        "-o",
+        "ControlPersist=no",
+        "-o",
+        "ClearAllForwardings=yes",
+        "-o",
+        "PermitLocalCommand=no",
+        "gpu-taobo",
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - monitor"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "stdin": {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 20292,
+        "sha256": "a4710b69e071c96daa03b569c1fd8037c22694258601dad6b96d36c0e873a626"
+      },
+      "timeout_seconds": 15,
+      "requires": [
+        "launch"
+      ],
+      "success_status": "MONITOR_OK",
+      "repeat_success_only": true,
+      "max_invocations": 16,
+      "minimum_interval_seconds": 60
+    },
+    "manifest": {
+      "argv": [
+        "ssh",
+        "-T",
+        "-v",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectionAttempts=1",
+        "-o",
+        "ConnectTimeout=15",
+        "-o",
+        "ControlMaster=no",
+        "-o",
+        "ControlPath=none",
+        "-o",
+        "ControlPersist=no",
+        "-o",
+        "ClearAllForwardings=yes",
+        "-o",
+        "PermitLocalCommand=no",
+        "gpu-taobo",
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - manifest"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "stdin": {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 20292,
+        "sha256": "a4710b69e071c96daa03b569c1fd8037c22694258601dad6b96d36c0e873a626"
+      },
+      "timeout_seconds": 60,
+      "requires": [
+        "monitor"
+      ],
+      "success_status": "MANIFEST_OK",
+      "requires_terminal_monitor": true
+    },
+    "archive": {
+      "argv": [
+        "ssh",
+        "-T",
+        "-v",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectionAttempts=1",
+        "-o",
+        "ConnectTimeout=15",
+        "-o",
+        "ControlMaster=no",
+        "-o",
+        "ControlPath=none",
+        "-o",
+        "ControlPersist=no",
+        "-o",
+        "ClearAllForwardings=yes",
+        "-o",
+        "PermitLocalCommand=no",
+        "gpu-taobo",
+        "env PYTHONOPTIMIZE=0 /usr/bin/python3 -B - archive"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "stdin": {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code/tools/s04_e011_fn776/remote_control_r2.py",
+        "bytes": 20292,
+        "sha256": "a4710b69e071c96daa03b569c1fd8037c22694258601dad6b96d36c0e873a626"
+      },
+      "timeout_seconds": 60,
+      "requires": [
+        "manifest"
+      ],
+      "requires_terminal_monitor": true,
+      "stdout_artifact": "retrieved.tar"
+    },
+    "verify_retrieval": {
+      "argv": [
+        "python3",
+        "-B",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code/tools/s04_e011_fn776/verify_retrieval_r2.py"
+      ],
+      "cwd": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r4_20261024/package_2a71db70/materialized/code",
+      "timeout_seconds": 30,
+      "requires": [
+        "archive"
+      ],
+      "success_status": "RETRIEVAL_VERIFIED"
+    }
+  }
+}
