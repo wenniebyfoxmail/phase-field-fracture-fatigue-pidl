@@ -1,6 +1,6 @@
 # S04-E040 — state-referenced feasible damage representation
 
-**Status:** implementation audited; a fresh producer calculation is pending.
+**Status:** implementation audited; fixed producer calculation completed.
 
 **Execution amendment, 2026-10-24:** the first Taobo launch reached the raw-q
 initialization but made no optimizer update: the global network remained on
@@ -83,3 +83,33 @@ The fixed code benchmark is:
 It checks exact accepted-state hold, bounds, inactive-branch derivative,
 reference copying/non-finite rejection, and q-only partition preservation of
 u/v.  It is an algebraic code check, not a PIDL training run.
+
+## Producer result — 2026-10-24
+
+The fresh Taobo calculation used source commit `564ba10f787b6f62795808d133b07cbe6d90af64`
+and the fixed recovery-state baseline.  The immutable run archive is
+`/mnt/data2/drtao/pidl_archives/pf_s04e040_feasible_564ba10f_20261024T085200Z`;
+the two committed output directories are its `output/global` and
+`output/q_local` children.  Their manifests record the same mesh hash
+`49565321fa939a95feb55bcd26dac377e909460d12ab98daa2d6080bb0dff9e4` and
+`irreversibility_in_loss: false`.
+
+Both arms completed all 15 fixed substeps and every receipt was accepted.
+At every accepted state, the node and Gauss-point lower-bound margins were
+zero or positive (`min(d-h)=0`), the sampled damage range was `[0, 1]`, and
+the no-grad shadow irreversibility diagnostic was zero.  The global arm used
+4,252 updates / 159.046 seconds and finished with `E_d=0.00472642528`; the
+q-local arm used 5,695 updates / 241.613 seconds and finished with
+`E_d=0.00541965012`.  The q-local and global damage fields were identical at
+step 1, then differed from step 3 onward (step-15 RMS difference `0.021815747`,
+maximum absolute difference `0.163426399`, 2,518 changed nodes).  This confirms
+that the q-only patch was active while the globally coupled displacement path
+remained unchanged by construction.
+
+The outcome is forward numerical-admissibility evidence for this one synthetic
+PIDL trajectory: strict damage feasibility was retained without differentiating
+an irreversibility penalty, and both fixed arms committed their full paths.  It
+does not compare against a physical/FEM reference, establish an energy or
+accuracy advantage for q-local, identify a causal mechanism, or support a
+road-fracture prediction claim.  The higher final `E_d` and compute cost of the
+q-local arm are observations, not a performance ranking.
