@@ -1,10 +1,10 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-24 01:23 UTC）
+## 实际进展（2026-10-24 05:15 UTC）
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
-主 FEM c1 的 s1/s2/s3 接受并读回；s4 跑满 1500 外迭代仍失败，s5 未执行。s4 最终 Ru=3.6220152042e-5，是限值 36.22 倍；末 100 次呈稳定奇偶两值，失败未提交历史。不重试该主窗口。主 c83 已完整接受五步并取回55个原始文件；c20s4/c60s4 的存档前态分别以机械残差21.84倍/7.81倍限值被拒绝，原生求解未开始，不补建历史。strict c1s4 已于22:26实际启动，后续严格参考与nodal oracle 按原四态设计独立串行推进，不能替代失败的主参考。
+主 FEM c1 的 s1/s2/s3 接受并读回；s4 跑满 1500 外迭代仍失败，s5 未执行。s4 最终 Ru=3.6220152042e-5，是限值 36.22 倍；末 100 次呈稳定奇偶两值，失败未提交历史。不重试该主窗口。主 c83 已完整接受五步并取回55个原始文件；c20s4/c60s4 的存档前态分别以机械残差21.84倍/7.81倍限值被拒绝，原生求解未开始，不补建历史。strict c1s4 已于05:04:47 UTC自然终结，1500 outer后严格验收仍失败、无历史提交；后续严格参考与nodal oracle 按原四态设计独立串行推进，不能替代失败的主参考。
 
 参考变化单独报告：固定 P0，c1 已接受三态平均 J 从0.00558470变为0.01502807；c83五态从0.01882949变为0.02489191，主要变化在c83s4（0.02367830→0.05145631）。这些数不是 PIDL 修复收益。证据为 `analysis/p0_f1_f0_c1_accepted_prefix_20261023.json` 与 `analysis/p0_f1_f0_c83_20261023.json`。
 
@@ -22,7 +22,7 @@ c1s2 C0 continuation随后于00:36:58 UTC正常结束，新增285.3484 GPU秒。
 
 终态保存force诊断仍有4646个被clamp挡住的可行增损伤方向，承载全部phase KKT平方；f_solve=f_commit=1、全部历史/f差为0。该机制证据支持解除平坦区后再检验同网络的物理下降，不等于解释全部机械残差。综合来源为 `raw_archive/d4_c1s2_combined_terminal_20261024_transport01/retrieval_receipt.json`（SHA e08056c0c431861da5f5570c5a426d9ac80f2c2d63958e4f5512824e4030b0c6）、`analysis/c1s2_continuation_final_saved_diagnostics_20261024.json` 和 `analysis/c1s2_completed_endpoint_comparison_20261024.json`。图 `figures/c1s2_completed_endpoints_20261024.png/.pdf` 已检查排版；只读取保存数组/既有检查，没有Mac网络或native重算。
 
-resident已继续运行：c1s4/c83s2四臂matrix分别于00:45:43/00:54:11 UTC正常终结，各507.1768/501.8752 GPU秒；八臂均physical=false，C臂feasible、L臂infeasible。metadata及八个终态字段已回收；c1s4仍无合格标准F1目标，不给J。c83s4 matrix也已于01:02:43.519 UTC正常终结，新增500.2447 GPU秒；01:19:58实际队列回执确认已进入c83s2 fit、无halt，后续c83s4 fit和既定评分仍由原GPU owner负责。严格FEM最近既有回执为01:17:14、outer639，原MATLAB14540仍运行，F2尚未启动。
+resident已继续运行：c1s4/c83s2四臂matrix分别于00:45:43/00:54:11 UTC正常终结，各507.1768/501.8752 GPU秒；八臂均physical=false，C臂feasible、L臂infeasible。metadata及八个终态字段已回收；c1s4仍无合格标准F1目标，不给J。c83s4 matrix也已于01:02:43.519 UTC正常终结，新增500.2447 GPU秒；01:19:58实际队列回执确认已进入c83s2 fit、无halt，后续c83s4 fit和既定评分仍由原GPU owner负责。该处01:17:14/outer639为历史运行快照；strict的真实终态与F2后续见下文。
 
 c83s2已完成纯保存数组同F1比较：L+/L0/C+/C0的J分别为.00965253/.01136726/.00191553/.00196692，四臂仍全部拒绝。与c1s2不同，此态clamp的诊断场差更小，但两C臂全部86756节点d=old、86505个自由raw低于old，最大埋入深度分别1.001206/1.005470。F1本步仅4860个节点增损伤、最大增量.0151966，故不增长damage也可给出较小平均场差；C+/C0剩余J²的92.45%/88.94%来自v。不能由小J宣称已正确推进损伤，也不能把该态clamp场差收益算成已接受改善。尚未用该纯数组分析推断blocked下降方向或KKT占比。证据 `analysis/c83s2_matrix_saved_array_diagnostic_20261024.json`（SHA 87d7d5cf6bdb9528f8bc72b03e416aa4d777fd89d0263d9551769a20b07d4692）。
 
@@ -50,9 +50,17 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 
 本对话15分钟app持久化自动接续的首次创建曾被自动审批拒绝，理由为缺少明确人方许可，并存在已暂停HQ托管；该次未创建。随后用户对本对话、15分钟、静默无变化、报告交付后停止及不恢复跨对话HQ的完整问题，明确回答“允许本对话自动接续”。2026-10-24 00:19 UTC工具已成功创建`pidl-fem` heartbeat，并回读确认ACTIVE、15分钟、目标为本对话`01a15fd3-ed7b-7122-9ef4-eb5846c4a6c8`。现有resident和两机执行者的独占分工不变；自动接续先查原执行者，避免重复调度。此许可不授权失败重试或额外试验，也不恢复HQ托管。该控制层状态不构成任何科学结果。
 
-## 前瞻方法：F2 节点约束求解（2026-10-23，已批准串行验证、未启动）
+## 严格 c1s4 的真实终态（2026-10-24 05:04 UTC）
 
-当前 strict c1s4 仍在运行，不修改或重复。源码核查发现 native Newton 在更新场后仍以更新前 residual 判停，PF 返回后再投影；最终同状态检查正确阻止假收敛。strict日志中下一轮首机械装配可推断上一末态Ru已低于严格阈值，继续循环现更指向fresh phase KKT；这些日志推断不是完整终态验收。
+原strict按既定joint4e-6/U1e-8条件完成1500 outer后以`E036:OuterExhausted`自然科学拒绝；watchdog历时23898.9789653秒、exit1、stop_reason=exited、wrapper_error=null。supervisor的failure字段是转报非零科学退出，不能单据该措辞判成另一个技术故障。32份原始文件共73513420 B已逐项核SHA/bytes，原cmd484/supervisor47700/watchdog7728/MATLAB14540均已退出。完整来源 `raw_archive/strict_c1s4_01_terminal_20261024/transfer_receipt.json`（SHA77e1569941432ac793ee605b4c1a9a6854b41e0ebb9e1fceeabe2ebe6d5f3c40），failure.mat SHA d67c305f733cb186916fb58531e8e5d61d61349bebf449962f993f003ef59413。
+
+同状态fresh机械残差已降到2.9866602073e-15，phase box KKT=8.53660910434e-6，联合和8.53660910733e-6，strict criterion=2.13415227683；feasible=true但joint_pass=false，零历史提交。accepted/pre的u/d/lower及全部四通道history精确等于原已发布c1s3 checkpoint；保存候选/力/系数均有限。末100次phase KKT仅在8.53660910433612e-6至8.536609104348381e-6之间变化，1500次fresh接受0次，虽然native自身报告1484次accepted。日志末内层res_sum=3.0976e-6不能替代投影后的fresh KKT。
+
+因此收紧内求解已消除主F1失败的机械残差，但严格目标仍停在损伤约束残差平台；这支持参考求解算法影响结果，而不支持“所有差距都是网络表达不足”。把这个保存末态代入主F1的较松数值阈值可通过，仅是阈值敏感性诊断，不能事后改判、发布为strict成功或填补原c1s4的F1目标，也不能用于总体改善百分比。原FEM owner继续已批准的一次F2方法验证，不原样重跑strict；root仅作保存数组分析。控制层证据 `analysis/fem_strict_c1s4_terminal_control_20261024.json`，完整数值诊断 `analysis/fem_strict_c1s4_terminal_diagnosis_20261024.json`。
+
+## 前瞻方法：F2 节点约束求解（2026-10-24，代表验证已完成）
+
+strict c1s4现已自然拒绝，原失败及源码保持不变；以下为先前F2设计依据。源码核查发现 native Newton 在更新场后仍以更新前 residual 判停，PF 返回后再投影；最终同状态检查正确阻止假收敛。strict日志中下一轮首机械装配可推断上一末态Ru已低于严格阈值，继续循环现更指向fresh phase KKT；这些日志推断不是完整终态验收。
 
 用户“从第一性原理突破、无累计资源上限”的当前授权覆盖同离散问题的机制性求解修复。准备一个独立 F2 solver：保持同原生算子、旧态、固定f的内层、节点[old,1]和全部最终阈值，复用现有MATLAB活动集/投影线搜索；约束phase后解当前damage的位移平衡，再从immutable旧态重算f和全部KKT。不得直接替用旧Python GP约束QP，不重复阶段A，不扩大网络。
 
@@ -60,7 +68,17 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 
 F2完整源码已固定于4482f97a939470e3be32fa42d55f4f7cfab83a32，独立目录 `tools/s04_e036_fem/f2/`。root已按用户当前授权批准这一次c1s4代表验证：CIT独占dispatcher可生成实际批准包、只部署新隔离文件，并在当前strict自然终结及所有所属进程清理可证后启动一次F2，无需再次行政确认。未知终态或机器冲突不启动，失败不自动重试。Damage内解4e-8、外层joint4e-6/U1e-8、f固定点1e-10；每轮记录完整精度fresh残差。未进行本地native/NN计算或额外测试梯队，实际两点算子检查在该代表作业内完成。初始未批准准备包及一致性记录保留于 `run_workspace/fem_f2_c1s4_4482f97a_prepared_v1/`，不能将其当作实际launch证据。
 
-实际approved_v1已于23:10:45 UTC部署47个新文件、核对728个SHA绑定，未覆盖原strict源码。ZIP SHA1666ddd30868f23d12c8404f9172852f6154a3cb48cbe0b0946106ebc1ce7faf；源锁仍为3f4c771681ce13d8f93a083458f8ce1916dde1bc96bbe4a40ce2a0146e8c9a1f。F2 label尚未消费，当前strict原MATLAB14540仍运行。部署记录不等于已执行或方法成功。
+实际approved_v1已于23:10:45 UTC部署47个新文件、核对728个SHA绑定，未覆盖原strict源码。ZIP SHA1666ddd30868f23d12c8404f9172852f6154a3cb48cbe0b0946106ebc1ce7faf；源锁仍为3f4c771681ce13d8f93a083458f8ce1916dde1bc96bbe4a40ce2a0146e8c9a1f。23:10:45时F2 label尚未消费；strict自然终结、完整回收及旧进程清理核验后，原FEM owner已于05:09:58.885 UTC一次派发f2_c1s4_01，05:10:00.774实际创建MATLAB13772（watchdog11744/supervisor2368/cmd49308）。05:10:13状态回读确认entry/authority与批准包一致、CPU已运行；这证明已执行，不代表方法通过。启动传输 `run_workspace/fem_f2_c1s4_4482f97a_approved_v1/actual_launch_transport.json` SHA1bff791e13151cf2b53fa295f9d70aa2e63ba6bb6c17ae67452489542fdb960b；实际进程收据 `run_workspace/fem_strict_oracle_b34e97d_20261023/f2_c1s4_01_status_20261024T051013Z.json` SHA d5100e6dc8b9f0a7c8d3db12c8e0ef91a0174cd590ff6ba4abae6fc4499e1a1a。仍由原FEM owner独占CIT串行调度，root没有另开SSH或producer。
+
+## F2 c1s4 代表验证已通过原严格判据（2026-10-24 05:11 UTC终态）
+
+同一个已发布F1 c1s3前态、同原生离散算子与硬box下，F2活动集约束求解在第5个outer通过joint4e-6/U1e-8/fdelta1e-10验收：fresh Ru=2.8304737420193594e-15，phase KKT=2.8513637412581075e-6，criterion=.7128409360，fdelta=0、feasible=true。outer4的KKT=4.2307884540488205e-6未通过，outer5才通过；没有放宽容差。该命名方法于05:11:04 UTC自然完成、exit0，driver52.8062744秒，只有一次history commit、version3→4；不要把运行时钟或外迭代数差异换算成通用效率结论。
+
+38个原始文件共67114378 B已逐项SHA/bytes核对，transfer receipt SHA2a8b00f45a1890404695fd3ab3a513257948d73ba79441036e33f635acd2725b；`f2_result.mat` SHA ed727af8e647b720d3ab351249fece65c07b03cdbd70bc8b425e041da0de4bde。旧前态u/d/lower/全部history精确等于F1s3；候选audit不提交，completion/result只提交一次，solve/commit历史与f差均0。原生固定f子问题校验保留：首outer两点能量差误差1.08691268e-17，五次anchor检查均在原atol1e-10+rtol1e-8内，native_f_overridden/old_history_modified均false。完整保存链及字段对比见 `analysis/fem_f2_c1s4_saved_result_20261024.json`；原始数据 `raw_archive/f2_c1s4_01_terminal_20261024/retrieved/`。
+
+完整序列化链复核已完成：proposal/checkpoint/result的实际数组精确一致，completion按SHA绑定proposal/checkpoint/readback/predictor；候选与提交的history/f映射差均为0，保存f_solve全为1。F2与strict拒绝候选的u/v/d最大场差分别为.000379578/.002211838/.027537045，与main拒绝候选为.000354438/.001898416/.029039720；这些是不同方法端点间的诊断差，不能当作PIDL修复比例。保存结果分析JSON SHA e887e9e76915788f4db8b632a6bb7887ddc0a1f2dea2e130c098226ace3fb72a。F2属于独立前瞻方法，不把它的成功归入步内疲劳、残差检查或raw导出的单项修复收益。
+
+这是此离散状态的约束求解方法成功：原strict在1500 outer后仍phase残差平台，F2在保持同前态与严格终态阈值时得到了可接受解，因此该FEM困难存在具体的算法来源。F2并未使用网络，不能据此宣称PIDL已有可接受轨迹或完整网络表达已足够；F2保留独立方法标签与`primary_F1_replacement=false`，不填回原c1s4 F1目标、不与旧结果相加为总体改善率、不延伸s5。原FEM owner清理后已按原四态计划派发strict_c1s2_01；GPU原resident与五项评分/C0一次条件释放的顺序不变。
 
 ## 条件分支：解除 C0 下界饱和（真实终态已绑定，一次执行已批准、未运行）
 
