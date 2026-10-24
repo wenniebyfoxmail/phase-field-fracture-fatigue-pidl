@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E017
 run_id: S09-E017-R001-factorised-head-p0
-status: PREPARED_NOT_GRANTED
+status: CODE_READY_NOT_GRANTED
 date: 2026-10-24
 ---
 
@@ -19,6 +19,11 @@ change or cleanup action after a terminal failure.
 
 This card is prepared but not granted. It does not reactivate the consumed
 attempt `s09e017-admissiononly-20261024T200408`.
+
+The independent focused verdict is
+`E017_CONDITIONAL_LAUNCH_CODE_READY_PASS`, bound to exact commit
+`593b05cdd04bfeb0e6d833f9bdb23c9aa0bcd29c`. The verdict covers the handoff,
+detached launcher, finite guard and tests; it is not execution authority.
 
 The two fixed new attempt IDs are
 `s09e017-admissiononly-20261024-r2` and
