@@ -10,12 +10,12 @@ import subprocess
 import sys
 import time
 
-RUN = 'pf_s04e011_uvh_c1_fn776_r3_20261020'
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r3'
+RUN = 'pf_s04e011_uvh_c1_fn776_r4_20261024'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r4'
 ROOT = Path('/mnt/data2/drtao/wennie') / RUN
 OUT = Path('/mnt/data2/drtao/pidl_archives') / RUN
 CODE = ROOT / 'code'
-CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r3.json'
+CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r4.json'
 
 
 def digest(path):

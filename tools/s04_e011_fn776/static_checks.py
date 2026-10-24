@@ -1,4 +1,4 @@
-"""FN776-r3 diff checks: AST/text/Git only; no mock or runtime exercise."""
+"""FN776-r4 diff checks: AST/text/Git only; no mock or runtime exercise."""
 import ast
 import hashlib
 import json
@@ -11,11 +11,11 @@ def check(root):
     assert not sys.flags.optimize
     folder=root/'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019'
     original=json.loads((folder/'inputs_fn776.json').read_text()) if (folder/'inputs_fn776.json').exists() else None
-    current=json.loads((folder/'inputs_fn776_r3.json').read_text())
+    current=json.loads((folder/'inputs_fn776_r4.json').read_text())
     preserved=('protocol','files','budget','fn776','work_ledger','resource_policy','resource_revision','rcond','relative_gain_screen','cycle','substep','load','FEM_outer','source_base')
     if original is not None:
         for key in preserved:assert current[key]==original[key],key
-    assert current['run_id']=='pf_s04e011_uvh_c1_fn776_r3_20261020'
+    assert current['run_id']=='pf_s04e011_uvh_c1_fn776_r4_20261024'
     assert current['control_plane']['diagnostic_reserve_bytes']==1024**2
     assert current['control_plane']['guard_sampled_payload_stop_bytes']==current['budget']['output_bytes']-2*1024**2
     assert current['control_plane']['readonly_preflight_seconds']==60
