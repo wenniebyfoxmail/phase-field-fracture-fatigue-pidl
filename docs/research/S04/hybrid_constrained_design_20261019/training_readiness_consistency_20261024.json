@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-24",
+  "scope": "direct metadata and byte identity consistency only",
+  "current_owner": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020",
+  "latest_scientific_source": "fee87bacf098b11def908397d8c02dc6858713ce",
+  "latest_scientific_files_SHA_verified": 38,
+  "latest_solver_source_modified": false,
+  "fixed_or_historical_test_suites_rerun": 0,
+  "new_independent_reviews": 0,
+  "metadata_current_summary_sha256": "b1f07cfccf238d8af94acf6636d035ea9b4f45ff5882587b414ed4c64ffb03c4",
+  "R2_live_query_success": true,
+  "successor_live_query_success": true,
+  "new_scientific_work": false,
+  "interim_stale600s_control_preparation_withdrawn": true,
+  "current_hybrid_training_readiness": false,
+  "current_eligible_teacher_labels": 0,
+  "conservative_usable_host_hours_at_cutoff": 129.51704222056944,
+  "unused_GPU_hours": 12,
+  "git_push_performed": false
+}

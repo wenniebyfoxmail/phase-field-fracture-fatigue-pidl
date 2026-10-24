@@ -1,0 +1,8 @@
+run,accepted_original600,case_wall_seconds,stop,fits
+R2,1/600,157.47752637509257,step2 old120s cap,0
+R3,1/600,333.032,step2 300s cap; residual rebound,0
+R4,1/600,150.7079714052379,Schur true residual target failed,0
+R5,1/600,205.13691322132945,unaccepted fullstep current-K/pivot qualification,0
+R006,1/600,160.74799116142094,8 coupled direction budget exhausted,0
+R007,0/600,41.215751060284674,optional candidate conservative feasibility certificate,0
+R008,0/600,170.49509115889668,8 subproblem budget exhausted,0

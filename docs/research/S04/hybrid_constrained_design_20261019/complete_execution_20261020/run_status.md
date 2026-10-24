@@ -1,3 +1,7 @@
+
+<!-- HYBRID_TRAINING_READINESS_20261024 -->
+**2026-10-24当前入口：** [R2终态、R3–R008全链费用与训练安排](../training_readiness_20261024.md)。R2已首停，后续至R008仍0完整teacher/0fit；D21禁用且旧时钟过期。复用现成D21，不回退旧600秒候选；先补labels出口，再1800标签→一次fit→测试。
+
 > 当前任务管理条款见 [current_entry.md](current_entry.md)（2026-10-20前瞻修订）。下文为已有运行快照；本次迁移未查询生产状态，未修改已用执行卡或签名记录。
 
 # Complete hybrid comparison — submitted and running

@@ -1,3 +1,7 @@
+
+<!-- HYBRID_TRAINING_READINESS_20261024 -->
+**2026-10-24当前入口：** [R2终态、R3–R008全链费用与训练安排](../training_readiness_20261024.md)。R2已首停，后续至R008仍0完整teacher/0fit；D21禁用且旧时钟过期。复用现成D21，不回退旧600秒候选；先补labels出口，再1800标签→一次fit→测试。
+
 <!-- HYBRID_D21_CURRENT_PREPARATION -->
 > Current D21: active-face CG code/template reviewed,97 controls pass, execution disabled. No new FEM/SSH/large-J action/NN. Proposed one fresh train_A600 under new explicit approval only;4h including current preparation/wait/30minclosure, end14:44:03Z. [Concrete approval version](../solver_repair_v12/approval_request.md). R008 terminal/history below preserved.
 

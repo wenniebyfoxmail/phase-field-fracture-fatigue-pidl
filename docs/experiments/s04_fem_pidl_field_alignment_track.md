@@ -119,3 +119,6 @@ D19 actual result (2026-10-21): ff2deeb5/36files exact-reviewed; once dispatched
 
 
 D20 preparation history (superseded by actual R008 result above): directed binary64 inner/outer state intervals preserve base and strict original box/TR; ambiguous exact comparisons bounded64/.1CPU per candidate. Only typed finite optional-Newton ineligibility retains already certified main; main qualification and genuine data/range/direction/IO/final physical errors still stop. Main stage certificates persisted before optional. Same original600 target; no new physical algorithm, pilot, NN or old retry. [Bounded R008 plan](../research/S04/hybrid_constrained_design_20261019/solver_repair_v11/plan.md).
+
+
+2026-10-24 training-entry reconciliation: current ownerD21/sourcefee87bac retained, R2 and R3-R008 failed closures live-checked;0complete teacher/0fit, R009 absent. Conservative usable legacy136h balance about129.517hosth/12GPUh unused, not staleR2-only135.773h. Withdraw obsolete plain600s candidate. New labels-mode export and1800→singlefit→tests orchestration required; old reference-only4h card expired/disabled, no new execution. [Current fact/budget/gap/arrangement](../research/S04/hybrid_constrained_design_20261019/training_readiness_20261024.md).

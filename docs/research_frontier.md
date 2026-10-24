@@ -78,3 +78,6 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 ### 2026-10-20 D14：v6一次比较重跑首停
 
 准确审核/依赖准入后R3仍在train_A第2步300秒未收敛，1接受步、其余case/fit未启动，已停且不重试。物理/历史规则未放宽；尚无NN额外收益结论。状态与下一决定归[原S04实验](experiments/s04_fem_pidl_field_alignment_track.md)，终态日志和elapsed已归档；后续科学尝试需新授权。
+
+
+2026-10-24 S04 training readiness: [same-owner full reconciliation](research/S04/hybrid_constrained_design_20261019/training_readiness_20261024.md) confirms R2–R008 stopped,0complete labels/0fit, R009 absent; current D21 remains disabled/expired. About129.517hosth conservative legacy balance/12GPUh unused; plan reuses D21, enables existinglabels export, produces1800 then onefit before tests. No new scientific work or600s rerun.

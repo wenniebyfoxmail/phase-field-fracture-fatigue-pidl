@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-24",
+  "scope": "same hybrid route R2 plus later owner chain R3-R008; synthetic evidence validity and training readiness",
+  "owner_worktree": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020",
+  "owner_source_commit_before_update": "1a81298005263c53fdcde085782df843b0c87903",
+  "latest_implemented_method": "D21 active-face CG within original box residual LS, source fee87bac; no new method implemented by this audit",
+  "R2_specific_receipt": "r2_reconciliation_20261024.json",
+  "successor_remote_snapshot": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/reconciliation_20261024/successor_snapshot.json",
+  "successor_snapshot_sha256": "0e6b91009c83ccfcb5a7c97a510fb280985c58d25dd6880d9964d958f539908a",
+  "successor_query_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/reconciliation_20261024/successor_query_receipt.json",
+  "successors_failed_and_processes_absent": true,
+  "R009_root_exists": false,
+  "full_trajectories_available": 0,
+  "training_fits_consumed": 0,
+  "checkpoint_files": 0,
+  "current_method_eligible_training_labels": 0,
+  "current_method_eligible_validation_labels": 0,
+  "whole_route_GPU_hours_spent": 0,
+  "original_GPU_envelope_hours": 12,
+  "unused_GPU_capacity_hours": 12,
+  "expired_D21_card_is_authority": false,
+  "R2_only_135_773h_balance_is_current": false,
+  "withdrawn_interim_candidate": {
+    "legacy_worktree": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/fem-surrogate-comparison-prep-20261020",
+    "source_commit": "ddb4ad59",
+    "packet_artifact": "22d4d12a0918b576cfd937e2158b75e029935bec32f73486dcf7b278e659123c",
+    "reason": "Superseded once original owner R3-R008/D21 found; plain600s old-solver proposal is not selected or authorized",
+    "deployed_or_executed": false
+  },
+  "budget": {
+    "original_study_host_hours": 136,
+    "closed_R1_through_R008_conservative_seconds": 19079.39567373949,
+    "D21_preparation_dated_actual_seconds": 1374.1785819530487,
+    "D21_last_closure_allowance_seconds": 120,
+    "D21_preparation_conservative_seconds": 1494.1785819530487,
+    "current_audit_calendar_from_evidence_folder_creation_seconds": 1445.073750257492,
+    "current_audit_calendar_includes_both_queries_and_interim_preparation_not_added_again": true,
+    "historical_unknown_control_reserve_seconds": 600.0,
+    "current_initial_reading_unknown_reserve_seconds": 600.0,
+    "current_final_closure_allowance_seconds": 120.0,
+    "conservative_total_deduction_seconds": 23338.64800595003,
+    "conservative_usable_host_hours_at_cutoff": 129.51704222056944,
+    "GPU_hours_unused": 12,
+    "whole_lifecycle_CPU_seconds": null,
+    "UNKNOWN": [
+      "Historical whole-package CPU and preparation peaks",
+      "Current initial reads before first evidence folder were not timed;600s reserve is not observed actual",
+      "No new full-trajectory timing, fatigue coverage or GPU training performance"
+    ],
+    "no_R2_R3_components_added_to_inclusive_successor_calendar_twice": true,
+    "no_closed_package_idle_days_charged_as_running": true
+  },
+  "data_gaps": [
+    {
+      "item": "train_A",
+      "required": 600,
+      "current_complete": 0,
+      "action": "new same-method own-history labels; previous first-state fragments cannot substitute"
+    },
+    {
+      "item": "train_B",
+      "required": 600,
+      "current_complete": 0,
+      "action": "produce same latest method/coupling/contract at1.2"
+    },
+    {
+      "item": "validation",
+      "required": 600,
+      "current_complete": 0,
+      "action": "produce at1.0 before fitting"
+    },
+    {
+      "item": "test arms",
+      "required": 1800,
+      "current_complete": 0,
+      "action": "after model freeze; not a precondition to starting fit"
+    },
+    {
+      "item": "training feature export",
+      "current": "D21 card role=reference; worker exports features only for role=labels",
+      "action": "reuse worker labels branch/common predictor; adapt single-phase validator and orchestration, fixed benchmark only"
+    },
+    {
+      "item": "real fatigue/complete physical acceptance",
+      "current": "only early f=1 prefixes, no complete original600 path",
+      "action": "physical criteria and coverage retained; do not call lower Phi or returned QP a teacher"
+    },
+    {
+      "item": "expired absolute clock",
+      "current": "D21 card ended2026-10-21T14:44:03Z, disabled",
+      "action": "prospective new envelope needs explicit authority; no automatic time refresh"
+    }
+  ],
+  "next_arrangement": {
+    "mechanism": "reuse implemented D21 constrained subproblem improvement, not revert to pre-R3 solver or merely extend time",
+    "first_work": "enable existing labels export and prospective multi-phase teacher-to-fit orchestration; no new solver/network/loss",
+    "scientific_trajectory_target": 1800,
+    "split": {
+      "train_A": 600,
+      "train_B": 600,
+      "validation": 600
+    },
+    "auto_fit_when_complete": true,
+    "fit_gpu_hours_cap": 6,
+    "fits": 1,
+    "test_steps_after_freeze": 1800,
+    "teacher_host_hours_proposal": 60,
+    "per_teacher_phase_host_hours_cap": 20,
+    "full_original_phase_caps_host_hours_sum": 116,
+    "total_study_host_hours_cap": 136,
+    "total_GPU_hours_cap": 12,
+    "physical_step_seconds": 300,
+    "original_fresh_outer_action_update_caps_retained": true,
+    "teacher_cpu_cores_proposal": 4,
+    "teacher_RAM_GiB_proposal": 32,
+    "fit_RAM_VRAM_GiB": [
+      64,
+      24
+    ],
+    "storage_proposal": "restore explicit original128GiB primary+128GiB archive/full dataset allocation; do not carry old diagnostic7GiB archive cap",
+    "scientific_attempts": 1,
+    "scientific_retries": 0,
+    "authority_status": "proposal_only; no new solve/fit authorized by request to reconcile and arrange",
+    "fresh_full_3600_design_scope_requires_explicit_new_task_authority": true,
+    "no_automatic_independent_review": true,
+    "no_pilot_staircase_or_old_negative_rerun": true
+  }
+}

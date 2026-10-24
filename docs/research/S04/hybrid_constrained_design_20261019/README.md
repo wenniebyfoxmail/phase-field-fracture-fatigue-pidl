@@ -1,3 +1,7 @@
+
+<!-- HYBRID_TRAINING_READINESS_20261024 -->
+**2026-10-24当前入口：** [R2终态、R3–R008全链费用与训练安排](training_readiness_20261024.md)。R2已首停，后续至R008仍0完整teacher/0fit；D21禁用且旧时钟过期。复用现成D21，不回退旧600秒候选；先补labels出口，再1800标签→一次fit→测试。
+
 # Constrained variational FEM–neural hybrid
 
 Current integration —2026-10-20 D13: [accepted-state and field-timing integration, complete plan/budget/data gaps](accepted_state_plan_v5.md). Same owner/solver; true last-QP f_solve and fresh f_commit stored separately, atomic contract envelope, physical state/parent/label/scoring checks added. [v5 preparation card](accepted_state_preparation_card_v5.json) is disabled with null run identity. This local change does not alter consumed R2 source/card or remote execution. R2's last local snapshot is19:06, one accepted step; its current terminal/cost/fit/step use is unknown and must be reconciled before any future execution. Matplotlib3.10.3 was actually observed; older null-version/preparation status below is historical. Prior budget is not reset, no new solve/fit/SSH this task. [Original R2/current task boundary](complete_execution_20261020/current_entry.md).
