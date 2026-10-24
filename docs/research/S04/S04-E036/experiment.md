@@ -1,6 +1,6 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-24 05:15 UTC）
+## 实际进展（2026-10-24 05:55 UTC）
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -49,6 +49,18 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 后处理调度明确由`pidl_history_audit`承接：队列全部正常结束、身份/finished/SHA及进程清理核实后，GPU5串行运行已准备D3 scorer 1000d3c6与D4 scorer 75044464。D4 c1s2用唯一真实matrix+fit+continuation合并inventory，c83两态同样绑定实际完整发布快照；c1s4没有合格F1目标就保持unavailable。队列运行、halt、未知身份或技术失败时不手工越过或重试；root不并行调度GPU。C0条件release的真实失败f64终态及机制条件现已满足，另见下方独立一次决定；必须排在resident和上述五个评分正常终结/清理后，不插入或修改resident。该分工完成已有比较与预声明条件分支。
 
 本对话15分钟app持久化自动接续的首次创建曾被自动审批拒绝，理由为缺少明确人方许可，并存在已暂停HQ托管；该次未创建。随后用户对本对话、15分钟、静默无变化、报告交付后停止及不恢复跨对话HQ的完整问题，明确回答“允许本对话自动接续”。2026-10-24 00:19 UTC工具已成功创建`pidl-fem` heartbeat，并回读确认ACTIVE、15分钟、目标为本对话`01a15fd3-ed7b-7122-9ef4-eb5846c4a6c8`。现有resident和两机执行者的独占分工不变；自动接续先查原执行者，避免重复调度。此许可不授权失败重试或额外试验，也不恢复HQ托管。该控制层状态不构成任何科学结果。
+
+## 严格 c1s2 已接受：预裂纹变化对本次容差收紧稳定（2026-10-24）
+
+strict_c1s2_01从原已发布F1 c1s1前态独立求解，于05:39:55.939 UTC正常结束，71 outer后通过；fresh Ru=9.13318132354e-9，phase box KKT=1.65707767477e-6，criterion=.913318132354，仍按U1e-8/joint4e-6接受，只提交一次历史。36份原文件61771710 B已逐项核SHA/bytes，transfer receipt SHA f1bb72ca0860c41c76529e3c1e096346de57f536ad186a14ed9d0f6e0bfb78bf；原所属进程已清理。既有export_window仅转换保存数组得到tightening target SHA f93b54e7fe597fbfab76070bb7bb9f5a5f02b34492e945adf29e9ecf97258766，不覆盖主F1。
+
+strict与main c1s2的面积归一三通道J=.0004090859384，最大u/v/d差分别约3.75817e-5/.0003310862/.04213316。在y=0的251个预裂纹节点，最大相邻v变化仍发生在x=-.350→-.348：main为-.0564556393，strict为-.0564647208，幅度仅变化约0.0161%。这次严格求解没有消除窄尖变；结论限于同网格同前态的本次容差收紧，不构成参考唯一性或网格收敛证明。
+
+固定已有C0最终字段只换参考后，J由.03794910145变为.03798223638；固定原结构seen-target拟合终态由.00267592033变为.00269513578，均没有网络更新。这是参考敏感性，不能当作PIDL收益或容量下界。reference J²的99.7876%来自damage；固定legacy首段仅换参考也从.00906525391变为.00910775531。两份proposal/checkpoint/readback/completion来源及逐元素一致性已核，均为version1→2一次提交。完整来源链、保存读回及数组对照在 `analysis/c1s2_strict_reference_sensitivity_20261024.json`（SHA99814a39bfbf2d5468f029069280aa93093a767adfc64637b89984ef9cdd1658）；原FEM owner已按原队列一次派发strict_c83s2_01，后续预定状态不变。
+
+转换曾出现NumPy matmul的divide/overflow/invalid RuntimeWarning，原stderr完整保留。只针对该真实保存数组的四节点逐项乘加核对，driver/history/f_commit最大差全0、十个snapshot字段全finite；未查明运行时warning原因，没有修改算子、安装依赖或扩展环境测试。记录 `analysis/fem_strict_c1s2_completed_20261024/conversion_warning_array_check.json`。
+
+正式评分尚未运行：D3原1000d3c6 scorer已有逐slot reference_tightening入口，GPU owner已纯I/O派生真实c1/s2资料的新包 `run_workspace/gpu_c1_scoring_with_sensitivity_1000d3c6_20261024/prepared.json`（SHA637324bdcfce4d62eadcf2fd54aed02ad8c4fc5b8fde055020020577bd95f086），保留旧准备版本并只执行正式一次评分。main targets、代码与authority字节不变；D4的75044464 scorer没有第二目标入口，继续使用原主F1，参考敏感性通过D3结果与纯数组解释复用，不改拟合目标或新增评分作业。
 
 ## 严格 c1s4 的真实终态（2026-10-24 05:04 UTC）
 
