@@ -2,9 +2,11 @@
 
 **Status:** design, exact-source implementation, and internal ChatGPT Pro
 contract reviews are complete. The reviewed source is
-`5aaa317ed55175e80acb581d922eb6a1a4cb6d49`; its 20 CPU contract tests pass.
-One producer execution remains pending explicit launch approval. No producer
-upload or execution has been performed.
+`5aaa317ed55175e80acb581d922eb6a1a4cb6d49`; its 20 CPU runtime-contract
+tests pass. The separately committed producer materialization chain has focused
+non-CUDA checks. One producer execution remains pending explicit approval of
+the exact upload package, remote paths, selected idle GPU and systemd command.
+No producer upload or execution has been performed.
 
 **Task owner:** S04-E040, controlled synthetic PIDL numerical experiment
 (claim class C1: numerical admissibility and solver-state validity).
@@ -207,6 +209,32 @@ the recorded stopping event.
 Compare timing only over a common accepted horizon. A stopped arm has an
 explicitly unaccepted terminal diagnostic; it supports no trajectory, speed,
 FEM-agreement, or physical-improvement claim.
+
+## Producer materialization and launch identity
+
+The submitted numerical runtime is anchored to two distinct commits. The
+reviewed runtime commit is `5aaa317ed55175e80acb581d922eb6a1a4cb6d49`; it
+provides every `source/` module, the E040 runner and analyser,
+`field_computation.py`, and the mesh. The later package commit may contain
+only operational materialization files. The local package builder rejects it
+unless every byte in that explicit runtime closure equals the reviewed commit.
+
+The builder emits a plain Git archive, a JSON runtime-file manifest, a JSON
+receipt, and an external `producer_bootstrap.sh`. The user-approved launch card
+pins the receipt SHA-256. Before any GPU work, the external bootstrap checks
+that pinned receipt, the tar byte count and SHA-256, the archive's embedded Git
+commit, and its own SHA-256. It accepts only a fresh four-file staging directory,
+extracts into a temporary sibling, verifies every reviewed runtime file and the
+inner launcher, then atomically materializes `code/` and writes a receipt.
+
+The inner launcher repeats the runtime verification immediately before input
+and CUDA checks. It verifies the four frozen standard inputs, resolves the
+requested physical GPU to its UUID, takes a per-GPU advisory lock, rejects any
+compute process or non-idle telemetry before and after CUDA/import preflight,
+and exposes that UUID to PyTorch. The bootstrap starts one named user-systemd
+service with `TimeoutStartSec=30`, `RuntimeMaxSec=3600`, a 3,500-second inner
+runner timeout, a task-owned log, and a launch-once marker. A failed launch is
+not retried by these scripts.
 
 ## Planned implementation checks
 
