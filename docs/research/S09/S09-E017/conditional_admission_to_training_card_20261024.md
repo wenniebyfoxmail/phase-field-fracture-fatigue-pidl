@@ -115,7 +115,7 @@ The reviewed dispatch is frozen as:
 | handoff verifier | `fe9909e005518bf2af16aa460a20bc7f6b56949fa24b9c5e9c19500b77655d1a` |
 | detached resolver-to-producer launcher | `f987390e689ac3564c3b085de42ad97d38ee6a909dcf8092a7a17abc098dceba` |
 | one-connection launch plan | `7de102c9a37f1c254a2cfb5136a200b65fbea17e95c580146aa7021c7686e229` |
-| finite local launch guard | `3acb0595e85c1c61fae5c567707e43613b1b9fa2c2a927a217811e7a82f799df` |
+| finite local launch guard | `942921b08d5e6cfa1c2ad244909cf172853bf6b4ba98b9b1afbd4d77f95d96f0` |
 
 Stage 2 permits one connection attempt, one metadata transfer of at most
 65,536 bytes, a 20-second connect timeout and a 120-second local dispatch wall
@@ -142,6 +142,12 @@ admission and began the scientific path.
 entry is not yet verified. The 1,830-second detached timeout covers resolver
 plus the frozen 1,800-second producer envelope; resolver failure is recorded
 and cannot invoke the producer.
+
+If local communication with the dispatch process fails after start, the guard
+kills and reaps the process group it created, records
+`FINAL_LAUNCH_PROCESS_IO_FAILED`, and sets
+`remote_detached_state_unknown=true`. It does not reconnect or retry, because a
+remote tmux session might already have detached before the communication loss.
 
 ## Frozen scientific run after production admission
 

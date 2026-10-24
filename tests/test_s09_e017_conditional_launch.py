@@ -310,6 +310,11 @@ def test_launch_guard_kills_process_and_receipts_communication_failure(
         def communicate(self, timeout):
             raise OSError(f"fixture communication failure after {timeout}")
 
+        def wait(self, timeout):
+            assert timeout == 10
+            self.returncode = -9
+            return self.returncode
+
     killed = []
     receipt = launch_guard.run_guard(
         admission_evidence_root=admission,
@@ -326,6 +331,8 @@ def test_launch_guard_kills_process_and_receipts_communication_failure(
     )
     assert receipt["first_reason"] == "FINAL_LAUNCH_PROCESS_IO_FAILED"
     assert killed == [(987654, launch_guard.signal.SIGKILL)]
+    assert receipt["process_returncode"] == -9
+    assert receipt["remote_detached_state_unknown"] is True
     assert (evidence / "guard_receipt.json").is_file()
 
 

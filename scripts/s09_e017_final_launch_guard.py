@@ -209,6 +209,10 @@ def run_guard(
                 kill_process_group(process.pid, signal.SIGKILL)
             except (OSError, ProcessLookupError):
                 pass
+            try:
+                process.wait(timeout=10)
+            except (AttributeError, subprocess.TimeoutExpired):
+                pass
         stdout = ""
         stderr = ""
         process_returncode = None if process is None else process.returncode
@@ -255,6 +259,7 @@ def run_guard(
         "stdout_sha256": _sha(stdout.encode()),
         "stderr_sha256": _sha(stderr.encode()),
         "evidence_write_errors": evidence_write_errors,
+        "remote_detached_state_unknown": reason == "FINAL_LAUNCH_PROCESS_IO_FAILED",
         "retry": False,
         "reconnect": False,
     }
