@@ -22,7 +22,9 @@ c1s2 C0 continuation随后于00:36:58 UTC正常结束，新增285.3484 GPU秒。
 
 终态保存force诊断仍有4646个被clamp挡住的可行增损伤方向，承载全部phase KKT平方；f_solve=f_commit=1、全部历史/f差为0。该机制证据支持解除平坦区后再检验同网络的物理下降，不等于解释全部机械残差。综合来源为 `raw_archive/d4_c1s2_combined_terminal_20261024_transport01/retrieval_receipt.json`（SHA e08056c0c431861da5f5570c5a426d9ac80f2c2d63958e4f5512824e4030b0c6）、`analysis/c1s2_continuation_final_saved_diagnostics_20261024.json` 和 `analysis/c1s2_completed_endpoint_comparison_20261024.json`。图 `figures/c1s2_completed_endpoints_20261024.png/.pdf` 已检查排版；只读取保存数组/既有检查，没有Mac网络或native重算。
 
-resident已继续运行：c1s4/c83s2四臂matrix分别于00:45:43/00:54:11 UTC正常终结，各507.1768/501.8752 GPU秒；八臂均physical=false，C臂feasible、L臂infeasible。metadata及八个终态字段已回收，c83s2的同目标数组比较正在归档；c1s4仍无合格标准F1目标，不给J。当前队列进入c83s4 matrix，后续两个原结构fit及既定评分仍由原GPU owner负责。严格FEM最近既有回执为00:55:49、outer558，原MATLAB14540仍运行，F2尚未启动。
+resident已继续运行：c1s4/c83s2四臂matrix分别于00:45:43/00:54:11 UTC正常终结，各507.1768/501.8752 GPU秒；八臂均physical=false，C臂feasible、L臂infeasible。metadata及八个终态字段已回收；c1s4仍无合格标准F1目标，不给J。当前队列进入c83s4 matrix，后续两个原结构fit及既定评分仍由原GPU owner负责。严格FEM最近既有回执为00:55:49、outer558，原MATLAB14540仍运行，F2尚未启动。
+
+c83s2已完成纯保存数组同F1比较：L+/L0/C+/C0的J分别为.00965253/.01136726/.00191553/.00196692，四臂仍全部拒绝。与c1s2不同，此态clamp的诊断场差更小，但两C臂全部86756节点d=old、86505个自由raw低于old，最大埋入深度分别1.001206/1.005470。F1本步仅4860个节点增损伤、最大增量.0151966，故不增长damage也可给出较小平均场差；C+/C0剩余J²的92.45%/88.94%来自v。不能由小J宣称已正确推进损伤，也不能把该态clamp场差收益算成已接受改善。尚未用该纯数组分析推断blocked下降方向或KKT占比。证据 `analysis/c83s2_matrix_saved_array_diagnostic_20261024.json`（SHA 87d7d5cf6bdb9528f8bc72b03e416aa4d777fd89d0263d9551769a20b07d4692）。
 
 已回收非终态step1200的真实字段和completion：J=.0033163080，最大v误差.04211884、最大d误差.12395025，都定位在预裂纹内部x约−.277、y近0。该保存读出仍有Ru=.0349792、phase KKT=14.5883、愈合幅.0247315，历史罚能占总能量98.82%；近似更好不等于物理合格。纯数组套用既定C0投影后的J=.0031764397，仅为同保存输出的代数反事实，未装配残差，也不作为物理延续初值。`analysis/fit_c1s2_step1200_saved_analysis_20261024.json`保存该边界。
 
