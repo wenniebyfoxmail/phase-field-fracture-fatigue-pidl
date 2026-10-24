@@ -90,6 +90,7 @@ class E040TransactionTests(unittest.TestCase):
                 indices,
                 state=state,
                 parent_index_file=None,
+                parent_index_sha256=None,
                 record_file=final_record.name,
                 record_sha256=record_sha,
                 evidence_dir="initial_state",
@@ -152,6 +153,7 @@ class E040TransactionTests(unittest.TestCase):
                 indices,
                 state=state,
                 parent_index_file=None,
+                parent_index_sha256=None,
                 record_file=final_record.name,
                 record_sha256=record_sha,
                 evidence_dir="initial_state",
@@ -185,6 +187,137 @@ class E040TransactionTests(unittest.TestCase):
                     pointer, arm, records, indices, net, mesh_hash, route_hash, "cpu"
                 )
 
+    def test_full_lineage_rejects_replaced_ancestor_before_restore_or_pointer_advance(self):
+        """A valid head must not hide a modified root state-index bundle."""
+        runner = self.runner
+        net, inp, initial = self.make_initial_state()
+        with tempfile.TemporaryDirectory() as temporary:
+            arm = Path(temporary) / "arm"
+            arm.mkdir()
+            records = arm / "accepted_states"
+            indices = arm / "state_indices"
+            pointer = arm / "accepted_state_pointer.json"
+            mesh_hash, route_hash = "mesh-test", "route-test"
+            deadline = time.monotonic() + 10.0
+
+            def stage_bundle(
+                state,
+                evidence_name: str,
+                parent_index_file: str | None,
+                parent_index_sha256: str | None,
+            ):
+                staged_record, final_record, _, record_sha = runner.stage_accepted_state_record(
+                    records, net, state, mesh_hash, route_hash, inp, "cpu", deadline
+                )
+                evidence_stage = arm / f".{evidence_name}.tmp"
+                evidence_stage.mkdir()
+                runner.write_json_durable(evidence_stage / "audit.json", {"state": state.commit_id})
+                manifest, manifest_sha = runner.write_artifact_manifest(evidence_stage, ["audit.json"])
+                staged_index, final_index, index_sha = runner.stage_state_index(
+                    indices,
+                    state=state,
+                    parent_index_file=parent_index_file,
+                    parent_index_sha256=parent_index_sha256,
+                    record_file=final_record.name,
+                    record_sha256=record_sha,
+                    evidence_dir=evidence_name,
+                    artifact_manifest_file=manifest.name,
+                    artifact_manifest_sha256=manifest_sha,
+                    mesh_order_hash=mesh_hash,
+                    route_hash=route_hash,
+                    phase=None,
+                )
+                runner.publish_file(staged_record, final_record)
+                runner.publish_directory(evidence_stage, arm / evidence_name)
+                runner.publish_file(staged_index, final_index)
+                return final_record, record_sha, final_index, index_sha
+
+            initial_record, initial_record_sha, initial_index, initial_index_sha = stage_bundle(
+                initial, "initial_state", None, None
+            )
+            runner.publish_pointer_last(
+                pointer_path=pointer,
+                arm_dir=arm,
+                records_dir=records,
+                indices_dir=indices,
+                state=initial,
+                final_record_path=initial_record,
+                record_sha256=initial_record_sha,
+                final_index_path=initial_index,
+                index_sha256=initial_index_sha,
+                expected_mesh_hash=mesh_hash,
+                expected_route_hash=route_hash,
+                device="cpu",
+                deadline=deadline,
+            )
+
+            state_one = runner.AcceptedState(
+                commit_id="state_001",
+                history_alpha=initial.history_alpha.detach().clone(),
+                hist_fat=initial.hist_fat.detach().clone(),
+                psi_plus_prev=initial.psi_plus_prev.detach().clone(),
+                q_ref=initial.q_ref.detach().clone(),
+                parent_commit_id=initial.commit_id,
+            )
+            state_one_record, state_one_record_sha, state_one_index, state_one_index_sha = stage_bundle(
+                state_one, "step_001", initial_index.name, initial_index_sha
+            )
+            runner.publish_pointer_last(
+                pointer_path=pointer,
+                arm_dir=arm,
+                records_dir=records,
+                indices_dir=indices,
+                state=state_one,
+                final_record_path=state_one_record,
+                record_sha256=state_one_record_sha,
+                final_index_path=state_one_index,
+                index_sha256=state_one_index_sha,
+                expected_mesh_hash=mesh_hash,
+                expected_route_hash=route_hash,
+                device="cpu",
+                deadline=deadline,
+            )
+
+            # The head remains state_001 and its pointer hash is untouched.
+            # Replacing only state_000 must nevertheless invalidate the child
+            # state_001 -> state_000 parent-index SHA link.
+            root_index = json.loads(initial_index.read_text())
+            root_index["replacement_marker"] = "changed-ancestor-bytes"
+            runner.write_json_durable(initial_index, root_index)
+            with self.assertRaisesRegex(runner.StateContractError, "state-index hash mismatch"):
+                runner.restore_accepted_state(
+                    pointer, arm, records, indices, net, mesh_hash, route_hash, "cpu"
+                )
+
+            state_two = runner.AcceptedState(
+                commit_id="state_002",
+                history_alpha=initial.history_alpha.detach().clone(),
+                hist_fat=initial.hist_fat.detach().clone(),
+                psi_plus_prev=initial.psi_plus_prev.detach().clone(),
+                q_ref=initial.q_ref.detach().clone(),
+                parent_commit_id=state_one.commit_id,
+            )
+            state_two_record, state_two_record_sha, state_two_index, state_two_index_sha = stage_bundle(
+                state_two, "step_002", state_one_index.name, state_one_index_sha
+            )
+            with self.assertRaisesRegex(runner.StateContractError, "state-index hash mismatch"):
+                runner.publish_pointer_last(
+                    pointer_path=pointer,
+                    arm_dir=arm,
+                    records_dir=records,
+                    indices_dir=indices,
+                    state=state_two,
+                    final_record_path=state_two_record,
+                    record_sha256=state_two_record_sha,
+                    final_index_path=state_two_index,
+                    index_sha256=state_two_index_sha,
+                    expected_mesh_hash=mesh_hash,
+                    expected_route_hash=route_hash,
+                    device="cpu",
+                    deadline=deadline,
+                )
+            self.assertEqual(json.loads(pointer.read_text())["accepted_commit_id"], "state_001")
+
     def test_pointer_does_not_publish_a_bundle_that_fails_prevalidation(self):
         runner = self.runner
         net, inp, state = self.make_initial_state()
@@ -209,6 +342,7 @@ class E040TransactionTests(unittest.TestCase):
                 indices,
                 state=state,
                 parent_index_file=None,
+                parent_index_sha256=None,
                 record_file=final_record.name,
                 record_sha256=record_sha,
                 evidence_dir="initial_state",

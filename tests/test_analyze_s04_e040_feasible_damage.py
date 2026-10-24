@@ -17,7 +17,7 @@ import numpy as np
 WORKTREE = Path(__file__).resolve().parents[1]
 ANALYZER = WORKTREE / "scripts" / "analyze_s04_e040_feasible_damage.py"
 POINTER_SCHEMA = "S04-E040-accepted-state-pointer-v1"
-INDEX_SCHEMA = "S04-E040-state-index-v1"
+INDEX_SCHEMA = "S04-E040-state-index-v2"
 MANIFEST_SCHEMA = "S04-E040-artifact-manifest-v1"
 
 
@@ -114,6 +114,7 @@ def _write_state_index(
     state_id: str,
     parent_state_id: str | None,
     parent_index_file: str | None,
+    parent_index_sha256: str | None,
     record_file: str,
     record_sha: str,
     evidence_dir: str,
@@ -130,6 +131,7 @@ def _write_state_index(
             "state_commit_id": state_id,
             "parent_state_commit_id": parent_state_id,
             "parent_index_file": parent_index_file,
+            "parent_index_sha256": parent_index_sha256,
             "record_file": record_file,
             "record_sha256": record_sha,
             "evidence_dir": evidence_dir,
@@ -167,6 +169,7 @@ def _write_e040_candidate(
         state_id=current_state,
         parent_state_id=None,
         parent_index_file=None,
+        parent_index_sha256=None,
         record_file=initial_record_file,
         record_sha=initial_record_sha,
         evidence_dir="initial_state",
@@ -203,6 +206,7 @@ def _write_e040_candidate(
             state_id=state_id,
             parent_state_id=current_state,
             parent_index_file=current_index,
+            parent_index_sha256=current_index_sha,
             record_file=record_file,
             record_sha=record_sha,
             evidence_dir=step_dir.name,
@@ -390,6 +394,40 @@ class AnalyzeFeasibleDamageTest(unittest.TestCase):
                 [_record(1, accepted=True, arm="feasible_damage", load=0.03)],
             )
             (candidate_arm / "step_001" / "fields.npz").write_bytes(b"tampered")
+            result = self.run_analyzer(reference_root, candidate_root, root / "analysis")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("SHA-256 mismatch", result.stderr)
+
+    def test_rejects_replaced_ancestor_index_even_when_head_is_unchanged(self) -> None:
+        """The child index's parent hash, not only the pointer head, is binding."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            reference_root = root / "reference"
+            candidate_root = root / "candidate"
+            _mesh(reference_root)
+            _mesh(candidate_root)
+            _write_reference_arm(
+                reference_root,
+                [
+                    _record(1, accepted=True, arm="original", load=0.03),
+                    _record(2, accepted=True, arm="original", load=0.06),
+                ],
+            )
+            candidate_arm = _write_e040_candidate(
+                candidate_root,
+                [
+                    _record(1, accepted=True, arm="feasible_damage", load=0.03),
+                    _record(2, accepted=True, arm="feasible_damage", load=0.06),
+                ],
+            )
+
+            # The accepted pointer still hash-binds state_002.  Replacing only
+            # state_000 therefore exercises the state_001 -> state_000 link.
+            ancestor = candidate_arm / "state_indices" / "state_000.json"
+            replacement = json.loads(ancestor.read_text())
+            replacement["replacement_marker"] = "must-change-parent-hash"
+            _json(ancestor, replacement)
+
             result = self.run_analyzer(reference_root, candidate_root, root / "analysis")
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("SHA-256 mismatch", result.stderr)

@@ -30,7 +30,7 @@ MESH_KEYS = ("xy", "triangles", "area")
 NODE_FIELD_KEYS = ("d", "history_d")
 ELEMENT_FIELD_KEYS = ("strain_xx", "strain_yy", "strain_xy", "raw_psi", "trial_A")
 E040_POINTER_SCHEMA = "S04-E040-accepted-state-pointer-v1"
-E040_INDEX_SCHEMA = "S04-E040-state-index-v1"
+E040_INDEX_SCHEMA = "S04-E040-state-index-v2"
 E040_MANIFEST_SCHEMA = "S04-E040-artifact-manifest-v1"
 TRI3_GAUSS_BARYCENTRIC = np.asarray(
     ((2.0 / 3.0, 1.0 / 6.0, 1.0 / 6.0),
@@ -394,10 +394,10 @@ def _validate_pointer_index_chain(
     if not isinstance(pointer_index_sha, str):
         raise InputContractError("E040 pointer: invalid state_index_sha256")
     expected_index_file = pointer_index_file
-    expected_index_sha: str | None = pointer_index_sha
+    expected_index_sha = pointer_index_sha
     expected_commit = pointer_commit
     expected_parent_commit: str | None = pointer_parent_commit
-    check_expected_parent = True
+    is_head = True
     visited: set[str] = set()
     reverse_chain: list[dict[str, Any]] = []
 
@@ -406,22 +406,17 @@ def _validate_pointer_index_chain(
             raise InputContractError("E040 state-index chain contains a cycle")
         visited.add(expected_index_file)
         index_path = indices_dir / expected_index_file
-        if expected_index_sha is None:
-            if not index_path.is_file():
-                raise InputContractError(f"E040 state-index chain is missing {index_path}")
-            index_sha = sha256_file(index_path)
-        else:
-            index_sha = _verify_hashed_file(index_path, expected_index_sha, "E040 state index")
+        index_sha = _verify_hashed_file(index_path, expected_index_sha, "E040 state index")
         state_index = _json_object(index_path, "E040 state index")
         if state_index.get("schema") != E040_INDEX_SCHEMA:
             raise InputContractError(f"E040 state index has an unexpected schema: {index_path}")
+        if "parent_index_sha256" not in state_index:
+            raise InputContractError(f"E040 state index {expected_index_file}: missing parent_index_sha256")
         state_commit = _required_string(state_index, "state_commit_id", f"E040 state index {expected_index_file}")
         parent_commit = state_index.get("parent_state_commit_id")
         if parent_commit is not None and not isinstance(parent_commit, str):
             raise InputContractError(f"E040 state index {expected_index_file}: invalid parent_state_commit_id")
-        if state_commit != expected_commit or (
-            check_expected_parent and parent_commit != expected_parent_commit
-        ):
+        if state_commit != expected_commit or (is_head and parent_commit != expected_parent_commit):
             raise InputContractError(f"E040 state-index lineage mismatch at {expected_index_file}")
         if state_index.get("mesh_order_hash") != pointer_mesh_hash:
             raise InputContractError(f"E040 state index {expected_index_file}: mesh hash differs from pointer")
@@ -442,7 +437,7 @@ def _validate_pointer_index_chain(
             f"E040 state index {expected_index_file}",
         )
 
-        if not reverse_chain:
+        if is_head:
             if record_file != pointer_record_file or record_sha != pointer_record_sha:
                 raise InputContractError("E040 pointer record does not match its state index")
             if state_index.get("parent_index_file") != pointer_parent_index:
@@ -451,7 +446,11 @@ def _validate_pointer_index_chain(
         index_phase = state_index.get("phase")
         artifact_receipt: dict[str, Any] | None = None
         if index_phase is None:
-            if parent_commit is not None or state_index.get("parent_index_file") is not None:
+            if (
+                parent_commit is not None
+                or state_index.get("parent_index_file") is not None
+                or state_index.get("parent_index_sha256") is not None
+            ):
                 raise InputContractError(f"E040 root state index {expected_index_file} has a parent")
         else:
             if not isinstance(index_phase, dict):
@@ -487,6 +486,8 @@ def _validate_pointer_index_chain(
                 "index_sha256": index_sha,
                 "state_commit_id": state_commit,
                 "parent_state_commit_id": parent_commit,
+                "parent_index_file": state_index.get("parent_index_file"),
+                "parent_index_sha256": state_index.get("parent_index_sha256"),
                 "phase": index_phase,
                 "record_file": record_file,
                 "record_sha256": record_sha,
@@ -502,10 +503,13 @@ def _validate_pointer_index_chain(
         if parent_index is None:
             break
         expected_index_file = _safe_child_name(parent_index, f"E040 state index {expected_index_file} parent")
-        expected_index_sha = None
+        expected_index_sha = state_index.get("parent_index_sha256")
+        if not isinstance(expected_index_sha, str) or len(expected_index_sha) != 64:
+            raise InputContractError(
+                f"E040 state index {index_path.name}: invalid parent_index_sha256"
+            )
         expected_commit = parent_commit if isinstance(parent_commit, str) else ""
-        expected_parent_commit = None
-        check_expected_parent = False
+        is_head = False
         if not expected_commit:
             raise InputContractError(f"E040 state index {index_path.name}: parent index lacks parent state commit")
 

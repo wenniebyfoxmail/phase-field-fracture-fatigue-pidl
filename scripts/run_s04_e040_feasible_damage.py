@@ -60,6 +60,9 @@ MIN_DELTA = 5.0e-7
 PATIENCE = 10
 EPS = np.finfo(float).eps
 FINALIZATION_RESERVE_SECONDS = 15.0
+STATE_INDEX_SCHEMA = "S04-E040-state-index-v2"
+ACCEPTED_STATE_POINTER_SCHEMA = "S04-E040-accepted-state-pointer-v1"
+ARTIFACT_MANIFEST_SCHEMA = "S04-E040-artifact-manifest-v1"
 
 
 class StepCap(RuntimeError):
@@ -133,6 +136,29 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def require_sha256(value: Any, context: str) -> str:
+    """Accept only a canonical SHA-256 digest stored in transaction metadata."""
+    require(
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value),
+        f"invalid SHA-256 for {context}",
+    )
+    return value
+
+
+def require_safe_child_name(value: Any, context: str) -> str:
+    require(
+        isinstance(value, str)
+        and bool(value)
+        and "/" not in value
+        and "\\" not in value
+        and Path(value).name == value,
+        f"invalid filename for {context}",
+    )
+    return value
 
 
 def publish_file(tmp_path: Path, final_path: Path) -> None:
@@ -725,7 +751,7 @@ def write_artifact_manifest(folder: Path, artifact_names: list[str]) -> tuple[Pa
     manifest_path = folder / "artifact_manifest.json"
     write_json_durable(
         manifest_path,
-        dict(schema="S04-E040-artifact-manifest-v1", artifacts=entries),
+        dict(schema=ARTIFACT_MANIFEST_SCHEMA, artifacts=entries),
     )
     return manifest_path, sha256_file(manifest_path)
 
@@ -735,7 +761,7 @@ def verify_artifact_manifest(folder: Path, manifest_file: str, expected_sha256: 
     require(manifest_path.is_file(), f"missing artifact manifest: {manifest_path}")
     require(sha256_file(manifest_path) == expected_sha256, "artifact manifest hash mismatch")
     manifest = json.loads(manifest_path.read_text())
-    require(manifest.get("schema") == "S04-E040-artifact-manifest-v1", "artifact manifest schema mismatch")
+    require(manifest.get("schema") == ARTIFACT_MANIFEST_SCHEMA, "artifact manifest schema mismatch")
     artifacts = manifest.get("artifacts")
     require(isinstance(artifacts, list) and artifacts, "artifact manifest is empty")
     seen: set[str] = set()
@@ -755,6 +781,7 @@ def stage_state_index(
     *,
     state: AcceptedState,
     parent_index_file: str | None,
+    parent_index_sha256: str | None,
     record_file: str,
     record_sha256: str,
     evidence_dir: str,
@@ -764,15 +791,23 @@ def stage_state_index(
     route_hash: str,
     phase: dict[str, Any] | None,
 ) -> tuple[Path, Path, str]:
-    """Stage the immutable index that binds state, evidence, and parent lineage."""
+    """Stage an immutable, hash-linked state/evidence lineage entry."""
     indices_dir.mkdir(parents=True, exist_ok=True)
     final_path = indices_dir / f"{state.commit_id}.json"
     require(not final_path.exists(), f"state index already exists: {final_path.name}")
+    if parent_index_file is None:
+        require(parent_index_sha256 is None, "root state index cannot carry a parent hash")
+        require(state.parent_commit_id is None, "root state index cannot carry a parent state")
+    else:
+        require_safe_child_name(parent_index_file, "state-index parent")
+        require_sha256(parent_index_sha256, "state-index parent")
+        require(state.parent_commit_id is not None, "non-root state index lacks a parent state")
     payload = dict(
-        schema="S04-E040-state-index-v1",
+        schema=STATE_INDEX_SCHEMA,
         state_commit_id=state.commit_id,
         parent_state_commit_id=state.parent_commit_id,
         parent_index_file=parent_index_file,
+        parent_index_sha256=parent_index_sha256,
         record_file=record_file,
         record_sha256=record_sha256,
         evidence_dir=evidence_dir,
@@ -797,7 +832,13 @@ def validate_committed_bundle(
     expected_route_hash: str,
     device: str,
 ) -> dict[str, Any]:
-    """Validate the exact bundle made authoritative by an accepted-state pointer."""
+    """Validate the pointer head and every hash-linked predecessor.
+
+    A head-pointer hash alone cannot detect a replacement of an older index.
+    Each non-root index therefore carries the exact SHA-256 of its parent.
+    This validator walks that whole chain, checking every state record and
+    evidence manifest before a new pointer can be published or restored.
+    """
     required = (
         "accepted_commit_id", "parent_commit_id", "record_file", "record_sha256",
         "state_index_file", "state_index_sha256", "parent_index_file", "mesh_order_hash", "field_route_hash",
@@ -806,39 +847,109 @@ def validate_committed_bundle(
         require(key in pointer, f"accepted pointer missing {key}")
     require(pointer["mesh_order_hash"] == expected_mesh_hash, "pointer mesh hash mismatch")
     require(pointer["field_route_hash"] == expected_route_hash, "pointer route hash mismatch")
-    index_file = pointer["state_index_file"]
-    require(isinstance(index_file, str) and "/" not in index_file, "invalid pointer index filename")
-    index_path = indices_dir / index_file
-    require(index_path.is_file(), "pointer index file missing")
-    require(sha256_file(index_path) == pointer["state_index_sha256"], "pointer index hash mismatch")
-    index = json.loads(index_path.read_text())
-    require(index.get("schema") == "S04-E040-state-index-v1", "state index schema mismatch")
-    require(index.get("state_commit_id") == pointer["accepted_commit_id"], "pointer/index commit mismatch")
-    require(index.get("parent_state_commit_id") == pointer["parent_commit_id"], "pointer/index parent mismatch")
-    require(index.get("parent_index_file") == pointer["parent_index_file"], "pointer/index parent-index mismatch")
-    require(index.get("record_file") == pointer["record_file"], "pointer/index record mismatch")
-    require(index.get("record_sha256") == pointer["record_sha256"], "pointer/index record hash mismatch")
-    require(index.get("mesh_order_hash") == expected_mesh_hash, "index mesh hash mismatch")
-    require(index.get("field_route_hash") == expected_route_hash, "index route hash mismatch")
-    record_file = pointer["record_file"]
-    require(isinstance(record_file, str) and "/" not in record_file, "invalid pointer record filename")
-    record_path = records_dir / record_file
-    require(record_path.is_file(), "pointer record file missing")
-    require(sha256_file(record_path) == pointer["record_sha256"], "pointer record hash mismatch")
-    evidence_dir = index.get("evidence_dir")
-    require(isinstance(evidence_dir, str) and "/" not in evidence_dir, "invalid evidence directory")
-    evidence_path = arm_dir / evidence_dir
-    require(evidence_path.is_dir(), "pointer evidence directory missing")
-    manifest_file = index.get("artifact_manifest_file")
-    manifest_sha = index.get("artifact_manifest_sha256")
-    require(isinstance(manifest_file, str) and isinstance(manifest_sha, str), "index manifest metadata missing")
-    verify_artifact_manifest(evidence_path, manifest_file, manifest_sha)
-    record = load_torch(record_path, device)
-    require(record.get("commit_id") == pointer["accepted_commit_id"], "pointer record commit mismatch")
-    require(record.get("parent_commit_id") == pointer["parent_commit_id"], "pointer record parent mismatch")
-    require(record.get("mesh_order_hash") == expected_mesh_hash, "record mesh hash mismatch")
-    require(record.get("field_route_hash") == expected_route_hash, "record route hash mismatch")
-    return index
+    require(pointer.get("schema") == ACCEPTED_STATE_POINTER_SCHEMA, "accepted pointer schema mismatch")
+    pointer_index_file = require_safe_child_name(pointer["state_index_file"], "pointer state index")
+    pointer_index_sha = require_sha256(pointer["state_index_sha256"], "pointer state index")
+    pointer_record_file = require_safe_child_name(pointer["record_file"], "pointer record")
+    pointer_record_sha = require_sha256(pointer["record_sha256"], "pointer record")
+    pointer_commit = pointer["accepted_commit_id"]
+    pointer_parent_commit = pointer["parent_commit_id"]
+    require(isinstance(pointer_commit, str) and pointer_commit, "invalid pointer accepted commit")
+    require(
+        pointer_parent_commit is None or isinstance(pointer_parent_commit, str),
+        "invalid pointer parent commit",
+    )
+    pointer_parent_index = pointer["parent_index_file"]
+    if pointer_parent_index is not None:
+        require_safe_child_name(pointer_parent_index, "pointer parent index")
+
+    expected_index_file = pointer_index_file
+    expected_index_sha = pointer_index_sha
+    expected_commit = pointer_commit
+    expected_parent_commit: str | None = pointer_parent_commit
+    is_head = True
+    visited_index_files: set[str] = set()
+    visited_commit_ids: set[str] = set()
+    head_index: dict[str, Any] | None = None
+
+    while True:
+        require(expected_index_file not in visited_index_files, "state-index lineage contains a cycle")
+        visited_index_files.add(expected_index_file)
+        index_path = indices_dir / expected_index_file
+        require(index_path.is_file(), f"state-index file missing: {expected_index_file}")
+        require(
+            sha256_file(index_path) == expected_index_sha,
+            f"state-index hash mismatch: {expected_index_file}",
+        )
+        try:
+            index = json.loads(index_path.read_text())
+        except json.JSONDecodeError as exc:
+            raise StateContractError(f"invalid JSON state index: {expected_index_file}") from exc
+        require(isinstance(index, dict), "state index must be an object")
+        require(index.get("schema") == STATE_INDEX_SCHEMA, "state index schema mismatch")
+        require("parent_index_sha256" in index, "state index lacks parent hash field")
+        state_commit = index.get("state_commit_id")
+        parent_commit = index.get("parent_state_commit_id")
+        require(isinstance(state_commit, str) and state_commit, "invalid state-index commit")
+        require(
+            parent_commit is None or isinstance(parent_commit, str),
+            "invalid state-index parent commit",
+        )
+        require(state_commit == expected_commit, "state-index lineage commit mismatch")
+        require(state_commit not in visited_commit_ids, "state-index lineage repeats a state commit")
+        visited_commit_ids.add(state_commit)
+        if is_head:
+            require(parent_commit == expected_parent_commit, "pointer/index parent mismatch")
+            require(
+                index.get("parent_index_file") == pointer_parent_index,
+                "pointer/index parent-index mismatch",
+            )
+            require(index.get("record_file") == pointer_record_file, "pointer/index record mismatch")
+            require(index.get("record_sha256") == pointer_record_sha, "pointer/index record hash mismatch")
+            head_index = index
+
+        require(index.get("mesh_order_hash") == expected_mesh_hash, "index mesh hash mismatch")
+        require(index.get("field_route_hash") == expected_route_hash, "index route hash mismatch")
+        record_file = require_safe_child_name(index.get("record_file"), "state-index record")
+        record_sha = require_sha256(index.get("record_sha256"), "state-index record")
+        record_path = records_dir / record_file
+        require(record_path.is_file(), f"state record missing: {record_file}")
+        require(sha256_file(record_path) == record_sha, f"state record hash mismatch: {record_file}")
+
+        evidence_dir = require_safe_child_name(index.get("evidence_dir"), "state-index evidence directory")
+        evidence_path = arm_dir / evidence_dir
+        require(evidence_path.is_dir(), f"state evidence directory missing: {evidence_dir}")
+        manifest_file = require_safe_child_name(
+            index.get("artifact_manifest_file"), "state-index artifact manifest"
+        )
+        manifest_sha = require_sha256(
+            index.get("artifact_manifest_sha256"), "state-index artifact manifest"
+        )
+        verify_artifact_manifest(evidence_path, manifest_file, manifest_sha)
+
+        record = load_torch(record_path, device)
+        require(isinstance(record, dict), "state record must be an object")
+        require(record.get("commit_id") == state_commit, "state record commit mismatch")
+        require(record.get("parent_commit_id") == parent_commit, "state record parent mismatch")
+        require(record.get("mesh_order_hash") == expected_mesh_hash, "record mesh hash mismatch")
+        require(record.get("field_route_hash") == expected_route_hash, "record route hash mismatch")
+
+        parent_index_file = index.get("parent_index_file")
+        parent_index_sha = index.get("parent_index_sha256")
+        if parent_index_file is None:
+            require(parent_index_sha is None, "root state index has a parent hash")
+            require(parent_commit is None, "root state index has a parent state")
+            break
+        parent_index_file = require_safe_child_name(parent_index_file, "state-index parent")
+        parent_index_sha = require_sha256(parent_index_sha, "state-index parent")
+        require(parent_commit is not None, "non-root state index lacks a parent state")
+        expected_index_file = parent_index_file
+        expected_index_sha = parent_index_sha
+        expected_commit = parent_commit
+        is_head = False
+
+    require(head_index is not None, "pointer has no state index")
+    return head_index
 
 
 def publish_pointer_last(
@@ -862,8 +973,10 @@ def publish_pointer_last(
         previous = json.loads(pointer_path.read_text())
         require(state.parent_commit_id is not None, "initial state cannot replace an existing pointer")
         require(previous.get("accepted_commit_id") == state.parent_commit_id, "accepted pointer parent drift")
-        parent_index_file = previous.get("state_index_file")
-        require(isinstance(parent_index_file, str), "previous pointer lacks state index")
+        parent_index_file = require_safe_child_name(
+            previous.get("state_index_file"), "previous pointer state index"
+        )
+        require_sha256(previous.get("state_index_sha256"), "previous pointer state index")
         validate_committed_bundle(
             arm_dir=arm_dir,
             records_dir=records_dir,
@@ -880,7 +993,7 @@ def publish_pointer_last(
     if time.monotonic() >= deadline:
         raise StepCap("wall cap before accepted-state pointer publication")
     payload = dict(
-        schema="S04-E040-accepted-state-pointer-v1",
+        schema=ACCEPTED_STATE_POINTER_SCHEMA,
         accepted_commit_id=state.commit_id,
         parent_commit_id=state.parent_commit_id,
         parent_index_file=parent_index_file,
@@ -1474,11 +1587,15 @@ def run_step(
         parent_pointer = json.loads(pointer_path.read_text())
         require(parent_pointer.get("accepted_commit_id") == state.commit_id, "pointer parent changed before state-index staging")
         parent_index_file = parent_pointer.get("state_index_file")
-        require(isinstance(parent_index_file, str), "parent pointer lacks index file")
+        parent_index_file = require_safe_child_name(parent_index_file, "parent pointer state index")
+        parent_index_sha = require_sha256(
+            parent_pointer.get("state_index_sha256"), "parent pointer state index"
+        )
         staged_index_tmp, staged_index_final, staged_index_sha = stage_state_index(
             indices_dir,
             state=next_state,
             parent_index_file=parent_index_file,
+            parent_index_sha256=parent_index_sha,
             record_file=staged_record_final.name,
             record_sha256=staged_record_sha,
             evidence_dir=step_folder.name,
@@ -1695,6 +1812,7 @@ def main() -> None:
         indices_dir,
         state=state,
         parent_index_file=None,
+        parent_index_sha256=None,
         record_file=initial_record_final.name,
         record_sha256=initial_record_sha,
         evidence_dir="initial_state",

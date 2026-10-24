@@ -79,6 +79,13 @@ can switch nodal branches, and the upper bound is approached rather than reached
 at finite raw values. It guarantees feasibility on the declared mesh, not
 field-space KKT optimality away from that support.
 
+Each immutable state-index uses schema `S04-E040-state-index-v2`. A non-root
+index stores both its parent filename and that parent's SHA-256. Before either
+advancing or restoring the accepted-state pointer, the runner revalidates the
+entire path to `state_000`: every index hash and state-record metadata, and
+every evidence-manifest artifact. Replacing or altering any ancestor therefore
+invalidates the current head before it can seed a later physical step.
+
 ### Exact-start and commit invariant
 
 Each atomic accepted record is
@@ -93,11 +100,12 @@ d(theta_accepted, h, q_ref) == h
 Within the continuous runner, the first equality and the resulting damage use
 `torch.equal` on the same fixed device, dtype, mesh order, and forward path.
 The save/reload audit records maximum errors beside the declared
-`32*eps*max(1,max(abs(q_ref)))` and `16*eps` diagnostics, but a record is
-eligible for commitment only if both q and damage also satisfy bitwise equality.
-The diagnostics do not silently rebase q_ref or weaken the exact-start gate
-used by the continuous trajectory. At c1/s1, q_ref is captured from the already
-loaded recovery network, never from a separately updated parameter state.
+`32*eps*max(1,max(abs(q_ref)))` and `16*eps` diagnostic scales. They are
+reports only, never acceptance tolerances: a record is eligible for commitment
+only if both q and damage satisfy bitwise equality. The diagnostics do not
+silently rebase q_ref or weaken the exact-start gate used by the continuous
+trajectory. At c1/s1, q_ref is captured from the already loaded recovery
+network, never from a separately updated parameter state.
 
 After each accepted solve, the final cached network is copied together with
 the final `h=d`, `A`, `psi_prev`, and `q_ref_next`. Before writing that record,
@@ -208,7 +216,8 @@ subtraction-overflow rejection, reference/history immutability on rejection,
 a direct objective with no E_irr backward path, the exact-start/commit/reload
 invariant (including the recorded reload diagnostics and required bitwise
 identity), the copied
-standard stopping arithmetic, an evidence-before-pointer transaction, and
+standard stopping arithmetic, an evidence-before-pointer transaction with a
+hash-linked ancestor chain (including rejection of a replaced ancestor), and
 unchanged default FieldComputation behavior without the helper. Preflight
 checks the recovery checkpoint, mesh, R001 receipt, finite reference, accepted
 input state, the c1/s1 legacy-alpha-versus-h difference, and the
