@@ -1,10 +1,10 @@
 # S04-E040 — state-referenced feasible damage representation
 
-**Status:** reviewed design r1; local implementation and CPU contract tests are
-complete. The requested internal ChatGPT Pro review returned *approve with
-specific modifications* on 2026-10-24; its two required safeguards below are
-adopted. An exact-source review and the single producer execution remain
-pending. No producer upload or execution has been performed.
+**Status:** design, exact-source implementation, and internal ChatGPT Pro
+contract reviews are complete. The reviewed source is
+`5aaa317ed55175e80acb581d922eb6a1a4cb6d49`; its 20 CPU contract tests pass.
+One producer execution remains pending explicit launch approval. No producer
+upload or execution has been performed.
 
 **Task owner:** S04-E040, controlled synthetic PIDL numerical experiment
 (claim class C1: numerical admissibility and solver-state validity).
