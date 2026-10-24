@@ -1,0 +1,240 @@
+{
+  "schema": "fixed_weight_legacy_receipt_contract_v1",
+  "description": "Independent reviewed acceptance input; never generate or replace this contract from the receipt being checked. verifier_source_commit identifies the source of the staged remote verifier bundle (runner and eleven modules), not a later repository HEAD containing this checker or contract. The separately bound controller produces the required execution receipt. Covers receipt consistency, not a second array-level scientific validation.",
+  "verifier_source_commit": "2e5061b0be5deae5098b36461dcdfadd981c60ad",
+  "execution_schema": "fixed_weight_legacy_controller_execution_v1",
+  "controller": {
+    "path": "scripts/run_fixed_weight_legacy_native_remote.py",
+    "bytes": 10680,
+    "sha256": "ff3ab12214c1aa16ac198857cd9e01081a4437544a8755e9e1781cf1fd2505ab"
+  },
+  "bundle_manifest_path": "fixed_weight_legacy_native_bundle_SHA256SUMS.txt",
+  "bundle_manifest_sha256": "1d6a894d12a09da70b87a8655a93603296edba97ac5d89d9e46b807f55ce44e9",
+  "receipt_schema": "fixed_weight_legacy_native_admission_receipt_v2",
+  "verifier": {
+    "schema": "fixed_weight_legacy_native_admission_receipt_v2",
+    "script": {
+      "path": "scripts/validate_fixed_weight_legacy_native_archives.py",
+      "bytes": 33493,
+      "sha256": "c94d0b72c0d88e9abefd28e9999fd14e30051403c0fd513941e4b5400cdc70b7"
+    },
+    "source_modules": [
+      {
+        "path": "source/fixed_weight_contract.py",
+        "bytes": 21091,
+        "sha256": "2cdcf6de95a51240cc1a52911c07e5af7ef1fc402c4edfb573f74f38d7c0c2fc",
+        "module": "fixed_weight_contract"
+      },
+      {
+        "path": "source/fixed_weight_native_adapter.py",
+        "bytes": 8614,
+        "sha256": "67242b89afd8f0c0e2261ae585e25e1d52c14f23f37b2bde4eb6c763dec18aec",
+        "module": "fixed_weight_native_adapter"
+      },
+      {
+        "path": "source/fixed_weight_roundoff.py",
+        "bytes": 11187,
+        "sha256": "554254433e7b4aa622b3a22e759e66db7f705d8c5153dc19d3681381cdec3687",
+        "module": "fixed_weight_roundoff"
+      },
+      {
+        "path": "source/s09_equilibrium_operator.py",
+        "bytes": 6880,
+        "sha256": "7d2c22df1bc526a72993730aaf098859861d177a9d35922bfe5ca06e86f6c50a",
+        "module": "s09_equilibrium_operator"
+      },
+      {
+        "path": "source/s09_fem_physics.py",
+        "bytes": 3903,
+        "sha256": "795cbe360260505ac50bb613f04882fc710ae4fc6e3c18232ba957e6e45bce57",
+        "module": "s09_fem_physics"
+      },
+      {
+        "path": "source/s09_operator.py",
+        "bytes": 4473,
+        "sha256": "9f9064c5dbf8b096eefe8aada2ed18f09a8d7244324815dae65486cc8a2bba43",
+        "module": "s09_operator"
+      },
+      {
+        "path": "source/s09_q4_quadrature.py",
+        "bytes": 2876,
+        "sha256": "26b7009f542879f57cca4e2428af4183f6191db2095f8fd6089ba5620d091ecb",
+        "module": "s09_q4_quadrature"
+      },
+      {
+        "path": "source/s09_stage0a_capability.py",
+        "bytes": 17862,
+        "sha256": "a8c9dbc089f9146a68f2649d03d15e1c2606d3267cfbe99990d26622e0332525",
+        "module": "s09_stage0a_capability"
+      },
+      {
+        "path": "source/s09_stage0a_p1_freeze.py",
+        "bytes": 7054,
+        "sha256": "8502f52dad72d8310f514304f1837a1b493590b577f067cafc6bdcad8f358514",
+        "module": "s09_stage0a_p1_freeze"
+      },
+      {
+        "path": "source/s09_stage0a_packet.py",
+        "bytes": 15015,
+        "sha256": "02f1f742d3b69977d10db5ba46904864104ec7ce1dd93e7c5c660d39dae589e0",
+        "module": "s09_stage0a_packet"
+      },
+      {
+        "path": "source/s09_stage0a_transition.py",
+        "bytes": 12750,
+        "sha256": "5d3040fcc05cbbbb354fba746b31b3f56a41167c8d6f8b5c9cdeb146567625ce",
+        "module": "s09_stage0a_transition"
+      }
+    ],
+    "bundle_sha256": "5b718143cf20c71f152d0da1f796e768faf679d2929e2908e2c1b4d2bf87ce1d"
+  },
+  "producer_commit": "53ce560b6d20b336d6ec92ccf56ed2b230e804ce",
+  "rule": "native53ce_recovered_load_source_f_no_negative_energy_v1",
+  "mesh_id": "q4:88b282890356b6bb7a12071d11abb8ca54645522f68ccfcbfb629a97fd4dd75d:14fe4eda15312fae2ef54142e3dc16cd5710464378728bd8d0f8a9f60b1a4ef2",
+  "material_values": [
+    1.0,
+    0.3,
+    0.01,
+    0.01,
+    0.5,
+    2.0,
+    0.0,
+    1.0
+  ],
+  "semantics": "explicit_recovered_initial_and_post_commit_v2",
+  "boundary_family": "clamped_tensile_y",
+  "qualification_ref": "development-only:legacy53ce_native_profile_20261024",
+  "qualification_scope": "synthetic archive learning, development conditions only",
+  "declared_source_arithmetic_blobs": {
+    "Sources/+phase_field/+mex/Modules/fem/assembly/equilibrium/amor.f90": "6a30c52161b2999889b7bc1b57a17cbd6e4c6db5",
+    "Sources/+phase_field/+mex/Modules/fem/assembly/pf/at1_penalty_fatigue.f90": "d3d03cdd2ee1d894893f1cbb584a7e94947ec6b7",
+    "Sources/+phase_field/+fem/+solver/+stag/post_iter_update.m": "e74c95ac7b4a439bbc7815561ff45c071428c065"
+  },
+  "runtime": {
+    "hostname": "CITPC12",
+    "num_threads": 2,
+    "num_interop_threads": 2,
+    "cuda_version": null
+  },
+  "archives": [
+    {
+      "identity": {
+        "archive": "hard5_u011_stage0b",
+        "archive_root": "C:\\q4runs\\hard5_native_q4_existing_u011_u012_u013_20260827_v1\\hard5_u011_stage0b",
+        "producer_commit": "53ce560b6d20b336d6ec92ccf56ed2b230e804ce",
+        "cycles": 125,
+        "amplitude": 0.11,
+        "index_sha256": "49655f5aa9fbe50cfdad90058326358adcb4b770114de79ea7fcfbd3d365a302",
+        "manifest_sha256": "9bd9930c56c42da6cf1fd05fba68fd3b93258539eaf6deb669dd8071f9ccd464",
+        "config_sha256": "4e412a4e409c92fb6feb35498370a117163d057483547ad8d5cca6c51e01c353",
+        "static_sha256": "6e86088a0f6dbb764bb3acb14c59846f8786ead431500fe3e1c1903e004723fb",
+        "reference_inventory_sha256": "dcc72933940d385b13e74225557467f7a58b500a204cbc4748c44dfdbd5e6bd2"
+      },
+      "trajectory_id": "legacy53ce:hard5_u011_stage0b:49655f5aa9fb",
+      "schedule": [
+        0.02749989,
+        0.05499989,
+        0.08249988999999999,
+        0.10999989,
+        0.0
+      ],
+      "csv_tokens": [
+        "0",
+        "0.02749989",
+        "0.05499989",
+        "0.08249989",
+        "0.10999989",
+        "0"
+      ],
+      "physical_states": 626,
+      "transitions": 625,
+      "logical_states": 750,
+      "aliases": 124,
+      "csv_load_differences": 125,
+      "repair_points": 0,
+      "negative_H_points": 0,
+      "negative_q_points": 0
+    },
+    {
+      "identity": {
+        "archive": "hard5_u012_stage0b",
+        "archive_root": "C:\\q4runs\\hard5_native_q4_existing_u011_u012_u013_20260827_v1\\hard5_u012_stage0b",
+        "producer_commit": "53ce560b6d20b336d6ec92ccf56ed2b230e804ce",
+        "cycles": 86,
+        "amplitude": 0.12,
+        "index_sha256": "330036eef1ab2d4eb45cce2515607e05abc24e07034c18ab5f339c2cd6a3ea8e",
+        "manifest_sha256": "6504a91f72dcfeda0117ff5c4e3a2777ee0306e7899141b66a047c0de2732166",
+        "config_sha256": "88489aa23be3067f151812be36cfde047a53912739de18d9f897def220dc438b",
+        "static_sha256": "4ccf97c4b5521211c5a115729de523cfbf51131363e5dfdac91812fe2e1dd6a3",
+        "reference_inventory_sha256": "99c88fd293a225d5282d1178d98c9bbeed76b285f7fe313c44dbfc401336060d"
+      },
+      "trajectory_id": "legacy53ce:hard5_u012_stage0b:330036eef1ab",
+      "schedule": [
+        0.02999988,
+        0.05999988,
+        0.08999987999999999,
+        0.11999987999999999,
+        0.0
+      ],
+      "csv_tokens": [
+        "0",
+        "0.02999988",
+        "0.05999988",
+        "0.08999988",
+        "0.11999988",
+        "0"
+      ],
+      "physical_states": 431,
+      "transitions": 430,
+      "logical_states": 516,
+      "aliases": 85,
+      "csv_load_differences": 172,
+      "repair_points": 0,
+      "negative_H_points": 0,
+      "negative_q_points": 0
+    },
+    {
+      "identity": {
+        "archive": "hard5_u013_stage0b",
+        "archive_root": "C:\\q4runs\\hard5_native_q4_existing_u011_u012_u013_20260827_v1\\hard5_u013_stage0b",
+        "producer_commit": "53ce560b6d20b336d6ec92ccf56ed2b230e804ce",
+        "cycles": 62,
+        "amplitude": 0.13,
+        "index_sha256": "4b83d4e77b1e992f2a8c17d009716186a5cd9d42d7d44ab25fec5a6a7e083825",
+        "manifest_sha256": "cd94587bb98ba51ae0504716ec280093fb752dd9379c2c211f216809884c9d4b",
+        "config_sha256": "6827a98fa5301955e040afd805566b3c21c3c26e70c0b3e4ac926f945c182558",
+        "static_sha256": "4bb7d261f09b53dd55c197782fa2ee0476199e379dea726d7f83c791b53b14b9",
+        "reference_inventory_sha256": "ea8ca34009ac1f2319dae6404cc5778d1f28686f5808efe37dd84b874ea51cda"
+      },
+      "trajectory_id": "legacy53ce:hard5_u013_stage0b:4b83d4e77b1e",
+      "schedule": [
+        0.03249987,
+        0.06499987,
+        0.09749987,
+        0.12999987,
+        0.0
+      ],
+      "csv_tokens": [
+        "0",
+        "0.03249987",
+        "0.06499987",
+        "0.09749987",
+        "0.12999987",
+        "0"
+      ],
+      "physical_states": 311,
+      "transitions": 310,
+      "logical_states": 372,
+      "aliases": 61,
+      "csv_load_differences": 0,
+      "repair_points": 0,
+      "negative_H_points": 0,
+      "negative_q_points": 0
+    }
+  ],
+  "event_count_before_complete": 1375,
+  "total_event_count": 1376,
+  "total_physical_states": 1368,
+  "total_transitions": 1365,
+  "test_conditions": 0
+}

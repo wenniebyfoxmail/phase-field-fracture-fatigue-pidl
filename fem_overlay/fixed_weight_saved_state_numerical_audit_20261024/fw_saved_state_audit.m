@@ -12,7 +12,7 @@ arguments
 end
 
 mustHave(cfg, ["execute", "archive_roots", "source_root", "audit_root", ...
-    "python_executable", "preflight_script", "package_root", ...
+    "python_launcher_path", "preflight_script", "package_root", ...
     "package_manifest_sha256", "python_launcher_sha256"]);
 if ~isequal(cfg.execute, true)
     error('fixed_weight:numerical_audit:ExplicitExecutionRequired', ...
@@ -59,7 +59,7 @@ if numel(unique(string(cellfun(@(item) item.archive_name, archive_admissions, ..
     error('fixed_weight:numerical_audit:ArchiveRoots', ...
         'Each locked archive may appear exactly once.');
 end
-python_launcher = verifyPythonLauncher(string(cfg.python_executable), ...
+python_launcher = verifyPythonLauncher(string(cfg.python_launcher_path), ...
     string(cfg.python_launcher_sha256));
 audit_root = canonicalPath(string(cfg.audit_root));
 source_root = canonicalPath(string(cfg.source_root));
@@ -1227,11 +1227,15 @@ end
 
 
 function launcher = verifyPythonLauncher(configured_path, configured_sha256)
-expected_path = canonicalPath("C:\Windows\py.exe");
-actual_path = canonicalPath(configured_path);
-if ~isfile(actual_path) || ~strcmpi(actual_path, expected_path)
+if ~isExplicitWindowsAbsolutePath(configured_path)
     error('fixed_weight:numerical_audit:PythonLauncherPath', ...
-        'cfg.python_executable must be the fixed launcher %s.', expected_path);
+        ['cfg.python_launcher_path must be an explicit absolute Windows launcher ', ...
+         'path; PATH lookup is not permitted.']);
+end
+actual_path = canonicalPath(configured_path);
+if ~isfile(actual_path)
+    error('fixed_weight:numerical_audit:PythonLauncherPath', ...
+        'The configured Python launcher does not exist: %s.', actual_path);
 end
 if ~matches(lower(string(configured_sha256)), '^[0-9a-f]{64}$')
     error('fixed_weight:numerical_audit:PythonLauncherHash', ...
@@ -1240,10 +1244,11 @@ end
 actual_sha256 = sha256File(actual_path);
 if actual_sha256 ~= lower(string(configured_sha256))
     error('fixed_weight:numerical_audit:PythonLauncherHash', ...
-        'The fixed Python launcher changed after the inert config was made.');
+        'The configured Python launcher changed after the inert config was made.');
 end
 launcher = struct('path', actual_path, 'sha256', actual_sha256, ...
-    'fixed_path', expected_path, 'archive_admission_authoritative', false);
+    'configured_path', string(configured_path), ...
+    'absolute_path_required', true, 'archive_admission_authoritative', false);
 end
 
 
@@ -1307,6 +1312,13 @@ if strlength(string(path)) == 0
     return;
 end
 value = string(char(java.io.File(char(path)).getCanonicalPath()));
+end
+
+
+function yes = isExplicitWindowsAbsolutePath(path)
+path = string(path);
+yes = isscalar(path) && strlength(path) > 3 && ...
+    ~contains(path, '"') && ~isempty(regexp(char(path), '^[A-Za-z]:[\\/]', 'once'));
 end
 
 

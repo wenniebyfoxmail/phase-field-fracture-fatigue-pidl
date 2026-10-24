@@ -103,12 +103,17 @@ Run only on a Windows FEM host that has all of the following already available:
    `862992a60edc7f59335365beacb5c71fc8592a7a`, including the compatible
    `Sources`, `Dependencies`, and native `mexw64` assemblies.
 2. MATLAB that can load the v7.3 payloads and invoke those MEX files.
-3. The fixed Windows Python launcher `C:\Windows\py.exe` and a registered
-   CPython 3.11-or-newer runtime for the standard-library-only supplemental
-   preflight. MATLAB invokes the launcher as `-3 -B -s -P`; the inert
-   configuration records the launcher SHA-256, the cross-check rejects a
-   changed launcher, and its receipt records the actual CPython executable,
-   version, and isolation flags.
+3. An explicit existing absolute path to the reviewed Windows Python Launcher,
+   currently `C:\Users\xw436\AppData\Local\Programs\Python\Launcher\py.exe`
+   with SHA-256
+   `e52553f941ceb9e715d239e7a211501ce5d6096eeeb90fb161b7bfedf6a61dab`, plus a
+   registered CPython 3.11-or-newer runtime for the standard-library-only
+   supplemental preflight. Confirm that live hash before creating `cfg`. The
+   launcher is supplied as an argument, never found through `PATH`; the inert
+   configuration records the canonical path in `cfg.python_launcher_path` with
+   its SHA-256, and the audit rehashes that same path before invocation. MATLAB
+   invokes it as `-3 -B -s -P`, and the receipt records the actual CPython
+   executable, version, and isolation flags.
 4. A new output-directory path outside both archive roots and outside the
    source checkout. Its parent must exist; the output directory itself must not
    already exist, because the launcher refuses to reuse it.
@@ -125,15 +130,15 @@ contains a compiler/build receipt that proves a source-to-MEX binary mapping.
 
 Copy this package to an isolated audit workspace on the FEM host without
 altering the FEM source or either archive. In MATLAB, create the inert config
-first (the Python launcher is fixed to `C:\Windows\py.exe`, with no embedded
-arguments; the audit supplies `-3 -B -s -P` itself):
+first with the explicitly inspected launcher path (no embedded arguments and
+no `PATH` fallback; the audit supplies `-3 -B -s -P` itself):
 
 ```matlab
 addpath('C:\q4runs\fixed_weight_saved_state_audit_20261024');
 cfg = make_fixed_weight_saved_state_audit_config( ...
     'C:\path\to\clean\producer_862992_checkout', ...
     'C:\q4runs\fixed_weight_saved_state_audit_results_20261024_R001', ...
-    'C:\Windows\py.exe');
+    'C:\Users\xw436\AppData\Local\Programs\Python\Launcher\py.exe');
 ```
 
 After reviewing the resulting `cfg`, set `cfg.execute = true` and call:

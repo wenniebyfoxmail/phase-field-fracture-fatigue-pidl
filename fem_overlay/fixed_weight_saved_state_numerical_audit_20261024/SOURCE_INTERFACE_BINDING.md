@@ -8,9 +8,15 @@ The archive `source_receipt.json` for both accepted roots is separately pinned
 to that same clean commit by MATLAB's archive admission, together with the
 sealed run summary, full manifest, index topology, and payload inventory. The
 package-local Python preflight is a supplementary cross-check and cannot admit
-an archive. It is launched only through the hash-recorded `C:\Windows\py.exe`
-launcher as CPython 3.11+ with `-3 -B -s -P`, and its receipt records the
-actual interpreter executable, version, implementation, and isolation flags.
+an archive. It is launched only through the explicit absolute launcher path
+captured in the inert config (currently
+`C:\Users\xw436\AppData\Local\Programs\Python\Launcher\py.exe`, SHA-256
+`e52553f941ceb9e715d239e7a211501ce5d6096eeeb90fb161b7bfedf6a61dab`), whose
+live bytes must be checked against that value before config creation, then are
+SHA-256-bound at config creation and rechecked at execution; it is never
+resolved through `PATH`. The launcher must select CPython 3.11+ with
+`-3 -B -s -P`, and its receipt records the actual interpreter executable,
+version, implementation, and isolation flags.
 At launch MATLAB also resolves the three Git blobs below and writes
 a SHA-256 fingerprint of each runtime MEX into the output receipt. The
 fingerprint identifies the executable used for that audit, but it is not proof
