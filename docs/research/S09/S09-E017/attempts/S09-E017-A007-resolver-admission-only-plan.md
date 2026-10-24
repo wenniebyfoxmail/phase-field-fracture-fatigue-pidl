@@ -57,3 +57,16 @@ remaining mechanical consistency pass, authority/card instantiation and one
 guarded attempt. Hash/path completion is no longer a separate approval gate.
 The task is still unapproved for remote execution, and its producer/scientific
 boundaries and one-shot no-reconnect rule are unchanged.
+
+## 2026-10-24 bounded attempt
+
+The user approved the bounded card. Fresh attempt
+`s09e017-admissiononly-20261024T200408` consumed its authority and used one
+connection. Remote precheck reached clean `2002538d...` with no blocked paths,
+then stopped before resolver because the transferred authority was not at the
+expected helper-root path. There was no retry/reconnect and all scientific
+counters were zero. Local reproduction identified macOS rsync absolute-path
+preservation; repair commit `500af64b...` passes the 28-test focused benchmark
+and received the independent verdict `E017_ADMISSION_STAGING_REPAIR_PASS` for
+exact commit `500af64b8dbbf6ad0805708e4fda333e5b9e29e5`. The consumed authority
+is closed.

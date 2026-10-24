@@ -94,3 +94,13 @@ Under the 2026-10-20 bounded-task-authority update, the active Phase R card is
 the single remaining management decision for this admission-only task. Once
 approved, mechanical consistency checks, authority instantiation and the one
 guarded attempt proceed inside that envelope without another hash/path approval.
+
+## 2026-10-24 execution finding
+
+The approved one-shot attempt reached the frozen remote host/commit precheck,
+then stopped before resolver because the authority was not staged at the helper
+root expected by the verifier. No archive content or scientific asset was read,
+and no CUDA, model, producer or training path ran. The authority is consumed
+and no retry occurred. Local reproduction closed the path mechanism; exact
+repair commit `500af64b8dbbf6ad0805708e4fda333e5b9e29e5` received the independent
+verdict `E017_ADMISSION_STAGING_REPAIR_PASS`.
