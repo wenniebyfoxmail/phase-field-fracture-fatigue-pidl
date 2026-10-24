@@ -1,4 +1,7 @@
 
+**2026-10-24纠正：本文件仅核R2子集；后续R3–R008已纳入[真正当前owner](/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/training_readiness_20261024.md)。旧600秒候选已撤回、未部署；不要用135.773h作为当前全链余额。**
+
+
 <!-- R2_RECONCILED_20261024 -->
 **2026-10-24更新：R2已于10月20日19:07首停，不再是当前状态未知。** 本轮只读核实原进程退出、78源文件及产出SHA；1接受态/0完整轨迹/0fit，余约135.7734hosth与12GPUh。原合同与已用卡保留，新600秒计算保护仅准备、禁用。先产1800合格标签后立即唯一fit，测试随后。[对账、复用与具体训练安排](../r2_reconciliation_20261024.md)。
 

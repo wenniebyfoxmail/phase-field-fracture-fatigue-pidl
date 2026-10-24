@@ -1,3 +1,6 @@
+
+**2026-10-24纠正：本文件仅核R2子集；后续R3–R008已纳入[真正当前owner](/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/training_readiness_20261024.md)。旧600秒候选已撤回、未部署；不要用135.773h作为当前全链余额。**
+
 # R2终态、复用与最快训练安排（2026-10-24）
 
 目的：沿原owner核清已提交R2，结清费用，尽快获得可训练标签。工作模式为已有证据核查＋本地控制准备，不新建科学尝试；本轮只有一次20秒上限的远端只读查询，未解码科学数组、求解或训练。原D13接受态与字段契约继续使用。

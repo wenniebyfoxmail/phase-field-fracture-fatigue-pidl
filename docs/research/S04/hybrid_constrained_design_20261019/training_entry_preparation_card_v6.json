@@ -2,7 +2,7 @@
   "schema": "hybrid-reconciled-training-entry-preparation-v6",
   "execution_enabled": false,
   "run_id": null,
-  "readiness": "PREPARED_DISABLED_PENDING_FRESH_ATTEMPT_AND_600S_COMPUTE_AMENDMENT_AUTHORITY",
+  "readiness": "WITHDRAWN_AFTER_LATEST_OWNER_DISCOVERY",
   "owner_base_commit": "edbba209023c78bb73d76f105b4f94b0ab00ef67",
   "existing_runtime_evidence": "complete_execution_20261020/run_receipt.json; observed Matplotlib3.10.3, future runtime drift still checked",
   "execution_template": {
@@ -385,5 +385,7 @@
     "fixed_benchmark": "single metadata benchmark: proposed-card validation and actual hash-bound local packet --check; no scientific solve or training",
     "extra_independent_review_default": false,
     "600s_is_an_upper_bound_not_expected_cost": true
-  }
+  },
+  "status": "WITHDRAWN_NOT_FOR_EXECUTION",
+  "superseded_by": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/training_readiness_20261024.md"
 }

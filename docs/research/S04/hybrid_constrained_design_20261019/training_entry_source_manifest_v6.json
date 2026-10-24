@@ -98,5 +98,7 @@
   },
   "artifact_id": "1927168c92c3e3f90f0b8220fcf9dfaccb7db5fbd2840d5a5649edd3ebf3b9f9",
   "scope": "R2 reconciliation, explicit proposed600s control delta, no execution authority; historical v5 manifest preserved",
-  "new_independent_review_performed": false
+  "new_independent_review_performed": false,
+  "status": "WITHDRAWN_NOT_FOR_EXECUTION",
+  "superseded_by": "/Users/wenxiaofang/phase-field-fracture-with-pidl/worktrees/fem-surrogate-solver-repair-v6-20261020/docs/research/S04/hybrid_constrained_design_20261019/training_readiness_20261024.md"
 }
