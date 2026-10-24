@@ -1,6 +1,13 @@
 # S04-E040 — state-referenced feasible damage representation
 
-**Status:** implementation prepared; no producer upload or execution yet.
+**Status:** implementation audited; a fresh producer calculation is pending.
+
+**Execution amendment, 2026-10-24:** the first Taobo launch reached the raw-q
+initialization but made no optimizer update: the global network remained on
+CPU while the mesh was on CUDA.  It yielded no scientific observation.  The
+runner now moves the whole field network after optional q-only patch creation;
+the fixed code check covers both field modes, and a new fresh producer run is
+required rather than reusing that incomplete directory.
 
 ## Question and scope
 

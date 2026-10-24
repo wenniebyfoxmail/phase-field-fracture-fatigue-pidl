@@ -125,11 +125,15 @@ def build_field(net, device: str, mode: str, tip: tuple[float, float]) -> FieldC
             "output_mode": "q_only", "blend_mode": "damage_partition",
             "hidden_layers": 3, "neurons": 80, "activation": "TrainableReLU", "init_coeff": 1.0,
         }
-    return FieldComputation(
+    field = FieldComputation(
         net, torch.tensor([[-0.5, 0.5], [-0.5, 0.5]], device=device),
         torch.tensor(0.0, device=device), torch.tensor([np.pi / 2], device=device),
         l0=0.01, local_patch_dict=local_patch,
     )
+    # construct_model creates the global network on CPU.  Move after creating
+    # the optional patch as well, otherwise a q-only patch would remain on CPU.
+    field.net = field.net.to(device)
+    return field
 
 
 def direct_objective(field, inp, h, f, mat, pff, area, conn):

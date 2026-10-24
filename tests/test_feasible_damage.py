@@ -117,6 +117,11 @@ class RunnerContractTests(unittest.TestCase):
             RUNNER.N_STEPS * RUNNER.DEFAULT_STEP_SECONDS,
         )
 
+    def test_field_builder_moves_global_and_q_only_patch_networks(self):
+        for mode in ("global", "q_local"):
+            field = RUNNER.build_field(torch.nn.Linear(2, 3), "cpu", mode, (0.0, 0.0))
+            self.assertTrue(all(parameter.device.type == "cpu" for parameter in field.net.parameters()))
+
 
 if __name__ == "__main__":
     unittest.main()
