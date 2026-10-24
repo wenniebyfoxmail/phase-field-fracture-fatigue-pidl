@@ -114,6 +114,7 @@ def run_guard(
     execute_authorised_final_launch: bool,
     popen=subprocess.Popen,
     publisher=_publish,
+    kill_process_group=os.killpg,
 ) -> dict:
     if not execute_authorised_final_launch:
         raise PermissionError("--execute-authorised-final-launch is required")
@@ -193,15 +194,21 @@ def run_guard(
             stdout, stderr = process.communicate(timeout=WALL_SECONDS)
         except subprocess.TimeoutExpired:
             timed_out = True
-            os.killpg(process.pid, signal.SIGTERM)
+            kill_process_group(process.pid, signal.SIGTERM)
             try:
                 stdout, stderr = process.communicate(timeout=10)
             except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
+                kill_process_group(process.pid, signal.SIGKILL)
                 stdout, stderr = process.communicate()
         process_returncode = process.returncode
         process_error = None
     except Exception as error:
+        process_started = process is not None
+        if process_started:
+            try:
+                kill_process_group(process.pid, signal.SIGKILL)
+            except (OSError, ProcessLookupError):
+                pass
         stdout = ""
         stderr = ""
         process_returncode = None if process is None else process.returncode
@@ -216,7 +223,11 @@ def run_guard(
             )
     if process_error is not None:
         terminal = "FINAL_LAUNCH_GUARD_STOPPED"
-        reason = "FINAL_LAUNCH_PROCESS_START_FAILED"
+        reason = (
+            "FINAL_LAUNCH_PROCESS_IO_FAILED"
+            if process_started
+            else "FINAL_LAUNCH_PROCESS_START_FAILED"
+        )
     elif timed_out:
         terminal = "FINAL_LAUNCH_GUARD_STOPPED"
         reason = "FINAL_LAUNCH_DISPATCH_WALL_CAP_EXCEEDED"

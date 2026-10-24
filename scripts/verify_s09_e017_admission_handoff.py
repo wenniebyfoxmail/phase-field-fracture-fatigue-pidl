@@ -81,6 +81,8 @@ def verify_handoff(root: Path) -> dict:
     )
     if authority["admission_only_attempt_id"] != STAGE1_ATTEMPT_ID:
         raise ValueError("Stage 1 attempt id drift")
+    if Path(authority["local_evidence_root"]).resolve() != root.resolve():
+        raise ValueError("Stage 1 authority evidence root drift")
     stdout = (root / "stdout.log").read_bytes()
     if guard["terminal_state"] != GUARD_SUCCESS:
         raise ValueError("admission-only guard did not complete")
@@ -106,6 +108,11 @@ def verify_handoff(root: Path) -> dict:
                 raise ValueError(f"{name} {key} mismatch")
     if consumption["terminal_state"] != "ADMISSION_ONLY_AUTHORITY_CONSUMED_NO_RETRY":
         raise ValueError("Stage 1 consumption state drift")
+    if (
+        consumption.get("retry") is not False
+        or consumption.get("reconnect") is not False
+    ):
+        raise ValueError("Stage 1 consumption permits replay")
     lines = [line for line in stdout.decode("utf-8").splitlines() if line.strip()]
     if len(lines) != 2:
         raise ValueError("admission-only stdout record count drift")

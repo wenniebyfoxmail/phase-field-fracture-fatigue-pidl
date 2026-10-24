@@ -70,7 +70,7 @@ execution authority can be consumed:
 
 Any mismatch stops this card before Stage 2. The reviewed handoff verifier is
 `scripts/verify_s09_e017_admission_handoff.py`, SHA256
-`7f529e58ca295ec09ec50899b3f816e06e384b46f560aaf03641f525b2c58bb2`.
+`fe9909e005518bf2af16aa460a20bc7f6b56949fa24b9c5e9c19500b77655d1a`.
 
 ## Stage 2: conditional final-run launch
 
@@ -112,10 +112,10 @@ The reviewed dispatch is frozen as:
 
 | item | SHA256 |
 |---|---|
-| handoff verifier | `7f529e58ca295ec09ec50899b3f816e06e384b46f560aaf03641f525b2c58bb2` |
+| handoff verifier | `fe9909e005518bf2af16aa460a20bc7f6b56949fa24b9c5e9c19500b77655d1a` |
 | detached resolver-to-producer launcher | `f987390e689ac3564c3b085de42ad97d38ee6a909dcf8092a7a17abc098dceba` |
 | one-connection launch plan | `7de102c9a37f1c254a2cfb5136a200b65fbea17e95c580146aa7021c7686e229` |
-| finite local launch guard | `3e050683ff63533f7e80c06cbc2f95aa7140576b9587b1e43e62199f4f28c92c` |
+| finite local launch guard | `3acb0595e85c1c61fae5c567707e43613b1b9fa2c2a927a217811e7a82f799df` |
 
 Stage 2 permits one connection attempt, one metadata transfer of at most
 65,536 bytes, a 20-second connect timeout and a 120-second local dispatch wall

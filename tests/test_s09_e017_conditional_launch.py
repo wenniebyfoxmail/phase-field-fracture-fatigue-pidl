@@ -101,6 +101,8 @@ def _admission_evidence(root: Path) -> Path:
         {
             **shared,
             "terminal_state": "ADMISSION_ONLY_AUTHORITY_CONSUMED_NO_RETRY",
+            "retry": False,
+            "reconnect": False,
         },
     )
     return root
@@ -279,6 +281,51 @@ def test_launch_guard_records_log_publication_failure(
     )
     assert receipt["first_reason"] == "LOCAL_LOG_WRITE_FAILED"
     assert receipt["evidence_write_errors"][0]["artifact"] == "stdout"
+    assert (evidence / "guard_receipt.json").is_file()
+
+
+def test_launch_guard_kills_process_and_receipts_communication_failure(
+    tmp_path: Path, monkeypatch
+) -> None:
+    admission = tmp_path / "admission" / handoff_module.STAGE1_ATTEMPT_ID
+    monkeypatch.setattr(handoff_module, "EXPECTED_ADMISSION_ROOT", admission)
+    _admission_evidence(admission)
+    authority = _execution_authority(tmp_path / "execution_authority.json")
+    launcher = tmp_path / "launcher.py"
+    plan = tmp_path / "plan.sh"
+    launcher.write_text("# reviewed launcher\n")
+    plan.write_text("#!/bin/bash\nexit 0\n")
+    monkeypatch.setattr(launch_guard, "ROOT", tmp_path)
+    evidence = (
+        tmp_path
+        / "local_archive/experiments/S09-E017/final_launch_attempts"
+        / launch_guard.FINAL_ATTEMPT_ID
+    )
+    evidence.mkdir(parents=True)
+
+    class BrokenProcess:
+        pid = 987654
+        returncode = None
+
+        def communicate(self, timeout):
+            raise OSError(f"fixture communication failure after {timeout}")
+
+    killed = []
+    receipt = launch_guard.run_guard(
+        admission_evidence_root=admission,
+        execution_authority=authority,
+        launcher=launcher,
+        launcher_sha256=hashlib.sha256(launcher.read_bytes()).hexdigest(),
+        plan=plan,
+        plan_sha256=hashlib.sha256(plan.read_bytes()).hexdigest(),
+        evidence_root=evidence,
+        attempt_id=launch_guard.FINAL_ATTEMPT_ID,
+        execute_authorised_final_launch=True,
+        popen=lambda *_args, **_kwargs: BrokenProcess(),
+        kill_process_group=lambda pid, sig: killed.append((pid, sig)),
+    )
+    assert receipt["first_reason"] == "FINAL_LAUNCH_PROCESS_IO_FAILED"
+    assert killed == [(987654, launch_guard.signal.SIGKILL)]
     assert (evidence / "guard_receipt.json").is_file()
 
 
