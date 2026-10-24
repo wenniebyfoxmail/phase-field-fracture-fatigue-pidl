@@ -1,6 +1,8 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-24 17:42 UTC）
+## 实际进展（2026-10-24 20:13 UTC）
+
+**当前控制状态：原六作业resident已正常结束，最后c83s4 fit完整终态已回收。首项D3 c1评分在启动前检查发生控制字段KeyError；20:10:17只读确认无launch intent/receipt、无评分进程。五项评分与C0 release全部未执行，旧条件派发已停止，heartbeat不得自动继续；独立本地修复候选已核验，等待用户明确继续授权。原始结果分析和报告整理可以继续。**
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -49,6 +51,24 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 后处理调度明确由`pidl_history_audit`承接：队列全部正常结束、身份/finished/SHA及进程清理核实后，GPU5串行运行已准备D3 scorer 1000d3c6与D4 scorer 75044464。D4 c1s2用唯一真实matrix+fit+continuation合并inventory，c83两态同样绑定实际完整发布快照；c1s4没有合格F1目标就保持unavailable。队列运行、halt、未知身份或技术失败时不手工越过或重试；root不并行调度GPU。C0条件release的真实失败f64终态及机制条件现已满足，另见下方独立一次决定；必须排在resident和上述五个评分正常终结/清理后，不插入或修改resident。该分工完成已有比较与预声明条件分支。
 
 本对话15分钟app持久化自动接续的首次创建曾被自动审批拒绝，理由为缺少明确人方许可，并存在已暂停HQ托管；该次未创建。随后用户对本对话、15分钟、静默无变化、报告交付后停止及不恢复跨对话HQ的完整问题，明确回答“允许本对话自动接续”。2026-10-24 00:19 UTC工具已成功创建`pidl-fem` heartbeat，并回读确认ACTIVE、15分钟、目标为本对话`01a15fd3-ed7b-7122-9ef4-eb5846c4a6c8`。现有resident和两机执行者的独占分工不变；自动接续先查原执行者，避免重复调度。此许可不授权失败重试或额外试验，也不恢复HQ托管。该控制层状态不构成任何科学结果。
+
+## c83s4 拟合终态与后处理启动前失败（2026-10-24 19:57–20:10 UTC）
+
+最后c83s4原结构全参数float64 seen-target拟合于19:57:18.842 UTC正常exit0，25463.100028 GPU秒；12602 L-BFGS步、28334 closures、65发布快照、零历史提交。真实停止为`fit_stagnation_no_capacity_lower_bound`，非超时或技术故障。Q=.0252961367082、J=.00554544189594、G=.0246808145437，最大u/v/d误差.00589986212/.10145885574/.33212419240；既定Q≤.001和maxd≤.01均未达到。原函数族、teacher初始化和无L2目标仍仅属于seen-target路径，没有流入physics-only。
+
+fresh机械残差=.09718388920、phase box KKT=17.05011639，physical=false、feasible=false；不可逆违反=.33212419240、上界违反=.00267655736、负损伤=.00744885064，BC通过、fresh历史和f差为0。86756节点中81666低于old，77218为负damage，585超过1。保存标量中G²占Q²95.1942%，v项占G²88.2175%；仅作原报告代数分解，没有在Mac重算GP梯度。较小目标误差不构成物理成功，有限拟合停滞也不构成容量下界。
+
+同前态保存字段比较J：L+ .01378120592、L0 .01839499403、C+ .05106520835、C0 .13748788294、fit .00554544190；五个网络末态均被拒绝，目标/精度/工作量不同，不能据此算软件修复收益或优化效率。fit与matrix的physics manifest字节相同，所有old damage/history/driver逐数组等于同一F1 c83s3，尺度/网格/原F1目标核验一致。C0全部d=old；C+仅两节点改变；F1本步6318节点增损伤。完整对照 `analysis/c83s4_completed_endpoint_comparison_20261024.json/.md`，JSON SHAaec09d731df4bca079e504c951a3730f79d4e7697c4a58f06fa17fa4f93abef4。
+
+combined receipt SHAff75baa96f197afee6999018c4a36c89eb924c0c0f87376ea0c65129dbaf3879，192文件、archive1203025920 B；final completion SHA2de9e1aed902005f62ec1e880344623ca55434077ee6dd28e375b14830bb0726，fields SHA54bc93abef6d72eaa5fac9c08eb258e57e454bed1f095b8c4a57966938893580。root复核关键metadata/fields字节及completion/work/watchdog/queue一致性；控制记录 `analysis/c83s4_fit_terminal_control_20261024.json` SHA06d62c248fd308eb915b6355e9a9cf1129466d4ff32ad0bfa99076a6d218bcf4。
+
+resident于19:57:31.091 UTC记录fixed_queue_completed、count6、no_retries=true，全部所属进程清理；19:58:33实际只读观察active_jobs为空、scheduler不存在、GPU5 4MiB/0%，其它共享GPU作业未触碰。原执行者已生成唯一c83s4全量评分准备包，109 replay=44 matrix+65 fit，未据准备状态宣称评分完成。
+
+20:09:32 D3 c1评分输入实际上传成功；首次派发在检查原训练前置作业时因`remote_dispatch.py:120`读取`prior['name']`而KeyError。冻结plan的predecessor.job只有job/job_root，无name；异常在任何评分launch intent创建之前。20:10:17只读检查确认launch_intent/launch_receipt/supervisor/output/collection_result全部不存在，无匹配评分进程、GPU5空闲。因此这是启动前控制兼容性故障，零评分计算，不是科学求解失败。五项评分及C0 release均未执行；没有自动修复重试，原失败脚本和请求字节保留。
+
+持久停止记录 `run_workspace/postprocessing_dispatch_20261024/halted.json` SHAd850c3fe95eb0f85dc86183830139a121b583207fe2e64a693bd4a2f1812d4a4，实际无启动收据SHA055ed4710372093e712715bf50c2670a885ac80ddbe6ca93fb39d20d7db5bb44；root控制记录 `analysis/scoring_prelaunch_failure_control_20261024.json`。仅准备独立本地控制字段修复，不修改科学代码、输入目标或阈值，不上传、不派发；依用户技术失败后不自动重试的规则，修复后需用户明确继续原评分/C0条件链。
+
+独立本地派发修复候选现已就绪：`run_workspace/postprocessing_dispatch_20261024/schema_compatibility_candidate_20261024/remote_dispatch.py` SHA5478fe2d48d51efafd8a910718e7ad8e3ce6536f956f6a442df7676d84ba49b2。只从已绑定job_root解析训练作业名，并校验name/job/顶层predecessor标签一致，替换两处直接name索引；既有科学算子、计划、目标、阈值和原失败材料保持不变。本地回归复现原KeyError，真实7个训练条目与5份评分准备包均通过，5类路径/标识矛盾均拒绝；21份原材料SHA保持，零网络/子进程/execute/科学计算。validation receipt SHA f69770a749b01dabfb22f88da4663a8ab94fc9139ad3816f9ca9c1feb75e6d06；候选及diff可审阅，但未部署/派发，不代表远端运行通过。用户继续许可仍待确认。
 
 ## c1s2 节点 oracle 的真实终态与归因修正（2026-10-24 17:27 UTC）
 
