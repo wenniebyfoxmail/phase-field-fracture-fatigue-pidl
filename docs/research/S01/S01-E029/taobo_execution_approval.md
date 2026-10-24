@@ -1,4 +1,14 @@
-# S01-E029 Taobo GPU5：迁移及一次R001完整审批版（待用户批准迁移与执行）
+# S01-E029 Taobo GPU5：迁移及一次R001完整审批版（2026-10-24用户已批准，执行状态见下）
+
+## 2026-10-24：整包已批准，GPU5资源准入等待，R001未启动
+
+用户已明确“批准，请执行”，本次整包不再待批准。精确Linux v4源码包/268绑定本地核对未变。一次成功只读SSH核实GPUServer8/drtao、三挂载和八卡：GPU5 UUID匹配，但compute PID3290978、利用率100%、空闲3292MiB，不满足无compute/0%/至少8192MiB；其余七卡也均有compute。E029任务根不存在。
+
+因此没有源码/私有输入传送、公开推送、runtime安装、远端授权或launch_claim，也没有producer、前向、fit或GT/RGB/maps/OOF读取。保留率及净收益为null。这是已知零启动资源等待，不是科学失败；未消耗科学R001，不另造RunID、不触碰现有任务、不默许换卡或重复启动。3600秒限制仍取消；授权范围和原首停/重查边界保持。当前待解决的是指定GPU资源，不是再次批准同一整包。
+
+实际记录：`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E029/execution_R001/taobo_execution_20261024/admission_receipt.json`。
+
+以下为已批准整包及原前瞻管理条款，保留原版本措辞；其中“待批准”只描述签发前历史，不代表再次请批。
 
 目的：让已合格的空间信息帮助有益修正进入原前三，在保住E003的前提下产生实际条件OOF净收益。此版只适配Linux平台；原四臂、FIT/held角色、固定交集、容量/弃权、9/12保旧和主D都不改。新确认/validation/reserve与353/1459/2028/5982继续封存。九主地点仍为旧开发数据，不当独立新地点。
 
