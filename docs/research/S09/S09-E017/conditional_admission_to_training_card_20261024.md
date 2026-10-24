@@ -70,7 +70,7 @@ execution authority can be consumed:
 
 Any mismatch stops this card before Stage 2. The reviewed handoff verifier is
 `scripts/verify_s09_e017_admission_handoff.py`, SHA256
-`e8307066367ddace921653c45bbb9c47f9f422c42ed3ecf0a30f7705e4777876`.
+`7f529e58ca295ec09ec50899b3f816e06e384b46f560aaf03641f525b2c58bb2`.
 
 ## Stage 2: conditional final-run launch
 
@@ -112,10 +112,10 @@ The reviewed dispatch is frozen as:
 
 | item | SHA256 |
 |---|---|
-| handoff verifier | `e8307066367ddace921653c45bbb9c47f9f422c42ed3ecf0a30f7705e4777876` |
-| detached resolver-to-producer launcher | `1c42517e3b5ce7c932d3e257af074d1979eb049c6ba4e5807c8f4e7841104eb3` |
-| one-connection launch plan | `41786736b0907f96182d31a992104290daf75dbf44f5380967bef01d61d21668` |
-| finite local launch guard | `011afcf8061e8d9c9ee123700c7a1f6ee048ceb97a237af65079a5b62d3da3fe` |
+| handoff verifier | `7f529e58ca295ec09ec50899b3f816e06e384b46f560aaf03641f525b2c58bb2` |
+| detached resolver-to-producer launcher | `f987390e689ac3564c3b085de42ad97d38ee6a909dcf8092a7a17abc098dceba` |
+| one-connection launch plan | `7de102c9a37f1c254a2cfb5136a200b65fbea17e95c580146aa7021c7686e229` |
+| finite local launch guard | `3e050683ff63533f7e80c06cbc2f95aa7140576b9587b1e43e62199f4f28c92c` |
 
 Stage 2 permits one connection attempt, one metadata transfer of at most
 65,536 bytes, a 20-second connect timeout and a 120-second local dispatch wall

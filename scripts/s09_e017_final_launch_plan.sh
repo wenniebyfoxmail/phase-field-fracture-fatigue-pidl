@@ -197,7 +197,7 @@ log="$5"
 printf -v command '%q ' timeout --signal=TERM --kill-after=10s 1830s \
   python3 "$launcher" --code-root "$code" --control-root "$control" \
   --session-name "$session" --log-path "$log"
-tmux new-session -d -s "$session" "$command"
+tmux new-session -d -s "$session" -c "$code" "$command"
 for _ in $(seq 1 30); do
   if [[ -f "$control/final_launch_failure.json" ]]; then
     cat "$control/final_launch_failure.json"

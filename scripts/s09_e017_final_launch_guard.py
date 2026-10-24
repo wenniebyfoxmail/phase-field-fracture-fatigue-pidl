@@ -25,6 +25,7 @@ ARCHIVE_SHA256 = "4ece34be786fc85bb9655c076c13c45d276d08dfde405a8fb1367e4b49ffdd
 CONTROL_COMMIT = "2002538d9a30c8d4006ccaff5959cd214958fc82"
 ADAPTER_COMMIT = "662005f1fde22cb9a6e8069f4e430b7190f21860"
 WALL_SECONDS = 120
+FINAL_ATTEMPT_ID = "s09e017-final-launch-20261024-r1"
 
 
 def _sha(payload: bytes) -> str:
@@ -111,9 +112,20 @@ def run_guard(
     evidence_root: Path,
     attempt_id: str,
     execute_authorised_final_launch: bool,
+    popen=subprocess.Popen,
+    publisher=_publish,
 ) -> dict:
     if not execute_authorised_final_launch:
         raise PermissionError("--execute-authorised-final-launch is required")
+    if attempt_id != FINAL_ATTEMPT_ID:
+        raise ValueError("final launch attempt id drift")
+    expected_evidence_root = (
+        ROOT
+        / "local_archive/experiments/S09-E017/final_launch_attempts"
+        / FINAL_ATTEMPT_ID
+    )
+    if evidence_root.resolve() != expected_evidence_root.resolve():
+        raise ValueError("final launch evidence root drift")
     handoff = verify_handoff(admission_evidence_root)
     authority_bytes = execution_authority.read_bytes()
     authority = json.loads(authority_bytes)
@@ -133,9 +145,9 @@ def run_guard(
     }
     if any(path.exists() for path in paths.values()):
         raise FileExistsError("final launch evidence path conflict")
-    _publish(paths["handoff"], handoff)
+    publisher(paths["handoff"], handoff)
     authority_sha256 = _sha(authority_bytes)
-    _publish(
+    publisher(
         paths["consumption"],
         {
             "schema_version": "s09-e017-final-launch-authority-consumption-v1",
@@ -165,37 +177,58 @@ def run_guard(
         }
     )
     start = time.monotonic()
-    process = subprocess.Popen(
-        ["/bin/bash", str(plan)],
-        cwd=ROOT,
-        env=environment,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        start_new_session=True,
-    )
+    process = None
     timed_out = False
     try:
-        stdout, stderr = process.communicate(timeout=WALL_SECONDS)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        os.killpg(process.pid, signal.SIGTERM)
+        process = popen(
+            ["/bin/bash", str(plan)],
+            cwd=ROOT,
+            env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            start_new_session=True,
+        )
         try:
-            stdout, stderr = process.communicate(timeout=10)
+            stdout, stderr = process.communicate(timeout=WALL_SECONDS)
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
-            stdout, stderr = process.communicate()
-    _publish(paths["stdout"], stdout.encode())
-    _publish(paths["stderr"], stderr.encode())
-    if timed_out:
+            timed_out = True
+            os.killpg(process.pid, signal.SIGTERM)
+            try:
+                stdout, stderr = process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                stdout, stderr = process.communicate()
+        process_returncode = process.returncode
+        process_error = None
+    except Exception as error:
+        stdout = ""
+        stderr = ""
+        process_returncode = None if process is None else process.returncode
+        process_error = f"{type(error).__name__}: {error}"
+    evidence_write_errors = []
+    for name, payload in (("stdout", stdout), ("stderr", stderr)):
+        try:
+            publisher(paths[name], payload.encode())
+        except Exception as error:
+            evidence_write_errors.append(
+                {"artifact": name, "error": f"{type(error).__name__}: {error}"}
+            )
+    if process_error is not None:
+        terminal = "FINAL_LAUNCH_GUARD_STOPPED"
+        reason = "FINAL_LAUNCH_PROCESS_START_FAILED"
+    elif timed_out:
         terminal = "FINAL_LAUNCH_GUARD_STOPPED"
         reason = "FINAL_LAUNCH_DISPATCH_WALL_CAP_EXCEEDED"
-    elif process.returncode != 0:
+    elif process_returncode != 0:
         terminal = "FINAL_LAUNCH_GUARD_STOPPED"
         reason = "FINAL_LAUNCH_PLAN_EXIT_NONZERO"
     else:
         terminal = "FINAL_LAUNCH_DISPATCH_COMPLETED"
         reason = None
+    if evidence_write_errors and reason is None:
+        terminal = "FINAL_LAUNCH_GUARD_STOPPED"
+        reason = "LOCAL_LOG_WRITE_FAILED"
     receipt = {
         "schema_version": "s09-e017-final-launch-guard-receipt-v1",
         "terminal_state": terminal,
@@ -206,13 +239,15 @@ def run_guard(
         "launcher_sha256": launcher_sha256,
         "plan_sha256": plan_sha256,
         "elapsed_seconds": time.monotonic() - start,
-        "process_returncode": process.returncode,
+        "process_returncode": process_returncode,
+        "process_error": process_error,
         "stdout_sha256": _sha(stdout.encode()),
         "stderr_sha256": _sha(stderr.encode()),
+        "evidence_write_errors": evidence_write_errors,
         "retry": False,
         "reconnect": False,
     }
-    _publish(paths["guard"], receipt)
+    publisher(paths["guard"], receipt)
     return receipt
 
 

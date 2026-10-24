@@ -6,6 +6,18 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
+
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "source"))
+
+from s09_e017_admission_only import (  # noqa: E402
+    sha256_bytes,
+    strict_json,
+    validate_authority,
+    validate_candidate,
+)
 
 
 RUN_ID = "S09-E017-R001-factorised-head-p0"
@@ -13,6 +25,25 @@ SUCCESS = "ADMISSION_ONLY_METADATA_READY__SCIENTIFIC_IDENTITIES_UNVERIFIED"
 GUARD_SUCCESS = "ADMISSION_ONLY_PLAN_COMPLETED"
 ARCHIVE_SHA256 = "4ece34be786fc85bb9655c076c13c45d276d08dfde405a8fb1367e4b49ffdd22"
 ARCHIVE_BYTES = 14_359_316
+STAGE1_CANDIDATE_SHA256 = (
+    "152fa2036e90d04d6aa3f7ae15b7f2c9cfebab4dabfd9d3f73be492d6771f702"
+)
+STAGE1_PLAN_SHA256 = "df8805680dcf710e65d389165fd317933debcdf449db36436fffb44617e8105e"
+STAGE1_ATTEMPT_ID = "s09e017-admissiononly-20261024-r2"
+EXPECTED_ADMISSION_ROOT = (
+    ROOT
+    / "local_archive/experiments/S09-E017/admission_only_attempts"
+    / STAGE1_ATTEMPT_ID
+)
+ZERO_COUNTERS = {
+    "scientific_asset_content_bytes": 0,
+    "cuda_initializations": 0,
+    "runtime_builds": 0,
+    "model_forwards": 0,
+    "autograd_collections": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0,
+}
 
 
 def _bytes_sha256(payload: bytes) -> str:
@@ -25,9 +56,31 @@ def _load(path: Path) -> tuple[dict, bytes]:
 
 
 def verify_handoff(root: Path) -> dict:
+    if root.resolve() != EXPECTED_ADMISSION_ROOT.resolve():
+        raise ValueError("Stage 1 evidence root drift")
     guard, _ = _load(root / "guard_receipt.json")
     consumption, _ = _load(root / "authority_consumption_receipt.json")
-    authority, authority_bytes = _load(root / "admission_only_authority.json")
+    authority, authority_bytes = strict_json(root / "admission_only_authority.json")
+    candidate_path = (
+        ROOT / "docs/research/S09/S09-E017/"
+        "s09_e017_admission_only_candidate_20261020.json"
+    )
+    candidate, candidate_bytes = strict_json(candidate_path)
+    validate_candidate(candidate)
+    if sha256_bytes(candidate_bytes) != STAGE1_CANDIDATE_SHA256:
+        raise ValueError("Stage 1 candidate hash mismatch")
+    if authority["candidate_sha256"] != STAGE1_CANDIDATE_SHA256:
+        raise ValueError("Stage 1 authority candidate drift")
+    if authority["plan_sha256"] != STAGE1_PLAN_SHA256:
+        raise ValueError("Stage 1 authority plan drift")
+    validate_authority(
+        authority,
+        candidate,
+        candidate_sha256=STAGE1_CANDIDATE_SHA256,
+        plan_sha256=STAGE1_PLAN_SHA256,
+    )
+    if authority["admission_only_attempt_id"] != STAGE1_ATTEMPT_ID:
+        raise ValueError("Stage 1 attempt id drift")
     stdout = (root / "stdout.log").read_bytes()
     if guard["terminal_state"] != GUARD_SUCCESS:
         raise ValueError("admission-only guard did not complete")
@@ -51,6 +104,8 @@ def verify_handoff(root: Path) -> dict:
         for key, value in expected_shared.items():
             if receipt[key] != value:
                 raise ValueError(f"{name} {key} mismatch")
+    if consumption["terminal_state"] != "ADMISSION_ONLY_AUTHORITY_CONSUMED_NO_RETRY":
+        raise ValueError("Stage 1 consumption state drift")
     lines = [line for line in stdout.decode("utf-8").splitlines() if line.strip()]
     if len(lines) != 2:
         raise ValueError("admission-only stdout record count drift")
@@ -70,7 +125,7 @@ def verify_handoff(root: Path) -> dict:
         raise ValueError("metadata archive read count mismatch")
     if metadata["execution_authorized"] or metadata["producer_authorized"]:
         raise ValueError("metadata-only receipt opened execution")
-    if any(metadata["counters"].values()):
+    if metadata["counters"] != ZERO_COUNTERS:
         raise ValueError("metadata-only receipt has scientific operations")
     if metadata["retry"] is not False or metadata["reconnect"] is not False:
         raise ValueError("metadata-only receipt permits replay")

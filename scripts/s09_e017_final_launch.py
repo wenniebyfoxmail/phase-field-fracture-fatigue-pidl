@@ -146,6 +146,7 @@ def main() -> None:
             },
         )
         raise
+    os.chdir(args.code_root)
     os.execvpe(producer[0], producer, environment)
 
 
