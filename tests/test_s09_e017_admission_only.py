@@ -655,13 +655,59 @@ def test_python_control_files_have_no_scientific_imports_or_producer_calls() -> 
 def test_plan_has_one_connection_and_one_rsync_without_producer_entrypoint() -> None:
     text = PLAN_PATH.read_text()
     assert text.count("ssh -MNf") == 1
-    assert text.count("rsync -aR") == 1
+    assert text.count("rsync -a --ignore-existing") == 1
+    assert "rsync -aR" not in text
+    assert 'LOCAL_STAGE="$AUTHORITY_PARENT/admission_only_stage"' in text
+    assert 'cp "$AUTHORITY" "$LOCAL_STAGE/$AUTHORITY_NAME"' in text
+    assert '"$LOCAL_STAGE/" \\' in text
     assert "run_s09_e017_producer.py" not in text
     assert "--execute-reviewed-run" not in text
     assert 'CUDA_VISIBLE_DEVICES=""' in text
     assert "ulimit -t 60" in text
     assert "ulimit -v 1048576" in text
     assert text.count("bash -s -- \\\n") == 1
+
+
+def test_local_stage_places_authority_at_helper_root(tmp_path: Path) -> None:
+    text = PLAN_PATH.read_text()
+    start_marker = "# BEGIN_REVIEWED_LOCAL_STAGE_LAYOUT\n"
+    end_marker = "# END_REVIEWED_LOCAL_STAGE_LAYOUT"
+    start = text.index(start_marker) + len(start_marker)
+    end = text.index(end_marker, start)
+    stage_script = text[start:end]
+
+    fake_root = tmp_path / "repo"
+    relative_files = [
+        "source/s09_e017_admission_only.py",
+        "scripts/resolve_s09_e017_admission_only.py",
+        "scripts/run_s09_e017_admission_only.py",
+        "docs/research/S09/S09-E017/s09_e017_admission_only_candidate_20261020.json",
+    ]
+    for relative in relative_files:
+        path = fake_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(relative)
+    authority_parent = tmp_path / "evidence" / "fresh-attempt"
+    authority_parent.mkdir(parents=True)
+    authority_path = authority_parent / "admission_only_authority.json"
+    authority_path.write_text("authority")
+
+    subprocess.run(
+        ["/bin/bash", "-c", stage_script],
+        check=True,
+        env={
+            **os.environ,
+            "ROOT": str(fake_root),
+            "AUTHORITY": str(authority_path),
+            "AUTHORITY_PARENT": str(authority_parent),
+            "AUTHORITY_NAME": authority_path.name,
+        },
+    )
+    stage = authority_parent / "admission_only_stage"
+    assert (stage / "admission_only_authority.json").read_text() == "authority"
+    for relative in relative_files:
+        assert (stage / relative).read_text() == relative
+    assert not (stage / "Users").exists()
 
 
 def test_remote_stdin_script_survives_ssh_command_concatenation(tmp_path: Path) -> None:

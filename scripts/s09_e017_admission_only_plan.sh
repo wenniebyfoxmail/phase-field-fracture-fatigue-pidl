@@ -133,13 +133,25 @@ if [[ "$AUTHORITY_NAME" != "admission_only_authority.json" ]]; then
   echo "authority basename drift" >&2
   exit 66
 fi
-cd "$ROOT"
-rsync -aR --ignore-existing -e "$MUX_RSH" \
-  source/s09_e017_admission_only.py \
-  scripts/resolve_s09_e017_admission_only.py \
-  scripts/run_s09_e017_admission_only.py \
-  docs/research/S09/S09-E017/s09_e017_admission_only_candidate_20261020.json \
-  "$AUTHORITY_PARENT/./$AUTHORITY_NAME" \
+# BEGIN_REVIEWED_LOCAL_STAGE_LAYOUT
+LOCAL_STAGE="$AUTHORITY_PARENT/admission_only_stage"
+if [[ -e "$LOCAL_STAGE" ]]; then
+  echo "local stage path conflict" >&2
+  exit 66
+fi
+mkdir -p \
+  "$LOCAL_STAGE/source" \
+  "$LOCAL_STAGE/scripts" \
+  "$LOCAL_STAGE/docs/research/S09/S09-E017"
+cp "$ROOT/source/s09_e017_admission_only.py" "$LOCAL_STAGE/source/"
+cp "$ROOT/scripts/resolve_s09_e017_admission_only.py" "$LOCAL_STAGE/scripts/"
+cp "$ROOT/scripts/run_s09_e017_admission_only.py" "$LOCAL_STAGE/scripts/"
+cp "$ROOT/docs/research/S09/S09-E017/s09_e017_admission_only_candidate_20261020.json" \
+  "$LOCAL_STAGE/docs/research/S09/S09-E017/"
+cp "$AUTHORITY" "$LOCAL_STAGE/$AUTHORITY_NAME"
+# END_REVIEWED_LOCAL_STAGE_LAYOUT
+rsync -a --ignore-existing -e "$MUX_RSH" \
+  "$LOCAL_STAGE/" \
   "$HOST:$HELPER_ROOT/"
 remaining_seconds >/dev/null
 
