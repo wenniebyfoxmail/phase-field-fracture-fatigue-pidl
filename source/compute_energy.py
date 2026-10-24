@@ -38,7 +38,8 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
                    f_fatigue=1.0, crack_tip_weights=None,
                    element_subset=None, importance_weights=None,
                    element_mask=None, g_stiffness_override=None,
-                   irreversibility_penalty_cfg=None):
+                   irreversibility_penalty_cfg=None,
+                   include_irreversibility=True):
     """
     计算总能量
 
@@ -81,6 +82,7 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
         f_fatigue=f_fatigue,
         g_stiffness_override=g_stiffness_override,
         irreversibility_penalty_cfg=irreversibility_penalty_cfg,
+        include_irreversibility=include_irreversibility,
     )
 
     if element_mask is not None:
@@ -159,7 +161,8 @@ def _irreversibility_penalty_enabled(cfg):
 
 def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
                              f_fatigue=1.0, g_stiffness_override=None,
-                             irreversibility_penalty_cfg=None):
+                             irreversibility_penalty_cfg=None,
+                             include_irreversibility=True):
     '''
     计算每个单元的能量。
 
@@ -188,7 +191,6 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
     # 步骤3: 获取相场模型参数
     # =========================================================================
     damageFn, _, c_w = pffmodel.damageFun(alpha_elem)   # w(α), w'(α), c_w
-    weight_penalty   = pffmodel.irrPenalty()             # γ_ir
 
     # =========================================================================
     # 步骤4: 弹性能 E_el = ∫ [g(α)Ψ⁺ + Ψ⁻] dΩ
@@ -212,6 +214,14 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
     # =========================================================================
     # 步骤6: 不可逆性惩罚 E_irr = (1/2)γ_ir ∫ ⟨α - α_{n-1}⟩²₋ dΩ
     # =========================================================================
+    if not include_irreversibility:
+        # Keep the return contract but do not even enter the E_irr calculation
+        # path.  This is stronger than multiplying a constructed penalty by
+        # zero: alpha/history cannot reach the returned zero through E_irr.
+        E_hist_penalty = torch.zeros_like(E_d)
+        return E_el, E_d, E_hist_penalty
+
+    weight_penalty = pffmodel.irrPenalty()  # γ_ir; needed only on this path
     if _irreversibility_penalty_enabled(irreversibility_penalty_cfg):
         mode = (
             irreversibility_penalty_cfg.get("mode", "fem_gp_tri3")

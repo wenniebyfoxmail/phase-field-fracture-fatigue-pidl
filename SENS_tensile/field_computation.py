@@ -150,12 +150,15 @@ class FieldComputation:
         if self.local_patch_enabled:
             if self.local_patch_wr <= 0.0:
                 raise ValueError("local_patch_dict['wr'] must be positive")
-            if self.local_patch_output_mode not in ('all', 'alpha_only', 'uv_only'):
+            if self.local_patch_output_mode not in ('all', 'alpha_only', 'uv_only', 'q_only'):
                 raise ValueError(
-                    "local_patch_dict['output_mode'] must be 'all', 'alpha_only', or 'uv_only'"
+                    "local_patch_dict['output_mode'] must be 'all', 'alpha_only', 'uv_only', or 'q_only'"
                 )
-            if self.local_patch_blend_mode not in ('additive', 'partition'):
-                raise ValueError("local_patch_dict['blend_mode'] must be 'additive' or 'partition'")
+            if self.local_patch_blend_mode not in ('additive', 'partition', 'damage_partition'):
+                raise ValueError("local_patch_dict['blend_mode'] must be 'additive', 'partition', or 'damage_partition'")
+            if (self.local_patch_output_mode == 'q_only') != (
+                    self.local_patch_blend_mode == 'damage_partition'):
+                raise ValueError("q_only patches require blend_mode='damage_partition'")
             if self.local_patch_n_patches < 1:
                 raise ValueError("local_patch_dict['n_patches'] must be >= 1")
 
@@ -179,7 +182,7 @@ class FieldComputation:
             def _make_patch_net():
                 patch_net = NeuralNet(
                     input_dimension=2,
-                    output_dimension=3,
+                    output_dimension=1 if self.local_patch_output_mode == 'q_only' else 3,
                     n_hidden_layers=int(_lp.get('hidden_layers', 3)),
                     neurons=int(_lp.get('neurons', 80)),
                     activation=str(_lp.get('activation', 'TrainableReLU')),
@@ -240,6 +243,51 @@ class FieldComputation:
             'beta': beta,
         }
 
+    def _network_output(self, inp):
+        """Return the raw three-channel output before the damage map.
+
+        ``damage_partition`` is intentionally channel-specific: only raw q is
+        blended.  Applying the existing full-output partition to an alpha-only
+        patch would multiply the global u/v channels by ``1-beta``.
+        """
+        if self.williams_enabled:
+            inp_nn = compute_williams_features(
+                inp, x_tip=self.x_tip, l0=self.l0, y_tip=self.y_tip,
+                r_min=self.williams_r_min, theta_mode=self.williams_theta_mode,
+            )
+        elif self.symmetry_prior:
+            y_col = inp[:, 1:2]
+            inp_nn = torch.cat([inp[:, 0:1], 8.0 * y_col**2 - 1.0], dim=1)
+        else:
+            inp_nn = inp
+
+        out = self.net(inp_nn)
+        patch_out = self._local_patch_output(inp)
+        if patch_out is None:
+            return out
+        if self.local_patch_blend_mode == 'damage_partition':
+            beta = patch_out['beta'][:, 0]
+            out = out.clone()
+            out[:, 2] = (1.0 - beta) * out[:, 2] + beta * patch_out['patch'][:, 0]
+        elif self.local_patch_blend_mode == 'partition':
+            out = (1.0 - patch_out['beta']) * out + patch_out['beta'] * patch_out['patch']
+        else:
+            out = out + patch_out['beta'] * patch_out['patch']
+        return out
+
+    def raw_damage_channel(self, inp):
+        """Return the exact raw q consumed by ``alpha_constraint``."""
+        return self._network_output(inp)[:, 2]
+
+    def set_local_patch_centers(self, centers):
+        """Move an enabled patch only between accepted physical states."""
+        if not self.local_patch_enabled:
+            raise RuntimeError("cannot set centers when the local patch is disabled")
+        centers = tuple((float(x), float(y)) for x, y in centers)
+        if len(centers) != self.local_patch_n_patches:
+            raise ValueError("new center count must match the constructed patch networks")
+        self.local_patch_centers = centers
+
     def _normalized_tb_bubble(self, inp, y0, yL):
         """Top-bottom bubble in [0, 1], zero on y=y0 and y=yL."""
         H = yL - y0
@@ -264,41 +312,7 @@ class FieldComputation:
         y0 = self.domain_extrema[1, 0]
         yL = self.domain_extrema[1, 1]
 
-        # ★ Direction 4: 计算 NN 输入（Williams 特征 or 原始坐标）
-        if self.williams_enabled:
-            inp_nn = compute_williams_features(
-                inp,
-                x_tip=self.x_tip,
-                l0=self.l0,
-                y_tip=self.y_tip,
-                r_min=self.williams_r_min,
-                theta_mode=self.williams_theta_mode,
-            )
-        elif self.symmetry_prior:
-            # ★ 2026-05-06 mirror symmetry prior:
-            # NN sees (x, y²) instead of (x, y). NN raw output is automatically
-            # even in y (function of y²). Below we apply odd parity to disp_v_raw
-            # by multiplying by y, so the NN correction has the right symmetry
-            # for the SENT geometry. v_BC and bubble are unaffected (BC and
-            # bubble may not be odd; the prior is on the NN correction only,
-            # consistent with the variational symmetric solution).
-            # ★ 2026-05-07 input feature scaling fix: map [0, 0.25] → [-1, 1] so
-            # the y-axis input has the same scale + sign range as x ∈ [-0.5, 0.5]
-            # rescaled. Without this rescale, RPROP sign-based step updates were
-            # ill-conditioned in the y direction, causing 6-15× slowdown vs baseline.
-            # NN raw output is still even in y (function of y² only).
-            y_col = inp[:, 1:2]
-            inp_nn = torch.cat([inp[:, 0:1], 8.0 * y_col**2 - 1.0], dim=1)
-        else:
-            inp_nn = inp   # 原始行为，无开销
-
-        out = self.net(inp_nn)     # 神经网络输出（8D 或 2D 输入）
-        patch_out = self._local_patch_output(inp)
-        if patch_out is not None:
-            if self.local_patch_blend_mode == 'partition':
-                out = (1.0 - patch_out['beta']) * out + patch_out['beta'] * patch_out['patch']
-            else:
-                out = out + patch_out['beta'] * patch_out['patch']
+        out = self._network_output(inp)
 
         # ★ 2026-05-06 mirror symmetry: enforce odd parity on disp_v_raw correction
         # disp_u_raw: even (NN raw output already even via y² input) — pass through
