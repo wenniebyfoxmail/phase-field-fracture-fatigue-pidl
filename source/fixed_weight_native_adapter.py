@@ -16,20 +16,58 @@ from s09_stage0a_transition import carrara_f
 
 PRODUCER = "862992a60edc7f59335365beacb5c71fc8592a7a"
 RULE = "native862992_recovered_load_source_f_certified_energy_v1"
+LEGACY_PRODUCER = "53ce560b6d20b336d6ec92ccf56ed2b230e804ce"
+LEGACY_RULE = "native53ce_recovered_load_source_f_no_negative_energy_v1"
 # Exact index tokens, bound to the two immutable index hashes in the runner.
 # This is an explicit archive mapping, not an assumed MATLAB print precision.
 CSV_LOADS = {
     "hard5_u0115_stage0b": ("0", "0.028749885", "0.057499885", "0.086249885", "0.114999885", "0"),
     "hard5_u0125_stage0b": ("0", "0.031249875", "0.062499875", "0.093749875", "0.124999875", "0"),
+    # The 53ce archives are a separately bound source profile.  Their index
+    # tokens are retained verbatim; they are not rounded to their nominal
+    # load factors or relabelled as the newer 862992 producer.
+    "hard5_u011_stage0b": ("0", "0.02749989", "0.05499989", "0.08249989", "0.10999989", "0"),
+    "hard5_u012_stage0b": ("0", "0.02999988", "0.05999988", "0.08999988", "0.11999988", "0"),
+    "hard5_u013_stage0b": ("0", "0.03249987", "0.06499987", "0.09749987", "0.12999987", "0"),
 }
 BINARY_LOADS = {
     "hard5_u0115_stage0b": (.028749885000000003, .05749988500000001, .086249885, .114999885, 0.),
     "hard5_u0125_stage0b": (.031249875, .062499875, .093749875, .124999875, 0.),
+    # Do not substitute the decimal-print literals below for the source
+    # binary64 values captured in the original config receipts.  `fromhex` makes
+    # that exact source binary binding visible and portable.
+    "hard5_u011_stage0b": (.02749989, .05499989,
+                            float.fromhex("0x1.51eb679793daep-4"), .10999989, 0.),
+    "hard5_u012_stage0b": (.02999988, .05999988,
+                            float.fromhex("0x1.70a3b6d3e71d5p-4"),
+                            float.fromhex("0x1.eb84fe81fb983p-4"), 0.),
+    "hard5_u013_stage0b": (.03249987, .06499987, .09749987, .12999987, 0.),
 }
 NEGATIVE_POINTS = {
     ("hard5_u0115_stage0b", "c0058_s05"): {(84858, 1)},
     ("hard5_u0115_stage0b", "c0087_s05"): {(79606, 2), (79606, 3)},
     ("hard5_u0125_stage0b", "c0058_s05"): {(77296, 1), (77296, 2)},
+}
+
+# Admission stays finite and explicit.  The 53ce profile carries the recorded
+# historical source-audit conclusion for the relevant AMOR, fatigue-update, and
+# post-iteration identifiers; the legacy runner reports those identifiers only
+# and does not reopen a producer checkout at runtime.  Its three named archives
+# had zero H<0 and q<0 support over every hash-verified physical payload, so no
+# roundoff repair is licensed for that profile.
+ARCHIVE_PRODUCERS = {
+    "hard5_u0115_stage0b": PRODUCER,
+    "hard5_u0125_stage0b": PRODUCER,
+    "hard5_u011_stage0b": LEGACY_PRODUCER,
+    "hard5_u012_stage0b": LEGACY_PRODUCER,
+    "hard5_u013_stage0b": LEGACY_PRODUCER,
+}
+ARCHIVE_RULES = {
+    "hard5_u0115_stage0b": RULE,
+    "hard5_u0125_stage0b": RULE,
+    "hard5_u011_stage0b": LEGACY_RULE,
+    "hard5_u012_stage0b": LEGACY_RULE,
+    "hard5_u013_stage0b": LEGACY_RULE,
 }
 
 
@@ -52,8 +90,8 @@ def adapt_native(decoded, key, mesh, material, *, archive, source_commit,
     Caller binds immutable index/static/config/payload and full native sequence.
     Every output tensor owns a copy; raw values remain available in decoded.
     """
-    _require(source_commit == PRODUCER, "unsupported producer arithmetic")
-    _require(archive in CSV_LOADS, "unsupported native archive")
+    _require(archive in ARCHIVE_PRODUCERS, "unsupported native archive")
+    _require(source_commit == ARCHIVE_PRODUCERS[archive], "unsupported producer arithmetic")
     _require(mesh.xy.dtype == torch.float64 and mesh.xy.device.type == "cpu",
              "native admission requires CPU float64")
     _require(tuple(getattr(material, n) for n in material.__dataclass_fields__) ==
@@ -109,7 +147,7 @@ def adapt_native(decoded, key, mesh, material, *, archive, source_commit,
     _require(np.array_equal(state.history.numpy(), wanted), "unexpected history mutation")
     error = torch.abs(history[...,3]-source_f)/source_f
     stable_error = torch.abs(history[...,3]-stable_f)/stable_f
-    receipt = {"rule": RULE, "source_timing": source_timing, "payload_sha256": decoded.payload_sha256,
+    receipt = {"rule": ARCHIVE_RULES[archive], "source_timing": source_timing, "payload_sha256": decoded.payload_sha256,
                "raw_f_source_max_relative_error": float(error.max()),
                "raw_f_stable_max_relative_error": float(stable_error.max()),
                "repairs": repairs, "raw_arrays_preserved": True}

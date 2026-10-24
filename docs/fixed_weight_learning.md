@@ -19,6 +19,29 @@ separate missing evidence. The report gives a zero-new-trajectory reuse path
 and the conditional one-new-condition fallback. This inventory is complete;
 its proposed computations and training remain unstarted.
 
+## Active decision — 2026-10-24 evidence-completion execution
+
+The user has changed this work from the completed C1 inventory to **C1
+scientific validation**: execute the zero-new-trajectory evidence-completion
+path before considering a new FEM condition.  The active D2 is recorded in
+[the execution record](fixed_weight_evidence_completion_20261024.md).  It has
+three bounded parts: trace the U0.1175 partial-access boundary and freeze a
+prospective test-admission protocol; bind the already exposed U0.11/U0.12/U0.13
+native archives to the source-aware interface; and analyse the retained
+development evidence for the declared numerical-reference scope.
+
+This change authorises no training, replay of the historical benchmark,
+protected-target decoding, U0.1175 scoring, or change to the existing
+development manifest.  The frozen independence decision ruled U0.1175 out as
+a strict test and the compatible-archive search found no U0.1225/U0.1275
+candidate by name.  One predeclared U0.1225 trajectory is therefore the
+conditional fallback, using the isolated overlay recorded in the execution
+record. For a strict independent-test role it may launch only under a named,
+non-development custodian with a separately named scorer, protected ACL roots,
+and pre-result no-observation evidence, after the immutable bundle is
+independently reviewed. The current shared MATLAB process also blocks any
+producer launch.
+
 ## Prior handoff — 2026-10-22 fixed-benchmark rule
 
 The native-archive adaptation task is complete and delivered; there is no active

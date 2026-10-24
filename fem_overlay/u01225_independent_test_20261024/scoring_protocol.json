@@ -1,0 +1,44 @@
+{
+  "schema": "fixed_weight_u01225_independent_scoring_protocol_v1",
+  "status": "PRECOMMITTED_NO_MODEL_OR_SCORE",
+  "candidate": {
+    "candidate_id": "hard5_u01225_independent_test",
+    "condition": "U0.1225",
+    "run_id": "hard5_u01225_stage0b_597465a720694a6ea7001a8792de4189",
+    "split": "independent_test",
+    "split_unit": "whole_parameter_condition"
+  },
+  "allowed_predictor_inputs": [
+    "committed origin state",
+    "mesh and material identity",
+    "prescribed action sequence available at the origin"
+  ],
+  "forbidden_predictor_inputs": [
+    "future target field",
+    "target event flag or event time",
+    "target terminal state",
+    "target-derived horizon",
+    "target-derived normalizer",
+    "cycle number alone"
+  ],
+  "evaluation": {
+    "origins": "all non-alias physical origins in native ordinal order",
+    "one_step": true,
+    "open_loop_horizon": "min(20, remaining physical transitions)",
+    "normalizer_fit": "training conditions only",
+    "selection": "architecture, hyperparameters and checkpoint chosen only on validation",
+    "physical_unit_scales": "allowed only if declared before scorer release"
+  },
+  "comparators": [
+    "persistence at the origin state",
+    "same-branch secant extrapolation from the immediately preceding physical transition when one exists"
+  ],
+  "reporting": {
+    "development_receives_raw_fields": false,
+    "development_receives_event_values": false,
+    "allowed_release": "predeclared aggregate score report after isolated scoring",
+    "physical_validation_claim": false
+  },
+  "training_started": false,
+  "scoring_started": false
+}

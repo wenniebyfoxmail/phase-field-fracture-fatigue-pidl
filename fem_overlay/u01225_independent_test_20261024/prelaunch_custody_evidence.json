@@ -1,0 +1,43 @@
+{
+  "schema": "fixed_weight_u01225_prelaunch_custody_evidence_v1",
+  "evidence_status": "DRAFT_REQUIRES_EXTERNAL_CUSTODY_EVIDENCE",
+  "candidate": {
+    "candidate_id": "hard5_u01225_independent_test",
+    "condition": "U0.1225",
+    "run_id": "hard5_u01225_stage0b_597465a720694a6ea7001a8792de4189",
+    "split": "independent_test",
+    "split_unit": "whole_parameter_condition"
+  },
+  "pre_result_revision": 1,
+  "custody_parent": {
+    "path": "C:\\q4runs\\fixed_weight_custody",
+    "expected_owner_identity": "__ASSIGN_EXACT_NONDEVELOPMENT_PARENT_OWNER_IDENTITY__",
+    "acl_allows_only": [
+      "__ASSIGN_A_DEDICATED_NONDEVELOPMENT_WINDOWS_IDENTITY__",
+      "NT AUTHORITY\\SYSTEM",
+      "BUILTIN\\Administrators"
+    ],
+    "development_roster_excluded": false
+  },
+  "role_separation": {
+    "custodian_identity": "__ASSIGN_A_DEDICATED_NONDEVELOPMENT_WINDOWS_IDENTITY__",
+    "scorer_identity": "__ASSIGN_AN_ISOLATED_SCORER_BEFORE_SCORING_RELEASE__",
+    "development_identities": [
+      "__LIST_ALL_DEVELOPMENT_IDENTITIES_BEFORE_RELEASE__"
+    ],
+    "custodian_is_non_administrator": false,
+    "development_identities_are_not_custody_administrators": false
+  },
+  "process_isolation": {
+    "development_cannot_observe_custodian_process": false,
+    "development_cannot_receive_exit_or_elapsed_time_signal": false
+  },
+  "scoring_release_route": {
+    "scorer_only_acl_or_transfer_route_established": false,
+    "development_excluded_from_scorer_route": false
+  },
+  "attestation": {
+    "made_before_candidate_result_exists": false,
+    "reviewed_by_independent_custody_authority": false
+  }
+}
