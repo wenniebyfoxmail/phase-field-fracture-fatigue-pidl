@@ -62,3 +62,6 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 - 不把 generative video 视觉逼真度当物理预测；headline metrics 必须是未来 registered mask/tip/area、event timing、CRPS/coverage 与决策效用。
 - 若公开数据无法对齐图像—荷载—天气—维修时间轴，立即转为最小 prospective pilot；若 world model 不优于 persistence 和 observation-only state-space baseline，则停止扩大架构。
 - 暂停新的 PIDL loss/architecture sweep、Freeze-Then-Select 阈值调节、未合格 FEM corpus 和单轨迹 foundation-model 宣称。
+
+
+2026-10-24 S04/D14 update: [R2 reconciliation and training entry](research/S04/hybrid_constrained_design_20261019/r2_reconciliation_20261024.md) resolves stale unknown status: old120s step2 stop,1accepted/0complete labels/0fit. Accounted remaining135.773374hosth/12GPUh; new600s guard is a disabled proposal, physical precision unchanged.1800complete teacher/validation transitions feed onefit immediately, testing follows; no new scientific attempt authorized or launched.

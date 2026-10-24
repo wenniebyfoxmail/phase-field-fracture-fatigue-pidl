@@ -31,12 +31,17 @@ def dump(path,value):
     Path(path).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
 
 
-def build(code,inputs,out):
+def build(code,inputs,out,*,preparation_card=None,source_manifest=None):
     code,inputs,out=Path(code).resolve(),Path(inputs).resolve(),Path(out).resolve()
-    prior=json.loads((code/OWNER/'accepted_state_source_manifest_v5.json').read_text())
+    manifest_path=Path(source_manifest or code/OWNER/'accepted_state_source_manifest_v5.json').resolve()
+    card_path=Path(preparation_card or code/OWNER/'accepted_state_preparation_card_v5.json').resolve()
+    manifest_rel=manifest_path.relative_to(code)
+    card_rel=card_path.relative_to(code)
+    prior=json.loads(manifest_path.read_text())
+    if str(card_rel) not in prior['files']:raise RuntimeError('preparation card not bound to source manifest')
     for rel,expected in prior['files'].items():
         if digest(code/rel)!=expected:raise RuntimeError('reused file changed: '+rel)
-    base=json.loads((code/OWNER/'accepted_state_preparation_card_v5.json').read_text())
+    base=json.loads(card_path.read_text())
     manifest=json.loads((inputs/'inputs.json').read_text())
     if digest(inputs/'inputs.json')!=base['execution_template']['inputs_sha256']:
         raise RuntimeError('retained input manifest differs')
@@ -50,7 +55,7 @@ def build(code,inputs,out):
     files=sorted(prior['files'])
     # The manifest needs its own tracked identity so retained prior hashes remain
     # traceable; it is not the new packet's self-referential source manifest.
-    files.append(OWNER+'/accepted_state_source_manifest_v5.json')
+    files.append(str(manifest_rel))
     subprocess.run(['git','-C',str(code),'diff','--quiet','HEAD','--',*files],check=True)
     head=subprocess.check_output(['git','-C',str(code),'rev-parse','HEAD'],text=True).strip()
     out.mkdir(parents=True,exist_ok=False)
@@ -65,7 +70,7 @@ def build(code,inputs,out):
     card=copy.deepcopy(base['execution_template'])
     card.update(run_id=None,run_root=None,archive_root=None,
                 execution_enabled=False,
-                preparation_status='DISABLED_R2_COST_AND_TERMINAL_RECONCILIATION_AND_FUTURE_AUTHORITY_REQUIRED')
+                preparation_status=base.get('readiness','PREPARATION_ONLY'))
     assert card['solver']==base['execution_template']['solver']
     assert card['phases']==base['execution_template']['phases']
     dump(out/'complete_comparison_disabled.json',card)
@@ -85,8 +90,8 @@ def build(code,inputs,out):
          production_execution_enabled=False,runtime_inventory_executed=False,
          new_fem_solves=0,training_updates=0,ssh_calls=0,
          inputs_reused_without_array_load=True,
-         remaining_host_hours_now=None,
-         reason='Consumed R2 total costs/fit/step use not reconciled; never reset original study budget'))
+         remaining_host_hours_now=card.get('budget_reconciliation',{}).get('current_remaining_host_hours'),
+         reason=base.get('readiness','PREPARATION_ONLY')))
     return out
 
 
@@ -94,8 +99,11 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--inputs-root',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--preparation-card',type=Path)
+    p.add_argument('--source-manifest',type=Path)
     args=p.parse_args()
-    out=build(Path(__file__).resolve().parents[1],args.inputs_root,args.out)
+    out=build(Path(__file__).resolve().parents[1],args.inputs_root,args.out,
+              preparation_card=args.preparation_card,source_manifest=args.source_manifest)
     print((out/'build_receipt.json').read_text())
 
 

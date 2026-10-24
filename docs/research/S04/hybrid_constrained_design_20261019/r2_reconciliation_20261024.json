@@ -1,0 +1,176 @@
+{
+  "schema": "hybrid-budget-reconciliation-v1",
+  "date": "2026-10-24",
+  "run_id": "pf_hybrid_complete_20261020_r2",
+  "complete": true,
+  "active_or_unknown_runs": [],
+  "settled_runs": [
+    "pf_hybrid_complete_20261020_r2"
+  ],
+  "execution_status": "failed",
+  "scientific_verdict": "negative for completion within old120s cap; no NN or full fatigue verdict",
+  "observed_london": "2026-10-24T20:07:17.834714+01:00",
+  "ended_london": "2026-10-20T19:07:25.839732+01:00",
+  "evidence": {
+    "snapshot": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/reconciliation_20261024/remote_snapshot.json",
+    "snapshot_sha256": "fa22a49e6b6fd5681a6df17d22da0d18e6c654d57f521ecc79f2fc896efb539f",
+    "query_receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/reconciliation_20261024/query_receipt.json",
+    "source_commit": "d703e3c88c60adbeebc4a5c899f4ce862e45fe76",
+    "artifact_id": "7c150a6839dc368c9e536f03d326050ce20d26681cd3c71374969ce8d5d72846",
+    "remote_source_files_verified": 78,
+    "remote_card_sha256": "f3cc0463755b43ab6d84f5b54153c74a8bb86f8ecf0469d57d217a4109d16fd5",
+    "source_mismatches": [],
+    "original_pids_absent": true,
+    "matching_processes": [],
+    "existing_diagnosis_log_hashes_verified": 3,
+    "scientific_arrays_decoded": false
+  },
+  "outputs": {
+    "accepted_transitions": 1,
+    "attempted_physical_substeps": 2,
+    "completed_cycles": 0,
+    "complete_trajectories": 0,
+    "training_fits_used": 0,
+    "training_checkpoints": 0,
+    "new_field_contract_eligible_labels": 0,
+    "archive_inventory": {
+      "train_A": [
+        {
+          "path": "train_A/events.jsonl",
+          "bytes": 29676,
+          "sha256": "3b09a3cdeaf747cefe76c4ee23793c945404905f2b7c43d3b12437789d0dc606"
+        },
+        {
+          "path": "train_A/features0001.npz",
+          "bytes": 6034659,
+          "sha256": "aca55ad1af6bcc8e164b3a45225d8015a67dbf10317aadca6438d6fec4b14b5f"
+        },
+        {
+          "path": "train_A/iterations.jsonl",
+          "bytes": 36128,
+          "sha256": "b9bc97ef56917e13b5b15c972e564a94c9f71fa1b9872f716aa254572118fd28"
+        },
+        {
+          "path": "train_A/latest.npz",
+          "bytes": 13255974,
+          "sha256": "cb4af08237fb108e0a9c88472ba3425206f42275325c3503ff7aa09fc81762f1"
+        },
+        {
+          "path": "train_A/states/state0000.npz",
+          "bytes": 13145610,
+          "sha256": "de7121003f45af546b1cc1c14bb5e0fdb1d6ec9eeefe117e45107adf4de1ccff"
+        },
+        {
+          "path": "train_A/states/state0001.npz",
+          "bytes": 13255974,
+          "sha256": "cb4af08237fb108e0a9c88472ba3425206f42275325c3503ff7aa09fc81762f1"
+        },
+        {
+          "path": "train_A/work_trace.jsonl",
+          "bytes": 74016,
+          "sha256": "266cfe41c84b25b2bd8caeae91ee65b3c246475043f2edcce8d7d89c008d32b6"
+        }
+      ],
+      "train_B": [],
+      "validation": [],
+      "training": [],
+      "test_reference": [],
+      "test_classical": [],
+      "test_hybrid": [],
+      "analysis": []
+    },
+    "state1_id": "562b145e76124722615b68615fe6fdae73132c98f43cc2c5f75c691a3543e243",
+    "state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+    "first_step_wall_seconds": 34.249059395864606,
+    "first_state_f_min": 1.0,
+    "latest_and_snapshot_identical": true,
+    "event_state_features_parent_byte_hashes_match": true,
+    "state_arrays_recomputed_or_residuals_independently_recomputed": false
+  },
+  "incremental_costs": {
+    "wall_seconds": 190.1557485180674,
+    "cpu_seconds": 561.2646720001931,
+    "gpu_seconds": 0.0,
+    "numerical_seconds": 157.47752637509257
+  },
+  "incremental_cpu_kind": "measured producer CPU plus conservative16core bound for unmeasured dispatch/query CPU; not all measured CPU",
+  "accounting": {
+    "prior_wall_seconds": 625.6987804058008,
+    "producer_wall_seconds": 171.37977151805535,
+    "phase_wall_seconds_sum": 170.06274026911706,
+    "supervisor_overhead_seconds": 1.3170312489382923,
+    "cost_ledger_wall_field": 795.7615206749178,
+    "cost_ledger_total_job_wall_field": 797.0785519238561,
+    "wall_field_caveat": "wall_seconds is phase subtotal plus prior, misses final supervisor overhead; use total_job_wall_seconds once",
+    "dispatch_local_wall_seconds": 5.258660624967888,
+    "read_only_query_wall_seconds": 13.517316375044174,
+    "query_receipts": [
+      {
+        "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/status_check_20261020T195435Z/query_receipt.json",
+        "sha256": "174e72eb480f362be0c4c105d2dc377bc094fc17c34718be4a4185a1746cc2c7",
+        "wall_seconds": 0.008393957978114486
+      },
+      {
+        "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/status_check_20261020T195435Z/query_network_receipt.json",
+        "sha256": "c6b1447d7679f53e267711f37b2c1a15f5d2d2b7d99f1cd8cd549474bf9a7de1",
+        "wall_seconds": 3.4965070839971304
+      },
+      {
+        "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/timeout_diagnosis_20261020/query_receipt.json",
+        "sha256": "bd79db442424c3f74c0d146839e9f54fbf9213c4f072a5df2a599d4ced229489",
+        "wall_seconds": 4.00263308302965
+      },
+      {
+        "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/fem_surrogate_comparison_preparation_20261020/execution_v1/reconciliation_20261024/query_receipt.json",
+        "sha256": "14368a42eed9223a8b7779653c11d5081989d6fabd82474b4929981875013038",
+        "wall_seconds": 6.0097822500392795
+      }
+    ],
+    "charged_study_wall_seconds": 815.8545289238682,
+    "measured_producer_cpu_seconds_including_prior": 833.5435930000001,
+    "cpu_seconds_conservative_accounting_upper": 1133.959225000193,
+    "allocated_core_hours_upper": 3.6260201285505254,
+    "no_phase_or_nested_cost_double_count": true,
+    "unrecorded_future_work_not_precharged": true
+  },
+  "remaining_host_hours": 135.7733737419656,
+  "remaining_gpu_hours": 12.0,
+  "remaining_allocated_core_hours_upper": 2172.3739798714496,
+  "remaining_numerical_wall_hours": 119.861811744073,
+  "remaining_training_fits": 1,
+  "remaining_numerical_steps": 0,
+  "numerical_step_field_meaning": "no fresh scientific attempt allocated after preserved first stop; not a claim of exhausted wall allowance",
+  "original_design_steps": 3600,
+  "unvisited_R2_planned_step_slots": 3598,
+  "accepted_R2_step_slots": 1,
+  "failed_attempt_step_slots": 1,
+  "new_contract_complete_design_targets_missing": 3600,
+  "unused_fit_capacity_is_execution_authority": false,
+  "scientific_retries_authorized": 0,
+  "storage": {
+    "primary": {
+      "files": 242,
+      "apparent_bytes": 94960608,
+      "allocated_bytes": 95547392
+    },
+    "archive": {
+      "files": 7,
+      "apparent_bytes": 45832037,
+      "allocated_bytes": 45850624
+    },
+    "existing_archive_retrieval": "metadata, byte hashes, NPZ headers/certificates only; scientific array payloads remain remote",
+    "new_contract_extra_evidence_3600_gib": 18.54114532470703,
+    "per_copy_cap_gib": 128,
+    "proposed_full_payload_plus_reserve_gib": 106.51065510511398,
+    "future_free_storage_admission_required": true
+  },
+  "training_gate": {
+    "eligible_training_labels": 0,
+    "eligible_validation_labels": 0,
+    "required_train": 1200,
+    "required_validation": 600,
+    "test_labels_required_before_fit": false,
+    "ready_to_fit_now": false
+  },
+  "authority": "2026-10-24 human request permits R2 read-only reconciliation, budget/data-gap update and executable next arrangement. No new solve, training, restart or holdout opening."
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "hybrid-reconciled-training-entry-checks-v6",
+  "date": "2026-10-24",
+  "scope": "one fixed metadata/control preparation benchmark; no scientific solve/fit",
+  "benchmark_command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=source:tools:.:tests <original owner venv>/bin/python -m pytest -q -p no:cacheprovider tests/test_hybrid_training_entry_preparation.py",
+  "benchmark_passed": 1,
+  "benchmark_seconds": 0.33,
+  "fixture": "actual R2 reconciled receipt; disabled proposed600s card; unchanged120s card",
+  "verified": [
+    "original physics/criteria/splits/coupling unchanged",
+    "explicit600s amendment required",
+    "disabled or unauthorized fresh attempt rejected",
+    "same R2 incremental cost charged once by original initial_totals",
+    "GPU0used, unused fit capacity1, no new step authority",
+    "no incomplete labels accepted for training"
+  ],
+  "new_FEM_steps": 0,
+  "training_updates": 0,
+  "new_independent_review": false,
+  "old_review_scope": "v5 source91d500c2 Code Ready and130/36 checks remain historical unchanged evidence, not a review of this new delta",
+  "remote_evidence": "r2_reconciliation_20261024.json",
+  "remote_scientific_arrays_decoded": false,
+  "git_diff_check_passed": true
+}

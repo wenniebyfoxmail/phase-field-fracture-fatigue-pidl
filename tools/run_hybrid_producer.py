@@ -29,6 +29,11 @@ from hybrid_producer_common import verify_package, write_json, append_event
 def require_enabled_execution(card, code_root=None):
     if card.get('execution_enabled') is not True:
         raise RuntimeError('preparation card cannot reserve or spawn a producer')
+    if card['solver']['wall_seconds']==600:
+        a=card.get('authority',{})
+        if not all(a.get(k) is True for k in ('new_numerical_execution_authorized',
+                       'new_scientific_attempt_authorized','compute_cap_amendment_approved')):
+            raise RuntimeError('fresh scientific attempt and600s compute amendment not authorized')
     reconciliation=card.get('budget_reconciliation',{})
     if (reconciliation.get('complete') is not True
             or not reconciliation.get('receipt_sha256')
@@ -84,8 +89,11 @@ def validate_card(card):
         raise ValueError("frozen retained load path differs")
     b=card["budget"]
     if (b["gpu_hours"]!=12 or b["cpu_wall_hours"]!=136 or b["cpu_core_hours"]!=2176
-            or b["cpu_cores"]!=16 or card["solver"]["wall_seconds"]!=120):
+            or b["cpu_cores"]!=16 or card["solver"]["wall_seconds"] not in (120,600)):
         raise ValueError("resource card differs from reviewed envelope")
+    if (card['solver']['wall_seconds']==600
+            and card.get('computational_step_cap_revision')!='r2-600s-20261024'):
+        raise ValueError('600s compute cap requires explicit R2 amendment')
     if (card["training"]["max_updates"]!=20000 or card["training"]["wall_seconds"] not in (21600,28800)
             or card["training"]["fits"]!=1):
         raise ValueError("training allowance differs")

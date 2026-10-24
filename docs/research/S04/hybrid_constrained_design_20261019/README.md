@@ -1,3 +1,7 @@
+
+<!-- R2_RECONCILED_20261024 -->
+**2026-10-24更新：R2已于10月20日19:07首停，不再是当前状态未知。** 本轮只读核实原进程退出、78源文件及产出SHA；1接受态/0完整轨迹/0fit，余约135.7734hosth与12GPUh。原合同与已用卡保留，新600秒计算保护仅准备、禁用。先产1800合格标签后立即唯一fit，测试随后。[对账、复用与具体训练安排](r2_reconciliation_20261024.md)。
+
 # Constrained variational FEM–neural hybrid
 
 Current integration —2026-10-20 D13: [accepted-state and field-timing integration, complete plan/budget/data gaps](accepted_state_plan_v5.md). Same owner/solver; true last-QP f_solve and fresh f_commit stored separately, atomic contract envelope, physical state/parent/label/scoring checks added. [v5 preparation card](accepted_state_preparation_card_v5.json) is disabled with null run identity. This local change does not alter consumed R2 source/card or remote execution. R2's last local snapshot is19:06, one accepted step; its current terminal/cost/fit/step use is unknown and must be reconciled before any future execution. Matplotlib3.10.3 was actually observed; older null-version/preparation status below is historical. Prior budget is not reset, no new solve/fit/SSH this task. [Original R2/current task boundary](complete_execution_20261020/current_entry.md).
