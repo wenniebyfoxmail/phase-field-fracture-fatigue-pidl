@@ -34,6 +34,25 @@ except ImportError:  # pragma: no cover - exercised by production runner layout
 DEFAULT_RAW_INCREMENT_SCALE = 0.25
 
 
+def require_clamp_min_right_derivative(device: torch.device | str) -> None:
+    """Fail closed unless this Torch build selects the intended kink derivative.
+
+    The feasible-map protocol deliberately uses ``torch.clamp_min`` rather
+    than ``torch.relu``: at zero it must supply the right-branch derivative so
+    a newly started physical step can move its raw third head.  Run this once
+    on the actual producer device before optimisation rather than assuming a
+    different Torch build has identical autograd semantics.
+    """
+    probe = torch.zeros(1, dtype=torch.float32, device=device, requires_grad=True)
+    torch.clamp_min(probe, 0.0).sum().backward()
+    if probe.grad is None or not torch.equal(probe.grad, torch.ones_like(probe)):
+        observed = None if probe.grad is None else float(probe.grad.item())
+        raise RuntimeError(
+            "torch.clamp_min must select the positive-side derivative at zero "
+            f"for S04-E040; observed {observed!r}"
+        )
+
+
 @dataclass(frozen=True)
 class DamageMapSnapshot:
     """Raw head and mapped field from one concrete field forward."""

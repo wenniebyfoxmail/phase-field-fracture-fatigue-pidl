@@ -39,6 +39,7 @@ from feasible_damage import (
     StateReferencedDamageMap,
     compute_elastic_damage_energy,
     freeze_damage_state,
+    require_clamp_min_right_derivative,
 )
 from field_computation import FieldComputation
 from input_data_from_mesh import prep_input_data
@@ -1599,6 +1600,7 @@ def main() -> None:
     total_deadline = started + args.total_seconds
     device = "cuda"
     torch.set_num_threads(4)
+    require_clamp_min_right_derivative(device)
 
     pff, mat, net, field, inp, conn, area = construct_standard_field(device)
     weights = lumped_weights(conn, area, len(inp))

@@ -55,8 +55,10 @@ T = t / (1 + t)
 d = h + (1 - h) * T
 ~~~
 
-The implementation uses torch.clamp_min. In the installed PyTorch version it
-selects the right derivative at zero and propagates NaN rather than hiding it.
+The implementation uses torch.clamp_min. It checks once on the actual producer
+device that the selected derivative at zero is the right derivative, and stops
+before optimisation if that device/Torch build differs; it propagates NaN rather
+than hiding it.
 The fixed 0.25 equals the central slope of the standard
 NonsmoothSigmoid(support=2), so the active one-sided raw-head sensitivity
 matches the standard map locally before the bound scaling.

@@ -20,6 +20,7 @@ from feasible_damage import (
     StateReferencedDamageMap,
     compute_elastic_damage_energy,
     freeze_damage_state,
+    require_clamp_min_right_derivative,
     state_referenced_damage,
 )
 from material_properties import MaterialProperties
@@ -34,6 +35,9 @@ class _NoIrreversibilityPFF(PFFModel):
 
 
 class FeasibleDamageTests(unittest.TestCase):
+    def test_clamp_min_protocol_selects_right_derivative(self):
+        require_clamp_min_right_derivative("cpu")
+
     def test_callable_map_binds_raw_and_damage_to_one_forward_id(self):
         h = torch.tensor([0.1, 0.4], dtype=torch.float64)
         q_ref = torch.tensor([0.2, -0.3], dtype=torch.float64)
