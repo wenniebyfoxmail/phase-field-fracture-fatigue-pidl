@@ -1,6 +1,6 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-24 10:11 UTC）
+## 实际进展（2026-10-24 13:24 UTC）
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -49,6 +49,18 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 后处理调度明确由`pidl_history_audit`承接：队列全部正常结束、身份/finished/SHA及进程清理核实后，GPU5串行运行已准备D3 scorer 1000d3c6与D4 scorer 75044464。D4 c1s2用唯一真实matrix+fit+continuation合并inventory，c83两态同样绑定实际完整发布快照；c1s4没有合格F1目标就保持unavailable。队列运行、halt、未知身份或技术失败时不手工越过或重试；root不并行调度GPU。C0条件release的真实失败f64终态及机制条件现已满足，另见下方独立一次决定；必须排在resident和上述五个评分正常终结/清理后，不插入或修改resident。该分工完成已有比较与预声明条件分支。
 
 本对话15分钟app持久化自动接续的首次创建曾被自动审批拒绝，理由为缺少明确人方许可，并存在已暂停HQ托管；该次未创建。随后用户对本对话、15分钟、静默无变化、报告交付后停止及不恢复跨对话HQ的完整问题，明确回答“允许本对话自动接续”。2026-10-24 00:19 UTC工具已成功创建`pidl-fem` heartbeat，并回读确认ACTIVE、15分钟、目标为本对话`01a15fd3-ed7b-7122-9ef4-eb5846c4a6c8`。现有resident和两机执行者的独占分工不变；自动接续先查原执行者，避免重复调度。此许可不授权失败重试或额外试验，也不恢复HQ托管。该控制层状态不构成任何科学结果。
+
+## c83s2 原结构拟合真实终态（2026-10-24 12:52 UTC）
+
+原resident的c83s2 seen-target fit于12:52:45.048 UTC正常退出，42588.581773 GPU秒；20847个L-BFGS accepted steps/47879 closures，0 RPROP、0 coefficient refresh、0 history commit，106份发布快照。停止原因`fit_stagnation_no_capacity_lower_bound`，未超时、未技术失败。真实最终Q=.0130896343915、J=.00301511829466、G=.0127376446085；max u/v/d误差约.00287277/.05106767/.24500048。保持原函数族、float64、weight_l2=0，已有teacher初始化只属于seen-target路径，没有用于physics-only。
+
+同末态fresh诊断仍physical=false/feasible=false：Ru=.05795436917，phase box KKT=17.23620508，下界违反.24500048197、上界违反.00288886738、negative damage .00415886374，BC通过，历史及f的fresh一致性差为0。字段可更接近目标与物理合格是不同问题；有限拟合停滞不是网络容量下界。此次目标包含J与GP梯度项G，不能只按J对不同目标的优化路线排名。
+
+combined回收receipt SHA725f2984b352fafad47771e891487e7bc57e429badc12bbff83a742f282bff4f，231文件、archive1209948160 B；大文件位置以`local_files[].local_path`为准。final completion SHA6e982c3940ea0af55060b4af531cb9f8c3621fd5ecab875fde452af072729905，fields SHAa330d5c3191da2eea68e451a8c47a8cf380417ec98f085f06fa30a9148247cab。原执行者完成全部回收核验，root重查关键metadata绑定，控制记录 `analysis/c83s2_fit_terminal_control_20261024.json`；同设置纯数组比较已完成：同一请求key、physics manifest及c83s1旧damage/history/driver与原main F1全部核对一致，fit J的数组重算与原报告相符。L+/L0/C+/C0/fit五个端点的J依次为.00965253/.01136726/.00191553/.00196692/.00301512，五者全部物理拒绝。fit虽比两legacy物理臂的J更小，却比两clamp臂更大；目标、精度与工作量不同，只作端点描述。fit中81438节点低于old，77234节点d<0，583节点d>1；C臂则d全部冻结在old，两类失败机制不可混为一谈。
+
+保存fit目标的G²占Q²94.6942%，其中v梯度项占G²77.1906%；这是已有scalar report的代数分解，不是新GP梯度评分。原停止要求Q≤.001且max damage error≤.01均未达到；有限L-BFGS停滞仍不能给出容量下界，完整二维三场/梯度表达能力未决。原权重来源和主F1未改，未用fit初始化physics-only。完整保存数组对照 `analysis/c83s2_completed_endpoint_comparison_20261024.json`（SHA f8812d31ff45d6f6e04b0f83f7bf6545dfc6bf8e4d2117d52a0a2eb6f4e8ff6a），无新forward、原生装配、梯度重算或图。
+
+原resident已验证前项进程清理并进入最后c83s4 fit；13:16:17回读723步/1515 closures，无halt。c83s2唯一完整matrix+fit评分包已纯I/O准备，150快照=44 matrix+106 fit，prepared SHA c3e75fc935b846497bced6a3ec48f2c75f6b0c2d2e5d4c4d0a879d93d0d2d554；未部署或启动。依然等原resident全部正常结束与清理后，由原GPU owner串行完成五项正式评分和已绑定一次C0条件释放。
 
 ## 严格 c83s2 的真实终态（2026-10-24 09:51 UTC）
 
