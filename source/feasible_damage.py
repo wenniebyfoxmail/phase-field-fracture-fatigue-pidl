@@ -20,6 +20,7 @@ caller cannot accidentally optimise a previous accepted state.
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 from typing import Optional, Tuple
 
 import torch
@@ -31,6 +32,102 @@ except ImportError:  # pragma: no cover - exercised by production runner layout
 
 
 DEFAULT_RAW_INCREMENT_SCALE = 0.25
+
+
+@dataclass(frozen=True)
+class DamageMapSnapshot:
+    """Raw head and mapped field from one concrete field forward."""
+
+    forward_id: int
+    raw_damage: torch.Tensor
+    damage: torch.Tensor
+
+
+class StateReferencedDamageMap:
+    """Callable alpha constraint with an auditable raw-head capture.
+
+    ``FieldComputation`` calls an alpha constraint once on its third raw output.
+    This object is installed only on the isolated E040 field instance.  It keeps
+    a monotonically increasing forward id and the exact tensors supplied and
+    returned by the latest call, so the runner can bind a final cache to one
+    field evaluation rather than reconstructing a raw head separately.
+    """
+
+    def __init__(
+        self,
+        history_alpha: torch.Tensor,
+        raw_damage_reference: torch.Tensor,
+        *,
+        increment_scale: float = DEFAULT_RAW_INCREMENT_SCALE,
+        check_finite: bool = True,
+    ) -> None:
+        self.history_alpha, self.raw_damage_reference = freeze_damage_state(
+            history_alpha, raw_damage_reference
+        )
+        self.increment_scale = float(increment_scale)
+        self.check_finite = bool(check_finite)
+        self.last_forward_id = 0
+        self._last_snapshot: Optional[DamageMapSnapshot] = None
+
+        _check_accepted_damage_state(
+            self.history_alpha, self.raw_damage_reference, check_finite=self.check_finite
+        )
+
+    def __call__(self, raw_damage: torch.Tensor) -> torch.Tensor:
+        _require_same_tensor_layout(
+            raw_damage, self.history_alpha, "raw_damage", "history_alpha"
+        )
+        raw_delta = raw_damage - self.raw_damage_reference
+        damage = state_referenced_damage(
+            raw_damage,
+            self.history_alpha,
+            self.raw_damage_reference,
+            increment_scale=self.increment_scale,
+        )
+        if self.check_finite:
+            # h and q_ref were checked once at construction.  One composite
+            # device reduction checks every varying quantity without adding
+            # several GPU synchronizations to each RPROP forward.
+            finite = (
+                torch.isfinite(raw_damage).all()
+                & torch.isfinite(raw_delta).all()
+                & torch.isfinite(damage).all()
+            )
+            if not bool(finite):
+                raise FloatingPointError(
+                    "raw damage, raw increment, or state-referenced damage contains a non-finite value"
+                )
+        self.last_forward_id += 1
+        self._last_snapshot = DamageMapSnapshot(
+            forward_id=self.last_forward_id,
+            raw_damage=raw_damage,
+            damage=damage,
+        )
+        return damage
+
+    def latest(self) -> DamageMapSnapshot:
+        """Return the latest same-forward capture or fail before stale reuse."""
+        if self._last_snapshot is None:
+            raise RuntimeError("StateReferencedDamageMap has not received a raw head")
+        return self._last_snapshot
+
+
+def _check_accepted_damage_state(
+    history_alpha: torch.Tensor,
+    raw_damage_reference: torch.Tensor,
+    *,
+    check_finite: bool,
+) -> None:
+    if check_finite:
+        _require_finite("history_alpha", history_alpha)
+        _require_finite("raw_damage_reference", raw_damage_reference)
+    if not bool(torch.all((history_alpha >= 0) & (history_alpha <= 1))):
+        raise ValueError("history_alpha must lie in [0, 1]")
+
+
+def _require_finite(name: str, value: torch.Tensor) -> None:
+    if not bool(torch.isfinite(value).all()):
+        raise FloatingPointError(f"{name} contains a non-finite value")
 
 
 def freeze_damage_state(

@@ -1,8 +1,10 @@
 # S04-E040 — state-referenced feasible damage representation
 
-**Status:** design draft r0. No code, producer upload, or execution has been
-performed. The protocol is frozen only after the requested internal Pro design
-review is received and adopted.
+**Status:** reviewed design r1; local implementation and CPU contract tests are
+complete. The requested internal ChatGPT Pro review returned *approve with
+specific modifications* on 2026-10-24; its two required safeguards below are
+adopted. An exact-source review and the single producer execution remain
+pending. No producer upload or execution has been performed.
 
 **Task owner:** S04-E040, controlled synthetic PIDL numerical experiment
 (claim class C1: numerical admissibility and solver-state validity).
@@ -75,6 +77,33 @@ can switch nodal branches, and the upper bound is approached rather than reached
 at finite raw values. It guarantees feasibility on the declared mesh, not
 field-space KKT optimality away from that support.
 
+### Exact-start and commit invariant
+
+Each atomic accepted record is
+``(network, h, A, psi_prev, q_ref, mesh_order_hash)``. The runner must establish
+all of the following before an inner solve begins:
+
+~~~text
+q(theta_accepted, inp) == q_ref
+d(theta_accepted, h, q_ref) == h
+~~~
+
+Within the continuous runner, the first equality and the resulting damage use
+`torch.equal` on the same fixed device, dtype, mesh order, and forward path.
+The save/reload audit records maximum errors beside the declared
+`32*eps*max(1,max(abs(q_ref)))` and `16*eps` diagnostics, but a record is
+eligible for commitment only if both q and damage also satisfy bitwise equality.
+The diagnostics do not silently rebase q_ref or weaken the exact-start gate
+used by the continuous trajectory. At c1/s1, q_ref is captured from the already
+loaded recovery network, never from a separately updated parameter state.
+
+After each accepted solve, the final cached network is copied together with
+the final `h=d`, `A`, `psi_prev`, and `q_ref_next`. Before writing that record,
+the runner captures `q_ref_next` from that final network and proves
+`d(theta_final, h_final, q_ref_next) == h_final`. A rejected, capped, or
+invalid solve writes only a failure/trial record and cannot mutate any member
+of the last accepted record.
+
 ## Solver and state contract
 
 The new helper replaces only the particular FieldComputation instance's
@@ -84,8 +113,11 @@ unchanged. Before capture, the runner asserts that this standard case has no
 Williams transform, symmetry input remap, local patch, or other output transform;
 otherwise it must capture the exact tensor supplied to the callable. The helper
 checks frozen h/q_ref shape, dtype, device and finiteness at construction and,
-on every forward, rejects non-finite q, q-q_ref, t, T, or d rather than treating
-overflow as saturation.
+on every forward, performs one composite device-side finite check of q, q-q_ref
+and d. For finite q and q_ref with the fixed positive scale, the intermediate
+t and T are finite by construction; the check therefore rejects overflow rather
+than treating it as saturation without adding several GPU synchronizations per
+forward.
 
 Within a physical step optimize:
 
@@ -101,9 +133,14 @@ the final cached field under no_grad as a detached shadow diagnostic; it is
 absent from F and its backward graph.
 There are no multipliers, rho, PHR terms, clipping, or AT1 off-domain
 extension. The original AT1 energy is evaluated on its feasible domain.
-The runner retains standard fresh RPROP hyperparameters and the same relative
-early-stop semantics in a local loop. Parameter-gradient RMS and an independently
-calculated field projected residual are reports, not acceptance gates. Because
+The runner retains standard fresh RPROP hyperparameters and invokes the shared
+`EarlyStopping` class on CUDA tensors: it monitors the same scalar `F`, uses
+`abs(F_t-F_prev)/(abs(F_prev)+np.finfo(float).eps)`, begins with `F_prev=0`,
+and requires ten consecutive values at or below `min_delta=5e-7` before a
+genuine pre-cap stop. The RPROP update happens before that test, and the
+terminal iteration retains the previous-loss state exactly as the standard
+loop does. Parameter-gradient RMS and an independently calculated
+field projected residual are reports, not acceptance gates. Because
 RPROP uses signs, the first backward pass also records the full and third-head
 row physical/L2 gradients, cosine, and sign-change fraction; the first actual
 update records raw-increment and active-branch fractions.
@@ -120,16 +157,20 @@ For every attempted step:
 4. Commit only if normal early stopping completes before the fixed cap, values
    are finite, and direct logical nodal and TRI3-GP bounds h <= d <= 1 hold.
    A cap or invalid state is unaccepted and terminates the new arm.
-5. Commit h=d, A and psi_prev from the cached field, and q_ref_next from the
-   matching accepted network as one atomic accepted record. Do not re-evaluate
-   another damage field after commit.
+5. Stage h=d, A and psi_prev from the cached field, q_ref_next from the
+   matching accepted network, all step artifacts, and an immutable hash index.
+   Only after each is reopened and checked does the accepted-state pointer
+   advance. Do not re-evaluate another damage field or perform another optimizer
+   update after final-field evaluation and before that pointer publication.
 
 ## Fixed benchmark and reporting
 
 Run one new arm only: c1--c3, 15 continuous substeps, on one Taobo GPU in a
 fresh directory. Reuse R001; do not replay it. No new seed, FEM run, or retry.
 The proposed bound is 240 seconds and 10,000 RPROP updates per attempted step,
-3,300 seconds runner time, and 3,500 seconds detached wrapper time.
+3,300 seconds runner time, and 3,500 seconds detached wrapper time. Fifteen
+seconds of each substep are reserved for final field checks and durable output;
+if the protected reserve is reached first, the step is terminal and unaccepted.
 
 The primary outcome is whether all 15 substeps are accepted with exact forward
 feasibility. At every common accepted phase report against R001:
@@ -142,6 +183,17 @@ feasibility. At every common accepted phase report against R001:
 - initial physical/L2 gradient sign and cosine diagnostics, including the
   damage-output row, and the first actual update's raw-increment fractions.
 
+At termination record the ten pre-update loss pairs that caused the ordinary
+early-stop event, plus a separately evaluated post-last-update field. On free
+nodes (`h<1`), report `q-q_ref<0` (zero damage Jacobian), `==0` (zero increment
+but right derivative available), and `>0` branches as distinct lumped-mass
+fractions, together with the normalized one-sided damage-Jacobian ratio.
+Classify physical-energy stall only when the corresponding ten pre-update
+physical-energy changes obey the same `5e-7` threshold. This is diagnostic
+only: scalar RPROP plateau never establishes field-space stationarity, and the
+post-update field can depart from the pre-update plateau without invalidating
+the recorded stopping event.
+
 Compare timing only over a common accepted horizon. A stopped arm has an
 explicitly unaccepted terminal diagnostic; it supports no trajectory, speed,
 FEM-agreement, or physical-improvement claim.
@@ -151,10 +203,14 @@ FEM-agreement, or physical-improvement claim.
 Tests must establish: bound algebra, exact hold at q=q_ref, no refresh ratchet,
 right derivative at the boundary, h=1 fixed behavior, non-finite raw and
 subtraction-overflow rejection, reference/history immutability on rejection,
-a direct objective with no E_irr backward path, and unchanged default
-FieldComputation behavior without the helper. Preflight checks the recovery
-checkpoint, mesh, R001 receipt, finite reference, accepted input state, and
-the c1/s1 legacy-alpha-versus-h difference before a producer run.
+a direct objective with no E_irr backward path, the exact-start/commit/reload
+invariant (including the recorded reload diagnostics and required bitwise
+identity), the copied
+standard stopping arithmetic, an evidence-before-pointer transaction, and
+unchanged default FieldComputation behavior without the helper. Preflight
+checks the recovery checkpoint, mesh, R001 receipt, finite reference, accepted
+input state, the c1/s1 legacy-alpha-versus-h difference, and the
+no-update-after-final-field transaction boundary before a producer run.
 
 ## Requested review
 

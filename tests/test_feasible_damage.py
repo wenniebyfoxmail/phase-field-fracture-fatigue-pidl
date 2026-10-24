@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / 'source'))
 from compute_energy import compute_energy
 from feasible_damage import (
     DEFAULT_RAW_INCREMENT_SCALE,
+    StateReferencedDamageMap,
     compute_elastic_damage_energy,
     freeze_damage_state,
     state_referenced_damage,
@@ -33,6 +34,32 @@ class _NoIrreversibilityPFF(PFFModel):
 
 
 class FeasibleDamageTests(unittest.TestCase):
+    def test_callable_map_binds_raw_and_damage_to_one_forward_id(self):
+        h = torch.tensor([0.1, 0.4], dtype=torch.float64)
+        q_ref = torch.tensor([0.2, -0.3], dtype=torch.float64)
+        mapping = StateReferencedDamageMap(h, q_ref)
+
+        q1 = q_ref.clone().requires_grad_()
+        d1 = mapping(q1)
+        first = mapping.latest()
+        self.assertEqual(first.forward_id, 1)
+        self.assertIs(first.raw_damage, q1)
+        self.assertIs(first.damage, d1)
+        self.assertTrue(torch.equal(d1, h))
+
+        q2 = (q_ref + 1.0).requires_grad_()
+        d2 = mapping(q2)
+        second = mapping.latest()
+        self.assertEqual(second.forward_id, 2)
+        self.assertIs(second.raw_damage, q2)
+        self.assertIs(second.damage, d2)
+        self.assertTrue(torch.all(d2 > h))
+
+    def test_callable_map_rejects_nonfinite_raw_head(self):
+        mapping = StateReferencedDamageMap(torch.zeros(1), torch.zeros(1))
+        with self.assertRaises(FloatingPointError):
+            mapping(torch.tensor([float('nan')]))
+
     def test_reference_state_is_exact_and_frozen(self):
         q_ref = torch.tensor(
             [-3.0, -0.2, 0.0, 2.0], dtype=torch.float64, requires_grad=True
