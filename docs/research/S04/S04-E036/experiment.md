@@ -1,6 +1,6 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-24 00:15 UTC）
+## 实际进展（2026-10-24 01:00 UTC）
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -16,9 +16,13 @@ c83保存场的通道/空间分解进一步定位到damage：P2的u/v平方误�
 
 D4 c1s2四臂各2000次更新已完成并全量取回端点，均未通过物理检查。L+/L0/C+/C0的机械残差分别为.00572262/.00634259/.00156178/.000990620；纯保存数组J分别为.00906525/.00900829/.03797762/.03795155。加入clamp消除了约束违反但场差扩大；两clamp臂全部86756节点d逐字等于旧damage，raw全部处于下界或以下；已保存force诊断确认4646个可行增损伤下降方向被挡，覆盖100%的该末态phase KKT平方，暴露出投影饱和的优化障碍。不能以残差降低宣称场差改善，也不能以此证明原网络表达不足。详见 `analysis/c1s2_matrix_saved_array_diagnostic_20261023.json` 和 `analysis/c1s2_matrix_clamp_activity_20261023.json`。
 
-当前D4继续已预定的同结构C0优化与原结构seen-target拟合，并完成剩余独立状态；拟合成功提供可表达的实证上界，拟合失败仍不能证明容量下界。全部生产源码固定68291a0a，GPU5串行；Mac只做保存数组/元数据处理。c1s2 C0 continuation已于22:38:02部署核验，尚未计算；原映射全参数float64目标拟合已于22:37:42启动（supervisor1698192）。间歇SSH中断只影响可见性，已启动任务不重发。
+c1s2 原结构全参数 float64 seen-target 拟合已于00:32:06 UTC正常结束，6863.3217 GPU秒；3448个L-BFGS accepted steps/7552 closures，无RPROP。停止原因是`fit_stagnation_no_capacity_lower_bound`，最终Q=.00931208230、J=.00267592032708、G=.00891932325、maxd=.12479720；Ru=.04426245、phase KKT=12.2390、愈合幅=.01685788，physical=false、零历史提交。同一原函数族实现了更近的场，但拟合数值停滞不证明容量下界，且该监督结果不能计入physics-only改进。最终字段已完整回收；其combined receipt通过已有fit归档引用复用大文件，不能假定所有字节都在combined目录内。
 
-00:07:31真实读数：原结构拟合2757个L-BFGS accepted steps/5877 closures，J=.00278372834001、G=.00925218056740、maxd=.1250421454，仍未满足拟合停止条件或物理验收。相比物理L+端点J=.00906525391491更接近，但这只是已见目标的近似见证，不是已接受的physics-only改进率；全域J下降也没有让局部最大damage误差单调下降。实际拟合直接使用持续L-BFGS，无RPROP热身。队列仍等待该拟合，未halt，尚未运行后续作业。
+c1s2 C0 continuation随后于00:36:58 UTC正常结束，新增285.3484 GPU秒。累计5200 RPROP、26 L-BFGS步/89 closures、25次系数刷新，停止为`fixed_f_numerical_stagnation_not_stationarity_proof`；全float64末态Ru=.00075754433（757.54倍限值），phase KKT=6.1117222e-5，feasible=true、physical=false、零提交。保存数组J=.03794910145，相比首段.03795154582几乎不变；全部86756节点d仍逐字等于旧下界，86505个raw输出低于旧下界，最大埋入深度从.761506增至.899415。保存参数物理梯度L2=.0208405并非零，因此数值停滞不能改称参数驻点。
+
+终态保存force诊断仍有4646个被clamp挡住的可行增损伤方向，承载全部phase KKT平方；f_solve=f_commit=1、全部历史/f差为0。该机制证据支持解除平坦区后再检验同网络的物理下降，不等于解释全部机械残差。综合来源为 `raw_archive/d4_c1s2_combined_terminal_20261024_transport01/retrieval_receipt.json`（SHA e08056c0c431861da5f5570c5a426d9ac80f2c2d63958e4f5512824e4030b0c6）、`analysis/c1s2_continuation_final_saved_diagnostics_20261024.json` 和 `analysis/c1s2_completed_endpoint_comparison_20261024.json`。图 `figures/c1s2_completed_endpoints_20261024.png/.pdf` 已检查排版；只读取保存数组/既有检查，没有Mac网络或native重算。
+
+resident已继续运行：c1s4/c83s2四臂matrix分别于00:45:43/00:54:11 UTC正常终结，各507.1768/501.8752 GPU秒；八臂均physical=false，C臂feasible、L臂infeasible。metadata及八个终态字段已回收，c83s2的同目标数组比较正在归档；c1s4仍无合格标准F1目标，不给J。当前队列进入c83s4 matrix，后续两个原结构fit及既定评分仍由原GPU owner负责。严格FEM最近既有回执为00:55:49、outer558，原MATLAB14540仍运行，F2尚未启动。
 
 已回收非终态step1200的真实字段和completion：J=.0033163080，最大v误差.04211884、最大d误差.12395025，都定位在预裂纹内部x约−.277、y近0。该保存读出仍有Ru=.0349792、phase KKT=14.5883、愈合幅.0247315，历史罚能占总能量98.82%；近似更好不等于物理合格。纯数组套用既定C0投影后的J=.0031764397，仅为同保存输出的代数反事实，未装配残差，也不作为物理延续初值。`analysis/fit_c1s2_step1200_saved_analysis_20261024.json`保存该边界。
 
@@ -34,7 +38,7 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 
 固定六作业resident队列于22:54:51真实启动（PID1724403），22:58回读确认独占attempt且无halt；一次SSH回显丢失后仅查询，没有重发启动。计划SHA为51ebeb7bdd13fae8e8c0bbf7a9fc962ea82c0dad248949f1d145b6d712270049，脚本SHA为fe72208fbc3d3a6f467aae6e33f5949fc26d118ae02ba6ecbb29cfb055f076f2。先等待现有c1s2 fit有效结束与进程清理，再依次执行c1s2 C0 continuation、c1s4/c83s2/c83s4四臂矩阵、c83s2/c83s4原结构拟合；每个任务沿用原声明算法和86400秒防挂，无累计上限、无自动重试。root在队列持有GPU调度时不再手工并行启动。部署/启动/回读原始证据位于 `run_workspace/resident_queue_20261023/`。
 
-后处理调度明确由`pidl_history_audit`承接：队列全部正常结束、身份/finished/SHA及进程清理核实后，GPU5串行运行已准备D3 scorer 1000d3c6与D4 scorer 75044464。D4 c1s2用唯一真实matrix+fit+continuation合并inventory，c83两态同样绑定实际完整发布快照；c1s4没有合格F1目标就保持unavailable。队列运行、halt、未知身份或技术失败时不手工越过或重试；root不并行调度GPU。C0条件release仍需实际失败f64终态及机制条件，不在该后处理授权内。该分工完成已有比较，不新增试验。
+后处理调度明确由`pidl_history_audit`承接：队列全部正常结束、身份/finished/SHA及进程清理核实后，GPU5串行运行已准备D3 scorer 1000d3c6与D4 scorer 75044464。D4 c1s2用唯一真实matrix+fit+continuation合并inventory，c83两态同样绑定实际完整发布快照；c1s4没有合格F1目标就保持unavailable。队列运行、halt、未知身份或技术失败时不手工越过或重试；root不并行调度GPU。C0条件release的真实失败f64终态及机制条件现已满足，另见下方独立一次决定；必须排在resident和上述五个评分正常终结/清理后，不插入或修改resident。该分工完成已有比较与预声明条件分支。
 
 本对话15分钟app持久化自动接续的首次创建曾被自动审批拒绝，理由为缺少明确人方许可，并存在已暂停HQ托管；该次未创建。随后用户对本对话、15分钟、静默无变化、报告交付后停止及不恢复跨对话HQ的完整问题，明确回答“允许本对话自动接续”。2026-10-24 00:19 UTC工具已成功创建`pidl-fem` heartbeat，并回读确认ACTIVE、15分钟、目标为本对话`01a15fd3-ed7b-7122-9ef4-eb5846c4a6c8`。现有resident和两机执行者的独占分工不变；自动接续先查原执行者，避免重复调度。此许可不授权失败重试或额外试验，也不恢复HQ托管。该控制层状态不构成任何科学结果。
 
@@ -50,11 +54,11 @@ F2完整源码已固定于4482f97a939470e3be32fa42d55f4f7cfab83a32，独立目�
 
 实际approved_v1已于23:10:45 UTC部署47个新文件、核对728个SHA绑定，未覆盖原strict源码。ZIP SHA1666ddd30868f23d12c8404f9172852f6154a3cb48cbe0b0946106ebc1ce7faf；源锁仍为3f4c771681ce13d8f93a083458f8ce1916dde1bc96bbe4a40ce2a0146e8c9a1f。F2 label尚未消费，当前strict原MATLAB14540仍运行。部署记录不等于已执行或方法成功。
 
-## 预备条件分支：解除 C0 下界饱和（未运行）
+## 条件分支：解除 C0 下界饱和（真实终态已绑定，一次执行已批准、未运行）
 
 同结构修复准备在 `tools/s04_e036/constraint_release_preparation/`：固定实际saved f_solve和immutable旧态，先用节点损伤力作一个真正可行且降能的投影步，再让原完整网络拟合其raw预像与实际场。保留C0 clamp、原参数数目及边界；raw代理项的梯度明确不是物理能量梯度，也没有straight-through替换。只有实际clamped场严格可行、同f能量下降及被挡方向实际实现均达到预声明份额，且保存读回完成，才保留新权重；否则全量回滚。独立fresh KKT/f验收仍沿用原规则，释放成功不等于复现成功。
 
-此准备不读取FEM未来目标、不接入或改变resident队列。producer adapter现已准备：用原61文件底座加5个命名overlay文件，纯I/O late binder只接受真实失败的float64 C0终态，保留原时钟、权重、old、f_solve和work；释放成功后最多调用一次原物理L-BFGS，失败完整回滚并留档。authority模板仍未批准，真实终态尚未绑定；须等c1s2 C0 continuation终结并确认仍有该障碍，再形成新方法作业。若原continuation已成功或阻挡消失，不因代码已写而追加此试验。只做源码接口/语法和元数据一致性核对，未运行本地NN/native或新科学测试。
+此准备不读取FEM未来目标、不接入或改变resident队列。producer adapter现已准备：用原61文件底座加5个命名overlay文件，纯I/O late binder只接受真实失败的float64 C0终态，保留原时钟、权重、old、f_solve和work；释放成功后最多调用一次原物理L-BFGS，失败完整回滚并留档。原authority模板保留未批准历史。真实continuation现已失败且阻挡仍在，root依据用户现有任务授权批准这一个预声明条件分支；不是原样重试。实际候选tar SHA `e91bc93a4088f86a5c624cb28d2d69fb412860e6b0baf82ce3bd619ae71599cb`，原61文件及becc4166五overlay字节不变。`run_workspace/c0_release_c1s2_preparation_20261024/root_one_attempt_decision.json`（SHA 86b21c306479089d2e2575bd86dd41d9ea6f15071f84e36948e5d5e3094ddc4e）绑定源completion cfcc2c9d、候选包及原GPU owner唯一调度权。仅在resident、其后五个既定评分均正常完成且所属进程清理/GPU5空闲可证后，使用全新`jobs/d4_c1s2_release_01`；producer binder须逐项匹配实际来源链并绑定真实UUID/新时钟，随后最多一次release和一次原physics-only L-BFGS。技术失败、未知、资源冲突或源不匹配停依赖动作，不重试、不接fit权重。包已准备但尚未部署/启动；Mac没有NN/native或新科学测试。
 
 ## 当前范围（2026-10-22 人方分工更新）
 
