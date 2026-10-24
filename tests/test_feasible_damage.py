@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import importlib.util
 import sys
 import unittest
 from unittest import mock
@@ -16,6 +17,13 @@ sys.path[:0] = [str(ROOT / "source"), str(ROOT / "SENS_tensile")]
 from feasible_damage import StateReferencedFeasibleDamageMap
 from field_computation import FieldComputation
 import compute_energy as energy_module
+
+RUNNER_SPEC = importlib.util.spec_from_file_location(
+    "s04_e040_runner", ROOT / "scripts" / "run_s04_e040_feasible_damage.py"
+)
+RUNNER = importlib.util.module_from_spec(RUNNER_SPEC)
+assert RUNNER_SPEC.loader is not None
+RUNNER_SPEC.loader.exec_module(RUNNER)
 
 
 class StateReferencedMapTests(unittest.TestCase):
@@ -99,6 +107,15 @@ class EnergyPathTests(unittest.TestCase):
         self.assertEqual(float(e_d), 2.0)
         self.assertEqual(float(e_irr), 2.0)
         self.assertIs(mocked.call_args.kwargs["include_irreversibility"], False)
+
+
+class RunnerContractTests(unittest.TestCase):
+    def test_default_budget_covers_the_entire_fixed_trajectory(self):
+        self.assertEqual(RUNNER.N_STEPS, 15)
+        self.assertGreaterEqual(
+            RUNNER.DEFAULT_TOTAL_SECONDS,
+            RUNNER.N_STEPS * RUNNER.DEFAULT_STEP_SECONDS,
+        )
 
 
 if __name__ == "__main__":

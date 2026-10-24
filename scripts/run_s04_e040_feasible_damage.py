@@ -30,6 +30,11 @@ from optim import get_optimizer
 
 FATIGUE = dict(loading_type="cyclic", accum_type="carrara", degrad_type="asymptotic", alpha_T=0.5)
 FACTORS = (0.25, 0.5, 0.75, 1.0, 0.0)
+N_STEPS = 15
+DEFAULT_STEP_SECONDS = 240.0
+# 15 × 240 s leaves no time to serialize diagnostics or commit states.  The
+# extra five minutes is an execution envelope, not an additional solve.
+DEFAULT_TOTAL_SECONDS = 3900.0
 
 
 class StepCap(RuntimeError):
@@ -134,6 +139,8 @@ def direct_objective(field, inp, h, f, mat, pff, area, conn):
         include_irreversibility=False,
     )
     physical = e_el + e_d
+    if not bool(torch.isfinite(e_el)) or not bool(torch.isfinite(e_d)):
+        raise FloatingPointError("non-finite E_el or E_d")
     if not bool(torch.isfinite(physical)) or not bool(physical > 0):
         raise FloatingPointError("non-positive or non-finite E_el + E_d")
     return torch.log10(physical) + 1e-5 * weight_l2(field.net), (u, v, damage), (e_el, e_d)
@@ -193,12 +200,17 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--mode", choices=("global", "q_local"), required=True)
-    parser.add_argument("--step-seconds", type=float, default=240.0)
-    parser.add_argument("--total-seconds", type=float, default=3300.0)
+    parser.add_argument("--step-seconds", type=float, default=DEFAULT_STEP_SECONDS)
+    parser.add_argument("--total-seconds", type=float, default=DEFAULT_TOTAL_SECONDS)
     parser.add_argument("--max-updates", type=int, default=10000)
     args = parser.parse_args()
     if not torch.cuda.is_available():
         raise RuntimeError("S04-E040 is producer-only; CUDA is required")
+    if args.step_seconds <= 0 or args.total_seconds < N_STEPS * args.step_seconds:
+        raise ValueError(
+            "the fixed 15-step benchmark requires total_seconds >= "
+            "15 * step_seconds"
+        )
     if args.output.exists():
         raise FileExistsError(args.output)
     args.output.mkdir(parents=True)
@@ -225,9 +237,7 @@ def main() -> None:
     tip = (0.0, 0.0)
     field = build_field(net, device, args.mode, tip)
     records = []
-    for step in range(1, 16):
-        if time.monotonic() - started + args.step_seconds >= args.total_seconds:
-            break
+    for step in range(1, N_STEPS + 1):
         folder = args.output / f"step_{step:03d}"
         folder.mkdir()
         field.lmbda = torch.tensor(0.12 * FACTORS[(step - 1) % 5], device=device)

@@ -53,11 +53,13 @@ the existing alpha-only/full-partition path, which would attenuate global u/v.
 
 ## Fixed comparison
 
-Reuse completed S04-E037-R001 without replay.  If execution is later approved,
-two new independent own-history arms are fixed in advance: `global` and
+Reuse completed S04-E037-R001 without replay.  The approved computation uses
+two new independent own-history arms: `global` and
 `q_local`, each c1--c3 / 15 substeps from the legal recovery state.  Each step
-uses fresh RPROP, a 240-second and 10,000-update cap; the runner cap is 3,300
-seconds.  No seed, FEM case, sweep, retry or full-life rollout is implied.
+uses fresh RPROP, a 240-second and 10,000-update cap; the runner envelope is
+3,900 seconds so the 15-step trajectory plus committed diagnostics fits.  A
+lower total budget is rejected before launch.  No seed, FEM case, sweep, retry
+or full-life rollout is implied.
 
 `global` completing all accepted substeps supports only the forward-feasibility
 claim.  `q_local` is compared with it only at common accepted physical phases;
