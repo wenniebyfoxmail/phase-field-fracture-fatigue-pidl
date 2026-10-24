@@ -1,6 +1,6 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-24 05:55 UTC）
+## 实际进展（2026-10-24 10:11 UTC）
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -49,6 +49,18 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 后处理调度明确由`pidl_history_audit`承接：队列全部正常结束、身份/finished/SHA及进程清理核实后，GPU5串行运行已准备D3 scorer 1000d3c6与D4 scorer 75044464。D4 c1s2用唯一真实matrix+fit+continuation合并inventory，c83两态同样绑定实际完整发布快照；c1s4没有合格F1目标就保持unavailable。队列运行、halt、未知身份或技术失败时不手工越过或重试；root不并行调度GPU。C0条件release的真实失败f64终态及机制条件现已满足，另见下方独立一次决定；必须排在resident和上述五个评分正常终结/清理后，不插入或修改resident。该分工完成已有比较与预声明条件分支。
 
 本对话15分钟app持久化自动接续的首次创建曾被自动审批拒绝，理由为缺少明确人方许可，并存在已暂停HQ托管；该次未创建。随后用户对本对话、15分钟、静默无变化、报告交付后停止及不恢复跨对话HQ的完整问题，明确回答“允许本对话自动接续”。2026-10-24 00:19 UTC工具已成功创建`pidl-fem` heartbeat，并回读确认ACTIVE、15分钟、目标为本对话`01a15fd3-ed7b-7122-9ef4-eb5846c4a6c8`。现有resident和两机执行者的独占分工不变；自动接续先查原执行者，避免重复调度。此许可不授权失败重试或额外试验，也不恢复HQ托管。该控制层状态不构成任何科学结果。
+
+## 严格 c83s2 的真实终态（2026-10-24 09:51 UTC）
+
+strict_c83s2_01按原U1e-8/joint4e-6判据运行1500 outer后，于09:51:53.573 UTC以`E036:OuterExhausted`自然科学拒绝；没有历史提交或下一步。watchdog elapsed14760.9835849秒、exit1、stop_reason=exited、wrapper_error=null且Job Object已关闭，supervisor仅转报同一次非零退出。32份原始文件共115523370 B已逐项核SHA/bytes，transfer receipt SHA0406fc4d3c895a97671e282746baf23e1bb078a50e01e0aa8825fc63a18a2a0b；09:56:54的清理收据确认原cmd30936/supervisor49620/watchdog8456/MATLAB9548均不在，compute为空。控制层记录 `analysis/fem_strict_c83s2_terminal_control_20261024.json`，完整failure.mat保留于原归档。
+
+该状态没有合格的tightening target，D3 c83/s2的`reference_tightening`保持null，以 `run_workspace/d3_c83s2_tightening_unavailable_20261024.json`绑定真实失败来源。主F1不改变，不把native日志中的res_sum当作fresh接受，也不将拒绝末态计入参考敏感性成功或总体改善率。保存数组诊断已完成：fresh Ru=1.37893330510e-15，phase box KKT=2.23149887472e-5，严格联合判据超限5.578747倍；全部1500次joint均未过，机械从outer3起通过。末100次phase KKT区间宽仅1.20075e-17，证明标量平台，不证明全部场逐位静止。native自身报告1499次accepted，最后res_sum=1.4449e-6，仍不能替代fresh残差。
+
+全部accepted/pre/input/predecessor及主F1 proposal的旧态逐数组等于同一已发布c83s1（checkpoint SHA b6171a0fb0fd707517832c8dde753686f26825d6f89208351d7dd46819118b95），version411保持不变；proposal/f_commit为空。与c1s4不同，本态疲劳已激活：保存内层f与fresh f最大差.000830922246，fresh历史及f代数回读误差约2.22e-16，不能把该差异称为已提交历史污染，或仅凭它分配phase残差的因果份额。
+
+主F1 c83s2原第3次outer按自身标准通过，phase KKT=2.16190971736e-5；strict拒绝末态反高约3.2189%。strict与main的诊断场距离J=5.33005746e-5，最大u/v/d差约4.94425e-6/7.71251e-6/.0131288。小场差没有带来严格残差接受；该比较不构成合格参考敏感性、不改判主F1、不计PIDL收益。详细来源、约束与历史核验见 `analysis/fem_strict_c83s2_terminal_diagnosis_20261024.json`（SHA cbe681dd4a81ac39cbb342c8f8d8eb4ef5aed751ce411e935a554ae055dc70f8）；全程只读保存数组，未运行native或网络。
+
+原FEM owner完成回收与清理后，于09:57:39一次派发原定strict_c83s4_01，MATLAB16604实际创建于09:57:40.965 UTC；源码b34e97d和严格阈值不变。10:03:34实读确认该进程正在执行，后续只剩原定oracle_c1s2_01。root未另开SSH或启动producer，未重试c83s2。GPU resident仍运行原c83s2拟合，评分与C0条件释放顺序不变。
 
 ## 严格 c1s2 已接受：预裂纹变化对本次容差收紧稳定（2026-10-24）
 
