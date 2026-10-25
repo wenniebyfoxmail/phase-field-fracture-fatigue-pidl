@@ -2,6 +2,10 @@
 .DS_Store
 *__pycache__*
 
+# ── Python 打包构建产物（可由 pyproject.toml 重建）────────
+build/
+*.egg-info/
+
 # ── 训练输出目录（hl_* 命名规则）────────────────────────
 hl_*/
 
