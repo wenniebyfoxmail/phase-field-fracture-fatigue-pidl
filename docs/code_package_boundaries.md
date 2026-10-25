@@ -11,6 +11,7 @@ an experiment contract, run a model, or make a scientific claim.
 | `fracture_state` | load/displacement inversion and optional neural spatial degradation reconstruction | `pidl_core` for the neural reconstruction submodule | observation acquisition, runners |
 | `fracture_observation` | array/geometry-only crack-observation reconstruction | none | image I/O, datasets, experiment runners |
 | `fracture_assimilation` | deterministic declared-channel state updates | none | source acquisition, forecasting, training |
+| `fracture_visuals` | optional canonical plotting-style utilities | none | figure generation, experiment output |
 
 `source/*.py` files with the same former module names are compatibility
 bridges.  They re-export one packaged implementation so existing SENS runners

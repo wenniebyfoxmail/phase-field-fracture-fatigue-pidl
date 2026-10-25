@@ -19,6 +19,9 @@ neural = [
 observation = [
     "scikit-image",
 ]
+visual = [
+    "matplotlib",
+]
 
 [tool.setuptools]
 package-dir = {"" = "source"}
@@ -30,4 +33,5 @@ include = [
     "fracture_assimilation*",
     "fracture_observation*",
     "fracture_state*",
+    "fracture_visuals*",
 ]

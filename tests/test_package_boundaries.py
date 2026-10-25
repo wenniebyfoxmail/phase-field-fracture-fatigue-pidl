@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib
 from pathlib import Path
 import sys
@@ -45,6 +46,11 @@ BRIDGES = (
         "fracture_assimilation.fem_mechanism_assimilation",
         "assimilate_state",
     ),
+    (
+        "paper_style",
+        "fracture_visuals.paper_style",
+        "method_style",
+    ),
 )
 
 
@@ -59,7 +65,18 @@ def test_packaged_modules_do_not_import_legacy_source_root_modules() -> None:
     legacy_names = {legacy_name for legacy_name, _, _ in BRIDGES}
     for _, packaged_name, _ in BRIDGES:
         source = (ROOT / "source" / Path(*packaged_name.split("."))).with_suffix(".py")
-        content = source.read_text(encoding="utf-8")
+        tree = ast.parse(source.read_text(encoding="utf-8"))
+        imported_names = {
+            alias.name.split(".", 1)[0]
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        }
+        imported_from = {
+            node.module.split(".", 1)[0]
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and node.module
+        }
         for legacy_name in legacy_names:
-            assert f"from {legacy_name} import" not in content
-            assert f"import {legacy_name}" not in content
+            assert legacy_name not in imported_names
+            assert legacy_name not in imported_from

@@ -1,0 +1,41 @@
+"""Optional plotting-style utilities for fracture-workflow figures."""
+
+from .paper_style import (
+    DPI_PRINT,
+    FIGSIZE_1COL,
+    FIGSIZE_1_5COL,
+    FIGSIZE_2COL,
+    FIGSIZE_HERO_2x2,
+    FIGSIZE_SQUARE,
+    FONT_SIZE,
+    FONT_SIZE_SMALL,
+    LANCET_PALETTE,
+    LINEWIDTH,
+    MARKERSIZE,
+    METHOD_COLORS,
+    METHOD_LINESTYLES_BW,
+    METHOD_MARKERS_BW,
+    apply_style,
+    legend_methods,
+    method_style,
+)
+
+__all__ = [
+    "DPI_PRINT",
+    "FIGSIZE_1COL",
+    "FIGSIZE_1_5COL",
+    "FIGSIZE_2COL",
+    "FIGSIZE_HERO_2x2",
+    "FIGSIZE_SQUARE",
+    "FONT_SIZE",
+    "FONT_SIZE_SMALL",
+    "LANCET_PALETTE",
+    "LINEWIDTH",
+    "MARKERSIZE",
+    "METHOD_COLORS",
+    "METHOD_LINESTYLES_BW",
+    "METHOD_MARKERS_BW",
+    "apply_style",
+    "legend_methods",
+    "method_style",
+]
