@@ -20,7 +20,7 @@ from s09_e017_real_adapter import canonical_json  # noqa: E402
 from s09_e018_real_adapter import ARM_ORDER, run_reviewed_producer  # noqa: E402
 
 
-RUN_ID = "S09-E018-R001-amplitude-priority-ab"
+RUN_ID = "S09-E018-R002-amplitude-priority-ab"
 
 
 def _require(condition: bool, message: str) -> None:
@@ -108,8 +108,29 @@ def main() -> None:
         control / "authority_consumption.json",
         {"run_id": RUN_ID, "terminal_state": "AUTHORITY_CONSUMED_NO_RETRY", "config_sha256": config_sha, "commit": commit, "retry": False, "resume": False},
     )
+    run_root = args.output_dir.parent
+    temp_root = run_root / "tmp"
+    cache_root = run_root / "cache"
+    temp_root.mkdir()
+    cache_root.mkdir()
     configured = dict(config)
-    configured["_execution_control"] = {"authority_sha256": config_sha, "reviewed_commit": commit}
+    configured["_execution_control"] = {
+        "authority_sha256": config_sha,
+        "reviewed_commit": commit,
+        "paths": {
+            "code_root": str(ROOT),
+            "output_root": str(args.output_dir),
+            "control_root": str(control),
+            "temp_root": str(temp_root),
+            "cache_root": str(cache_root),
+        },
+        "resources": {
+            "host_rss_cap_bytes": 16 * 1024**3,
+            "minimum_free_disk_bytes": 20 * 1024**3,
+            "output_tree_cap_bytes": 10 * 1024**3,
+            "temp_tree_cap_bytes": 4 * 1024**3,
+        },
+    }
     bindings = _resolve_bindings(config["bindings"])
     try:
         result = run_reviewed_producer(
