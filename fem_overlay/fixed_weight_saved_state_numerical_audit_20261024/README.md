@@ -4,18 +4,20 @@ This package prepares one bounded, offline audit of the already exposed
 U0.115 and U0.125 native FEM archives. It is a source-bound reconstruction of
 accepted saved states, not a FEM rerun and not a model-training task.
 
-The package has not been executed. It neither opens U0.1175 nor changes an FEM
-archive. `make_fixed_weight_saved_state_audit_config` returns `execute=false`,
-and the MATLAB entry point rejects any configuration until that value is changed
-manually after review.
+The source package is not an execution receipt: any staged run must be
+evaluated from its separately captured launch, execution, and result artifacts.
+It neither opens U0.1175 nor changes an FEM archive. The configuration factory
+returns `execute=false`, and the MATLAB entry point rejects any configuration
+until that value is changed manually after review.
 
 This is a prepared, fail-closed launcher, not a locally executable-qualified
-result. No MATLAB process has tested the 862-source MEX ABI in this worktree.
-The local frozen source evidence establishes the relevant call semantics, but
-does not provide a complete runnable checkout at that exact commit. The launch
-gate therefore requires the actual clean producer checkout, validates its
-locked source interface before any MAT payload is decoded, and stops without a
-metrics CSV if that source/runtime binding cannot be established.
+result. The package bytes alone do not establish that a target host can satisfy
+the 862-source MEX ABI. The local frozen source evidence establishes the
+relevant call semantics, but does not provide a complete runnable checkout at
+that exact commit. The launch gate therefore requires the actual clean producer
+checkout, validates its locked source interface before any MAT payload is
+decoded, and stops without a metrics CSV if that source/runtime binding cannot
+be established.
 
 ## What the audit evaluates
 
@@ -36,11 +38,18 @@ alias chain. It also checks the original five-substep schedule (including the
 `1e-6` cyclic endpoint used to avoid an exact zero during construction), the
 stored effective factors, and imposed displacements with the producer's own
 `1e-14` schedule-comparison precision. That number is only a load-metadata
-identity check; it is not a numerical-result acceptance threshold. The output
-receipt is written outside the archive roots. The Python receipt records an
+identity check; it is not a numerical-result acceptance threshold. The `s00`
+zero-load anchor occupies the first sealed schedule position, whereas the source
+`uy_increment` contains the five physical transitions; the reconstruction
+therefore compares its cumulative increments only to positions `s01` through
+`s05` and supplies those same five positions to the chronological target loop.
+The output receipt is written outside the archive roots. The Python receipt records an
 additional run of those byte/topology checks but has
 `archive_admission_authoritative=false`; it records the actual constrained
 interpreter but cannot turn an unqualified archive into an admitted one.
+Before that numerical comparison, MATLAB imports the index as text so it
+parses the sealed decimal load tokens directly instead of re-parsing a
+display-rounded floating-point value.
 
 For each of the 880 chronological physical transitions, MATLAB then loads the
 target payload only after rechecking its hash. It reconstructs `sys` from the
