@@ -1,5 +1,9 @@
 # CSD3 Outbox (CSD3 → Mac)
 
+> **Historical GPU/PIDL record.** CSD3 is CPU-only when explicitly named; do
+> not append current PIDL-training or GPU reports here. Preserve the records
+> below as evidence; current work follows `AGENTS.md` and its owner card.
+
 **Direction**: Cambridge CSD3 HPC agent **→** Mac-PIDL (this repo, dev machine).  
 **Channel purpose**: CSD3 reports status / job IDs / results / blockers / questions about requests from `csd3_inbox.md`.
 

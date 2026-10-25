@@ -6,6 +6,9 @@
 > acknowledgement flows do not add default authority, review, or testing gates.
 > It cannot select a shared checkout or require a shared-log acknowledgement
 > before routine work already covered by the current owner card.
+> Any later `shared_research_log.md` wording is historical: current results go
+> to the Experiment/Run record and concise linked Obsidian update unless an
+> owner card explicitly adopts that ledger.
 
 **Historical purpose**: former two-machine collaboration detail for this repo.
 Use only the relevant operational steps after the current policy and owner card
@@ -16,8 +19,8 @@ have selected this machine.
 | Machine | Role | Responsibility |
 |---|---|---|
 | **Mac-PIDL** | **Dev** | All source code changes. Analysis & writing. Local Claude memory. Only lightweight import/unit sanity; no training smoke. |
-| **Windows-PIDL** | **Producer** | Pull Mac's code. Run training cases. Report results via `docs/shared_research_log.md`. May add NEW runner scripts, but must not modify core. |
-| **Windows-FEM** | **Reference producer** | GRIPHFiTH FEM runs. Produces ground-truth data in `~/Downloads/_pidl_handoff_*/`. Reports via shared_research_log. |
+| **Windows-PIDL** | **Producer** | Run the owner-card-named cases and record results in their Experiment/Run evidence. The shared log is historical unless explicitly named. |
+| **Windows-FEM** | **Reference producer** | Run owner-card-named GRIPHFiTH FEM work and record the resulting reference evidence. The shared log is historical unless explicitly named. |
 | **Taobo GPU / gpu-server / authorised Windows producer** | **GPU Producer** | Run the owner-card-named GPU work after checking occupancy. CSD3 is CPU-only when explicitly named. |
 
 ## 2. Mac-PIDL (dev)
@@ -84,7 +87,7 @@ duplicate case locally.
 ```bash
 cd "<named clean worktree from current owner card>"
 git fetch origin                              # start
-# read docs/shared_research_log.md top entries
+# read the current owner card and only its named operator material
 # ... work ...
 # after each atomic unit:
 git add <files> && git commit -m "<message>"
@@ -102,11 +105,10 @@ git push origin <task-branch>
   - `SENS_tensile/*_sweep.py` (e.g. `run_sequential_coeff3.py`)
   - `*.sh` launcher scripts
   - These are **new files**, not modifications of existing ones.
-- **Append** to `docs/shared_research_log.md`:
-  - New dated entry at top of findings section, or
-  - `### [reply] Windows-PIDL · YYYY-MM-DD` sub-section under an open `[question]` entry
-  - Never edit existing entries (except to add a `### [update]` sub-section)
-- Commit + push its own new runner scripts and shared_log entries
+- Record the run in the current Experiment/Run evidence and concise linked
+  Obsidian update. Append the historical shared log only if the owner card
+  explicitly names it.
+- Commit + push its coherent runner or record change on the task branch.
 
 ### What Windows MUST NOT do
 - ❌ Modify `source/*.py` (core algorithm files)
@@ -121,12 +123,11 @@ git push origin <task-branch>
 ```bash
 cd "<producer checkout named by current owner card>"
 git fetch origin                              # do not infer a default branch
-# read docs/shared_research_log.md top entries (especially any [decision] from Mac)
+# read the current owner card and only its named operator material
 # ... run training cases ...
-# after a run completes:
-# add entry to shared_research_log.md
-git add docs/shared_research_log.md [any new runner scripts]
-git commit -m "log: Windows-PIDL Dir 6.x Umax sweep results"
+# after a run completes: update the Experiment/Run record
+git add <run-record> [any new runner scripts]
+git commit -m "run: Windows-PIDL <summary>"
 git push origin <task-branch>
 ```
 
@@ -138,7 +139,7 @@ git push origin <task-branch>
 | `SENS_tensile/config.py` | **Mac only** (defaults); Windows via [decision] handshake | Impossible if rule followed |
 | `SENS_tensile/plot_*.py`, `extract_*.py`, `compare_*.py` | **Mac only** | Impossible if rule followed |
 | `SENS_tensile/run_*.py` (runners) | Either — but NEW files only, no same-named collisions | Use prefix convention: `run_{who}_{desc}.py` if ambiguous |
-| `docs/shared_research_log.md` | Both append-only | `git pull --rebase` auto-resolves append-at-end conflicts |
+| `docs/shared_research_log.md` | Historical ledger only | Do not use unless the owner card explicitly adopts it |
 | `docs/*.md` (rules, handovers) | **Mac only** | Impossible if rule followed |
 | `~/.claude/projects/.../memory/` | Each agent local | Never in git — no conflict |
 | PIDL archives `hl_*/` | Each agent local | `.gitignore` blocks |

@@ -1,5 +1,10 @@
 # CSD3 Inbox (Mac → CSD3)
 
+> **Historical GPU/PIDL handoff.** CSD3 is CPU-only when explicitly named and
+> must not accept GPU or PIDL-training requests from this file. Preserve the
+> requests below as evidence; start any current CSD3 task from `AGENTS.md` and
+> its owner card.
+
 **Direction**: Mac-PIDL (this repo, dev machine) **→** Cambridge CSD3 HPC agent.  
 **Channel purpose**: Mac deposits concrete instructions / experiment requests / config / sbatch templates for the CSD3 agent to execute. CSD3 agent reads here after `git pull` and acts accordingly.
 
