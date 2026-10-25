@@ -258,7 +258,7 @@ def check(root):
                 baseline_worker_blob=blob(baseline_worker.encode()), unchanged_worker_functions=list(unchanged),
                 square_root_blob=blob(square_raw), square_root_source_sha256=sha256(square_raw),
                 frozen_mechanics_blobs=mechanics, contract_sha256=EXPECTED_CONTRACT_SHA256,
-                parsed_modules=len(parsed), repair='canonical actual-head/VJP with canonical TSQR RHS binding; materialized head remains independent check',
+                parsed_modules=len(parsed), repair='canonical_actual_head_vjp_finite_precision_repair',
                 cumulative_ledger=dict(prior=current['prior_work_ledger'], remaining=current['work_ledger'],
                                        task=current['task_work_ledger']), resource_policy='exact GPU7 three services unchanged',
                 checks='AST/text/Git only; no SSH, scientific payload access, numeric import or runtime validation',
