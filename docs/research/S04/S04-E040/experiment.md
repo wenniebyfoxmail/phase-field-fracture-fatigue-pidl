@@ -178,7 +178,10 @@ For every attempted step:
 ## Fixed benchmark and reporting
 
 Run one new arm only: c1--c3, 15 continuous substeps, on one Taobo GPU in a
-fresh directory. Reuse R001; do not replay it. No new seed, FEM run, or retry.
+fresh directory. Reuse R001; do not replay it. No new seed or FEM run is in
+scope. A failed service is still a recorded execution attempt, but it creates
+no numerical state or result and cannot be silently retried or reused. A
+corrected package needs separate approval and one fresh RunID.
 The proposed bound is 240 seconds and 10,000 RPROP updates per attempted step,
 3,300 seconds runner time, and 3,500 seconds detached wrapper time. Fifteen
 seconds of each substep are reserved for final field checks and durable output;
@@ -225,7 +228,49 @@ pins the receipt SHA-256. Before any GPU work, the external bootstrap checks
 that pinned receipt, the tar byte count and SHA-256, the archive's embedded Git
 commit, and its own SHA-256. It accepts only a fresh four-file staging directory,
 extracts into a temporary sibling, verifies every reviewed runtime file and the
-inner launcher, then atomically materializes `code/` and writes a receipt.
+inner launcher, then atomically materializes `code/` and writes a receipt. It
+copies the checked tar into a private task-local file before reading its embedded
+commit or extracting it, so those later operations cannot reopen the staged tar
+path after the receipt check.
+
+`PYTHONNOUSERSITE=1` remains enabled for the numerical process. To close the
+one required dependency without reopening the user site, the bootstrap verifies
+the known Taobo `gmshparser` 0.2.0 distribution at
+`/home/drtao/.local/lib/python3.10/site-packages/gmshparser`: exactly 13
+regular `.py` files, their individual SHA-256 values, and canonical tree SHA-256
+`8e7134569df830851a9ebfe741c7477e10efbc781bb8e5e76850078e6a64c4ba`.
+It copies only those checked bytes into the fresh task-local
+`runtime_deps/gmshparser` snapshot and writes a deterministic receipt bound to
+the checked package-receipt SHA-256. The inner launcher recomputes that lock
+before input or CUDA checks, prepends `runtime_deps` to `PYTHONPATH`, verifies
+that `gmshparser` imports from the snapshot, and archives both the receipt and
+snapshot sources with the result. This is an operational dependency closure;
+it does not change the reviewed 26-file numerical runtime closure or the E040
+objective.
+
+Before either verifier runs, the scripts discard inherited Python lookup
+variables and use the producer's verified `/usr/bin:/bin` tool path. The
+bootstrap passes the approval-card package-receipt SHA-256 into systemd; the
+inner launcher rechecks that pin before its package, dependency, frozen-input,
+or CUDA checks. The task root is private (`0700`); after verification, `code/`
+and `runtime_deps/` are made non-writable. This prevents group/other and
+accidental shared writes, but is not an immutable boundary against a process
+running as the same Unix account: such a process can change modes or contents.
+The inner verifier detects a change present before it runs, but cannot make a
+same-account adversary unable to modify files after that verification.
+
+### Recorded pre-optimization launch failure
+
+The attempted package run
+`pf_s04e040_feasible_damage_e15bf802_20261025T162840Z` stopped with exit status
+2 in `s04-e040-pf_s04e040_feasible_damage_e15bf802_20261025T162840Z.service`
+before CUDA/import preflight or any optimizer call. Its task log was
+`/mnt/data2/drtao/wennie/pf_s04e040_feasible_damage_e15bf802_20261025T162840Z/producer.log`;
+the recorded exception was `ModuleNotFoundError: No module named 'gmshparser'`.
+The corresponding archive root was absent, and no accepted state or numerical
+result was created. The post-failure GPU5 observation was 4 MiB, 0% utilization,
+and no compute process. This record establishes only the operational failure
+that the snapshot closes.
 
 The inner launcher repeats the runtime verification immediately before input
 and CUDA checks. It verifies the four frozen standard inputs, resolves the
@@ -233,8 +278,14 @@ requested physical GPU to its UUID, takes a per-GPU advisory lock, rejects any
 compute process or non-idle telemetry before and after CUDA/import preflight,
 and exposes that UUID to PyTorch. The bootstrap starts one named user-systemd
 service with `TimeoutStartSec=30`, `RuntimeMaxSec=3600`, a 3,500-second inner
-runner timeout, a task-owned log, and a launch-once marker. A failed launch is
-not retried by these scripts.
+runner timeout, a task-owned log, and a launch-once marker. It clears
+`BASH_ENV`, `ENV`, `LD_PRELOAD`, and `LD_LIBRARY_PATH` in the service
+environment before its shell starts. The `#!/bin/bash` bootstrap removes caller
+`PATH` resolution, but a hostile inherited `BASH_ENV` or dynamic-loader setting
+can act before any shell script line runs; clean submission of the outer
+bootstrap is therefore an operator boundary, not a property claimed by the
+script. The scripts do not retry the failed e15 service or reuse its RunID; a
+corrected package can be submitted only as a separately approved fresh RunID.
 
 ## Planned implementation checks
 
