@@ -231,7 +231,8 @@ def controller(args,plan,cfg,lock,paths,manifest_sha):
             resource=c.read(args.run/name(role,k)/'resource.json');counts.update(resource['counts'])
             if any(key not in plan['counts'] or value>plan['counts'][key] for key,value in counts.items()):raise RuntimeError('aggregate count cap before next phase')
             for key in ['peak_RSS_bytes','peak_GPU_allocated_bytes','peak_GPU_reserved_bytes']:
-                if resource[key]>4*1024**3:raise MemoryError('phase memory cap')
+                limit=plan['budget'][key.removeprefix('peak_')]
+                if limit is not None and resource[key]>limit:raise MemoryError('phase memory cap')
             done=transition(done,role,k)
             if role=='spatial':trusted['spatial_freeze']=barrier(args.run,['spatial/'+f for f in receipt['files']],'spatial_freeze')
             if role=='bank':trusted['bank_freeze']=barrier(args.run,['bank/bank.json','bank/B1.json'],'bank_freeze')

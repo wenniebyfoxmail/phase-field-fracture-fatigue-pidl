@@ -179,11 +179,11 @@
     "total_task_wall_seconds": null,
     "wall_seconds": null,
     "packaging_reserve_seconds": null,
-    "RSS_bytes": 4294967296,
-    "GPU_allocated_bytes": 4294967296,
-    "GPU_reserved_bytes": 4294967296,
-    "output_bytes": 2147483648,
-    "archive_bytes": 2147483648,
+    "RSS_bytes": null,
+    "GPU_allocated_bytes": null,
+    "GPU_reserved_bytes": null,
+    "output_bytes": null,
+    "archive_bytes": null,
     "minimum_free_disk_bytes": 34359738368
   },
   "counts": {
@@ -229,5 +229,6 @@
     "minimum_free_GPU_MiB": 8192,
     "other_GPU_jobs": "allowed without access or termination"
   },
-  "logical_source_image_root": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\images\\train"
+  "logical_source_image_root": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\images\\train",
+  "resource_amendment": "2026-10-25 user removed run resource upper limits; scientific work counts and shared admission unchanged; any eligible Taobo GPU allowed"
 }
