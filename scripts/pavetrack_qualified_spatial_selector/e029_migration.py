@@ -62,7 +62,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('operation',choices=['export','receive']);p.add_argument('--catalogue',type=Path);p.add_argument('--archive',type=Path,required=True);p.add_argument('--root',type=Path);p.add_argument('--approval',type=Path,required=True);p.add_argument('--reviewed-commit',required=True);p.add_argument('--server-receipt',type=Path);p.add_argument('--catalogue-sha256',required=True);a=p.parse_args()
     doc=Path(__file__).resolve().parents[2]/'docs/research/S01/S01-E029'
     approval=json.loads(a.approval.read_text());mp=doc/'taobo_source_manifest.json'
-    expected=dict(run_id='S01-E029-R001',reviewed_commit=a.reviewed_commit,source_manifest_sha256=sha(mp),execute_once=True,wall_seconds=None,GPU_uuid='GPU-5622bd47-1050-3003-246d-3cabe2b4791b')
+    expected=dict(run_id='S01-E029-R001',reviewed_commit=a.reviewed_commit,source_manifest_sha256=sha(mp),execute_once=True,wall_seconds=None,GPU_uuid=json.loads((doc/'taobo_run_config.json').read_text())['producer']['gpu_uuid'])
     if approval!=expected or type(approval.get('execute_once')) is not bool or approval.get('wall_seconds') is not None:raise PermissionError('exact byte migration approval required')
     root=doc.parents[3]
     for rel,h in json.loads(mp.read_text())['files'].items():

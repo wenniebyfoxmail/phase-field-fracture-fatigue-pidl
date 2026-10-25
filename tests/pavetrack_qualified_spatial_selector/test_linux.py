@@ -20,7 +20,7 @@ class LinuxChecks(unittest.TestCase):
         old,_=c.config();new,_=c.config('taobo')
         for k in ['locations','held_groups','excluded_locations','qualification_reused','primary_locations','arms','main','threshold','foreground_comparison','shift','gates','ridge','heads','policy','locality','primary','GT_access_contract','protocol','proposed_run_id','checkpoint','tile','counts']:self.assertEqual(new[k],old[k],k)
         self.assertIsNone(new['budget']['wall_seconds']);self.assertIsNone(new['budget']['total_task_wall_seconds']);self.assertIs(new['execution_enabled'],False)
-        for k in ['RSS_bytes','GPU_allocated_bytes','GPU_reserved_bytes','output_bytes','archive_bytes']:self.assertEqual(new['budget'][k],old['budget'][k])
+        for k in ['RSS_bytes','GPU_allocated_bytes','GPU_reserved_bytes','output_bytes','archive_bytes']:self.assertIsNone(new['budget'][k])
     def test_no_wall_authority_strict(self):
         plan,_=c.config('taobo');a=dict(run_id='S01-E029-R001',reviewed_commit='a',source_manifest_sha256='b',execute_once=True,wall_seconds=None,GPU_uuid=plan['producer']['gpu_uuid'])
         run.authority(a,'b','a',plan);wrapper.authorization(a,plan,'a','b')
@@ -33,7 +33,7 @@ class LinuxChecks(unittest.TestCase):
         for bad in ['..\\image.jpg','other.jpg','/etc/passwd']:
             with self.assertRaises(ValueError):c.image_path(dict(rec,prepared_image=bad),cfg)
     def test_worker_memory_no_proc_tree_scan_no_wall(self):
-        cfg,_=c.config('taobo');g=guard.Guard(cfg,self.p,start=-10**12);g.self_only=True;g.process=Mock(pid=123);g.process.memory_info.return_value=Mock(rss=100,peak_wset=100);g.process.children.side_effect=AssertionError('global /proc traversal')
+        cfg,_=c.config('taobo');cfg['budget']['RSS_bytes']=4*1024**3;g=guard.Guard(cfg,self.p,start=-10**12);g.self_only=True;g.process=Mock(pid=123);g.process.memory_info.return_value=Mock(rss=100,peak_wset=100);g.process.children.side_effect=AssertionError('global /proc traversal')
         g.check();g.process.children.assert_not_called()
         g.process.memory_info.return_value=Mock(rss=5*1024**3,peak_wset=5*1024**3)
         with self.assertRaises(MemoryError):g.check()

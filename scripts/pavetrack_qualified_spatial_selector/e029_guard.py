@@ -20,13 +20,13 @@ class Guard:
                 rss+=getattr(info,'peak_wset',info.rss)
             self.peak=max(self.peak,rss);a,r=self.gpu();self.allocated=max(self.allocated,a);self.reserved=max(self.reserved,r);b=self.cfg['budget']
             if b['wall_seconds'] is not None and time.monotonic()-self.start>b['wall_seconds']:raise TimeoutError('E029 global wall cap')
-            if self.peak>b['RSS_bytes'] or self.allocated>b['GPU_allocated_bytes'] or self.reserved>b['GPU_reserved_bytes']:raise MemoryError('E029 memory cap')
+            if any(b[k] is not None and v>b[k] for k,v in [('RSS_bytes',self.peak),('GPU_allocated_bytes',self.allocated),('GPU_reserved_bytes',self.reserved)]):raise MemoryError('E029 memory cap')
             size=0
             for f in self.out.rglob('*'):
                 try:
                     if f.is_file():size+=f.stat().st_size
                 except FileNotFoundError:continue  # owned atomic .tmp rename/unlink; final inventory checks required files
-            if size>b['output_bytes']:raise RuntimeError('E029 output cap')
+            if b['output_bytes'] is not None and size>b['output_bytes']:raise RuntimeError('E029 output cap')
     def take(self,k,n=1):
         with self.lock:
             if type(n) is not int or n<0 or k not in self.cfg['counts'] or self.counts[k]+n>self.cfg['counts'][k]:raise RuntimeError('count cap '+k)

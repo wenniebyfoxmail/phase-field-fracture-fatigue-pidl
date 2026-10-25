@@ -86,14 +86,15 @@ def invoke(cmd,tag,cfg,logs,env):
                         rec=managed.identity(q);records[q.pid]=rec;rss+=q.memory_info().rss
                     except psutil.NoSuchProcess:continue
                 peak=max(peak,rss)
-                if peak>cfg['budget']['RSS_bytes']:raise MemoryError('aggregate Linux lifecycle RSS')
+                if cfg['budget']['RSS_bytes'] is not None and peak>cfg['budget']['RSS_bytes']:raise MemoryError('aggregate Linux lifecycle RSS')
                 size=0
                 for folder in [root/'run',logs]:
                     for f in folder.rglob('*'):
                         try:
                             if f.is_file():size+=f.stat().st_size
                         except FileNotFoundError:pass
-                if size>cfg['budget']['output_bytes']:raise RuntimeError('Linux output cap')
+                if cfg['budget']['output_bytes'] is not None and size>cfg['budget']['output_bytes']:raise RuntimeError('Linux output cap')
+                if psutil.virtual_memory().available<cfg['admission']['minimum_free_RAM_bytes']:raise MemoryError('shared host RAM reserve')
                 if psutil.disk_usage(root).free<cfg['budget']['minimum_free_disk_bytes']:raise RuntimeError('Linux disk reserve')
                 time.sleep(.25)
             if child.returncode!=0:raise RuntimeError(tag+' stopped '+str(child.returncode))
@@ -108,10 +109,10 @@ def invoke(cmd,tag,cfg,logs,env):
     if clean_errors:raise RuntimeError('cleanup_uncertain; original='+repr(failure)+'; '+repr(clean_errors))
     if failure:raise failure
 
-def execution_environment(root):
+def execution_environment(root,gpu='5'):
     tmp=root/'tmp';cache=root/'cache'
     env={'PATH':'/usr/bin:/bin','LANG':'C.UTF-8','LC_ALL':'C.UTF-8','PIP_CONFIG_FILE':'/dev/null','CONFIG_SITE':'/dev/null','CC':'/usr/bin/gcc','CXX':'/usr/bin/g++','AR':'/usr/bin/ar','RANLIB':'/usr/bin/ranlib','CFLAGS':'-O2','CPPFLAGS':'','LDFLAGS':'','GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null'}
-    env.update(CUDA_VISIBLE_DEVICES='5',OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',PYTHONNOUSERSITE='1',PYTHONDONTWRITEBYTECODE='1',MPLBACKEND='Agg',MPLCONFIGDIR=str(root/'mplconfig'),TMPDIR=str(tmp),XDG_CACHE_HOME=str(cache),XDG_CONFIG_HOME=str(root/'config'),CUDA_CACHE_PATH=str(cache/'cuda'),TORCH_HOME=str(cache/'torch'),TRITON_CACHE_DIR=str(cache/'triton'))
+    env.update(CUDA_VISIBLE_DEVICES=str(gpu),OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',PYTHONNOUSERSITE='1',PYTHONDONTWRITEBYTECODE='1',MPLBACKEND='Agg',MPLCONFIGDIR=str(root/'mplconfig'),TMPDIR=str(tmp),XDG_CACHE_HOME=str(cache),XDG_CONFIG_HOME=str(root/'config'),CUDA_CACHE_PATH=str(cache/'cuda'),TORCH_HOME=str(cache/'torch'),TRITON_CACHE_DIR=str(cache/'triton'))
     return env
 
 
@@ -126,7 +127,7 @@ def main():
     for key in ['run','logs','runtime','runtime_lock','archive','launch_claim']:
         if Path(lp[key]).exists():raise FileExistsError('fresh once-only '+key)
     with Path(lp['launch_claim']).open('x') as f:json.dump(dict(commit=args.reviewed_commit,manifest=args.manifest_sha256,approval_sha256=sha(args.approval),time=time.time(),pid=os.getpid(),wrapper_birth=proc.Process().create_time(),birth_clock='Linux starttime ticks'),f)
-    logs=Path(lp['logs']);logs.mkdir();tmp=root/'tmp';tmp.mkdir();cache=root/'cache';cache.mkdir();env=execution_environment(root)
+    logs=Path(lp['logs']);logs.mkdir();tmp=root/'tmp';tmp.mkdir();cache=root/'cache';cache.mkdir();env=execution_environment(root,cfg['producer']['gpu_physical_index'])
     started=time.monotonic();state='stopped';reason=None
     def interrupted(signum,frame):raise RuntimeError('wrapper signal '+str(signum))
     for sig in [signal.SIGTERM,signal.SIGINT,signal.SIGHUP]:signal.signal(sig,interrupted)
@@ -157,6 +158,6 @@ def main():
         try:write(logs/'wrapper_status.json',dict(state=state,reason=reason,elapsed_seconds=time.monotonic()-started,wall_seconds=None,no_retry=True,source_commit=args.reviewed_commit,manifest=args.manifest_sha256))
         except BaseException as e:print('status persistence failed '+repr(e),file=sys.stderr)
     # Packaging reuses the exact source reader and no budget extension/second scientific run.
-    invoke(['/usr/bin/python3','-I','-B',str(HERE/'pack.py'),'--run',lp['run'],'--logs',lp['logs'],'--manifest',str(manifest),'--output',lp['archive']],'package',cfg,logs,env)
+    invoke(['/usr/bin/python3','-I','-B',str(HERE/'pack.py'),'--run',lp['run'],'--logs',lp['logs'],'--manifest',str(manifest),'--output',lp['archive'],*(['--unlimited-resources'] if cfg['budget']['archive_bytes'] is None else [])],'package',cfg,logs,env)
     if state!='completed':raise RuntimeError(reason)
 if __name__=='__main__':main()

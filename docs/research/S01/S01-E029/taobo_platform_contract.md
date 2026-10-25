@@ -29,3 +29,10 @@ producer_taobo.sh清除继承环境并以固定绝对工具路径重新进入干
 77项人工数组/mock/字节归档/权限与所有权测试通过，包含原49项；未调用真实或synthetic fit，未加载/前向真实模型、未读真实GT或源RGB/地图；Linux runtime仅完成artifact解析与source hash，不在Mac构建/安装。原已有显示QA仍有效，renderer科学内容未修改；字体接缝与原图layout分开验证。Code Ready只由精确独立代码复审签出；不能用静态通过证明native/Linux吞吐、内存或净收益。
 
 最终审批版必须展示精确source-only commit/包、指定分支、源Windows账号与Taobo账号、508payload与catalogue、runtime recipe、唯一R001命令和结果取回。当前仅本地准备，无SSH部署、私有输入导出/迁移、推送、占卡或producer运行。
+
+
+## 2026-10-25 用户前瞻修订（原签名v4档案保留）
+
+用户允许Taobo任一满足原准入的GPU，并取消运行资源硬上限。本次全八卡实查仅GPU5无compute/0%/24077MiB可用，仍选其原UUID；主机CPU2.77%、可用RAM约359GiB、大盘约546GiB，原准入满足。取消任务运行RSS/CUDA/output/archive硬上限；保留冻结输入/解压/下载完整性尺寸防护与主机RAM至少8GiB、磁盘至少32GiB余量的共享安全停止条件。监测与实测记录保留，真实OOM/磁盘不足仍失败并清理，不更改共享环境或抢占任务。CPU单线程保留为冻结数值复现设置，不据取消上限改变模型、科学次数或算法。所有数据/目录身份、CRC、SHA、角色能力、首停/一次R001和封存保持。设备字段自动核验及单线程等数值设置不因解除资源上限而变动。
+
+本次固定工程基准沿用tests/pavetrack_qualified_spatial_selector（原77项人工/mock/字节用例），只适配新null预算期望；不新增训练/前向或全量历史回归，不重开未变科学审查。

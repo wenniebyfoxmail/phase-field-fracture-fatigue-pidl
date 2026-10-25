@@ -15,7 +15,7 @@ def production_environment(cfg):
     p=cfg['producer'];root=Path(cfg['linux_paths']['runtime']).resolve()
     if sys.platform!='linux' or socket.gethostname()!=p['hostname'] or pwd.getpwuid(os.getuid()).pw_name!=p['account'] or platform.machine()!='x86_64':raise PermissionError('frozen Taobo host/account/architecture')
     if sys.version.split()[0]!='3.12.14' or Path(sys.executable).resolve()!=Path(p['python']).resolve() or not Path(sys.executable).resolve().is_relative_to(root):raise PermissionError('isolated Python executable')
-    if os.environ.get('CUDA_VISIBLE_DEVICES')!='5' or os.environ.get('PYTHONDONTWRITEBYTECODE')!='1' or os.environ.get('PYTHONNOUSERSITE')!='1' or os.environ.get('PYTHONPATH') or any(os.environ.get(k)!='1' for k in ['OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS']):raise PermissionError('frozen GPU/thread/import environment')
+    if os.environ.get('CUDA_VISIBLE_DEVICES')!=str(p['gpu_physical_index']) or os.environ.get('PYTHONDONTWRITEBYTECODE')!='1' or os.environ.get('PYTHONNOUSERSITE')!='1' or os.environ.get('PYTHONPATH') or any(os.environ.get(k)!='1' for k in ['OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS']):raise PermissionError('frozen GPU/thread/import environment')
     spec=json.loads((DOC/'taobo_runtime_spec.json').read_text());lock=json.loads(Path(cfg['linux_paths']['runtime_lock']).read_text())
     if lock['spec_sha256']!=sha(DOC/'taobo_runtime_spec.json') or lock['prefix']!=str(root) or lock['state']!='built_from_frozen_artifacts':raise ValueError('runtime provenance')
     if not root.is_dir() or any(root.is_symlink() for _ in [0]):raise ValueError('runtime root')
@@ -59,7 +59,7 @@ def production_checks(cfg,guard,desktop_unused,sha_unused):
     if uuid.UUID(str(torch.cuda.get_device_properties(0).uuid).removeprefix('GPU-'))!=uuid.UUID(p['gpu_uuid'].removeprefix('GPU-')):raise ValueError('logical UUID')
     torch.set_num_threads(1);torch.set_float32_matmul_precision('highest');torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False;torch.backends.cudnn.benchmark=False;torch.backends.cudnn.deterministic=True
     guard.gpu=lambda:(torch.cuda.max_memory_allocated(0),torch.cuda.max_memory_reserved(0));guard.check()
-    return torch,dict(identity,hostname=socket.gethostname(),account=p['account'],pid=os.getpid(),CUDA_VISIBLE_DEVICES='5',logical_GPU=0,versions=VERSIONS,runtime_lock_sha256=sha(cfg['linux_paths']['runtime_lock']))
+    return torch,dict(identity,hostname=socket.gethostname(),account=p['account'],pid=os.getpid(),CUDA_VISIBLE_DEVICES=str(p['gpu_physical_index']),logical_GPU=0,versions=VERSIONS,runtime_lock_sha256=sha(cfg['linux_paths']['runtime_lock']))
 
 
 def prepare_fonts(cfg):
