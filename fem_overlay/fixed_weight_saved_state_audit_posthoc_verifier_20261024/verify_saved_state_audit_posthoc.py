@@ -28,7 +28,7 @@ AUDIT_SCOPE = (
 )
 SOURCE_COMMIT = "862992a60edc7f59335365beacb5c71fc8592a7a"
 INITIAL_SEMANTICS = "post_clip_zero_load_recovery_pre_cycle_committed"
-PACKAGE_MANIFEST_SHA256 = "08fbccb71588571de6351f94f086ff5e1096c5b493ca067aa5b9948eded8f672"
+PACKAGE_MANIFEST_SHA256 = "aef7e321aa4dbd587376cccc54ad09ca600c91b24cbd21dbf16d9b5a97e608be"
 
 HEX_64 = re.compile(r"[0-9a-f]{64}")
 HEX_40 = re.compile(r"[0-9a-f]{40}")
