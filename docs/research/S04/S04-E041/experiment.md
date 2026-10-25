@@ -1,7 +1,7 @@
 # S04-E041 — Reference-bound assessment of feasible damage representation
 
-**Status:** preparation only; no new FEM or PIDL computation is authorised by
-this record.
+**Status:** parked at reference binding; no new FEM or PIDL computation was
+started.
 
 ## Purpose and evidence stage
 
@@ -31,6 +31,24 @@ FEM reference merely because they share `Umax=0.12`.
 not q-local optimisation or available GPU time.  Do not launch a new E040-style
 solve, select an old cycle-number match, or create a new FEM run just to fill
 this gap.
+
+## D2 result — 2026-10-25
+
+Read-only inspection of the original Umax=0.12 hard-recovery package resolved
+the remaining ambiguity.  Its
+`Baseline/PIDL_hard_d1_u0_recovery_5step/Umax_0.12/original_case/README_FEM_AGENT.md`
+states that the run is not the same initial-state object as the direct
+soft-profile FEM baseline.  Its companion `notes/00_intent.md` describes it as
+an initial-condition discriminator and explicitly says that it is not a full
+FEM/PIDL alignment claim unless a matching FEM hard-damage zero-load recovery
+reference is added.  The package retains PIDL diagnostics, not that matching
+FEM field trajectory.
+
+No qualified FEM reference is therefore available for E040's `c1/s4`, `c2/s4`
+and `c3/s4` states.  The state-binding requirement fails; E041 is **parked**
+before D3, with zero new GPU time, solver calls or model-forward calls.  This is
+not evidence against q-local representation; it only prevents the proposed
+FEM-error comparison from being interpretable.
 
 ## State-binding requirement
 
@@ -70,10 +88,10 @@ would not validate FEM, material behaviour or roads.
 | Step | Decision-scale action | Advance / redirect condition |
 | --- | --- | --- |
 | D1 (complete) | Search existing state records and E040 provenance. | No exact E040 FEM reference found in the verified state audit; redirect to reference binding. |
-| D2 (active) | Bind an existing FEM source and complete the state-key table. | All state-key fields and FEM provenance exist -> perform offline comparison; otherwise park E041. |
-| D3 (conditional) | Calculate the declared field metrics from existing archived fields and record one comparator figure. | Interpret only as a synthetic, matched-state representation result. |
+| D2 (complete) | Bind an existing FEM source and complete the state-key table. | No matching hard-recovery FEM source exists; park E041. |
+| D3 (not entered) | Calculate the declared field metrics from existing archived fields and record one comparator figure. | Requires a future matching reference and a separate amendment. |
 
-The active D2 task is read-only and has a **0 GPU-hour** ceiling.  It permits
+The completed D2 task was read-only and had a **0 GPU-hour** ceiling.  It permits
 no new FEM solve, no PIDL re-run, no seed/sweep/trajectory extension, and no
 unannounced reference substitution.  D3 is offline analysis of existing assets
 only; any new producer computation, changed reference family, or expansion
