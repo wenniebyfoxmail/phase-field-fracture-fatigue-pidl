@@ -1,7 +1,7 @@
 # Research Frontier
 
 <!-- HYBRID_D21_FRONTIER -->
-> S04 D21 complete R10 now authorised: original owner labels→1800 qualification→one fit→frozen tests wiring passes fixed16 controls; unchanged physical criteria and cumulative136hosth/12GPUh. Producer dispatch is next; no scientific conclusion yet. [Canonical track](experiments/s04_fem_pidl_field_alignment_track.md).
+> S04 D21 R10 stopped at first teacher step after8directions:0/1800labels,0fit/test;184.22×force/17.06×KKT tolerance despitePhi33.10fold lower. Pipeline integration6709ad81/fixed16 passed; real producer181.994s/GPU0, all owned processes exited. Active-face boundary/restart repair needs new technical-code authority; remaining128.186conservative hosth/12GPUh. [Canonical track](experiments/s04_fem_pidl_field_alignment_track.md).
 
 
 > S04 previous D20 result (2026-10-21): R008 sole0/600, step1 stopped after8 outer subproblems;169files verified/processes exited. Certification repair worked, weightedPhi36.78fold down but original force/KKT failed; no finalQP/history/NN/retry. Only future box-constrained subproblem direction design, noR009; original clocks/costs retained. [Canonical track](experiments/s04_fem_pidl_field_alignment_track.md).

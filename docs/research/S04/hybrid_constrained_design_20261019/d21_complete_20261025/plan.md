@@ -1,3 +1,5 @@
+**Actual status: R10 stopped at train_A step1,0/1800 labels,0fit. [Actual result and technical decision](result.md). The route below is the implemented prospective pipeline, not a claim that training completed.**
+
 # D21 complete labels → one fit → frozen tests, 2026-10-25
 
 Current owner: `codex/fem-surrogate-solver-repair-v6-20261020`; original D21 solver at fee87bac. Direct current human authority is retained verbatim in task_authority.json. The expired one-case R009 card is historical only; this is fresh `pf_hybrid_d21_complete_20261025_r10`.
@@ -16,7 +18,7 @@ The original `launch_hybrid_detached.py` → `run_hybrid_producer.py` → `hybri
 
 Original cumulative136hosth,12GPUh,≤16CPU,64GiB RAM,24GiB VRAM,128GiB primary+128GiB archive;256GiB free admission. CPU teacher/reference/classical workers use4cores and32GiB RSS cap;fit/neural use16cores/64GiB. D21 physical step300s and all original outer/action/update limits unchanged. Labels60hosth;fit6GPUh;test reference/classical40hosth;neural6GPUh;replay+analysis≤4hosth shared. Planned phase ceilings116h fit within the card's conservative remaining128.237hosth. Historical unknown CPU remains unknown.
 
-23338.64800595003 historical conservative seconds are deducted once. New preparation elapsed plus3600s remaining preparation/dispatch reserve further reduce the frozen balance; this reserve is conservative, **not observed computation**. Supervision charges all waits, failed workers, termination and IO. No idle days are charged as execution. The ledger explicitly separates unknown historical CPU from new observed child CPU.
+23338.64800595003 historical conservative seconds are deducted once. New preparation elapsed plus3600s remaining preparation/dispatch/closure reserve further reduce the frozen balance; this reserve is conservative, **not observed computation**. Supervision charges all waits, failed workers, termination and IO. No idle days are charged as execution. The ledger explicitly separates unknown historical CPU from new observed child CPU.
 
 Automatic mechanical resource admission retries: maximum4 checks,30s waits; all time remains in the same envelope. Packaging/SSH outcomes are reconciled before further action; exclusive run/launch reservations prevent duplicate jobs. Scientific worker failures are retained and stop this task if a technical code change is needed; unchanged failed scientific work is never silently resubmitted. A partial teacher trajectory or interrupted fit is not automatically promoted/repeated. User can authorise a technical repair after seeing the failure. Old consumed attempts retain their costs and identities.
 

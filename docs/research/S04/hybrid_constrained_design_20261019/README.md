@@ -1,6 +1,8 @@
+**2026-10-25当前入口：** [D21完整任务R10真实首停](d21_complete_20261025/result.md)。原owner接入/固定16检查通过，实际启动后step1耗尽8方向，0/1800标签、0fit、0测试；未到300s超时。技术修改前保持停止。[终态、产出、费用和剩余预算](d21_complete_20261025/run_receipt.json)。
+
 
 <!-- HYBRID_TRAINING_READINESS_20261024 -->
-**2026-10-24当前入口：** [R2终态、R3–R008全链费用与训练安排](training_readiness_20261024.md)。R2已首停，后续至R008仍0完整teacher/0fit；D21禁用且旧时钟过期。复用现成D21，不回退旧600秒候选；先补labels出口，再1800标签→一次fit→测试。
+**2026-10-24历史核账：** [R2终态、R3–R008全链费用与训练安排](training_readiness_20261024.md)。R2已首停，后续至R008仍0完整teacher/0fit；D21禁用且旧时钟过期。复用现成D21，不回退旧600秒候选；先补labels出口，再1800标签→一次fit→测试。
 
 # Constrained variational FEM–neural hybrid
 
