@@ -25,4 +25,6 @@ an HQ. Historical routes remain in their existing documents.
 **Status: deferred.** A module may split only with a stable interface,
 independent test, defined input/output and owner/lifecycle, rollback plan, and
 separate user approval. No code, output, or worktree moves are authorised by
-this decision.
+this decision. Current `pidl_core` packaging metadata and repository-relative
+boundary tests are useful progress, but do not yet prove an independently
+installed or released package contract.

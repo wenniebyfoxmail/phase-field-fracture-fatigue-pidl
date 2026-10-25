@@ -50,6 +50,8 @@ mandatory narrative layer, duplicate ledger, or default review loop.
   candidate has a stable interface, independent test, defined input/output,
   owner and lifecycle, a rollback plan, and separate user approval. Until
   then, do not move code, outputs, or worktrees to manufacture a split.
+  Repository-relative boundary tests alone do not establish an independently
+  installed or released package contract.
 
 ## Machines
 
