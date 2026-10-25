@@ -18,6 +18,9 @@ from fem_mechanism_operator import (  # noqa: E402
     mechanism_loss,
     normalized_node_features,
 )
+from pidl_core.fem_mechanism_operator import (  # noqa: E402
+    MultiScaleMeshResidualOperator as packaged_multiscale_operator,
+)
 from prepare_fem_mechanism_operator_dataset import (  # noqa: E402
     coarse_graph,
     edge_attributes,
@@ -37,6 +40,10 @@ def statistics() -> StateStatistics:
         residual_mean=torch.zeros(1, 4),
         residual_std=torch.ones(1, 4),
     )
+
+
+def test_legacy_fem_operator_import_remains_the_packaged_implementation():
+    assert MultiScaleMeshResidualOperator is packaged_multiscale_operator
 
 
 def small_graph():

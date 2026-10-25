@@ -12,6 +12,11 @@ dependencies = [
     "scipy",
 ]
 
+[project.optional-dependencies]
+neural = [
+    "torch",
+]
+
 [tool.setuptools]
 package-dir = {"" = "source"}
 
