@@ -1,5 +1,13 @@
 # S01-E029 Taobo GPU5 Linux：整包已批准，资源等待，R001未启动
 
+## 2026-10-25 v6 已接收停止包；v7 本地修复待批准发送
+
+已批准v6传送/指定分支更新/唯一启动均完成，公开分支当前`a99e97d5a2be9c39083d0c557d22c9bf16b21562`。来源修订生效，43来源校验、独立Python构建和42依赖安装通过；零模型/GT预检通过。随后wrapper监督在controller阶段遇到ProcessLookupError并停止，总耗823.16秒，无任务墙时超限。
+
+固定停止包已取回Mac，1533939bytes、21文件、SHA`7d0ddfd63198ea9afa1ec14ad5f417174daae142c2c59c2165d0f658a1bb2870`；CRC/清单/逐文件SHA验收完成。科学run只有launch.json，首个bank request/control/worker均未生成；前向/拟合/评价未开始，无图可验。E003保留率和净收益仍null，不记净0。所有已记录PID均已退出，各阶段cleanup_uncertain为空。原两条停止链均保留。
+
+本地最小修复只将Linux /proc退出ESRCH归一成已有NoSuchProcess；旧代码复现，修复版6项新回归+28项原Linux检查通过。PID复用、身份、权限、I/O保护不放宽。科学源码/数据/依赖/封存均不改。待发送源码`eb0b11ded518d8fc78fd41a58f147fd06342d04a`，manifest`9858d1fc5f7b5679847c545af7bb847316cd5eaf5b9c4e210607e0f7a51d3f95`，270成员源码包SHA`11a0cd02acd6e60a4bda964e238ffe1a8d10b4c15c220b37dfed6cf8ca4d0e69`，当前未传送/未公开推送/未再启动。拟新根mechanical_resume_02，复用原私有输入；已建runtime原地保留，新根依原冻结流程重建。完整发送审批版本见taobo_proc_race_repair_approval_20261025.md；不得把v6许可自动延伸为v7对外传送许可。
+
 ## 2026-10-25 v6 已批准并实际继续执行
 
 用户本轮明确批准 NVIDIA 区域来源修订、精确 v6 源码传送、指定分支更新和同一次尚未开始科学计算的 R001 继续执行。八卡重新检查，GPU5 为唯一无计算进程的合格卡；启动准入 CPU 2.0%、显存24077MiB、利用率0%。GitHub SSH账号wenniebyfoxmail核实；指定分支已正常前推至 `a99e97d5a2be9c39083d0c557d22c9bf16b21562` 并读回一致。远端269源码文件/268绑定与批准对象核验通过。
