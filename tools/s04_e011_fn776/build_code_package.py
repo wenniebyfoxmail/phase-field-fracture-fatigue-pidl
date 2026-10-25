@@ -33,11 +33,11 @@ def build(source, out):
              'tools/s04_e011_fn776/control_r2.py',
              'tools/s04_e011_fn776/remote_control_r2.py', 'tools/s04_e011_fn776/verify_retrieval_r2.py',
              'tools/s04_e011_fn776/build_code_package.py', 'tools/s04_e011_fn776/verify_code_package.py',
-             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r4.json',
+             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r5.json',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776.json',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/protocol_fn776.md',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/mechanics_ast.json',
-             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/deployment_fn776_r4.md'}
+             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/deployment_fn776_r5.md'}
     rows = []
     local_modules = {}
     for line in cmd(['git', 'ls-tree', '-r', source]).splitlines():

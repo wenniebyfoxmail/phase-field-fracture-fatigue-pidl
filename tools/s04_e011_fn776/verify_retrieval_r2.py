@@ -4,7 +4,7 @@ import json
 from pathlib import Path, PurePosixPath
 import tarfile
 
-RUN = 'pf_s04e011_uvh_c1_fn776_r4_20261024'
+RUN = 'pf_s04e011_uvh_c1_fn776_r5_20261025'
 CASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs') / RUN / 'authorized_execution'
 
 

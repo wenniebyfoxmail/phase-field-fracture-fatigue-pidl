@@ -15,9 +15,9 @@ import subprocess
 import sys
 import time
 
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r4'
-INDEX = 'S04-E011-FN776-r4-A1'
-RUN = 'pf_s04e011_uvh_c1_fn776_r4_20261024'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r5'
+INDEX = 'S04-E011-FN776-r5-A1'
+RUN = 'pf_s04e011_uvh_c1_fn776_r5_20261025'
 CASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs') / RUN / 'authorized_execution'
 CAP = 1024**2
 RECEIPT_RESERVE = 64*1024
