@@ -1,7 +1,12 @@
 # Workflow Rules（详细版）
 
-本文件是 `CLAUDE.md` 铁律的展开。低频查看，不需要每个 session 都读。
-协作分工和 git 操作细节见 `git_workflow.md`。
+> **Status — on-demand operator/history reference.** The current repository
+> policy is `AGENTS.md`, and the current owner card controls research scope.
+> This document preserves older collaboration detail; it does not require a
+> shared ledger, frontier update, extra review, or repeat test by default.
+
+本文件保留旧的协作细节；不是每个 session 的必读项。当前规则见
+`AGENTS.md`，按需操作细节见 `git_workflow.md`。
 
 ---
 

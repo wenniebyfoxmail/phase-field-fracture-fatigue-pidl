@@ -1,8 +1,13 @@
 # Git Workflow — Mac / Windows Dev/Producer Split
 
-**Purpose**: explicit rules for the two-machine collaboration on this repo.
-This supersedes any ad-hoc conventions. Both machines' Claude agents MUST
-follow these rules.
+> **Status — on-demand operator/history reference.** `AGENTS.md` and the
+> current owner card control present work. This document is read only for a
+> task that uses its named machine or handoff; its older frontier, ledger, and
+> acknowledgement flows do not add default authority, review, or testing gates.
+
+**Historical purpose**: former two-machine collaboration detail for this repo.
+Use only the relevant operational steps after the current policy and owner card
+have selected this machine.
 
 ## 1. Roles
 

@@ -1,56 +1,80 @@
-# Agent Rules for `upload code/`
+# Repository operating policy
 
-This file is the cross-agent entry point for the shared GitHub repo. It applies to Codex, Claude, and any other agent working from this repository.
+This is the shared Git repository for phase-field fracture with PIDL. This
+file is the **sole repository policy** for Codex, Claude, and other agents.
+`CLAUDE.md` is only a compatibility pointer.
 
-## Non-Negotiable Machine Roles
+## Start here
 
-- **Mac-PIDL is Dev only.** Edit code, docs, runners, and analysis here. Run only lightweight import/unit sanity on Mac.
-- **Do not run PIDL training on Mac.** Any command that enters the training loop, even a 1-cycle smoke, must run on Taobo GPU, CSD3, or Windows-PIDL after checking compute availability.
-- **Taobo GPU / CSD3 / Windows-PIDL are Producers.** They run training smoke, baselines, sweeps, and production jobs from code prepared by Mac.
-- **GitHub is the shared source of code truth.** Commit code/rule/runner/doc changes on Mac and push when cross-machine sync is needed. Do not rely on a Taobo-local commit as shared state.
+1. Read this file.
+2. For research work, read the current HQ / Experiment owner card and its
+   linked Obsidian note.
+3. When a route or method must be chosen, read
+   `research-decision-core/references/agent_bootstrap.md` and reason from
+   **First Principles (第一性原理)**.
+4. Read an operator runbook only when the task actually uses that machine,
+   data boundary, or frozen package.
 
-## Taobo GPU Submission
+The research model is **HQ -> Experiment -> Run -> Evidence**. It has no
+mandatory narrative layer, duplicate ledger, or default review loop.
 
-Before sending any job to Taobo, read:
+## Ownership and execution
 
-- `docs/taobo_gpu_submission_protocol.md`
-- `docs/git_workflow.md`
-- Claude shared-account protocol, if available locally: `/Users/wenxiaofang/.claude/projects/-Users-wenxiaofang-phase-field-fracture-with-pidl-upload-code/memory/reference_drtao_shared_account_protocol.md`
+- One active task has one owner, one named branch, one clean worktree, and one
+  fixed benchmark appropriate to its change.
+- Use the current owner card as the source of scope and authority. When its
+  scope, data, resource boundary, and contract are unchanged, execute routine
+  work without asking for a new authority.
+- Record a material method/configuration decision as M1 (config or commit), a
+  computation as M2 (Run ID), and a conclusion as M3 (Evidence / concise
+  Obsidian update). Do not create records that add no decision value.
+- A concise Obsidian update is due after a chosen route/plan or a meaningful
+  result changes the next step. Visual evidence belongs beside that result
+  when the task produces it.
 
-Required Taobo principles:
+## Git and assets
 
-- Use fresh, attributable remote run directories, preferably under `/mnt/data2/drtao/wennie/`.
-- Never write large outputs to `/` or home. Set `PIDL_ARCHIVE_DIR=/mnt/data2/drtao/pidl_archives/...` or another `/mnt/data2/drtao/...` output root.
-- Always launch Python GPU jobs with `CUDA_VISIBLE_DEVICES=N`.
-- Always record commit SHA, remote run dir, GPU id, PID, command, log path, archive path, and dirty status.
-- Use detached execution (`nohup`, `setsid`, or `tmux pf_*`) so SSH/VPN drops do not stop jobs.
-- Treat SSH drops as loss of visibility, not proof that the job stopped.
+- Git is the shared source of code, runnable configuration, and concise
+  project rules. Generated outputs, raw data, PDFs, and large artefacts stay
+  in their designated output/archive locations and are referenced by path,
+  Run ID, and commit.
+- Start new code work from a named clean worktree based on the intended remote
+  ref. Never use a dirty shared checkout as the base for a new task.
+- Preserve unrelated changes, historical worktrees, and recoverable commits.
+  Do not force-push, reset hard, bulk-clean, bulk-delete, or move assets merely
+  to make the tree look tidy.
+- Commit a coherent task change after its direct check; push its task branch
+  when cross-machine sharing or recovery needs it. A local commit is not a
+  remote handoff until its push state is verified.
 
-## Shared `drtao` Account Safety
+## Machines
 
-Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be inferred from username alone.
+- **Mac-PIDL:** edit code/docs and run lightweight import or unit checks only;
+  no training loop.
+- **Taobo GPU, `gpu-server`, and authorised Windows producers:** run the
+  approved GPU/FEM work from attributable remote directories. Record commit,
+  Run ID, command, log/output path, device, and process identity.
+- **CSD3:** CPU work only when explicitly named. It is never an implicit GPU
+  or PIDL fallback.
+- On shared machines, inspect command line, elapsed time, and working directory
+  before touching a process. SSH loss is loss of visibility, not evidence that
+  a detached run stopped.
 
-- Never run `pkill python3` or `pkill -u drtao`.
-- Before killing any PID, verify all three: `cmdline`, elapsed time, and cwd.
-- Do not attach to tmux sessions you did not create; inspect with `tmux capture-pane -p -t <session>`.
-- Reboot, global sudo config edits, root-service/docker changes, and heavy disk IO require coordination with the other human users / Tao哥 first.
+## Verification and communication
 
-## Git And Working Tree Hygiene
+- Run the current task's one fixed benchmark or direct consistency check.
+  Documentation-only changes need `git diff --check` and direct link/path
+  checks, not scientific computation or broad regression.
+- Before a producer consumes Git-backed code, verify the exact remote ref and
+  object named in its handoff. A file merely present in a local checkout is
+  not remote availability.
+- Global `~/.codex/AGENTS.md` governs external communication. `Haofan Pro` is
+  an internal ChatGPT Pro review account for Codex's own local changes; it does
+  not alter Wennie's research ownership, authorship, or sender identity.
 
-- Do not force-push, reset hard, rebase interactive, or amend pushed commits unless explicitly authorized.
-- Do not overwrite existing shared log/handover entries. Append or add update subsections.
-- The parent repo is local scratch. The child repo `upload code/` is the GitHub-synced project.
-- If the working tree is dirty, preserve unrelated changes. Do not revert files you did not intentionally modify.
-- Before telling another machine to use a Git path, case id, runner, or registry
-  row, fetch the named remote and verify the object against the exact remote
-  ref. Local working-tree or local-`HEAD` existence is not evidence of remote
-  availability. Record the remote commit and required blob hash in the handoff;
-  see the remote-visibility gate in `docs/git_workflow.md`.
+## On-demand references
 
-## Where Details Live
-
-- `CLAUDE.md` — project session protocol and red lines.
-- `docs/git_workflow.md` — Mac/Windows/Taobo producer split.
-- `docs/taobo_gpu_submission_protocol.md` — exact Taobo submission, sync, launch, and tracking checklist.
-- `docs/research_frontier.md` — current research frontier.
-- `docs/handovers/` — cross-machine task inbox/outbox.
+`docs/git_workflow.md` and `docs/workflow_rules.md` are operator/history
+references. They do not replace this policy or a current owner card. Machine-
+specific submission protocols remain binding only when their named producer is
+being used.
