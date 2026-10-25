@@ -314,7 +314,8 @@
     "files.pythonhosted.org",
     "download.pytorch.org",
     "download-r2.pytorch.org",
-    "pypi.nvidia.com"
+    "pypi.nvidia.com",
+    "pypi.nvidia.cn"
   ],
   "notes": "Linux markers explicitly resolved; full CUDA dependencies included; source build and install only after exact approval"
 }
