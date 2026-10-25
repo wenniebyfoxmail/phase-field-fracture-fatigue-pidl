@@ -1,0 +1,9 @@
+# S01-E029-R001 环境停止及已接收记录
+
+2026-10-25；源码34ec77ef29674622cf4d87bb46912fe4943aea14，实际wrapper PID2996467/18:41:33UTC，82.596秒后止于NVIDIA区域重定向来源检查。bootstrap峰值RSS60751872bytes，受管清理无未决项；原wrapper/子PID2996564/2996565均不再存在，run/runtime未创建。
+
+源码269文件/268绑定已接收；私有原包509成员/595789790bytes/SHA2424ed391fe41ef3d8d61c9c2c32bde0f20f3f2fe50c2219c3ff5a5c687f331a已完整接收验收，未公开。原指定分支已推送34ec77ef并读回一致。
+
+固定停止包14490bytes/10成员，SHA6f60ce4464b3aeeb3b50cd602df4babdef558cf4db0a2634f4176343c3bfa8bd，CRC/双清单验收通过；保存于/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E029/runs/S01-E029-R001-Taobo/。没有模型前向、fit、GT/RGB解码或检测评价。保留率、主D、净GT均null；无应验收的科研图，不用合成图替代。科学问题尚未被检验，处置为环境修复；不是路径无效证据。
+
+仅本地准备v6：精确增加pypi.nvidia.cn，42依赖/Python/全部Python源码和科学配置不变，复用原私有路径；新物理子目录保留旧历史。新源码a99e97d5a2be9c39083d0c557d22c9bf16b21562、manifest008db789115d9f11cd4852065ffdb043610b461bdaeb489bd755603a521607e2尚未传送/推送/启动。下一唯一人方边界见[完整版本](taobo_bootstrap_repair_approval_20261025.md)，来自最新总纲3.1。
