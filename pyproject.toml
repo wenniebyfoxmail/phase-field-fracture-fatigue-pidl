@@ -25,4 +25,9 @@ package-dir = {"" = "source"}
 
 [tool.setuptools.packages.find]
 where = ["source"]
-include = ["pidl_core*", "fracture_observation*", "fracture_state*"]
+include = [
+    "pidl_core*",
+    "fracture_assimilation*",
+    "fracture_observation*",
+    "fracture_state*",
+]

@@ -15,6 +15,9 @@ from fem_mechanism_assimilation import (  # noqa: E402
     observation_masks,
     scenario_by_name,
 )
+from fracture_assimilation.fem_mechanism_assimilation import (  # noqa: E402
+    assimilate_state as packaged_assimilate_state,
+)
 
 
 def states() -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -43,6 +46,7 @@ def states() -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
 
 def test_fixed_probes_are_geometry_only_deterministic_and_sparse() -> None:
+    assert assimilate_state is packaged_assimilate_state
     x = np.linspace(-0.5, 0.5, 21)
     y = np.linspace(-0.1, 0.1, 5)
     centroids = np.asarray([(xx, yy) for yy in y for xx in x])
