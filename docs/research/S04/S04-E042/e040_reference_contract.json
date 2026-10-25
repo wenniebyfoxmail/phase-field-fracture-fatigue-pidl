@@ -1,0 +1,24 @@
+{
+  "schema": "S04-E042-fixed-e040-reference-contract-v1",
+  "run_id": "pf_s04e040_feasible_damage_2f0ed993_20261025T203658Z",
+  "result": {
+    "experiment": "S04-E040",
+    "protocol": "r1",
+    "arm": "feasible_damage"
+  },
+  "package": {
+    "preflight_schema": "S04-E040-producer-preflight-v2",
+    "schema": "S04-E040-producer-package-receipt-v2",
+    "package_commit": "2f0ed993ac9a432853668c01b073dbbe1ce70544",
+    "reviewed_runtime_commit": "5aaa317ed55175e80acb581d922eb6a1a4cb6d49",
+    "runtime_manifest_schema": "S04-E040-reviewed-runtime-manifest-v1"
+  },
+  "baseline": {
+    "model_settings_sha256": "015fe8ddf563b2b9d81b8a681705e2a35f9044206311a6a7e26f40a7dc9c1047",
+    "checkpoint_sha256": "aad4ebcb60a41caba6e0d2dbfaaba7cb7cb2ece631da8fbbfcaf3d374fc77aae",
+    "network_sha256": "09f1fc279007262b1068f0526e36e3aa2005633da271924cb598b7994ba8509a"
+  },
+  "r001": {
+    "steps_sha256": "fd21fced6639591c1966e12c6ed5e7ec086403dc02d889ec49011c0d2524deec"
+  }
+}

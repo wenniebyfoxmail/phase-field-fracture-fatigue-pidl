@@ -1,8 +1,8 @@
 # S04-E042 — projected explicit-damage active-set solver
 
-**Status:** implementation and the fixed CPU carrier-contract benchmark are
-complete.  No producer package, upload, GPU launch, or new numerical result
-exists yet.
+**Status:** implementation, the fixed CPU carrier-contract benchmark, the
+producer package, and the read-only post-run comparator are complete.  No
+upload, GPU launch, or new numerical result exists yet.
 
 **Task owner:** S04-E042, controlled synthetic PIDL numerical-method
 experiment (claim class C1: constrained-solver admissibility).
@@ -95,6 +95,26 @@ recorded nontrivial direct-damage response.  It would support numerical
 feasibility of this solver only.  Field agreement, fatigue evolution, and time
 would remain separate descriptive comparisons; no scalar loss is comparable
 across objectives or solver families without that boundary.
+
+## Package and post-run evidence boundary
+
+The local producer package separates the reviewed numerical runtime
+`521c611fb2b24622df50ef5c2f4624b4abfed72d` from a later wrapper-only package
+commit.  Its receipt verifies all 23 `source/` files, the E042 runner,
+`field_computation.py`, and the fixed mesh; it also proves that the runner
+imports `ReferenceBaseProjectedDamage` from the checked
+`source/projected_damage.py`.  A fresh remote directory is materialized only
+from the checked tar, and E042 uses the existing physical-GPU lock namespace
+solely to remain mutually exclusive with E040.
+
+The launcher writes a sealed pre-run identity receipt for the frozen inputs,
+runtime, and history timing.  Only after a zero-exit run does it write a second
+sealed receipt that binds the results manifest, mesh, steps, summary, results,
+completion record, and accepted-state-pointer head.  The read-only comparator
+then checks these links alongside the pinned R001 and E040 records before it
+computes any strain, raw psi-plus, fatigue, damage, or timing comparison.
+These controls establish provenance for a possible execution; they do not
+authorize it or establish a numerical outcome.
 
 ## Authority
 
