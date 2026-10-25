@@ -24,9 +24,13 @@ from spatial_degradation_reconstruction import (  # noqa: E402
     target_increment,
     z_to_damage,
 )
+from fracture_state.spatial_degradation_reconstruction import (  # noqa: E402
+    reconstruct_damage as packaged_reconstruct_damage,
+)
 
 
 def test_damage_z_round_trip_and_increment_are_bounded():
+    assert reconstruct_damage is packaged_reconstruct_damage
     damage = np.array([0.0, 0.1, 0.5, 0.95, 0.999999, 1.0])
     z = damage_to_z(damage)
     recovered = z_to_damage(z)
