@@ -102,6 +102,14 @@ done
 [[ ! -e "$PIDL_ARCHIVE_DIR" ]] || fail "refusing non-fresh archive root: $PIDL_ARCHIVE_DIR"
 [[ "$PACKAGE_RECEIPT_SHA256" =~ ^[0-9a-f]{64}$ ]] || fail "invalid pinned receipt SHA-256"
 
+# `systemd-run --user` needs the submitting account's live user-manager bus.
+# Check that connection before copying a verified tar, materializing code, or
+# consuming the launch-once marker, so a noninteractive shell with no user bus
+# fails without changing the staged task beyond its uploaded four files.
+if ! systemctl --user show-environment >/dev/null 2>&1; then
+    fail "user systemd manager is unreachable; require XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS for the submitting account"
+fi
+
 # Establish the private staging parent before looking at any uploaded sidecar.
 # A group-writable staging directory is acceptable only until this owner check
 # and immediate 0700 conversion; package authentication never reads through it

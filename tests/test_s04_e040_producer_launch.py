@@ -253,6 +253,77 @@ class ProducerDependencySnapshotTest(unittest.TestCase):
         })
         return environment
 
+    def patch_cuda_preflight_for_telemetry_test(self, package: dict[str, object]) -> None:
+        """Replace only the real CUDA probe in a sealed synthetic package.
+
+        The package, materialization, and dependency receipts are rebound after
+        the test-only replacement so the launcher still exercises its ordinary
+        verification and post-preflight admission path.
+        """
+        task_root = Path(package["task_root"])
+        code = task_root / "code"
+        launcher = Path(package["launcher"])
+        current = launcher.parent
+        while True:
+            current.chmod(0o700)
+            if current == code:
+                break
+            current = current.parent
+        launcher.chmod(0o700)
+        opening = "cuda_preflight=\"$(\n    cd \"$TASKROOT/code\"\n    /usr/bin/python3 - <<'PY'\n"
+        closing = '\nPY\n)" || fail "CUDA/import preflight failed"'
+        before, remainder = launcher.read_text().split(opening, 1)
+        _, after = remainder.split(closing, 1)
+        launcher.write_text(before + "cuda_preflight='{\"synthetic\": true}'" + after)
+        seal_tree(code)
+
+        receipt_path = Path(package["receipt"])
+        receipt = json.loads(receipt_path.read_text())
+        receipt["entrypoint_sha256"] = sha256(launcher)
+        receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+        receipt_digest = sha256(receipt_path)
+
+        materialization_path = task_root / "materialization_receipt.json"
+        materialization = json.loads(materialization_path.read_text())
+        materialization["package_receipt_sha256"] = receipt_digest
+        materialization_path.write_text(json.dumps(materialization, indent=2, sort_keys=True) + "\n")
+
+        dependency_receipt_path = task_root / "runtime_dependency_receipt.json"
+        dependency_receipt = json.loads(dependency_receipt_path.read_text())
+        dependency_receipt["package_receipt_sha256"] = receipt_digest
+        dependency_receipt_path.write_text(json.dumps(dependency_receipt, indent=2, sort_keys=True) + "\n")
+
+    def make_telemetry_nvidia_smi(self, tools: Path) -> None:
+        executable(
+            tools / "nvidia-smi",
+            "#!/bin/bash\n"
+            "set -euo pipefail\n"
+            "state=\"${S04_E040_NVIDIA_STATE:?}\"\n"
+            "case \"$*\" in\n"
+            "  *--query-gpu*)\n"
+            "    count=0\n"
+            "    [[ -f \"$state\" ]] && count=\"$(cat \"$state\")\"\n"
+            "    printf '%s' \"$((count + 1))\" > \"$state\"\n"
+            "    utilization=0\n"
+            "    if (( count >= 1 )) && [[ \"${S04_E040_PERSIST_HIGH_UTILIZATION:-}\" == 1 ]]; then\n"
+            "      utilization=8\n"
+            "    elif (( count == 1 )); then\n"
+            "      utilization=8\n"
+            "    fi\n"
+            "    printf '0, GPU-test, NVIDIA GeForce RTX 4090, 4, %s, 550.0\\n' \"$utilization\"\n"
+            "    ;;\n"
+            "  *--query-compute-apps*)\n"
+            "    if [[ -n \"${S04_E040_POST_PREFLIGHT_APPS:-}\" && \"$(cat \"$state\")\" -ge 2 ]]; then\n"
+            "      printf '%s\\n' \"$S04_E040_POST_PREFLIGHT_APPS\"\n"
+            "    fi\n"
+            "    ;;\n"
+            "  *)\n"
+            "    echo \"unexpected nvidia-smi arguments: $*\" >&2\n"
+            "    exit 99\n"
+            "    ;;\n"
+            "esac\n",
+        )
+
     def bootstrap_package(self, root: Path) -> dict[str, object]:
         dependency = self.dependency_source(root)
         package_repo = root / "package-repo"
@@ -340,8 +411,19 @@ class ProducerDependencySnapshotTest(unittest.TestCase):
         )
         executable(
             tools / "systemctl",
-            "#!/bin/bash\nif [[ \"$*\" == *LoadState* ]]; then echo 'LoadState=not-found'; "
-            "else printf 'Id=test.service\\nMainPID=42\\nRuntimeMaxUSec=3600000000\\n'; fi\n",
+            "#!/bin/bash\n"
+            "if [[ \"$*\" == *show-environment* ]]; then\n"
+            "  if [[ -n \"${S04_E040_SYSTEMD_MANAGER_UNAVAILABLE:-}\" ]]; then\n"
+            "    echo 'Failed to connect to bus' >&2\n"
+            "    exit 1\n"
+            "  fi\n"
+            "  exit 0\n"
+            "fi\n"
+            "if [[ \"$*\" == *LoadState* ]]; then\n"
+            "  echo 'LoadState=not-found'\n"
+            "else\n"
+            "  printf 'Id=test.service\\nMainPID=42\\nRuntimeMaxUSec=3600000000\\n'\n"
+            "fi\n",
         )
         return tools, marker
 
@@ -561,6 +643,64 @@ class ProducerDependencySnapshotTest(unittest.TestCase):
             self.assertFalse(poison_sentinel.exists())
             self.assertFalse(sentinel.exists())
 
+    def test_post_preflight_utilization_tail_must_settle_before_runner(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            package = self.inner_package(root, frozen_inputs=True)
+            self.patch_cuda_preflight_for_telemetry_test(package)
+            tools, sentinel = self.make_tools(root)
+            self.make_telemetry_nvidia_smi(tools)
+            Path(package["archive_root"]).parent.mkdir(parents=True)
+            state = root / "nvidia-query-count"
+            environment = self.inner_environment(package, tools, sentinel)
+            environment["S04_E040_NVIDIA_STATE"] = str(state)
+            result = subprocess.run(
+                [str(package["launcher"])], text=True, capture_output=True, env=environment, timeout=15
+            )
+            self.assertEqual(result.returncode, 99, result.stderr)
+            self.assertEqual(state.read_text(), "3")
+            preflight = Path(package["archive_root"]) / "producer_preflight.txt"
+            self.assertTrue(preflight.is_file())
+            self.assertIn("post_cuda_preflight_settle_attempts=1", preflight.read_text())
+
+    def test_post_preflight_compute_process_is_not_granted_a_cooldown(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            package = self.inner_package(root, frozen_inputs=True)
+            self.patch_cuda_preflight_for_telemetry_test(package)
+            tools, sentinel = self.make_tools(root)
+            self.make_telemetry_nvidia_smi(tools)
+            state = root / "nvidia-query-count"
+            environment = self.inner_environment(package, tools, sentinel)
+            environment["S04_E040_NVIDIA_STATE"] = str(state)
+            environment["S04_E040_POST_PREFLIGHT_APPS"] = "GPU-test, 1234, foreign-worker, 10"
+            result = subprocess.run(
+                [str(package["launcher"])], text=True, capture_output=True, env=environment, timeout=15
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("already has a compute process at before_runner", result.stderr)
+            self.assertEqual(state.read_text(), "2")
+            self.assertFalse(Path(package["archive_root"]).exists())
+
+    def test_post_preflight_utilization_still_fails_after_bounded_cooldown(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            package = self.inner_package(root, frozen_inputs=True)
+            self.patch_cuda_preflight_for_telemetry_test(package)
+            tools, sentinel = self.make_tools(root)
+            self.make_telemetry_nvidia_smi(tools)
+            state = root / "nvidia-query-count"
+            environment = self.inner_environment(package, tools, sentinel)
+            environment["S04_E040_NVIDIA_STATE"] = str(state)
+            environment["S04_E040_PERSIST_HIGH_UTILIZATION"] = "1"
+            result = subprocess.run(
+                [str(package["launcher"])], text=True, capture_output=True, env=environment, timeout=15
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("utilization after 3s post-preflight cooldown", result.stderr)
+            self.assertEqual(state.read_text(), "5")
+            self.assertFalse(Path(package["archive_root"]).exists())
+
     def test_bootstrap_snapshots_source_before_systemd(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -596,6 +736,27 @@ class ProducerDependencySnapshotTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(task_root.stat().st_mode & 0o077, 0)
             self.assertTrue(marker.exists())
+
+    def test_bootstrap_requires_user_manager_before_materialization(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            package = self.bootstrap_package(root)
+            tools, marker = self.bootstrap_tools(root)
+            environment = self.bootstrap_environment(package, tools, marker)
+            environment["S04_E040_SYSTEMD_MANAGER_UNAVAILABLE"] = "1"
+            task_root = Path(package["task_root"])
+            staged_mode = task_root.stat().st_mode & 0o777
+            result = subprocess.run([str(package["bootstrap"])], text=True, capture_output=True,
+                                    env=environment)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("user systemd manager is unreachable", result.stderr)
+            self.assertEqual(task_root.stat().st_mode & 0o777, staged_mode)
+            self.assertFalse(marker.exists())
+            self.assertFalse((task_root / "code").exists())
+            self.assertFalse((task_root / "runtime_deps").exists())
+            self.assertFalse((task_root / "materialization_receipt.json").exists())
+            self.assertFalse((task_root / "launch_once").exists())
+            self.assertFalse(list(task_root.glob(".verified-package-*.tar")))
 
     def test_systemd_submission_clears_preinterpreter_environment(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

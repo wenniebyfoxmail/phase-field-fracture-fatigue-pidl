@@ -20,6 +20,13 @@ readonly EXPECTED_NETWORK_SHA256=09f1fc279007262b1068f0526e36e3aa2005633da271924
 readonly EXPECTED_R001_STEPS_SHA256=fd21fced6639591c1966e12c6ed5e7ec086403dc02d889ec49011c0d2524deec
 readonly MAX_IDLE_MEMORY_MIB=64
 readonly MAX_IDLE_UTILIZATION_PERCENT=2
+# The CUDA/import check deliberately submits a tiny CUDA workload.  NVIDIA's
+# utilization field is sampled over an interval and can report that completed
+# work briefly after the Python preflight process has exited.  Only the
+# utilization sample may settle; memory and compute-process checks remain
+# immediate and strict throughout this bounded interval.
+readonly POST_CUDA_PREFLIGHT_SETTLE_ATTEMPTS=3
+readonly POST_CUDA_PREFLIGHT_SETTLE_SECONDS=1
 readonly GMSHPARSER_SOURCE_ROOT=/home/drtao/.local/lib/python3.10/site-packages/gmshparser
 readonly GMSHPARSER_DISTRIBUTION_VERSION=0.2.0
 readonly GMSHPARSER_TREE_SHA256=8e7134569df830851a9ebfe741c7477e10efbc781bb8e5e76850078e6a64c4ba
@@ -92,7 +99,7 @@ assert_sha256() {
         fail "SHA-256 mismatch for $path (expected $expected, got $actual)"
 }
 
-for required in sha256sum timeout nvidia-smi flock /usr/bin/python3; do
+for required in sha256sum timeout nvidia-smi flock sleep /usr/bin/python3; do
     require_command "$required"
 done
 
@@ -409,31 +416,33 @@ assert_sha256 "$BASELINE/best_models/checkpoint_step_0.pt" "$EXPECTED_CHECKPOINT
 assert_sha256 "$BASELINE/best_models/trained_1NN_0.pt" "$EXPECTED_NETWORK_SHA256"
 assert_sha256 "$REFERENCE_RESULT/original/steps.json" "$EXPECTED_R001_STEPS_SHA256"
 
-gpu_info="$(nvidia-smi --id="$PHYSICAL_GPU_INDEX" \
-    --query-gpu=index,uuid,name,memory.used,utilization.gpu,driver_version \
-    --format=csv,noheader,nounits 2>&1)" || fail "could not query physical GPU $PHYSICAL_GPU_INDEX: $gpu_info"
-IFS=',' read -r reported_index gpu_uuid gpu_name gpu_memory_used gpu_utilization gpu_driver <<< "$gpu_info"
-for variable in reported_index gpu_uuid gpu_name gpu_memory_used gpu_utilization gpu_driver; do
-    value="${!variable//[[:space:]]/}"
-    printf -v "$variable" '%s' "$value"
-done
-[[ "$reported_index" == "$PHYSICAL_GPU_INDEX" && "$gpu_uuid" == GPU-* ]] ||
-    fail "could not resolve selected physical GPU UUID"
-[[ "$gpu_memory_used" =~ ^[0-9]+$ && "$gpu_utilization" =~ ^[0-9]+$ ]] ||
-    fail "selected GPU did not report numeric idle telemetry"
+refresh_gpu_telemetry() {
+    gpu_info="$(nvidia-smi --id="$PHYSICAL_GPU_INDEX" \
+        --query-gpu=index,uuid,name,memory.used,utilization.gpu,driver_version \
+        --format=csv,noheader,nounits 2>&1)" ||
+        fail "could not query physical GPU $PHYSICAL_GPU_INDEX: $gpu_info"
+    IFS=',' read -r reported_index gpu_uuid gpu_name gpu_memory_used gpu_utilization gpu_driver <<< "$gpu_info"
+    for variable in reported_index gpu_uuid gpu_name gpu_memory_used gpu_utilization gpu_driver; do
+        value="${!variable//[[:space:]]/}"
+        printf -v "$variable" '%s' "$value"
+    done
+    [[ "$reported_index" == "$PHYSICAL_GPU_INDEX" && "$gpu_uuid" == GPU-* ]] ||
+        fail "could not resolve selected physical GPU UUID"
+    [[ "$gpu_memory_used" =~ ^[0-9]+$ && "$gpu_utilization" =~ ^[0-9]+$ ]] ||
+        fail "selected GPU did not report numeric idle telemetry"
+}
+
+refresh_gpu_telemetry
+selected_gpu_uuid="$gpu_uuid"
 
 lock_dir=/mnt/data2/drtao/wennie/.s04-e040-gpu-locks
 mkdir -p "$lock_dir"
 exec 9>"$lock_dir/$gpu_uuid.lock"
 flock -n 9 || fail "selected GPU $PHYSICAL_GPU_INDEX is reserved by another S04-E040 launcher"
 
-assert_gpu_quiescent() {
+assert_no_selected_gpu_compute_process() {
     local stage="$1"
     local apps
-    (( gpu_memory_used <= MAX_IDLE_MEMORY_MIB )) ||
-        fail "selected GPU has ${gpu_memory_used} MiB in use at $stage"
-    (( gpu_utilization <= MAX_IDLE_UTILIZATION_PERCENT )) ||
-        fail "selected GPU has ${gpu_utilization}% utilization at $stage"
     if ! apps="$(nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory \
         --format=csv,noheader,nounits 2>&1)"; then
         fail "could not query compute processes at $stage: $apps"
@@ -444,6 +453,15 @@ assert_gpu_quiescent() {
     ' <<< "$apps"; then
         fail "selected GPU $PHYSICAL_GPU_INDEX already has a compute process at $stage"
     fi
+}
+
+assert_gpu_quiescent() {
+    local stage="$1"
+    (( gpu_memory_used <= MAX_IDLE_MEMORY_MIB )) ||
+        fail "selected GPU has ${gpu_memory_used} MiB in use at $stage"
+    assert_no_selected_gpu_compute_process "$stage"
+    (( gpu_utilization <= MAX_IDLE_UTILIZATION_PERCENT )) ||
+        fail "selected GPU has ${gpu_utilization}% utilization at $stage"
 }
 
 assert_gpu_quiescent before_cuda_preflight
@@ -504,20 +522,25 @@ print(json.dumps({
 PY
 )" || fail "CUDA/import preflight failed"
 
-# A second query closes the ordinary snapshot race as far as a shared machine
-# can: the S04-E040 advisory lock stays open through the child process, and a
-# process that appeared during import prevents the numerical runner from start.
-gpu_info="$(nvidia-smi --id="$PHYSICAL_GPU_INDEX" \
-    --query-gpu=index,uuid,name,memory.used,utilization.gpu,driver_version \
-    --format=csv,noheader,nounits 2>&1)" || fail "could not re-query selected GPU"
-IFS=',' read -r reported_index gpu_uuid_after gpu_name gpu_memory_used gpu_utilization gpu_driver <<< "$gpu_info"
-for variable in reported_index gpu_uuid_after gpu_name gpu_memory_used gpu_utilization gpu_driver; do
-    value="${!variable//[[:space:]]/}"
-    printf -v "$variable" '%s' "$value"
+# Re-query after the CUDA subprocess exits.  Its just-completed kernel can
+# occupy the driver's utilization sampling window, so retry that field for at
+# most three seconds.  Every snapshot still rejects extra memory or a compute
+# process, and entering the runner still requires the original low-utilization
+# threshold.
+post_preflight_attempt=0
+while :; do
+    refresh_gpu_telemetry
+    [[ "$gpu_uuid" == "$selected_gpu_uuid" ]] ||
+        fail "selected GPU identity changed during preflight"
+    (( gpu_memory_used <= MAX_IDLE_MEMORY_MIB )) ||
+        fail "selected GPU has ${gpu_memory_used} MiB in use at before_runner"
+    assert_no_selected_gpu_compute_process before_runner
+    (( gpu_utilization <= MAX_IDLE_UTILIZATION_PERCENT )) && break
+    (( post_preflight_attempt < POST_CUDA_PREFLIGHT_SETTLE_ATTEMPTS )) ||
+        fail "selected GPU has ${gpu_utilization}% utilization after ${POST_CUDA_PREFLIGHT_SETTLE_ATTEMPTS}s post-preflight cooldown"
+    sleep "$POST_CUDA_PREFLIGHT_SETTLE_SECONDS"
+    (( post_preflight_attempt += 1 ))
 done
-[[ "$reported_index" == "$PHYSICAL_GPU_INDEX" && "$gpu_uuid_after" == "$gpu_uuid" ]] ||
-    fail "selected GPU identity changed during preflight"
-assert_gpu_quiescent before_runner
 
 mkdir "$PIDL_ARCHIVE_DIR"
 mkdir "$PIDL_ARCHIVE_DIR/runtime_deps"
@@ -540,6 +563,7 @@ mkdir -p "$TMPDIR" "$XDG_CACHE_HOME" "$TORCH_EXTENSIONS_DIR" "$MPLCONFIGDIR"
     printf 'physical_gpu_index=%s\n' "$PHYSICAL_GPU_INDEX"
     printf 'gpu_uuid=%s\n' "$gpu_uuid"
     printf 'nvidia_smi=%s\n' "$gpu_info"
+    printf 'post_cuda_preflight_settle_attempts=%s\n' "$post_preflight_attempt"
     printf 'cuda_preflight=%s\n' "$cuda_preflight"
     printf 'model_settings_sha256=%s\n' "$(sha256_of "$BASELINE/model_settings.txt")"
     printf 'checkpoint_sha256=%s\n' "$(sha256_of "$BASELINE/best_models/checkpoint_step_0.pt")"

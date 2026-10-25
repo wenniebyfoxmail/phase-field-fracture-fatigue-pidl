@@ -275,10 +275,19 @@ that the snapshot closes.
 The inner launcher repeats the runtime verification immediately before input
 and CUDA checks. It verifies the four frozen standard inputs, resolves the
 requested physical GPU to its UUID, takes a per-GPU advisory lock, rejects any
-compute process or non-idle telemetry before and after CUDA/import preflight,
-and exposes that UUID to PyTorch. The bootstrap starts one named user-systemd
+compute process or non-idle telemetry before CUDA/import preflight, then
+requeries after it. Because the completed CUDA probe can remain in NVIDIA's
+utilization sampling window, the post-probe guard may wait at most three
+one-second samples for utilization to return to the same threshold; every
+sample still rejects excess memory or any compute process, and the launcher
+records the number of settle attempts. It then exposes that UUID to PyTorch.
+The bootstrap starts one named user-systemd
 service with `TimeoutStartSec=30`, `RuntimeMaxSec=3600`, a 3,500-second inner
-runner timeout, a task-owned log, and a launch-once marker. It clears
+runner timeout, a task-owned log, and a launch-once marker. Before it copies
+the verified tar or materializes code, it checks the submitting account's
+`systemctl --user` manager connection; an absent `XDG_RUNTIME_DIR` or
+`DBUS_SESSION_BUS_ADDRESS` therefore stops before materialization or consuming
+the launch-once marker. It clears
 `BASH_ENV`, `ENV`, `LD_PRELOAD`, and `LD_LIBRARY_PATH` in the service
 environment before its shell starts. The `#!/bin/bash` bootstrap removes caller
 `PATH` resolution, but a hostile inherited `BASH_ENV` or dynamic-loader setting
