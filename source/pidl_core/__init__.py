@@ -17,9 +17,11 @@ from .damage_conditioned_equilibrium import (
     solve_amor_equilibrium,
     tensile_energy,
 )
+from .material_properties import MaterialProperties
 
 __all__ = [
     "EquilibriumResult",
+    "MaterialProperties",
     "Q4Kinematics",
     "assemble_amor_stiffness",
     "build_q4_kinematics",
