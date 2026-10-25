@@ -1,0 +1,20 @@
+{
+  "schema": "d21-boundary-repair-authority-v1",
+  "kind": "direct_user_approval",
+  "date": "2026-10-25",
+  "user_text": "授权",
+  "approved_proposal": "沿原 owner 修复活动面推进与重启，保留物理精度和现有预算",
+  "continuing_task": "original D21 labels→1800 qualified transitions→one fit→frozen tests; repair lifts R10 technical-change stop only for this proposed repair",
+  "earlier_authority": "../task_authority.json",
+  "preparation_start_epoch": 1792966969.107598,
+  "initial_reading_reserve_seconds": 600,
+  "budget_not_reset": true,
+  "scope": "same synthetic family, original acceptance and300s/8directions/100actions/16updates, no network/loss/split change",
+  "fixed_benchmark": {
+    "local": "PYTHONPATH=source:tools /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python -m pytest -q tests/test_hybrid_box_krylov.py tests/test_hybrid_d21_pipeline.py",
+    "producer": "one frozen R10 last_box_model paired original-vs-projected-path LS comparison; no physical assembly or new FEM state; <=300s/4cores/32GiB CPU0GPU",
+    "advance_condition": "certified model decrease strictly exceeds original finite solver on the same saved matrix, with original domain/certificate/action/update caps"
+  },
+  "next_scientific_action": "one fresh original complete pipeline within remaining cumulative budget after fixed benchmark passes",
+  "failure": "stop on scientific failure requiring a different technical repair; preserve costs, no repeat fit"
+}

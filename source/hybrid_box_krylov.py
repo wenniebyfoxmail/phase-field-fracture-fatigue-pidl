@@ -37,7 +37,7 @@ def boundary_step(x,v,D,il,iu):
     return float(ratio.min())
 
 
-def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps=8):
+def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps=8,*,projected_path=False):
     if type(max_steps)is not int or not 1<=max_steps<=8:raise ValueError('unbounded Krylov refinement')
     b=model.budget;nu=len(free);x0=np.r_[base['u'][free],base['d']]
     if b.used+1+OPTIONAL_ACTION_RESERVE>b.limit:
@@ -49,7 +49,7 @@ def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps
     il,iu,_,_=state_intervals(x0,model.D,radius,
         np.r_[np.full(nu,-np.inf),lower],np.r_[np.full(nu,np.inf),np.ones(len(lower))])
     previous_mask=None;previous_g2=None;previous_v=None;full_step=False
-    completed=0;reason='iteration_limit';last_pg=None
+    completed=0;reason='iteration_limit';last_pg=None;retry_alpha=None
     for index in range(1,max_steps+1):
         # A normal finite budget exit returns the certified best; no attempted
         # operator/evaluation may partly exceed the action/update envelope.
@@ -89,12 +89,19 @@ def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps
         alpha_bound=boundary_step(x,v,model.D,il,iu)
         if alpha_bound is None or alpha_bound<=0:
             reason='no_positive_represented_boundary_step';break
-        alpha=min(alpha_cg,alpha_bound)
+        # First-intersection truncation can make an entire direction vanish
+        # when one component is only a few representable steps from a bound.
+        # On the projected path, cross those breakpoints by projecting the
+        # actual state; the original model interval remains the sole authority
+        # to keep a candidate. Restart CG after any projection/truncation.
+        alpha=(alpha_cg if projected_path else min(alpha_cg,alpha_bound))
+        if projected_path and retry_alpha is not None:alpha=min(alpha,retry_alpha)
         if not np.isfinite(alpha)or alpha<=0:raise RuntimeError('invalid Krylov step length')
         y=best['y']+multiply(alpha,v,'Krylov feasible line step');normal(y,'Krylov proposed coordinate')
         candidate=feasible('Krylov',y,_best_point=best)
         stage('Krylov_before_model',candidate,_best_point=best,iteration=index,alpha=alpha,
             alpha_cg=alpha_cg,alpha_bound=alpha_bound,restart=restart,
+            projected_path=projected_path,backtracking=retry_alpha is not None,
             free_components=int(mask.sum()),free_mask_id=hashlib.sha256(mask.tobytes()).hexdigest(),
             projected_gradient_inf=last_pg)
         candidate.update(model.evaluate(candidate['p'],candidate['p_tail']))
@@ -103,9 +110,20 @@ def refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,max_steps
             best=candidate;best['selection']='active_face_Krylov_improvement'
         completed+=1
         stage('Krylov_complete',candidate,_best_point=best,iteration=index,retained_as_best=improved,
-            boundary_truncated=alpha_bound<=alpha_cg,projected_gradient_inf=last_pg)
+            boundary_truncated=alpha_bound<=alpha_cg,projected_gradient_inf=last_pg,
+            projected_path=projected_path)
         if not improved:
-            reason='model_improvement_not_certified';break
+            if not projected_path:
+                reason='model_improvement_not_certified';break
+            # A projected quadratic line need not decrease at the unprojected
+            # line minimizer. Retry a smaller *projected gradient* step from
+            # the unchanged certified best; each attempt uses one of the same
+            # eight iterations and the same shared action/update budget.
+            retry_alpha=alpha*.5
+            full_step=False
+            reason='projected_model_improvement_not_certified'
+            continue
+        retry_alpha=None;reason='iteration_limit'
         previous_mask=mask.copy();previous_g2=g2;previous_v=v.copy()
         full_step=alpha_cg<alpha_bound
     stage('Krylov_end',_best_point=best,iterations_completed=completed,stop_reason=reason,

@@ -84,3 +84,25 @@ def test_benchmark_is_honest_and_exactly_bound(tmp_path):
     d21.require_benchmark(card(),dict(artifact_id='abc'),receipt,p)
     receipt['verdict']='REVIEW_PASS'
     with pytest.raises(RuntimeError):d21.require_benchmark(card(),dict(artifact_id='abc'),receipt,p)
+
+
+def test_boundary_repair_changes_only_declared_coupling_strategy():
+    c=card();c['boundary_repair']='projected_path_v1'
+    c['coupling']['box_subproblem_solver']='active_face_projected_cg'
+    validate_card(c)
+    c['solver']['force_tolerance']=1e-6
+    with pytest.raises(ValueError):validate_card(c)
+
+
+def test_boundary_benchmark_must_bind_actual_saved_model_improvement(tmp_path):
+    c=card();c['boundary_repair']='projected_path_v1'
+    p=tmp_path/'card.json';write_json(p,c)
+    report=dict(passed=True,artifact_id='abc',new_FEM_states=0,training_updates=0,
+                projected=dict(pred_lower=2.),original=dict(pred_upper=1.))
+    bp=tmp_path/'boundary_benchmark.json';write_json(bp,report)
+    receipt=dict(verdict='FIXED_BENCHMARK_PASS',artifact_id='abc',card_sha256=sha256(p),
+                 independent_review_performed=False,saved_model_benchmark_sha256=sha256(bp))
+    d21.require_benchmark(c,dict(artifact_id='abc'),receipt,p)
+    report['projected']['pred_lower']=.5;write_json(bp,report)
+    receipt['saved_model_benchmark_sha256']=sha256(bp)
+    with pytest.raises(RuntimeError,match='did not pass'):d21.require_benchmark(c,dict(artifact_id='abc'),receipt,p)

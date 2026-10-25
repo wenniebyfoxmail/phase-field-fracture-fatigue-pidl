@@ -1,0 +1,24 @@
+{
+  "schema": "d21-boundary-repair-local-benchmark-v1",
+  "passed": true,
+  "unique_tests": 31,
+  "initial_run": "28 passed,1failed synthetic input did not exhibit intended tiny-bound feature; J row/column bound corrected in fixture, not production code",
+  "affected_fixture_recheck": "2 passed",
+  "affected_control_module_recheck": "14 passed",
+  "affected_final_reason_recheck": "2 passed",
+  "unaffected_passes_reused": true,
+  "local_real_FEM_states": 0,
+  "training_updates": 0,
+  "producer_saved_model": "pending",
+  "source_files": {
+    "source/hybrid_box_krylov.py": "a8346d0123a361d61f5ff54df4c04e6060cc76d7688ef957bf1e7a5dc401c4f1",
+    "source/hybrid_box_residual_subproblem.py": "2e2cc96b781cc21de5c61ef178150bf04a20734528b16ea82b6a1aa3d968d099",
+    "source/hybrid_coupled_acceleration.py": "b8a4e72c1e339b5527040090aba5e13b55e59c7cb3cde1021b5d99f0d75169ae",
+    "tools/hybrid_d21_pipeline.py": "f72f3a17b0c2ce7f26cec4886cc65d5fe82c7c8c663334aedbeef9316113b6cd",
+    "tools/stage_hybrid_d21.py": "bdf06f0ea924fd49cd38f3c4429433ac2cc860cd9aa42323e40746e615911285",
+    "tools/benchmark_hybrid_boundary_repair.py": "d8ac3ee4eed66bb0c5bb15c45388ab5e903c68cc3cd878f88252ce13d583fef8",
+    "tests/test_hybrid_box_krylov.py": "3b28536de77df7132acd367b49b07b2d473babf504ccbb9fd216aa1338c2cb8b",
+    "tests/test_hybrid_d21_pipeline.py": "143ebdb9dfedfc252a653ff9c78da8a1f7031653fc8c721ed3049d19d803ca9c"
+  },
+  "fixed_command": "PYTHONPATH=source:tools /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python -m pytest -q tests/test_hybrid_box_krylov.py tests/test_hybrid_d21_pipeline.py"
+}

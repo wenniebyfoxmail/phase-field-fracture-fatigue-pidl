@@ -40,7 +40,7 @@ class CouplingSettings:
     krylov_steps: int = 8
 
     def __post_init__(self):
-        if self.box_subproblem_solver not in ('pg2_optional','active_face_cg'):raise ValueError('unknown box subproblem solver')
+        if self.box_subproblem_solver not in ('pg2_optional','active_face_cg','active_face_projected_cg'):raise ValueError('unknown box subproblem solver')
         if type(self.krylov_steps)is not int or not 1<=self.krylov_steps<=8:raise ValueError('unbounded Krylov steps')
         if self.box_domain_policy!='representable_inner_binary64_v1':raise ValueError('unknown representable box policy')
         if self.mode not in ('none','projected_anderson','projected_anderson_monotone','guarded_vi_newton','guarded_block_newton','joint_projected_trust','box_residual_trust'):raise ValueError('unknown coupling policy')

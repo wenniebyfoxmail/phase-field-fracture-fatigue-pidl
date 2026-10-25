@@ -134,3 +134,8 @@ Current human authority enables fresh R10 on the original owner, not expired R00
 #### D21 R10 first-stop closure
 
 All234 files146806540B inventoried/hash verified on producer; compact metadata and196 iteration rows retrieved, no raw scientific arrays copied back. Initial/latest state remains version0. Later CG first-bound alphas1e-23–1e-19 suggest representable-boundary stagnation; causal repair unverified. Existing labels/fit/frozen-test orchestration is reusable, but no real label export or neural comparison completed. One active-face improvement was selected; do not claim CG never helped. Current task stops under the user technical-code exception. [Terminal result and next technical decision](../research/S04/hybrid_constrained_design_20261019/d21_complete_20261025/result.md).
+
+
+### D21 continuing boundary-path repair authorised, 2026-10-25
+
+Direct user“授权” approves original-owner activity/restart repair after R10 first stop. Opt-in projected-path CG retains original represented feasibility/model-decrease proof and physical acceptance; no tolerances,300s,8directions,100actions/16updates,model/loss/split changes. Fixed31 local controls pass; one same-R10-frozenLS paired producer benchmark is pending before any new physical run. Existing whole route remains the intended comparison within cumulative budget. [Current repair plan/authority/card](../research/S04/hybrid_constrained_design_20261019/d21_complete_20261025/repair_20261025/plan.md).

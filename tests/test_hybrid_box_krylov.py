@@ -135,3 +135,50 @@ def test_normal_end_stage_uses_final_improved_best():
         if name=='Krylov_end':end[0]=best['p'].copy()
     run_case([[1.,10.],[0.,1.]],[0.,-1.],observe=observe)
     assert last[0]is not None and np.array_equal(last[0],end[0])
+
+
+def near_boundary_case(solver,observe=None):
+    # Cauchy lands just inside the damage lower bound. The next gradient
+    # still points outwards there, while the displacement remains free.
+    J=sparse.csc_matrix([[1.,-1.],[0.,2.]])
+    m=Model(J,np.array([.5,.55]),np.ones(2),np.ones(2),Budget())
+    base=dict(u=np.zeros(2),d=np.array([.1]))
+    p=solve_box_model(m,base,np.array([1]),np.array([0]),np.zeros(1),np.zeros(1),
+        np.zeros(1,bool),.1,np.zeros(2),solver=solver,stage_observer=observe)
+    return p,m
+
+
+def test_projected_path_crosses_tiny_first_bound_without_freezing_other_components():
+    before=[];after=[]
+    old,_=near_boundary_case('active_face_cg',lambda n,p,b,m:before.append((n,m)))
+    new,m=near_boundary_case('active_face_projected_cg',lambda n,p,b,m:after.append((n,m)))
+    first=next(meta for name,meta in before if name=='Krylov_before_model')
+    assert first['alpha_bound']<1e-12*first['alpha_cg']
+    assert new['pred_lower']>old['pred_upper']
+    assert new['model_value']<old['model_value'] and new['d'][0]>=0
+    assert new['actual_TR_norm']<=.1 and new['pred_lower']>=new['cauchy_pred_lower']
+    assert m.budget.used<=100 and m.budget.updates<=16
+    assert any(meta.get('projected_path') for name,meta in after if name=='Krylov_complete')
+    assert new['subproblem_optimality_certified']is False
+
+
+def test_projected_retry_keeps_certified_best_and_shared_limits(monkeypatch):
+    real=Model.evaluate;seen=[]
+    def no_improvement(self,*a,**kw):
+        result=real(self,*a,**kw);seen.append(result)
+        if len(seen)>1:result.update(pred_lower=-1.,pred_upper=1.)
+        return result
+    monkeypatch.setattr(Model,'evaluate',no_improvement)
+    p,m=near_boundary_case('active_face_projected_cg')
+    assert np.array_equal(p['p'],seen[0]['p'])
+    assert p['pred_lower']==p['cauchy_pred_lower']>0
+    assert m.budget.used<=100 and m.budget.updates<=16 and len(seen)>2
+
+
+def test_projected_path_has_distinct_policy_identity():
+    from dataclasses import asdict
+    from hybrid_coupled_acceleration import CouplingSettings
+    from hybrid_incremental import digest_config
+    a=CouplingSettings(mode='box_residual_trust',box_subproblem_solver='active_face_cg')
+    b=CouplingSettings(mode='box_residual_trust',box_subproblem_solver='active_face_projected_cg')
+    assert digest_config(asdict(a))!=digest_config(asdict(b))

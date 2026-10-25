@@ -30,6 +30,8 @@ def validate(card, code):
     from hybrid_state_contract import CONTRACT_ID
     old = read_manifest(Path(code) / OWNER / 'complete_execution_20261020/execution_card.json')
     d21 = read_manifest(Path(code) / OWNER / 'solver_repair_v12/execution_card.json')
+    if card.get('boundary_repair') == 'projected_path_v1':
+        d21['coupling']['box_subproblem_solver']='active_face_projected_cg'
     if card.get('schema') != old['schema'] or card.get('state_contract_id') != CONTRACT_ID:
         raise ValueError('D21 accepted-state contract differs')
     for key in ('solver', 'coupling', 'snapshot_storage'):
@@ -64,6 +66,16 @@ def require_authority(card, code):
         raise RuntimeError('prior GPU budget differs')
     if card['prior_charged_host_seconds'] < prior['budget']['conservative_total_deduction_seconds']:
         raise RuntimeError('prior work was reset')
+    if card.get('boundary_repair') == 'projected_path_v1':
+        repair=bound_json(code,card['repair_authority_binding'])
+        previous=bound_json(code,card['previous_terminal_binding'])
+        if repair.get('user_text')!='授权' or repair.get('kind')!='direct_user_approval':
+            raise RuntimeError('boundary repair authority missing')
+        if (previous.get('execution')!='failed' or previous.get('active_attributable_processes')!=[]
+                or previous.get('accepted_labels')!=0 or previous.get('fit_invoked')is not False
+                or card['run_id']==previous['run_id']
+                or card['prior_charged_host_seconds']<previous['cumulative_conservative_host_seconds']):
+            raise RuntimeError('R10 terminal/cost/fit reconciliation differs')
     if not 0 < card['remaining_host_seconds'] <= 136 * 3600 - card['prior_charged_host_seconds']:
         raise RuntimeError('remaining host budget differs')
     if card['run_id'] in prior.get('settled_runs', []):
@@ -76,6 +88,15 @@ def require_benchmark(card, package, receipt, card_path):
             or receipt.get('artifact_id') != package['artifact_id']
             or receipt.get('independent_review_performed') is not False):
         raise RuntimeError('actual fixed benchmark does not bind exact source/card')
+    if card.get('boundary_repair')=='projected_path_v1':
+        path=Path(card_path).parent/'boundary_benchmark.json'
+        if sha256(path)!=receipt.get('saved_model_benchmark_sha256'):
+            raise RuntimeError('saved boundary benchmark not bound')
+        actual=read_manifest(path)
+        if (actual.get('passed')is not True or actual.get('artifact_id')!=package['artifact_id']
+                or actual.get('new_FEM_states')!=0 or actual.get('training_updates')!=0
+                or not actual['projected']['pred_lower']>actual['original']['pred_upper']):
+            raise RuntimeError('boundary repair did not pass exact saved-model comparison')
 
 
 def initial_totals(card, started):

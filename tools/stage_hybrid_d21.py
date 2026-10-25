@@ -75,6 +75,12 @@ def main():
         with target.open('xb') as f:f.write(data)
     env=dict(os.environ,PYTHONPATH=f'{root}/deps:{root}/code/source:{root}/code/tools',
              CUDA_VISIBLE_DEVICES='',PYTHONDONTWRITEBYTECODE='1')
+    if len(sys.argv)>2 and sys.argv[2]=='stage-only':
+        receipt=dict(state='staged_not_launched',bundle_sha256=sys.argv[1],artifact_id=package['artifact_id'],
+                     same_host_dependency_bytes=copied,wall_seconds=perf_counter()-started)
+        (root/'stage_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+        print(json.dumps(receipt),flush=True)
+        return
     command=['/usr/bin/python3','-B',str(root/'code/tools/launch_hybrid_detached.py'),
              '--card',str(root/'execution_card.json'),'--package',str(root/'source_manifest.json'),
              '--review',str(root/'benchmark_admission.json'),

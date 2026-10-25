@@ -205,7 +205,7 @@ def box_bounds(base,D,nu,lower,radius):
 
 def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subspace_steps=2,stage_observer=None,*,solver='pg2_optional',krylov_steps=8):
     from hybrid_representable_box import CandidateUncertified
-    if solver not in ('pg2_optional','active_face_cg'):raise ValueError('unknown box subproblem solver')
+    if solver not in ('pg2_optional','active_face_cg','active_face_projected_cg'):raise ValueError('unknown box subproblem solver')
     b=model.budget;lo,hi=box_bounds(base,model.D,len(free),lower,radius)
     exact_total=b.exact_comparisons;exact_cpu=b.exact_CPU_seconds;certificate={};best=None
     def stage(name,point=None,_best_point=None,**extra):
@@ -234,9 +234,10 @@ def solve_box_model(model,base,free,dofs,values,lower,crack,radius,newton_p,subs
     certificate=model.cauchy_certificate(best['p'],best,best['p_tail'])
     cauchy_p=best['p'].copy();cauchy_tail=best['p_tail'].copy();cauchy_lower=best['pred_lower'];best['selection']='certified_projected_Cauchy'
     stage('Cauchy_certified',best)
-    if solver=='active_face_cg':
+    if solver in ('active_face_cg','active_face_projected_cg'):
         from hybrid_box_krylov import refine_box_krylov
-        best=refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,krylov_steps)
+        best=refine_box_krylov(model,base,free,lower,radius,best,feasible,stage,krylov_steps,
+            projected_path=solver=='active_face_projected_cg')
     for i in range(subspace_steps if solver=='pg2_optional' else 0):
         if b.updates>=b.update_limit-1:break
         b.update();stage('PG'+str(i+1)+'_gradient_start');gradient=model.gradient(best['residual'])
