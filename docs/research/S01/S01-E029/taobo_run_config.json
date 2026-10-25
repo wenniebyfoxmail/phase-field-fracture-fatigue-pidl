@@ -145,12 +145,12 @@
   "protocol": "S01-E029-v1",
   "proposed_run_id": "S01-E029-R001",
   "execution_enabled": false,
-  "run_path": "/mnt/data2/drtao/wennie/S01-E029-R001/run",
+  "run_path": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/run",
   "producer": {
     "hostname": "GPUServer8",
     "ssh_alias": "gpu-taobo",
     "account": "drtao",
-    "python": "/mnt/data2/drtao/wennie/S01-E029-R001/runtime/bin/python3.12",
+    "python": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/runtime/bin/python3.12",
     "torch": "2.11.0+cu128",
     "torchvision": "0.26.0+cu128",
     "gpu_physical_index": 5,
@@ -208,17 +208,17 @@
   },
   "runtime_profile": "taobo",
   "linux_paths": {
-    "root": "/mnt/data2/drtao/wennie/S01-E029-R001",
-    "source": "/mnt/data2/drtao/wennie/S01-E029-R001/source",
+    "root": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01",
+    "source": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/source",
     "private": "/mnt/data2/drtao/wennie/S01-E029-R001/private",
     "images": "/mnt/data2/drtao/wennie/S01-E029-R001/private/images",
-    "logs": "/mnt/data2/drtao/wennie/S01-E029-R001/wrapper-logs",
-    "runtime": "/mnt/data2/drtao/wennie/S01-E029-R001/runtime",
-    "runtime_lock": "/mnt/data2/drtao/wennie/S01-E029-R001/runtime_lock.json",
-    "approval": "/mnt/data2/drtao/wennie/S01-E029-R001/approval.json",
-    "launch_claim": "/mnt/data2/drtao/wennie/S01-E029-R001/launch_claim.json",
-    "archive": "/mnt/data2/drtao/wennie/S01-E029-R001/S01-E029-R001-fixed-v1.tar.gz",
-    "run": "/mnt/data2/drtao/wennie/S01-E029-R001/run"
+    "logs": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/wrapper-logs",
+    "runtime": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/runtime",
+    "runtime_lock": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/runtime_lock.json",
+    "approval": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/approval.json",
+    "launch_claim": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/launch_claim.json",
+    "archive": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/S01-E029-R001-fixed-v1.tar.gz",
+    "run": "/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01/run"
   },
   "admission": {
     "unit": "selected GPU plus shared host CPU/RAM/disk",
@@ -230,5 +230,14 @@
     "other_GPU_jobs": "allowed without access or termination"
   },
   "logical_source_image_root": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\images\\train",
-  "resource_amendment": "2026-10-25 user removed run resource upper limits; scientific work counts and shared admission unchanged; any eligible Taobo GPU allowed"
+  "resource_amendment": "2026-10-25 user removed run resource upper limits; scientific work counts and shared admission unchanged; any eligible Taobo GPU allowed",
+  "mechanical_resume": {
+    "reason": "fixed NVIDIA URL redirects to pypi.nvidia.cn; same immutable wheel hashes",
+    "previous_lifecycle_root": "/mnt/data2/drtao/wennie/S01-E029-R001",
+    "previous_stop_archive_sha256": "6f60ce4464b3aeeb3b50cd602df4babdef558cf4db0a2634f4176343c3bfa8bd",
+    "previous_scientific_forward_calls": 0,
+    "previous_fits": 0,
+    "previous_run_directory_absent": true,
+    "science_run_id": "S01-E029-R001"
+  }
 }
