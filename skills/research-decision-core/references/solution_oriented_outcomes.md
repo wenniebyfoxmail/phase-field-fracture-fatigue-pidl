@@ -11,8 +11,8 @@ deciding what to do next.
    verdict even when other parts worked.
 3. **Component progress:** Which stages worked, improved, or reached a useful
    ceiling? These findings are scoped evidence, not consolation language.
-4. **Research action:** Given the bottleneck and controllable levers, should the
-   route advance, repair, redirect, or stop?
+4. **Research action:** Given the scientific question and evidence gap, should
+   the route advance, repair, redirect, park, or stop?
 
 This separation prevents both common errors: relaxing validity to manufacture
 a success, and collapsing every sub-threshold result into an uninformative
@@ -20,7 +20,7 @@ failure.
 
 ## Calibrate criteria before execution
 
-For each proposed threshold, record:
+When the task uses a quantitative criterion, reuse the applicable rationale:
 
 - the claim or decision it represents;
 - baseline level and independent-unit variation;
@@ -35,9 +35,10 @@ than the requested improvement, increase information or weaken the claim before
 test access. Never lower a threshold after viewing results to rescue the old
 claim; record a prospective new contract. This does not require another review.
 
-## Predeclare a progress ladder
+## Use progress levels when helpful
 
-Use only levels relevant to the experiment. For example:
+Reuse relevant progress levels if they clarify the existing task; do not add a
+required ladder or a new record. For example:
 
 ```text
 L0 admissible execution and evidence chain
@@ -50,29 +51,24 @@ L4 downstream utility or transfer passes in a separate experiment
 The primary claim still uses one decisive criterion. The ladder records what
 was learned and which next action is justified.
 
-## Convert a miss into a repair
+## Choose the next useful action
 
-Use an end-to-end decomposition such as:
+从当前科学问题和关键证据缺口出发，选择足以改变判断的行动，并说明不同结果将如何影响结论或下一步。涉及机制解释或方法改进时，再明确瓶颈、干预及可区分的结果。复用已有决策记录，不要求每次逐项填写。
 
-```text
-available signal -> candidate/representation coverage -> scoring or fitting
--> state estimate -> transition -> decision
-```
+For theory, the gap may be a missing implication or assumption; for descriptive
+work, coverage or a competing interpretation; for calibration, reference
+uncertainty; for synthesis, unresolved source disagreement. Match the argument
+and action to that gap. Consider scientific value, feasibility and cost
+separately; neither the cheapest patch nor the largest experiment is a default.
 
-Use the core's first-principles route design before choosing another repair.
-For each relevant stage, report observed performance, attainable ceiling and
-loss passed to the next stage. Select the binding mechanism, not automatically
-the earliest or easiest component. A coherent representation/objective/workflow
-redesign may need coordinated changes; compare it with the baseline and use
-targeted ablations only where attribution changes the next decision.
+For mechanism/method work, an existing end-to-end decomposition can locate a
+binding bottleneck. State the supported intervention and discriminating result
+only when they clarify the decision. Reuse diagnostics and passed checks.
+Component improvement remains evidence but does not establish the main claim.
 
-Size the validation to expose a consequential route-level effect. Existing
-diagnostics can replace preliminary experiments; a chain of tiny improvements
-that leaves the main limitation unchanged is a reason to consolidate or redesign,
-not an obligation to continue patching. Component gains remain useful evidence,
-but do not constitute a breakthrough by themselves.
+The following is an optional mechanism/method example, not a new report form.
 
-The repair record should contain:
+Reuse relevant lines from the existing decision record:
 
 ```text
 Claim verdict:
@@ -88,7 +84,7 @@ Budget and stop rule:
 Research disposition:
 ```
 
-Do not end with “more data”, “try another model”, or “threshold too strict”.
-Name what information is missing, why it caps the result, and a validation
-capable of changing that decision. Choose a small test when it suffices, not
-because it is the default.
+Name the evidence gap and how plausible outcomes change the next decision.
+Do not lower a viewed criterion or substitute more work for a consequential
+question. Use the smallest sufficient action when appropriate, without making
+a small-test staircase compulsory.

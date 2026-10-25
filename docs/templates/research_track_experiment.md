@@ -4,9 +4,9 @@ Canonical path: `docs/experiments/<track>_track.md`
 
 Status: `<ACTIVE | BLOCKED | COMPLETE | QUARANTINED>`
 
-## Mechanism question
+## Scientific question
 
-<One falsifiable question.>
+<Current question and key evidence gap; use the argument appropriate to this task.>
 
 ## Claim boundary
 
@@ -26,10 +26,17 @@ Status: `<ACTIVE | BLOCKED | COMPLETE | QUARANTINED>`
 
 ## Current gate
 
-- Cheaper diagnostic:
+- Decision-changing action and what different outcomes imply:
 - Success condition:
 - Failure condition:
 - Fit/training authorization:
+
+## Current authority and implementation
+
+<Existing owner record / latest direct user instruction; HQ links here rather
+than duplicating authority. Actual worktree, entrypoint, code version and I/O
+paths. For computation only: cumulative resource/wall limits, waiting treatment,
+science stop and cleanup deadline as applicable; unknown costs remain unknown.>
 
 ## Current decision
 

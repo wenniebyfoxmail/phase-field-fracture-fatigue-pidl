@@ -24,6 +24,12 @@ come from the user and project rules.
   领域适配器本身都不触发。过去由Agent自加的复审门不算用户要求。
 - 运行许可、预算、保护数据及共享机器安全规则不变；基准通过不等于科学结论成立。
 
+For an execution-control benchmark, identify real calls separately from
+fault-injected or simulated states. A simulated producer establishes control
+behaviour only. If native functions cannot run locally, name that uncovered
+boundary without adding remote compute. Preserve an unavailable exit code as
+unknown; do not infer it from a wrapper message.
+
 This is the validation default for HQs, executors and adapters. Scientific
 evaluation uses the declared comparator and criterion; it is not permission to
 rerun old experiments or add validation stages.
@@ -62,6 +68,12 @@ do not restart D1 each turn. Routine edits need only a proportionate lookup.
 
 ## Keep The Goal Continuous
 
+The project-designated current owner card or Experiment holds detailed state
+and effective authority. HQ stores a short summary and a pointer, not a second
+independently editable authority. A direct user update remains authoritative
+even before the card is reconciled. Pausing HQ is not undone by editing rules,
+task records or running a development benchmark.
+
 Keep a short goal anchor near the top of the existing owner note: original
 question -> current question; `continue | fork | redirect` and why; scope-change
 authority/source when applicable; previous route's status. Link an existing
@@ -75,7 +87,7 @@ and its Roadmap/portfolio summary together; correct a misleading chat title wher
 permitted, or put a prominent current-scope line in the update/handoff.
 
 Easier data or tools do not by themselves authorise replacing the question.
-An in-scope method repair needs no extra scope approval; a materially different
+A same-contract technical repair needs no extra scope approval; a materially different
 question outside existing authority is a proposed fork/redirect for the user
 to choose. Do not quietly lower the target or relabel a negative result.
 
@@ -87,42 +99,23 @@ question. Keep the HQ's next scientific decision visible.
 
 ## Design Route Changes From First Principles（第一性原理）
 
-每次分析研究路线调整，必须从第一性原理出发：回到目标、机制、关键假设与实测瓶颈，设计足以改变路线判断的突破性验证，而不是默认继续最小验证。
+从当前科学问题和关键证据缺口出发，选择足以改变判断的行动，并说明不同结果将如何影响结论或下一步。涉及机制解释或方法改进时，再明确瓶颈、干预及可区分的结果。复用已有决策记录，不要求每次逐项填写。
 
-At a material route choice, return to the goal rather than the last failed
-patch. State the governing mechanism or information-generating process,
-necessary constraints, measured bottleneck and competing explanations. Use
-equations when useful, or an explicit causal/information argument; do not add
-ceremonial derivations to routine fixes.
+Scientific value, feasibility and cost are separate considerations. Do not
+automatically prefer the cheapest patch or a larger experiment. Choose the
+scale that can resolve the live question within actual authority.
 
-Design a hypothesis-led solution that can remove the binding limitation,
-including a coherent redesign of representation, objective or workflow when
-needed. Do not restrict every proposal to one parameter or one component.
-An integrated candidate can test one central hypothesis against a strong
-simple baseline; add only ablations that distinguish a live alternative.
-Name the actual intervention, why it should change the limiting mechanism,
-and its predicted signature against the alternatives. A generic “stronger
-model” or “more cases” does not specify that causal design.
+The argument may be a proof and its unresolved assumption, a descriptive
+comparison, calibration against an independent reference, source synthesis,
+or a mechanism/method intervention. Use the form appropriate to the task;
+do not force every research question into an intervention template.
 
-Choose validation at the scale needed to change the research decision:
-representative states, cases, horizons and outputs that can expose the actual
-failure mode and reveal a useful new capability or meaningful gap reduction.
-Explain what different outcomes would establish and which route each selects.
-A breakthrough-oriented design seeks consequential evidence, not a guaranteed
-breakthrough, a prestigious label or merely more compute.
-
-Do not default to the smallest possible test or require a toy -> micro-test ->
-pilot staircase. Use a small preliminary check only for a specific unresolved
-feasibility or implementation blocker; skip or combine it when existing
-evidence already resolves that blocker. Otherwise proceed directly to a
-decision-scale comparison within the applicable data, budget and authority.
-Minimise unnecessary work, not the question or the experiment's resolving power.
-
-When a proposed next micro-test would only reconfirm a known sign, improve an
-incidental component, or leave the main route equally uncertain, consolidate
-the relevant checks into a stronger comparison or redesign the route. Preserve
-small gains, but do not let their accumulation substitute for progress on the
-central goal. A larger test is not automatically more decisive either.
+For mechanism or method changes, identify the measured bottleneck, proposed
+intervention and observable differences between live explanations. Reuse
+diagnostics that already answer the question. A preliminary check is useful
+only for a specific unresolved blocker; do not require a toy-to-smoke ladder.
+Keep component gains, but ask whether the next action can change the central
+conclusion rather than merely make another component run.
 
 ## Decision Ladder
 
@@ -194,33 +187,40 @@ criterion to rescue an old result.
 
 ## 一次授权，机械检查自动完成 / Bounded Task Authority
 
-Approve the task once: goal, allowed code/data, producer, total budget,
-stop/retry limits and result, in the existing card. Conditional execution
-approval covers implementation -> fixed benchmark -> deployment ->
-automatic admission -> execution. The agent completes that chain without
-asking again for each step. An explicitly plan-only task still permits no run.
+Keep one run-enabled task authority in the existing owner card or Experiment:
+goal, allowed code/data, producer, total budget, scientific stop condition and
+deliverable. It covers implementation, the fixed benchmark, deployment,
+admission/waiting, execution and retrieval, plus same-contract technical repair.
+A plan-only task permits no scientific execution. The latest direct user
+instruction takes precedence; update the owner record when it changes scope.
 
-- **Agent:** in-scope repairs, fixed benchmark, environment/resources,
-  actual versions, Run IDs, paths, hashes and card instantiation. Verify these
-  against the approved envelope/reviewed template. Check compatibility rather
-  than imposing exact pins on every auxiliary library. Isolated dependency
-  repairs stay within scope; model/data execution is not a metadata check.
-- **Reviewer (only when requested):** the user's stated question; carry forward
-  unchanged findings. Metadata-only fields need consistency checks, not another
-  Code Ready review or human approval.
-- **User:** one consolidated decision only for a scope/data/producer/expenditure
-  or budget expansion, shared-system changes requiring permission, or a scientific
-  retry outside the approved limits.
+Wrapper errors, GPU busy and SSH loss do not by themselves change authority
+or establish whether a producer started, consumed resources or remains alive.
+Check actual process/receipt/output identity first. Unknown state means inspect
+and retain the reservation, not spawn again. A fresh Run ID is provenance,
+not a new approval and not proof of zero progress.
 
-For new cards, set a short zero-start recheck cap within the total budget before
-trying. GPU busy means not ready, not scientific failure. Unknown launch state
-requires process/receipt checks before another spawn. Preserve explicit user
-connection/attempt and scientific stop limits, not agent-invented approval gates.
+Same-contract repairs preserve scientific/numerical meaning and remain inside
+the original cumulative budget and scientific stop rule. A log-path or exception
+propagation repair differs from changing the solver, inputs or convergence
+criterion. User-explicit one-start, first-stop and retry restrictions always
+prevail, including when the observed failure appears technical. Never reopen a
+consumed historical authority through a workflow amendment.
 
-Migrate active cards prospectively: replace administrative per-step approvals,
-state remaining authority, and preserve signed snapshots, consumed attempts and
-scientific protocols. This governance update itself starts no new experiment
-and reopens no stopped scientific run.
+Use one total task budget, not a consent token per process. In the existing
+record distinguish resource consumption from elapsed task wall time, whether
+waiting is charged, scientific stop time and cleanup deadline when applicable.
+Repairs/restarts/continuations accumulate in the same task; record the start
+once. Unknown consumption stays unknown, not zero. Apply the agreed accounting
+and most restrictive remaining limit. Do not invent a budget table for tasks
+that do not need it or silently reinterpret old accounting.
+
+Routine implementation, fixed-benchmark checks, path/version binding and
+same-contract recovery belong to the agent. Metadata edits need consistency
+checks only. Review is added only when explicitly requested. Ask the user for
+a material scope/data/producer/resource expansion, shared-system change,
+changed scientific/numerical semantics, or a retry outside explicit limits;
+do not seek consent again for unchanged routine steps.
 
 ## Turn Results Into The Next Action
 
@@ -243,8 +243,9 @@ insufficient evidence to decide -> inconclusive
 Preserve measured component progress. Choose `advance | repair | redirect |
 park | stop` from the evidence and remaining budget. A negative claim can still
 justify a repair. For a route adjustment, use the first-principles design above:
-select the binding mechanism, a coherent intervention and evidence strong
-enough to choose between the alternatives. Reuse existing analysis; do not
+start from the scientific question and evidence gap, and choose an action whose
+outcomes can change the conclusion or next step. For mechanism/method work,
+identify the bottleneck, intervention and discriminating outcomes. Reuse existing analysis; do not
 insert another diagnostic merely because it is cheaper or easier. Check whether
 cumulative work is reducing the central gap, not just producing completed
 subtasks. Park if no action is currently available; stop if the route is invalid,
@@ -294,6 +295,19 @@ Missing visuals are a presentation gap, not a scientific failure; a visually
 attractive result cannot override the measured criterion.
 
 ## Update People And Records
+
+Before modifying an existing main file, confirm its effective absolute path,
+entrypoint and references. Update it in place in its authorised task worktree;
+keep a live producer's pinned script/config stable if it may read again.
+Report actual paths and whether the result is an in-place update, a versioned
+delivery or an un-applied temporary copy. Original data, frozen snapshots and
+archived results retain their existing version rules.
+
+Use one result entrypoint to locate evaluated inputs, plotting code, figures
+when useful, and interpretation. Link large data and fixed code by stable
+path/version instead of duplicating them. Small label/caption edits reuse the
+existing plotting entrypoint and check only affected output. Not every result
+requires a figure.
 
 After substantive progress, answer `目的 / 本轮 / 结论`, normally one sentence
 each. Include the active D step where useful. Describe preparation as preparation.

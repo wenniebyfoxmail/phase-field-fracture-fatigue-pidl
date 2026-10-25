@@ -29,6 +29,12 @@ visual explanation, and concise Obsidian updates. Do not restate those rules in
 local cards. Follow the adjacent `AGENTS.md` for destinations and project,
 machine, data, budget, and execution constraints.
 
+The latest direct user instruction and project-designated active owner card or
+Experiment establish current authority. HQ retains a summary/pointer only;
+it does not create a separately editable copy. Confirm the effective main file,
+entrypoint and reference paths before editing. Rule/template/benchmark changes
+do not resume paused HQ or alter a live producer's pinned inputs.
+
 The tracked canonical sources are `upload code/skills/<skill-name>/`; do not
 route current work through retired `docs/skills/` copies. Archived worktree
 copies are historical evidence, not current entrypoints.
