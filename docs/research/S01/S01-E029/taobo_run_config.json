@@ -238,7 +238,6 @@
     "previous_scientific_forward_calls": 0,
     "previous_fits": 0,
     "previous_run_directory_absent": true,
-    "science_run_id": "S01-E029-R001",
-    "approval_state": "pending exact new-version transfer and zero-science recovery authority"
+    "science_run_id": "S01-E029-R001"
   }
 }
