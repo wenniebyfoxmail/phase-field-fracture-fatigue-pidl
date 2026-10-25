@@ -19,3 +19,10 @@ verified.
 
 Update this table only when a current owner card creates, closes, or transfers
 an HQ. Historical routes remain in their existing documents.
+
+## Physical repository split
+
+**Status: deferred.** A module may split only with a stable interface,
+independent test, defined input/output and owner/lifecycle, rollback plan, and
+separate user approval. No code, output, or worktree moves are authorised by
+this decision.

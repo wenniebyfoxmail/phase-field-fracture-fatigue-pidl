@@ -46,6 +46,10 @@ mandatory narrative layer, duplicate ledger, or default review loop.
 - Commit a coherent task change after its direct check; push its task branch
   when cross-machine sharing or recovery needs it. A local commit is not a
   remote handoff until its push state is verified.
+- A physical repository split is **deferred**. Reconsider it only after the
+  candidate has a stable interface, independent test, defined input/output,
+  owner and lifecycle, a rollback plan, and separate user approval. Until
+  then, do not move code, outputs, or worktrees to manufacture a split.
 
 ## Machines
 
