@@ -1,0 +1,22 @@
+{
+  "status": "PLAN_STATIC_BINDING_PASS",
+  "plan_sha256": "b94573cddae18c1ba1076d348220c72934cc97d06a87f2d52080d9566052edb9",
+  "steps": [
+    "local_package",
+    "preflight",
+    "upload",
+    "deployment",
+    "launch",
+    "monitor",
+    "manifest",
+    "archive",
+    "verify_retrieval"
+  ],
+  "code_package": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/fn776_r7_20261025/package_5f6349a1",
+  "producer": "ee6a57bce69c1c1dc6db315b24c8e307f3e9f111",
+  "controller_blob": "66f65bad8bae4ad67ab4ed85f9ed27ea97b2056a",
+  "checks": "literal argv/stdin paths and hashes, source/producers, r7 identity, three-service contract, algorithmic scope; no SSH, payload decoding or numerical calls",
+  "SSH": false,
+  "scientific_payload_access": false,
+  "numerical_calls": false
+}
