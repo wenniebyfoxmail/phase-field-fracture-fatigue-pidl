@@ -340,3 +340,11 @@ raw单独修复贡献0物理轨迹；共同设置包、耦合/停止包的效应
 ### 同范围机械续接结果
 
 HQ以原直接人方3小时授权为基础，前瞻允许一次≤300秒快照修复，原截止00:42:35Z不变。正确git参数的隔离快照一次成功（producer8.493秒），10输入SHA与36文件代码包逐项匹配。第一次prepare启动只留下WMI创建收据，wrapper已退出，没有watchdog attempt、MATLAB或build输出。后续只读诊断确认PowerShell Restricted、脚本解析无错误；证据支持脚本入口策略阻断，具体进程异常未捕获。按本次首次控制故障停止条件未重发/改策略，无MATLAB/MEX/FEM/训练。D2仍缺真实同状态证据；[续接范围、完整失败链与下一缺项](STAGE_A_CONTINUATION_20261022.md)。
+
+## D3 c83 续传方案已备妥，待本次明确批准（2026-10-25 17:17 UTC）
+
+[完整恢复方案](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E036/gap_attribution_20261022/run_workspace/postprocessing_dispatch_20261024/c83_resume_candidate_20261025_01/README.md)仅准备同一冻结输入的传输恢复，尚未执行。保留原12,320,768 B部分包，只传剩余81,739,226 B，以10段顺序写入独立attempt；每段1200秒，预检查、传输、重组与原部署核验共用12000秒总上限。完整归档SHA、安全解包及101个新文件/35个原复用证据路径全部通过后，才由原GPU owner串行继续D3 c83、D4 c1s2、D4 c83s2、D4 c83s4评分；D3 c1不重跑。全部原评分完成且清理确认后，才允许此前绑定的一次C0条件释放。新失败即停，原86400秒科学作业防挂不变。
+
+方案SHA `bf99d03819dd749f8a2f6ba87f8ca76b31f94866779d06a0fc70c2dc2d02aafb`；控制器SHA `9dadb6ecb02ccd171fef92e91409aa71b946055b402f052853cc2053478db044`；原部署校验接入SHA `a11238aa3d3cb8fcd745de440387352f852b9ee79896b04aabaea31c8721a8d7`；本地准备检查收据SHA `687bc429935260c3415be52ad0964120e1045f091de9bc7a16598b8910db031a`。检查仅覆盖保存字节、metadata、语法及一次隔离JSON写读；远端行为未执行验证。raw-string换行曾有展示歧义，AST检查确认原候选已是换行，未将其误写为已复现故障；当前以chr(10)显式表达。
+
+当前仍受新的超时停止收据约束；本方案的12000秒恢复窗口须单独得到人方明确批准，准备完成不等于执行获准。root未新增SSH、传输、评分或物理计算。
