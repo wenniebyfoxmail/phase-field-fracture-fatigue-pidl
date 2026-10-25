@@ -1051,6 +1051,7 @@ def evaluate_real_arm(
     judgement: Callable[..., torch.Tensor],
     counters: OperationCounters | None = None,
     hard_constraint_report: Callable[..., Mapping[str, int]] | None = None,
+    include_state_fields: bool = False,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     """Return validated A2/S6/R2/P4 rows and field evidence."""
     _require(update in EVALUATION_UPDATES, "unscheduled evaluation")
@@ -1154,6 +1155,14 @@ def evaluate_real_arm(
                     ),
                     "effective_shape": None if not valid else shape.cpu().tolist(),
                 }
+                if include_state_fields:
+                    fields[str(cycle)].update(
+                        {
+                            "damage_pre": d_pre.cpu().tolist(),
+                            "reference_post": target["d_peak"].cpu().tolist(),
+                            "prediction_post": output["d_peak"].cpu().tolist(),
+                        }
+                    )
     pair_mismatches = 0
     for left, right in _pair_indices(list(EXPECTED_CYCLES)):
         predicted_sign = torch.sign(
@@ -1506,8 +1515,11 @@ def _run_reviewed_producer_inner(
     _require(len(set(shared_states.values())) == 1, "arm pristine state drift")
     setup_counters = OperationCounters()
     failure_context["counters"] = setup_counters
+    # Anchors read the shared frozen transition only.  Use the factorised arm
+    # explicitly so follow-up two-arm factorised comparisons do not require a
+    # synthetic direct-head member merely to construct the immutable anchors.
     anchors = build_anchor_bank(
-        arms[ARM_DIRECT],
+        arms[ARM_AMPLITUDE_SHAPE],
         runtime,
         bindings["base_example_builder"],
         counters=setup_counters,

@@ -1,0 +1,53 @@
+{
+  "schema_version": "s09-e018-final-run-v1",
+  "run_id": "S09-E018-R001-amplitude-priority-ab",
+  "status": "AUTHORISED_FOR_ONE_COMPLETE_RUN",
+  "execution_authorized": true,
+  "arms": {
+    "F_AMP_SHAPE_PCG": {"merge_strategy": "SYMMETRIC_PCG", "trainable_parameter_classes": ["amplitude_residual", "shape_logits"]},
+    "F_AMP_SHAPE_A_PRIORITY": {"merge_strategy": "AMPLITUDE_PRIORITY_PCG", "trainable_parameter_classes": ["amplitude_residual", "shape_logits"]}
+  },
+  "data": {
+    "packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+    "base_config_sha256": "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b",
+    "checkpoint_sha256": "24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05",
+    "cycles": [1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73],
+    "evidence_domain": "synthetic_exposed_development",
+    "new_fem": false,
+    "fresh_holdout": false
+  },
+  "mapping": {
+    "input_function": "x_to_d_s00_H_s00_alpha_bar_s00_q_prev_s00_f_s00_load_path_s00_s05_mesh_material_boundary",
+    "output_function": "x_to_d_s04_H_s04_alpha_bar_s04_q_prev_s04_f_s04_u_s04",
+    "damage_target_function": "x_to_delta_d_s00_to_s04_peak",
+    "sample_semantics": "independent_cycle",
+    "autoregressive": false
+  },
+  "physics": {
+    "group": "P",
+    "residual": "native_q4_amor_mechanical_equilibrium_free_displacement_dofs",
+    "beta": 0.25,
+    "excluded": ["damage_stationarity", "kuhn_tucker_history_complementarity", "fatigue_law_closure", "full_incremental_variational_inequality"]
+  },
+  "optimizer": {"class": "AdamW", "dtype": "float64", "learning_rate": 0.0003, "betas": [0.9, 0.999], "epsilon": 1e-08, "weight_decay": 0.0},
+  "budget": {"updates_per_arm": 64, "total_update_cap": 128, "retry": false, "resume": false},
+  "producer": {
+    "alias": "gpu-taobo",
+    "hostname": "GPUServer8",
+    "cuda_visible_devices": "5",
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
+    "output_root": "/mnt/data2/drtao/wennie/S09-E018-R001-amplitude-priority-ab/run",
+    "wall_time_cap_seconds": 1800,
+    "reserved_memory_cap_bytes": 21474836480
+  },
+  "bindings": {
+    "base_example_builder": "s09_stage0a_p1_trainer:_example",
+    "fixed_judgement_loss": "s09_stage0a_transition:fixed_judgement_loss",
+    "free_dof_boundary": "s09_fem_physics:boundary",
+    "gpu_identity": "s09_stage0a_p1_trainer:gpu_identity",
+    "hard_constraint_report": "s09_stage0a_p1_trainer:hard_constraint_report",
+    "mechanical_equilibrium": "s09_fem_physics:equilibrium",
+    "runtime_builder": "s09_stage0a_p1_trainer:build_runtime",
+    "tracked_execution_files_clean": "s09_code_identity:tracked_execution_files_clean"
+  }
+}
