@@ -49,6 +49,12 @@ creating a broad background or hard-constraint violation. If it does not, the
 small affine amplitude head or frozen representation is the limiting mechanism;
 the next route becomes a representation/head redesign rather than loss tuning.
 
+The execution package is deliberately a two-arm A/B, not another full E017
+three-arm sweep. `D_DIRECT` already identified the diffuse-background failure
+mode and `F_AMP` already identified the fixed-shape amplitude collapse. Neither
+distinguishes the only remaining causal alternative: symmetric versus
+amplitude-priority merging for the factorised arm.
+
 ## Evidence and limits
 
 Use the same 16 exposed cycles, beta=.25 native-Q4 AMOR equilibrium term,
@@ -67,6 +73,15 @@ amplitude/mass improvement on high-event cycles without a diffuse-background
 increase and without constraint violations. It does not establish holdout
 generalisation, full phase-field closure or a production PINO claim.
 
+The prospective primary comparison is the paired update-64 reduction in
+per-cycle amplitude error on high-event cycles 46/48/58/60/69/70. The protected
+arm must also improve or preserve local concentration and must not increase
+near-stagnant-cycle mass above the symmetric-PCGrad arm. Constraint violation,
+nonfinite output, or a broad-mass trade for amplitude improvement redirects to
+representation/head redesign. If the protected arm does not materially improve
+the paired amplitude outcome, loss-merge tuning stops and the next branch is a
+conditioned nonlinear amplitude readout or trainable representation.
+
 ## Local off-policy check
 
 The E017 stored raw gradients were replayed under the two deterministic merge
@@ -81,3 +96,20 @@ trajectory or the field reconstruction will improve.
 The reusable primitive and its synthetic test are committed in `3a552e8e`.
 The remaining implementation work is to bind this E018-only merge to a new
 producer package and preserve the expanded state-plus-increment field evidence.
+
+## Execution decision
+
+E018 remains necessary, but only as this two-arm A/B.  The replayed E017
+gradients establish that the protected rule changes the first-order update
+geometry; they cannot establish that an AdamW trajectory reaches a larger,
+localised damage increment or avoids the diffuse mode.  A new live calculation
+is therefore the smallest experiment that distinguishes an optimisation-merge
+limitation from a factorised-readout/representation limitation.  Repeating
+`D_DIRECT` or `F_AMP` would not resolve that distinction and is excluded.
+
+The next implementation gate is an E018-specific producer contract: 128 total
+updates, the same 16 exposed transitions and beta=.25, fresh output/control
+paths, and two independently initialised but otherwise matched factorised
+heads.  It will save `d_pre`, FEM/predicted `Delta d`, and FEM/predicted
+`d_post` so the output directly distinguishes a small new increment from a
+vanishing cumulative crack state.
