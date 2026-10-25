@@ -26,6 +26,11 @@ def build(source, out):
     assert cmd(['git', 'hash-object', str(Path(__file__).resolve())]) == cmd(['git', 'rev-parse', source+':tools/s04_e011_fn776/build_code_package.py'])
     assert len(source) == 40
     assert cmd(['git', 'rev-parse', source+'^{commit}']) == source
+    assert cmd(['git', 'rev-parse', 'HEAD']) == source
+    assert not cmd(['git', 'status', '--porcelain', '--untracked-files=all'])
+    static_audit = json.loads(cmd([sys.executable, '-B', str(root/'tools/s04_e011_fn776/static_checks.py')]))
+    assert static_audit['status'] == 'DIFF_STATIC_PASS'
+    assert static_audit['SSH'] is False and static_audit['scientific_payload_access'] is False
     exact = {'.gitignore', 'AGENTS.md', 'SENS_tensile/run_native_q4_one_step_matrix.py',
              'SENS_tensile/field_computation.py',
              'tools/s04_e011_fn776/worker.py', 'tools/s04_e011_fn776/square_root.py',
@@ -33,11 +38,11 @@ def build(source, out):
              'tools/s04_e011_fn776/control_r2.py',
              'tools/s04_e011_fn776/remote_control_r2.py', 'tools/s04_e011_fn776/verify_retrieval_r2.py',
              'tools/s04_e011_fn776/build_code_package.py', 'tools/s04_e011_fn776/verify_code_package.py',
-             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r7.json',
+             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r8.json',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776.json',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/protocol_fn776.md',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/mechanics_ast.json',
-             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/deployment_fn776_r7.md'}
+             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/deployment_fn776_r8.md'}
     rows = []
     local_modules = {}
     for line in cmd(['git', 'ls-tree', '-r', source]).splitlines():
@@ -54,12 +59,24 @@ def build(source, out):
         rows.append(dict(path=path, mode=mode, blob=blob, bytes=size))
     assert exact <= {row['path'] for row in rows}
     worker_blob = cmd(['git', 'rev-parse', source+':tools/s04_e011_fn776/worker.py'])
-    baseline_worker_blob = cmd(['git','rev-parse','f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92:tools/s04_e011_fn776/worker.py'])
-    locked_solver_blobs = {}
+    baseline_worker_blob = cmd(['git','rev-parse','5f6349a1f67ad4a38089304f6ed26b73211c94c4:tools/s04_e011_fn776/worker.py'])
+    assert static_audit['worker_blob'] == worker_blob
+    assert static_audit['baseline_worker_blob'] == baseline_worker_blob
+    contract_path = 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r8.json'
+    contract_raw = (root/contract_path).read_bytes()
+    contract = json.loads(contract_raw)
+    contract_binding = dict(path=contract_path,
+                            semantic_sha256=hashlib.sha256(json.dumps(
+                                contract, sort_keys=True, separators=(',', ':'), ensure_ascii=True,
+                                allow_nan=False).encode('ascii')).hexdigest(),
+                            file_sha256=hashlib.sha256(contract_raw).hexdigest(), bytes=len(contract_raw),
+                            git_blob=cmd(['git', 'rev-parse', source+':'+contract_path]))
+    assert contract_binding['semantic_sha256'] == static_audit['contract_sha256']
+    reviewed_solver_blobs = {}
     path = 'tools/s04_e011_fn776/square_root.py'
-    original = cmd(['git','rev-parse','f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92:'+path])
-    assert cmd(['git','rev-parse',source+':'+path]) == original, 'reviewed solver changed: '+path
-    locked_solver_blobs[path] = original
+    solver_blob = cmd(['git','rev-parse',source+':'+path])
+    assert static_audit['square_root_blob'] == solver_blob
+    reviewed_solver_blobs[path] = solver_blob
     mechanics = {}
     for row in rows:
         if row['path'].startswith(('source/', 'SENS_tensile/')):
@@ -67,9 +84,16 @@ def build(source, out):
             assert row['blob'] == original_blob, 'frozen mechanics changed: '+row['path']
             mechanics[row['path']] = original_blob
     manifest = dict(development_source=source, locked_science_worker_blob=worker_blob,
-                    runtime_cap_audit=dict(baseline_worker_blob=baseline_worker_blob, modified_worker_blob=worker_blob,
-                                           allowed_delta='remove self wall/RSS/CUDA/output caps only; static_checks.py verifies exact worker text transform'),
-                    locked_solver_blobs=locked_solver_blobs, frozen_mechanics_blobs=mechanics,
+                    contract_binding=contract_binding,
+                    worker_repair_audit=dict(baseline_development_source='5f6349a1f67ad4a38089304f6ed26b73211c94c4',
+                                             baseline_worker_blob=baseline_worker_blob, modified_worker_blob=worker_blob,
+                                             worker_source_sha256=static_audit['worker_source_sha256'],
+                                             run_ast_sha256=static_audit['run_ast_sha256'],
+                                             square_root_source_sha256=static_audit['square_root_source_sha256'],
+                                             repair='canonical_actual_head_vjp_finite_precision_repair',
+                                             review='static_checks.py locks the complete worker/run and reviewed square-root canonical-RHS repair while frozen mechanics remain locked'),
+                    static_audit_source=source, static_audit=static_audit,
+                    reviewed_solver_blobs=reviewed_solver_blobs, frozen_mechanics_blobs=mechanics,
                     local_module_catalog=local_modules,
                     import_entrypoints=['tools/s04_e011_fn776/'+name+'.py' for name in
                                         ('worker', 'guard', 'square_root', 'build_code_package', 'verify_code_package', 'static_checks', 'control_r2', 'remote_control_r2', 'verify_retrieval_r2')],

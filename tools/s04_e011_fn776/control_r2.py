@@ -15,10 +15,10 @@ import subprocess
 import sys
 import time
 
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r7'
-INDEX = 'S04-E011-FN776-r7-A1'
-RUN = 'pf_s04e011_uvh_c1_fn776_r7_20261025'
-CASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs') / RUN / 'authorized_execution'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r8'
+INDEX = 'S04-E011-FN776-r8-A1'
+RUN = 'pf_s04e011_uvh_c1_fn776_r8_20261025'
+CASE = Path('/Users/wenxiaofang/0 Research/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs') / RUN / 'authorized_execution'
 
 def stamp():
     return dt.datetime.now(dt.timezone.utc).isoformat()
@@ -99,6 +99,8 @@ def execute(folder, name, step, number):
         if 'success_status' in step:
             reply = json.loads(stdout.read_text().splitlines()[-1])
             assert reply['status'] == step['success_status'], 'remote admission/status not established'
+            for key, value in step.get('reply_equals', {}).items():
+                assert reply.get(key) == value, 'remote reply binding mismatch: '+key
             record['verified_reply'] = reply
         record.update(status='completed', exit_code=child.returncode,
                       remote_completion='only what retained stdout explicitly proves')
@@ -145,7 +147,7 @@ def main():
     args = p.parse_args()
     if (not args.execute_approved or args.approval_ref != CARD or args.approval_index != INDEX or
             sys.flags.optimize or sys.platform != 'darwin'):
-        raise SystemExit('exact human-approved r7 plan, Mac control only; preparation never executes')
+        raise SystemExit('exact human-approved r8 plan, Mac control only; preparation never executes')
     raw = args.plan.read_bytes()
     assert hashlib.sha256(raw).hexdigest() == args.plan_sha256
     plan = json.loads(raw)
@@ -153,7 +155,14 @@ def main():
     code = Path(__file__).resolve().parents[2]
     source = json.loads((code/'SOURCE_PROVENANCE.json').read_text())
     assert source['development_source'] == plan['development_source']
+    assert plan['contract_binding'] == source['contract_binding']
     assert hashlib.sha1(b'blob '+str(len(Path(__file__).read_bytes())).encode()+b'\0'+Path(__file__).read_bytes()).hexdigest() == plan['controller_blob']
+    reviewed_remote = str(code/'tools/s04_e011_fn776/remote_control_r2.py')
+    for name in ('preflight', 'deployment', 'launch', 'monitor', 'manifest', 'archive'):
+        step = plan['steps'][name]
+        stdin = step.get('stdin')
+        assert stdin is not None and stdin['path'] == reviewed_remote, 'remote script identity mismatch: '+name
+        assert step.get('reply_equals', {}).get('contract_sha256') == source['contract_binding']['semantic_sha256'] or name in ('monitor', 'manifest', 'archive')
     folder = CASE/'control_diagnostics'
     if not folder.exists():
         assert args.step == 'local_package', 'first stage must be local_package'

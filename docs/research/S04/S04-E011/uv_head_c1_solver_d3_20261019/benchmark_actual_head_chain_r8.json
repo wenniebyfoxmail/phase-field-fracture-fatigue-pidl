@@ -1,0 +1,21 @@
+{
+  "status": "SYNTHETIC_ACTUAL_HEAD_CHAIN_PASS",
+  "records": [
+    {
+      "name": "zero",
+      "field_maxabs": 0.0,
+      "gradient_maxabs": 0.0,
+      "force_maxabs": 0.0,
+      "damage_maxabs": 0.0
+    },
+    {
+      "name": "nonzero",
+      "field_maxabs": 0.0,
+      "gradient_maxabs": 0.0,
+      "force_maxabs": 0.0,
+      "damage_maxabs": 0.0
+    }
+  ],
+  "payload_accessed": false,
+  "remote_accessed": false
+}

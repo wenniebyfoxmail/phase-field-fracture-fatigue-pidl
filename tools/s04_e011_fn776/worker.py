@@ -18,6 +18,29 @@ class Stationary(Exception):
     pass
 
 
+def actual_head_uv(torch, field, original, features, x, transform, rank, z):
+    """Differentiable frozen-network UV head using its exact legacy field map."""
+    assert not field.williams_enabled and not field.symmetry_prior
+    assert not field.ansatz_enabled and not field.exact_bc_enabled
+    assert not field.local_patch_enabled and field.c_singular is None
+    weight0, bias0 = original['output_layer.weight'], original['output_layer.bias']
+    assert weight0.shape == (3, features.shape[1]) and bias0.shape == (3,)
+    assert transform.shape == (features.shape[1] + 1, rank)
+    assert features.dtype == x.dtype == transform.dtype == torch.float64
+    delta = transform @ z.reshape(rank, 2)
+    # Preserve the materialized network's three-output Linear GEMM geometry;
+    # the frozen damage row is calculated but never used for the UV objective.
+    weight = torch.cat((weight0[:2] + delta[:-1].T, weight0[2:]), dim=0)
+    bias = torch.cat((bias0[:2] + delta[-1], bias0[2:]), dim=0)
+    output = torch.nn.functional.linear(features, weight, bias)
+    y0, yL = field.domain_extrema[1, 0], field.domain_extrema[1, 1]
+    bubble = (x[:, -1] - y0) * (yL - x[:, -1])
+    lift = (x[:, -1] - y0) / (yL - y0)
+    u = (bubble * output[:, 0] + lift * torch.cos(field.theta)) * field.lmbda
+    v = (bubble * output[:, 1] + lift * torch.sin(field.theta)) * field.lmbda
+    return u, v
+
+
 def run(contract, out, start):
     import numpy as np
     import torch
@@ -134,6 +157,16 @@ def run(contract, out, start):
     fem_u, fem_v = tensor(data['u_fem']), tensor(data['v_fem'])
     ref_grad = torch.stack((q4_gradient(fem_u, cells, B), q4_gradient(fem_v, cells, B)))
 
+    def branch_signature(u, v):
+        # This is a scalar/mask diagnostic, not another energy or gradient evaluation.
+        with torch.no_grad():
+            trace_values = q4_gradient(u.detach(), cells, B)[:, :, 0] + q4_gradient(v.detach(), cells, B)[:, :, 1]
+            positive = trace_values > 0
+            record = dict(positive_count=int(positive.sum()), zero_count=int((trace_values == 0).sum()),
+                          negative_count=int((trace_values < 0).sum()),
+                          min_abs_trace=float(trace_values.abs().min()))
+        return positive, record
+
     def measure(u, v, phase):
         charge(phase, 'actual_field_energy_and_first_gradient', 1)
         uu, vv = u.detach().clone().requires_grad_(True), v.detach().clone().requires_grad_(True)
@@ -149,7 +182,8 @@ def run(contract, out, start):
         metrics = dict(E_el=float(value.detach()), free_u_l2=float(torch.linalg.vector_norm(force[free])),
                        uv_H1_rel=float(torch.sqrt(h1)), uv_mass_rel_L2=float(torch.sqrt(uv_error/uv_norm)))
         assert all(math.isfinite(v) for v in metrics.values())
-        return metrics, raw.detach(), force
+        branches, branch_record = branch_signature(uu, vv)
+        return metrics, raw.detach(), force, branches, branch_record
 
     field = make_field(state, device, contract['load'], 'legacy_nonsmooth')
     field.net = field.net.double()
@@ -162,26 +196,35 @@ def run(contract, out, start):
     with torch.no_grad():
         features = field.net.encode(x)
         u0, v0, d0 = field.fieldCalculation(x)
-    original_metrics, _, _ = measure(u0, v0, 'controls')  # Once, not a baseline solve.
+    original_metrics, _, _, _, _ = measure(u0, v0, 'controls')  # Once, not a baseline solve.
     initial_error = abs(original_metrics['E_el'] - scale)
     assert initial_error <= pc['energy_abs_tolerance']
     design = (field.lmbda * (x[:, 1] + .5) * (.5 - x[:, 1]))[:, None] * torch.cat(
         (features, torch.ones((len(x), 1), device=device, dtype=torch.float64)), 1)
     transform = tensor(transform_np)
-    basis = design @ transform  # No new SVD, cutoff, rank or fitted initial head.
-    del features, state
+    basis = design @ transform  # Frozen analytic square-root control; no new SVD/cutoff/rank.
+    del state
     rank, size = pc['rank'], pc['z_dimension']
     assert size == rank * 2 == 776
+    assert 5 + 3 * pc['max_outer_steps'] + 4 <= allowances['controls']
+    assert pc['max_outer_steps'] * pc['curvature_slot_units'] <= allowances['curvature']
+    assert pc['max_outer_steps'] * pc['max_backtracking_trials'] <= allowances['trials']
+    assert 4 <= allowances['final']
 
     def physical(z):
-        increment = basis @ z.reshape(rank, 2)
-        return u0 + increment[:, 0], v0 + increment[:, 1]
+        return actual_head_uv(torch, field, original, features, x, transform, rank, z)
 
-    def objective_z(z, phase):
+    def objective_z(z, phase, return_field_force=False):
         charge(phase, 'z_energy_and_first_gradient', 1)
         zz = tensor(z).detach().clone().reshape(size).requires_grad_(True)
-        value = elastic(*physical(zz))[0] / scale
-        gradient = torch.autograd.grad(value, zz)[0]
+        u, v = physical(zz)
+        value = elastic(u, v)[0] / scale
+        if return_field_force:
+            gradient, force_u, force_v = torch.autograd.grad(value, (zz, u, v))
+            field_force = torch.cat((force_u, force_v)).detach() * scale
+            assert bool(torch.isfinite(field_force).all())
+        else:
+            gradient = torch.autograd.grad(value, zz)[0]
         assert bool(torch.isfinite(gradient).all())
         record = dict(phase=phase, iteration=current_iteration, work_units=sum(used.values()),
                       normalized_energy=float(value.detach()), z_gradient_inf=float(gradient.abs().max()),
@@ -189,6 +232,8 @@ def run(contract, out, start):
         trace.append(record)
         with (out / 'trace.jsonl').open('a') as stream:
             stream.write(json.dumps(record, allow_nan=False)+'\n')
+        if return_field_force:
+            return float(value.detach()), gradient.detach(), field_force
         return float(value.detach()), gradient.detach()
 
     def hvp(at, direction):
@@ -204,12 +249,44 @@ def run(contract, out, start):
         assert bool(torch.isfinite(answer).all())
         return answer
 
-    def gradient_close(actual, expected):
-        error = float((actual-expected).abs().max())
+    def gradient_comparison(actual, expected):
+        difference = actual - expected
+        error = float(difference.abs().max())
         tolerance = pc['derivative_abs_tolerance'] + pc['derivative_relative_tolerance'] * max(
             float(actual.abs().max()), float(expected.abs().max()))
-        assert error <= tolerance, 'gradient equivalence failed'
-        return error
+        return dict(maxabs_error=error, l2_error=float(torch.linalg.vector_norm(difference)),
+                    maxabs_index=int(difference.abs().argmax()), tolerance=tolerance,
+                    actual_inf=float(actual.abs().max()), actual_l2=float(torch.linalg.vector_norm(actual)),
+                    expected_inf=float(expected.abs().max()), expected_l2=float(torch.linalg.vector_norm(expected)),
+                    passed=error <= tolerance)
+
+    def field_pair_diagnostic(actual_u, actual_v, canonical_u, canonical_v,
+                              actual_energy, canonical_energy, actual_force=None, canonical_force=None,
+                              actual_branch=None, canonical_branch=None,
+                              actual_trace=None, canonical_trace=None):
+        field_delta = torch.stack((actual_u-canonical_u, actual_v-canonical_v))
+        record = dict(field_maxabs=float(field_delta.abs().max()),
+                      field_l2=float(torch.linalg.vector_norm(field_delta)),
+                      energy_abs_error=abs(actual_energy-canonical_energy))
+        if actual_force is not None:
+            force_delta = actual_force-canonical_force
+            record.update(force_maxabs=float(force_delta.abs().max()),
+                          force_l2=float(torch.linalg.vector_norm(force_delta)),
+                          force_comparison=gradient_comparison(actual_force, canonical_force))
+        if actual_branch is not None:
+            record.update(actual_trace=actual_trace, canonical_trace=canonical_trace,
+                          branch_mismatch_count=int((actual_branch != canonical_branch).sum()))
+        return record
+
+    def actual_head_force_vjp(z, force, phase):
+        charge(phase, 'materialized_actual_head_force_vjp', 1)
+        assert force.shape == (2 * len(x),)
+        zz = tensor(z).detach().clone().reshape(size).requires_grad_(True)
+        u, v = physical(zz)
+        scalar = ((u * force[:len(x)]).sum() + (v * force[len(x):]).sum()) / scale
+        answer = torch.autograd.grad(scalar, zz)[0].detach()
+        assert bool(torch.isfinite(answer).all())
+        return answer
 
     def raw_field(z):
         check_work()
@@ -229,10 +306,14 @@ def run(contract, out, start):
     def opt_check():
         check_work()
 
-    def capture_factor(R, rhs):
+    def capture_factor(R, canonical_rhs, augmented_rhs=None, canonical_gradient=None):
         check_work()
-        factor = dict(R=R.cpu().numpy(), rhs=rhs.cpu().numpy(), at_z=last_z.cpu().numpy(),
+        factor = dict(R=R.cpu().numpy(), canonical_rhs=canonical_rhs.cpu().numpy(), at_z=last_z.cpu().numpy(),
                       iteration=np.array(current_iteration), validation_state=np.array('unvalidated_root'))
+        if augmented_rhs is not None:
+            factor.update(augmented_rhs=augmented_rhs.cpu().numpy(),
+                          canonical_gradient=canonical_gradient.cpu().numpy(),
+                          rhs_binding=np.array('actual_head_AD_gradient'))
         if current_iteration == 0:
             np.savez_compressed(out / 'initial_factor.npz', **factor)
         np.savez_compressed(out / 'latest_factor.npz', **factor)
@@ -244,21 +325,49 @@ def run(contract, out, start):
 
     zero = torch.zeros(size, device=device, dtype=torch.float64)
     initial_value, initial_g = objective_z(zero, 'controls')
-    assert abs(initial_value * scale-original_metrics['E_el']) <= pc['energy_abs_tolerance']
+    zero_u, zero_v, zero_d = raw_field(zero)
+    canonical_zero_u, canonical_zero_v = physical(zero)
+    zero_branch, zero_trace = branch_signature(zero_u, zero_v)
+    canonical_zero_branch, canonical_zero_trace = branch_signature(canonical_zero_u, canonical_zero_v)
+    zero_diagnostic = field_pair_diagnostic(
+        zero_u, zero_v, canonical_zero_u, canonical_zero_v, original_metrics['E_el'], initial_value*scale,
+        actual_branch=zero_branch, canonical_branch=canonical_zero_branch,
+        actual_trace=zero_trace, canonical_trace=canonical_zero_trace)
+    zero_diagnostic.update(raw_to_original_displacement_maxabs=float(torch.max(torch.abs(torch.stack((zero_u-u0, zero_v-v0))))),
+                           canonical_to_original_displacement_maxabs=float(torch.max(torch.abs(torch.stack((canonical_zero_u-u0, canonical_zero_v-v0))))))
+    save('zero_actual_head_diagnostic.json', zero_diagnostic)
+    assert zero_diagnostic['field_maxabs'] <= pc['field_abs_tolerance']
+    assert zero_diagnostic['energy_abs_error'] <= pc['energy_abs_tolerance']
+    assert zero_diagnostic['branch_mismatch_count'] == 0
+    assert zero_diagnostic['raw_to_original_displacement_maxabs'] <= pc['field_abs_tolerance']
+    assert zero_diagnostic['canonical_to_original_displacement_maxabs'] <= pc['field_abs_tolerance']
+    assert_frozen()
+    assert torch.equal(zero_d, d0)
+
     probe = tensor(np.random.default_rng(pc['seed']).normal(size=size))
     probe *= pc['nonzero_probe_norm'] / torch.linalg.vector_norm(probe)
-    probe_value, probe_g = objective_z(probe, 'controls')
+    probe_value, probe_g, probe_canonical_force = objective_z(probe, 'controls', return_field_force=True)
     actual_u, actual_v, actual_d = raw_field(probe)
-    actual, _, probe_force = measure(actual_u, actual_v, 'controls')
+    actual, _, probe_force, actual_branch, actual_trace = measure(actual_u, actual_v, 'controls')
     expected_u, expected_v = physical(probe)
-    assert float(torch.max(torch.abs(torch.stack((actual_u-expected_u, actual_v-expected_v))))) <= pc['field_abs_tolerance']
-    assert abs(actual['E_el']-probe_value*scale) <= pc['energy_abs_tolerance']
-    pulled = (basis.T @ torch.stack((probe_force[:len(x)], probe_force[len(x):]), 1) / scale).reshape(size)
-    gradient_close(pulled, probe_g)
+    expected_branch, expected_trace = branch_signature(expected_u, expected_v)
+    probe_vjp = actual_head_force_vjp(probe, probe_force, 'controls')
+    probe_diagnostic = field_pair_diagnostic(
+        actual_u, actual_v, expected_u, expected_v, actual['E_el'], probe_value*scale,
+        actual_force=probe_force, canonical_force=probe_canonical_force,
+        actual_branch=actual_branch, canonical_branch=expected_branch,
+        actual_trace=actual_trace, canonical_trace=expected_trace)
+    probe_diagnostic['vjp_vs_direct'] = gradient_comparison(probe_vjp, probe_g)
+    save('probe_actual_head_diagnostic.json', probe_diagnostic)
+    assert probe_diagnostic['field_maxabs'] <= pc['field_abs_tolerance']
+    assert probe_diagnostic['energy_abs_error'] <= pc['energy_abs_tolerance']
+    assert probe_diagnostic['branch_mismatch_count'] == 0
+    assert probe_diagnostic['force_comparison']['passed'], 'materialized/canonical force mismatch'
+    assert probe_diagnostic['vjp_vs_direct']['passed'], 'gradient equivalence failed'
     assert_frozen()
     assert torch.equal(actual_d, d0)
-    raw_field(zero)
-    assert used['controls'] == 4  # original + zero + probe + actual probe.
+    raw_field(zero)  # Restore the physical network head before the solve.
+    assert used['controls'] == 5  # baseline + zero + probe/direct/raw/VJP.
     rho = (1-dg).square()
     assert bool(torch.all((dg >= 0) & (dg <= 1)))
     bulk, shear = mat.mat_lmbda + 2.*mat.mat_mu/3., mat.mat_mu
@@ -275,7 +384,15 @@ def run(contract, out, start):
                 # Deliberate independent same-point control, charged separately.
                 checked_value, checked_g = objective_z(last_z, 'controls')
                 assert abs(checked_value-last_value)*scale <= pc['energy_abs_tolerance']
-                gradient_close(checked_g, last_gradient)
+                checked_gradient = gradient_comparison(checked_g, last_gradient)
+                assert checked_gradient['passed'], 'repeat current-point gradient mismatch'
+                # Use the just-recomputed canonical actual-head AD gradient as
+                # the Newton RHS. The preceding point is identical; this avoids
+                # carrying an associativity-dependent basis projection forward.
+                last_value, last_gradient = checked_value, checked_g
+                if float(last_gradient.abs().max()) <= pc['z_gradient_inf_threshold']:
+                    stop = 'confirmed_current_actual_head_gradient_inf_le_1e-8'
+                    break
                 opt_check()
                 # Prepay the COMPLETE slot even if a later QR/check fails.
                 charge('curvature', 'full_776_square_root_direction', pc['curvature_slot_units'])
@@ -337,17 +454,30 @@ def run(contract, out, start):
     check_work()
     uh, vh, dh = raw_field(last_z)
     assert_frozen()
-    assert torch.equal(dh, d0)
-    head_metrics, rawh, head_force = measure(uh, vh, 'final')
+    head_metrics, rawh, head_force, head_branch, head_trace = measure(uh, vh, 'final')
     ub, vb = physical(last_z)
-    basis_metrics, _, _ = measure(ub, vb, 'final')
+    canonical_metrics, _, canonical_force, canonical_branch, canonical_trace = measure(ub, vb, 'final')
     _, final_gz = objective_z(last_z, 'final')
-    realization = abs(head_metrics['E_el']-basis_metrics['E_el'])
-    realization_uv = float(torch.max(torch.abs(torch.stack((uh-ub, vh-vb)))))
-    assert realization <= pc['energy_abs_tolerance'] and realization_uv <= pc['field_abs_tolerance']
+    actual_gz = actual_head_force_vjp(last_z, head_force, 'final')
     full_head_gradient = design.T @ torch.stack((head_force[:len(x)], head_force[len(x):]), 1) / scale
-    actual_gz = (basis.T @ torch.stack((head_force[:len(x)], head_force[len(x):]), 1) / scale).reshape(size)
-    final_z_gradient_error = gradient_close(actual_gz, final_gz)
+    analytic_basis_gradient = (basis.T @ torch.stack((head_force[:len(x)], head_force[len(x):]), 1) / scale).reshape(size)
+    final_diagnostic = field_pair_diagnostic(
+        uh, vh, ub, vb, head_metrics['E_el'], canonical_metrics['E_el'],
+        actual_force=head_force, canonical_force=canonical_force,
+        actual_branch=head_branch, canonical_branch=canonical_branch,
+        actual_trace=head_trace, canonical_trace=canonical_trace)
+    final_diagnostic['vjp_vs_direct'] = gradient_comparison(actual_gz, final_gz)
+    final_diagnostic['analytic_basis_projection_vs_direct'] = gradient_comparison(analytic_basis_gradient, final_gz)
+    final_diagnostic['actual_damage_matches_frozen'] = bool(torch.equal(dh, d0))
+    save('final_actual_head_diagnostic.json', final_diagnostic)
+    assert final_diagnostic['actual_damage_matches_frozen']
+    assert final_diagnostic['field_maxabs'] <= pc['field_abs_tolerance']
+    assert final_diagnostic['energy_abs_error'] <= pc['energy_abs_tolerance']
+    assert final_diagnostic['branch_mismatch_count'] == 0
+    assert final_diagnostic['force_comparison']['passed'], 'materialized/canonical force mismatch'
+    assert final_diagnostic['vjp_vs_direct']['passed'], 'gradient equivalence failed'
+    realization = final_diagnostic['energy_abs_error']
+    realization_uv = final_diagnostic['field_maxabs']
     stationary = max(float(final_gz.abs().max()), float(actual_gz.abs().max())) <= pc['z_gradient_inf_threshold']
     uncertainty = max(frozen['numerical_energy_uncertainty'], initial_error, realization,
                       64*np.finfo(float).eps*scale)
@@ -356,23 +486,32 @@ def run(contract, out, start):
     robust = gain >= contract['relative_gain_screen'] and gap > 10*uncertainty
     energy_verdict = ('optimization_witness' if robust else 'small_resolved_gain_below_screen' if gap > 10*uncertainty
                       else 'energy_regression' if -gap > 10*uncertainty else 'numerically_unresolved')
+    combined_used = {key: contract['prior_work_ledger'][key] + used[key] for key in used}
     work_ledger = dict(used=sum(used.values()), by_category=used.copy(),
-                       caps={key: allowances[key] for key in used}, hvp_calls=hvp_calls,
-                       actual_HVP_units=2*hvp_calls, complete_curvature_slots=used['curvature']//1552,
-                       total_cap=25424, no_reallocation=True,
+                       remaining_caps={key: allowances[key] for key in used},
+                       prior_spent=contract['prior_work_ledger'], task_caps=contract['task_work_ledger'],
+                       combined_used=combined_used, combined_total=sum(combined_used.values()),
+                       hvp_calls=hvp_calls, actual_HVP_units=2*hvp_calls,
+                       complete_curvature_slots=used['curvature']//allowances['curvature_slot_units'],
+                       remaining_total_cap=allowances['total'], task_total_cap=contract['task_work_ledger']['total'],
+                       no_reallocation=True,
                        units_definition='Each complete curvature/TSQR/solve slot=1552 conservative proxy; E or E+gradient=1; HVP=2; no free construction/factor/refinement')
     metrics = dict(protocol=contract['protocol'], run_id=contract['run_id'],
          state='synthetic seen c1s4 conditional MCS outer9, U=.11999988; horizon0',
          original=original_metrics, saved_PBD=baseline, frozen_r2_head=frozen['head'], head=head_metrics,
          gain_over_saved_PBD=gain, gain_over_frozen_r2=(frozen['head']['E_el']-head_metrics['E_el'])/frozen['head']['E_el'],
          numerical_energy_uncertainty=uncertainty, initial_identity_energy_abs_error=initial_error,
-         actual_basis_energy_difference=realization, actual_basis_displacement_maxabs=realization_uv,
+         actual_canonical_energy_difference=realization, actual_canonical_displacement_maxabs=realization_uv,
          initial_z_gradient_inf=float(initial_g.abs().max()),
          retained_gradient_l2=float(torch.linalg.vector_norm(final_gz)), retained_gradient_inf=float(final_gz.abs().max()),
          actual_retained_gradient_l2=float(torch.linalg.vector_norm(actual_gz)),
-         actual_retained_gradient_inf=float(actual_gz.abs().max()), final_z_gradient_maxabs_error=final_z_gradient_error,
+         actual_retained_gradient_inf=float(actual_gz.abs().max()),
+         final_z_gradient_maxabs_error=final_diagnostic['vjp_vs_direct']['maxabs_error'],
          full_head_gradient_l2=float(torch.linalg.vector_norm(full_head_gradient)),
-         full_head_gradient_inf=float(full_head_gradient.abs().max()), stationarity_screen=stationary,
+         full_head_gradient_inf=float(full_head_gradient.abs().max()),
+         analytic_basis_gradient_l2=float(torch.linalg.vector_norm(analytic_basis_gradient)),
+         analytic_basis_gradient_inf=float(analytic_basis_gradient.abs().max()),
+         actual_head_diagnostic=final_diagnostic, stationarity_screen=stationary,
          robust_directional_gain=robust, verdict='stationary' if stationary else 'nonstationary',
          energy_verdict=energy_verdict, stop=stop, work_ledger=work_ledger,
          history_commits=0, rollout_steps=0, hidden_updates=0, damage_updates=0, baseline_reevaluations=0,

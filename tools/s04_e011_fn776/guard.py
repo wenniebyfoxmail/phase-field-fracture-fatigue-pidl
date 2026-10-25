@@ -10,12 +10,13 @@ import subprocess
 import sys
 import time
 
-RUN = 'pf_s04e011_uvh_c1_fn776_r7_20261025'
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r7'
+RUN = 'pf_s04e011_uvh_c1_fn776_r8_20261025'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r8'
 ROOT = Path('/mnt/data2/drtao/wennie') / RUN
 OUT = Path('/mnt/data2/drtao/pidl_archives') / RUN
 CODE = ROOT / 'code'
-CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r7.json'
+CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r8.json'
+CONTRACT_SHA256 = 'a79de9464c4057caa9ea6096785a17ab4601a43f5061a868d093be571f5aee17'
 
 
 def digest(path):
@@ -24,6 +25,10 @@ def digest(path):
         for block in iter(lambda: stream.read(1024 * 1024), b''):
             h.update(block)
     return h.hexdigest()
+
+
+def contract_digest(contract):
+    return hashlib.sha256(json.dumps(contract, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False).encode('ascii')).hexdigest()
 
 
 def save(path, value):
@@ -37,10 +42,12 @@ def command(args, timeout=10):
 def run_worker():
     # Internal child: guard has already consumed the single attempt.
     contract = json.loads(CONTRACT.read_text())
+    if contract_digest(contract) != CONTRACT_SHA256:
+        raise RuntimeError('bundled contract digest mismatch')
     receipt = dict(protocol=contract['protocol'], run_id=RUN,
                    start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
                    pid=os.getpid(), host=os.uname().nodename,
-                   approval_ref=os.environ['UVH_APPROVAL_REF'],
+                   approval_ref=os.environ['UVH_APPROVAL_REF'], contract_sha256=CONTRACT_SHA256,
                    code_commit=os.environ['UVH_CODE_COMMIT'], inputs=[])
     save(OUT / 'worker_receipt.json', receipt)
     # Only five exact files; no discovery, copying, MAT or archive-wide read.
@@ -156,6 +163,7 @@ def main():
     p.add_argument('--execute-approved', action='store_true')
     p.add_argument('--approval-ref')
     p.add_argument('--expected-source')
+    p.add_argument('--expected-contract-sha256')
     p.add_argument('--worker', action='store_true', help=argparse.SUPPRESS)
     args = p.parse_args()
     if args.worker:
@@ -168,11 +176,14 @@ def main():
         raise SystemExit('Python optimization must be disabled; assertions are validity checks')
     if not args.expected_source or len(args.expected_source) != 40:
         raise SystemExit('exact reviewed source commit required')
+    if args.expected_contract_sha256 != CONTRACT_SHA256:
+        raise SystemExit('exact reviewed contract digest required')
     if sys.platform != 'linux' or Path(__file__).resolve().parents[2] != CODE:
         raise SystemExit('fixed Taobo code directory only; Mac execution denied')
     with (ROOT / 'attempt_claim.json').open('x') as claim:
-        json.dump(dict(guard_pid=os.getpid(), source=args.expected_source,
+        json.dump(dict(run_id=RUN, guard_pid=os.getpid(), source=args.expected_source,
                        approval_ref=args.approval_ref,
+                       contract_sha256=CONTRACT_SHA256,
                        utc=dt.datetime.now(dt.timezone.utc).isoformat()), claim)
     # An approved invocation consumes the card even if any later preflight fails.
     if os.environ.get('CUDA_VISIBLE_DEVICES') != 'GPU-350d3f31-8bd6-4257-4d4c-21ad344eaa81':
@@ -185,8 +196,12 @@ def main():
              '--code', str(CODE), '--expected-source', args.expected_source], timeout=30)
     # Binding is reviewed Git content; no alternate contract/path flags.
     contract = json.loads(CONTRACT.read_text())
+    if contract_digest(contract) != CONTRACT_SHA256:
+        raise SystemExit('bundled contract digest mismatch')
     if (contract['protocol'] != 'S04-E011-UVH-C1-FN776-v1' or contract['run_id'] != RUN or
-            contract['resource_revision'] != 'GPU7-FN776-shared-r2-uvicorn28011'):
+            contract['resource_revision'] != 'GPU7-FN776-shared-r2-uvicorn28011' or
+            contract['fn776']['max_outer_steps'] != 11 or
+            contract['repair']['kind'] != 'canonical_actual_head_vjp_finite_precision_repair'):
         raise SystemExit('contract identity mismatch')
     if OUT.exists() or OUT.is_symlink():
         raise SystemExit('attempt already consumed; no resume/retry')
@@ -241,6 +256,7 @@ def main():
     record = dict(run_id=RUN, status='started', source=args.expected_source,
                   approval_ref=args.approval_ref, start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
                   guard_pid=os.getpid(), host=os.uname().nodename, GPU=7,
+                  contract_sha256=CONTRACT_SHA256,
                   output=str(OUT), code=str(CODE), execution_resource_policy=contract['execution_resource_policy'],
                   resource_policy=contract['resource_policy'], admission_mode=admission_mode, admission=admission)
     save(OUT / 'guard_receipt.json', record)
@@ -328,6 +344,9 @@ if __name__ == '__main__':
         if sys.platform == 'linux' and claim.is_file():
             owner = json.loads(claim.read_text())
             if owner.get('guard_pid') == os.getpid():
-                save(ROOT / 'operator_terminal.json', dict(error=repr(error),
-                     retry_allowed=False, utc=dt.datetime.now(dt.timezone.utc).isoformat()))
+                save(ROOT / 'operator_terminal.json', dict(
+                     run_id=RUN, source=owner['source'], approval_ref=owner['approval_ref'],
+                     contract_sha256=owner['contract_sha256'], output_claimed=OUT.exists(),
+                     error=repr(error), retry_allowed=False,
+                     utc=dt.datetime.now(dt.timezone.utc).isoformat()))
         raise

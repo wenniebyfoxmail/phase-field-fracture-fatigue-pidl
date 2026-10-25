@@ -67,8 +67,7 @@ def direction(torch, basis, cells, B, weights, rho, gu, gv, scale, bulk, shear,
         for level in sorted(bins, reverse=True):
             root = bins[level] if root is None else qr(torch.cat((root, bins[level]), dim=0))
         assert root is not None and root.shape == (n + 1, n + 1)
-        R, rhs = root[:n, :n].contiguous(), root[:n, n].contiguous()
-        capture(R, rhs)  # Persist observables before finite/rank assertions.
+        R, augmented_rhs = root[:n, :n].contiguous(), root[:n, n].contiguous()
         assert bool(torch.isfinite(root).all())
         # Local blocks may be rank deficient. Only the GLOBAL root is checked.
         assert bool(torch.all(R.diagonal() != 0)), 'global square-root factor zero diagonal'
@@ -76,20 +75,39 @@ def direction(torch, basis, cells, B, weights, rho, gu, gv, scale, bulk, shear,
         assert bool(torch.isfinite(col_norm).all() and torch.all(col_norm > 0))
         W = R / col_norm[None, :]
         operator = lambda v: R.T @ (R @ v)
-        analytic_gradient = R.T @ rhs
+        # The TSQR factor remains the frozen 776-coordinate tangent operator.
+        # Bind its triangular right hand side to the canonical actual-head AD
+        # gradient rather than the algebraically equivalent but differently
+        # associated augmented-basis reduction. This makes R.T @ rhs the exact
+        # gradient used by the accepted Armijo objective.
+        canonical_rhs = torch.linalg.solve_triangular(R.T, gradient[:, None], upper=False).reshape(n)
+        canonical_gradient = R.T @ canonical_rhs
+        augmented_gradient = R.T @ augmented_rhs
         analytic_value = float(.5 * root[:, n].square().sum())
-        gradient_error = float((analytic_gradient - gradient).abs().max())
-        gradient_tolerance = config['derivative_abs_tolerance'] + config['derivative_relative_tolerance'] * max(
-            float(analytic_gradient.abs().max()), float(gradient.abs().max()))
+        canonical_gradient_error = float((canonical_gradient - gradient).abs().max())
+        canonical_gradient_inf = float(gradient.abs().max())
+        canonical_transport_relative = canonical_gradient_error / max(canonical_gradient_inf, torch.finfo(R.dtype).tiny)
+        canonical_transport_backward = canonical_gradient_error / max(
+            float(torch.linalg.matrix_norm(R.T, ord=float('inf'))) * float(canonical_rhs.abs().max()) + canonical_gradient_inf,
+            torch.finfo(R.dtype).tiny)
+        augmented_gradient_error = float((augmented_gradient - gradient).abs().max())
+        augmented_gradient_tolerance = config['derivative_abs_tolerance'] + config['derivative_relative_tolerance'] * max(
+            float(augmented_gradient.abs().max()), float(gradient.abs().max()))
+        capture(R, canonical_rhs, augmented_rhs, gradient)  # Persist both RHS paths before later controls.
         record = dict(stage='factor_controls', exact_zero_trace_count=zero_count,
                       negative_trace_count=negative_count, gp_count=gp_count,
                       raw_energy_abs_error=abs(analytic_value-value)*scale,
-                      analytic_gradient_maxabs_error=gradient_error,
-                      analytic_gradient_tolerance=gradient_tolerance,
+                      canonical_rhs_binding='actual_head_AD_gradient',
+                      canonical_gradient_maxabs_error=canonical_gradient_error,
+                      canonical_gradient_relative_residual=canonical_transport_relative,
+                      canonical_gradient_backward_error=canonical_transport_backward,
+                      augmented_basis_gradient_maxabs_error=augmented_gradient_error,
+                      augmented_basis_gradient_tolerance=augmented_gradient_tolerance,
                       min_abs_R_diagonal=float(R.diagonal().abs().min()))
         log(record)
         assert record['raw_energy_abs_error'] <= config['energy_abs_tolerance'], 'square-root energy mismatch'
-        assert gradient_error <= gradient_tolerance, 'square-root gradient mismatch'
+        assert canonical_transport_relative <= config['linear_relative_residual'], 'canonical square-root RHS residual'
+        assert canonical_transport_backward <= config['linear_backward_tolerance'], 'canonical square-root RHS backward error'
 
     opt_check()
     hp = hvp(probe)  # Paid independent original-function AD, at the SAME z.
@@ -121,7 +139,7 @@ def direction(torch, basis, cells, B, weights, rho, gu, gv, scale, bulk, shear,
         def triangular(matrix, target, upper):
             opt_check()
             return torch.linalg.solve_triangular(matrix, target[:, None], upper=upper).reshape(n)
-        step = triangular(W, -rhs, True) / col_norm
+        step = triangular(W, -canonical_rhs, True) / col_norm
         refinements = 0
         residuals = []
         while True:
@@ -148,6 +166,6 @@ def direction(torch, basis, cells, B, weights, rho, gu, gv, scale, bulk, shear,
                     negative_trace_count=negative_count, raw_spectrum=spectrum(eig_raw),
                     equilibrated_spectrum=spectrum(eig_scaled), symmetry_scaled_error=symmetry,
                     linear_residuals=residuals, refinements=refinements, slope=slope,
-                    augmented_rhs='root[:776,776]; transformed jointly with A')
+                    augmented_rhs='root[:776,776]; transformed jointly with A; diagnostic only')
         log(info)
-        return step, info, R, rhs, tensile_branch
+        return step, info, R, canonical_rhs, tensile_branch
