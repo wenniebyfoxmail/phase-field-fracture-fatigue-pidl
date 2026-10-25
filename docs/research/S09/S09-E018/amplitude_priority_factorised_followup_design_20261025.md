@@ -66,3 +66,18 @@ This exploration is positive only if the protected arm achieves a material
 amplitude/mass improvement on high-event cycles without a diffuse-background
 increase and without constraint violations. It does not establish holdout
 generalisation, full phase-field closure or a production PINO claim.
+
+## Local off-policy check
+
+The E017 stored raw gradients were replayed under the two deterministic merge
+rules without executing another model forward or optimisation step. In 19 of
+64 recorded updates, the E017 symmetric merged direction had non-positive dot
+product with the scaled amplitude gradient. The amplitude-priority rule had a
+strictly positive dot product at all 64 updates and applied its final secondary
+aggregate projection at 19 updates. This shows that the intervention changes
+the identified gradient geometry; it is not evidence that the nonlinear AdamW
+trajectory or the field reconstruction will improve.
+
+The reusable primitive and its synthetic test are committed in `3a552e8e`.
+The remaining implementation work is to bind this E018-only merge to a new
+producer package and preserve the expanded state-plus-increment field evidence.
