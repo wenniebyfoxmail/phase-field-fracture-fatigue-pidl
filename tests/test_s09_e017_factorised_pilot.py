@@ -24,6 +24,7 @@ from s09_e017_factorised_pilot import (
     freeze_gradient_scales,
     learnable_shape,
     pcgrad_merge,
+    amplitude_priority_pcgrad_merge,
     reconstruction_objective,
     shape_objective,
 )
@@ -208,6 +209,26 @@ def test_pcgrad_projects_conflict_and_skips_near_zero_reference():
         assert record["raw_group_dot_merged_direction"][name] == pytest.approx(
             torch.dot(gradient, merged).item()
         )
+
+
+def test_amplitude_priority_pcgrad_preserves_scaled_amplitude_descent():
+    gradients = OrderedDict(
+        (
+            ("A", f64([2.0, 0.0, 0.0])),
+            ("S", f64([-3.0, 1.0, 0.0])),
+            ("R", f64([-2.0, 0.0, 1.0])),
+            ("P", f64([-1.0, -1.0, 0.0])),
+        )
+    )
+    scales, _ = freeze_gradient_scales(gradients)
+    merged, record = amplitude_priority_pcgrad_merge(
+        gradients, scales, seed=11, update=7
+    )
+    amplitude = gradients["A"] / scales["A"]
+    assert torch.dot(merged, amplitude).item() >= 0.0
+    assert record["merge_strategy"] == "AMPLITUDE_PRIORITY_PCG"
+    assert record["amplitude_priority"]["merged_dot_scaled_amplitude"] >= 0.0
+    assert torch.isfinite(merged).all()
 
 
 def test_gradient_geometry_overflow_fails_closed_before_clipping():

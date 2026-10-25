@@ -524,6 +524,100 @@ def pcgrad_merge(
     }
 
 
+def amplitude_priority_pcgrad_merge(
+    gradients: Mapping[str, torch.Tensor],
+    scales: Mapping[str, float],
+    *,
+    seed: int,
+    update: int,
+    epsilon: float = GRADIENT_EPSILON,
+    clip_norm: float = GLOBAL_CLIP_NORM,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    """Merge factorised-head gradients without allowing secondary groups to oppose A.
+
+    The symmetric PCGrad projection is retained for all secondary objectives.
+    Its aggregate is then projected out of the negative half-space of the
+    scaled amplitude direction.  This produces a first-order descent direction
+    for ``A`` while retaining every secondary objective as far as that protected
+    constraint permits.
+    """
+    names = tuple(gradients)
+    _require(
+        names == ACTIVE_GROUPS[ARM_AMPLITUDE_SHAPE],
+        "amplitude-priority merge requires factorised amplitude-plus-shape groups",
+    )
+    symmetric, diagnostics = pcgrad_merge(
+        gradients,
+        scales,
+        seed=seed,
+        update=update,
+        epsilon=epsilon,
+        clip_norm=clip_norm,
+    )
+    del symmetric
+    scaled = OrderedDict(
+        (
+            name,
+            GROUP_WEIGHTS[name] * gradients[name] / float(scales[name]),
+        )
+        for name in names
+    )
+    projected: OrderedDict[str, torch.Tensor] = OrderedDict()
+    for name in names:
+        working = scaled[name].clone()
+        for entry in diagnostics["projection_log"][name]:
+            reference = scaled[entry["reference"]]
+            if entry["projection_applied"]:
+                denominator = torch.dot(reference, reference)
+                working = (
+                    working - torch.dot(working, reference) / denominator * reference
+                )
+        projected[name] = working
+    amplitude = scaled["A"]
+    secondary = torch.stack(
+        tuple(projected[name] for name in names if name != "A")
+    ).mean(dim=0)
+    denominator = torch.dot(amplitude, amplitude)
+    _require(
+        torch.isfinite(denominator).item(), "nonfinite amplitude priority geometry"
+    )
+    dot_before = torch.dot(secondary, amplitude)
+    _require(
+        torch.isfinite(dot_before).item(), "nonfinite amplitude priority geometry"
+    )
+    priority_projection_applied = False
+    if torch.sqrt(denominator) > epsilon and dot_before < 0:
+        secondary = secondary - dot_before / denominator * amplitude
+        priority_projection_applied = True
+    merged = amplitude + secondary
+    preclip_norm = torch.linalg.vector_norm(merged)
+    _require(torch.isfinite(preclip_norm).item(), "nonfinite amplitude priority direction")
+    if preclip_norm > clip_norm:
+        merged = merged * (clip_norm / preclip_norm)
+    postclip_norm = torch.linalg.vector_norm(merged)
+    _require(torch.isfinite(postclip_norm).item(), "nonfinite amplitude priority direction")
+    _require(
+        torch.dot(merged, amplitude) >= -epsilon,
+        "amplitude-priority merge opposes amplitude",
+    )
+    result = dict(diagnostics)
+    result.update(
+        {
+            "merge_strategy": "AMPLITUDE_PRIORITY_PCG",
+            "preclip_norm": float(preclip_norm.detach().cpu()),
+            "postclip_norm": float(postclip_norm.detach().cpu()),
+            "amplitude_priority": {
+                "dot_before": float(dot_before.detach().cpu()),
+                "projection_applied": priority_projection_applied,
+                "merged_dot_scaled_amplitude": float(
+                    torch.dot(merged, amplitude).detach().cpu()
+                ),
+            },
+        }
+    )
+    return merged, result
+
+
 def decision_amplitude_error(
     predicted: torch.Tensor, target: torch.Tensor, amplitude_scale: float
 ) -> torch.Tensor:
