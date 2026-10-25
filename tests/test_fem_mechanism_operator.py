@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "SENS_tensile"))
 from fem_mechanism_operator import (  # noqa: E402
     MultiScaleMeshResidualOperator,
     PointwiseResidualOperator,
+    STATE_NAMES,
     StateStatistics,
     apply_state_constraints,
     derived_active_log10,
@@ -20,6 +21,7 @@ from fem_mechanism_operator import (  # noqa: E402
 )
 from pidl_core.fem_mechanism_operator import (  # noqa: E402
     MultiScaleMeshResidualOperator as packaged_multiscale_operator,
+    STATE_NAMES as packaged_state_names,
 )
 from prepare_fem_mechanism_operator_dataset import (  # noqa: E402
     coarse_graph,
@@ -42,8 +44,9 @@ def statistics() -> StateStatistics:
     )
 
 
-def test_legacy_fem_operator_import_remains_the_packaged_implementation():
-    assert MultiScaleMeshResidualOperator is packaged_multiscale_operator
+def test_frozen_legacy_operator_and_package_keep_the_same_public_state_contract():
+    assert STATE_NAMES == packaged_state_names
+    assert MultiScaleMeshResidualOperator.__name__ == packaged_multiscale_operator.__name__
 
 
 def small_graph():
@@ -114,6 +117,9 @@ def test_pointwise_and_multiscale_contract_and_backward():
     models = [
         PointwiseResidualOperator(features.shape[1], hidden_dim=12),
         MultiScaleMeshResidualOperator(
+            features.shape[1], hidden_dim=12, local_layers=1, coarse_layers=1
+        ),
+        packaged_multiscale_operator(
             features.shape[1], hidden_dim=12, local_layers=1, coarse_layers=1
         ),
     ]
