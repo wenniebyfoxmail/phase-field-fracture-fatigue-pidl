@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E017
 run_id: S09-E017-R001-factorised-head-p0
-status: CODE_READY_NOT_GRANTED
+status: STAGE1_STOPPED_GPU_BUSY_AUTHORITY_CONSUMED_STAGE2_NOT_CREATED
 date: 2026-10-24
 ---
 
@@ -182,3 +182,19 @@ reported only after registered artifacts are retrieved and hash-checked.
 
 Approval of this exact card authorizes both stages in this order. It does not
 authorize any action after the first terminal failure or any new experiment.
+
+## 2026-10-25 execution result
+
+The user granted this card. Stage 1 authority SHA256
+`f171af4b2803e95a9cbeea249228f958248ebfbd8f8ed87e1cc6c64c807cf945`
+was materialized at `2026-10-25T16:36:24.448230+00:00` and consumed once.
+The single connection reached `GPUServer8`, uid 1010 and clean exact commit
+`2002538d...`; the blocked production-path set was empty. The repaired helper
+staging completed and the metadata admission reached its GPU check, then
+stopped with `compute process present on frozen GPU`.
+
+The local guard returned exit 1 after 12.871 seconds with complete stdout,
+stderr, consumption and guard evidence. It did not retry or reconnect. The
+Stage 2 evidence root and execution authority were not created, so the final
+resolver, production admission, detached session, model and training were not
+entered. This is a shared-resource admission stop, not a scientific result.
