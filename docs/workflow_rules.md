@@ -1,12 +1,12 @@
 # Workflow Rules（详细版）
 
-> **Status — on-demand operator/history reference.** The current repository
-> policy is `AGENTS.md`, and the current owner card controls research scope.
-> This document preserves older collaboration detail; it does not require a
-> shared ledger, frontier update, extra review, or repeat test by default.
+> **Historical reference only.** For current work follow `AGENTS.md` and the
+> current owner card. Do not use this document to choose a checkout,
+> create/remove a worktree, decide a result record, or add acknowledgement or
+> review requirements. An owner card may explicitly adopt a machine-specific
+> step below.
 
-本文件保留旧的协作细节；不是每个 session 的必读项。当前规则见
-`AGENTS.md`，按需操作细节见 `git_workflow.md`。
+本文件保留旧的 Claude 协作细节，不是当前 session 的入口。
 
 ---
 
@@ -27,6 +27,9 @@
 
 ## Worktree 使用规则
 
+> **Superseded defaults.** 当前代码工作从具名的 clean worktree 开始，历史或
+> 可恢复 worktree 应保留。以下条目仅描述旧 Claude 工作流。
+
 - **默认不勾 worktree**，直接在主工作目录工作
 - 只有在需要并行跑多个独立的代码实验时才勾 worktree
 - 会话结束时如果 Claude 提示 "keep or remove"，默认选 remove
@@ -45,6 +48,9 @@
 ---
 
 ## 工作目录一致性
+
+> **Superseded path rule.** 当前 checkout 由 `AGENTS.md` 和 owner card 决定；
+> 不要把保留的 dirty `upload code/` shared checkout 当作默认入口。
 
 - 只在 `upload code/` 这一层启动 Claude
 - 理由：Claude 的 memory 按工作目录绝对路径分隔，换目录 = 换 memory
@@ -88,6 +94,9 @@
 ---
 
 ## 不 commit 结果（详细版）
+
+> **Superseded result rule.** 当前 M1/M2/M3 记录遵循 `AGENTS.md`：Git 保存
+> code/config/compact manifest，Run record 指向 raw output，Obsidian 保存简洁结论。
 
 核心原则：代码进 git，结论进 memory。
 

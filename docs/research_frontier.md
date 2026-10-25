@@ -1,5 +1,9 @@
 # Research Frontier
 
+> **Historical snapshot.** The current route is established by the owner card,
+> `docs/research/INDEX.md`, and the concise linked Obsidian note. Do not update
+> this file at session end unless a current owner card explicitly adopts it.
+
 **规则**：此文件是"一屏决策前线"，不是历史日志。
 - 总长度 ≤ 50 行（不含本 header）
 - Active Branches ≤ 3 个

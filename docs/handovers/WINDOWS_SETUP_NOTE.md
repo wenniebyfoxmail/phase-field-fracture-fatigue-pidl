@@ -1,5 +1,9 @@
 # Windows 机器 Setup 指南（新工作流）
 
+> **Historical setup snapshot.** Start a current producer task with
+> `AGENTS.md` and its named owner card. Do not create or update legacy
+> inbox/outbox/frontier/log files unless that card explicitly names them.
+
 Mac 已重构工作流文件。Windows 端 `git pull` 后，请按**你的角色**完成本地设置。
 
 适用对象：

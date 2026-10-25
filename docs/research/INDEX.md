@@ -10,7 +10,7 @@ verified.
 
 | HQ | Current experiment | Current owner | Status |
 |---|---|---|---|
-| Research operations | P1 Git-governance consolidation | `研究运维 | skill adjustment` (`01a11acc-30b1-7870-a0ae-92b1232cb318`) | active |
+| Research operations | none | none | closed 2026-10-25; P1–P4 integrated at `40f6c2a1` |
 | PIDL core | none | none | preserved branch; needs resolution |
 | Road evidence & forecasting | none | none | none |
 | Physics & FEM mechanism | none | none | none |

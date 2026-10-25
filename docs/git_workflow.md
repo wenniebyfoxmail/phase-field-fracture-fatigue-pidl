@@ -4,6 +4,8 @@
 > current owner card control present work. This document is read only for a
 > task that uses its named machine or handoff; its older frontier, ledger, and
 > acknowledgement flows do not add default authority, review, or testing gates.
+> It cannot select a shared checkout or require a shared-log acknowledgement
+> before routine work already covered by the current owner card.
 
 **Historical purpose**: former two-machine collaboration detail for this repo.
 Use only the relevant operational steps after the current policy and owner card
@@ -16,7 +18,7 @@ have selected this machine.
 | **Mac-PIDL** | **Dev** | All source code changes. Analysis & writing. Local Claude memory. Only lightweight import/unit sanity; no training smoke. |
 | **Windows-PIDL** | **Producer** | Pull Mac's code. Run training cases. Report results via `docs/shared_research_log.md`. May add NEW runner scripts, but must not modify core. |
 | **Windows-FEM** | **Reference producer** | GRIPHFiTH FEM runs. Produces ground-truth data in `~/Downloads/_pidl_handoff_*/`. Reports via shared_research_log. |
-| **Taobo GPU / CSD3** | **GPU Producer** | Run training smoke, GPU baselines, sweeps, and production cases after checking GPU occupancy. |
+| **Taobo GPU / gpu-server / authorised Windows producer** | **GPU Producer** | Run the owner-card-named GPU work after checking occupancy. CSD3 is CPU-only when explicitly named. |
 
 ## 2. Mac-PIDL (dev)
 
@@ -27,7 +29,7 @@ have selected this machine.
 
 ### What Mac MUST do
 - **Before push**: run only lightweight import/unit sanity on Mac, e.g. `python -c "from source.compute_energy import get_psi_plus_per_elem"`. Do **not** run training-loop smoke on Mac.
-- **Training smoke placement**: any command that enters `main.py` training, even `--n-cycles 1` or `--n-cycles 30`, must run on Taobo GPU / CSD3 / Windows-PIDL after checking the target GPU is free. Record PID, GPU id, command, cwd, and log path.
+- **Training smoke placement**: any command that enters `main.py` training, even `--n-cycles 1` or `--n-cycles 30`, runs on the owner-card-named GPU producer after checking the target GPU is free. CSD3 is CPU-only when explicitly named. Record PID, GPU id, command, cwd, and log path.
 - **Commit message**: state whether the change is **"safe during running trainings"** or **"needs coordination"**. Examples:
 
   ```
@@ -44,7 +46,9 @@ have selected this machine.
   before pulling — existing trainings will fail on restart.
   ```
 
-- **Loss / architecture / training-loop changes**: open a `[decision]` entry in `docs/shared_research_log.md` BEFORE the push. Wait for Windows to acknowledge (reply in log) — then push.
+- **Historical — superseded:** the former `[decision]`/Windows acknowledgement
+  before push is not required. Use the current owner card and commit/push the
+  coherent task change after its direct check.
 
 ### Cross-machine remote-visibility hard gate
 
@@ -75,16 +79,16 @@ is missing, stop as `invalid_repo_sync`; Mac must push the missing object or
 name an exact remote branch/commit. Do not create a replacement registry or
 duplicate case locally.
 
-### Mac session template
+### Historical Mac session template (not a current checkout selector)
 
 ```bash
-cd "upload code"
-git pull --ff-only origin main                # start
+cd "<named clean worktree from current owner card>"
+git fetch origin                              # start
 # read docs/shared_research_log.md top entries
 # ... work ...
 # after each atomic unit:
 git add <files> && git commit -m "<message>"
-git push origin main
+git push origin <task-branch>
 # end of session: final pull + push
 ```
 
@@ -112,18 +116,18 @@ git push origin main
 - ❌ Refactor / rename / delete existing files
 - ❌ `git push --force`, `git reset --hard`, amend pushed commits
 
-### Windows session template
+### Historical Windows session template (not a current checkout selector)
 
 ```bash
-cd "upload code"
-git pull --ff-only origin main                # always ff, never diverges
+cd "<producer checkout named by current owner card>"
+git fetch origin                              # do not infer a default branch
 # read docs/shared_research_log.md top entries (especially any [decision] from Mac)
 # ... run training cases ...
 # after a run completes:
 # add entry to shared_research_log.md
 git add docs/shared_research_log.md [any new runner scripts]
 git commit -m "log: Windows-PIDL Dir 6.x Umax sweep results"
-git push origin main
+git push origin <task-branch>
 ```
 
 ## 4. Shared files — conflict-risk matrix

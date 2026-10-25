@@ -1,6 +1,6 @@
 # Taobo GPU Submission Protocol
 
-Purpose: prevent accidental Mac training, dirty-repo launches, untracked Taobo jobs, and shared-account collisions.
+Purpose: prevent accidental Mac training, dirty-repo launches, untracked Taobo jobs, and shared-account collisions. Use this only for a Taobo GPU run named by the current owner card; it does not add a repeat authority or review gate. Prepare code from a named clean worktree or exact remote commit, never from the preserved dirty shared checkout.
 
 Taobo: `drtao@172.16.100.2`, 8x RTX 4090, shared account. Network/VPN is flaky. Design the workflow so SSH drops are harmless.
 
@@ -13,11 +13,14 @@ Run on **Mac** only:
 - analysis and plotting that does not enter the training loop
 - git commit/push
 
-Run on **Taobo GPU / CSD3 / Windows-PIDL**:
+Run training on **Taobo GPU, `gpu-server`, or an authorised Windows producer**:
 
 - any command that enters `main.py` or a PIDL training loop
 - training smoke, even 1 cycle
 - baseline/adaptive sweeps and production cases
+
+**CSD3 is CPU-only when explicitly named.** It is never an implicit GPU or
+PIDL fallback.
 
 If an agent is about to launch training on Mac, stop. That is a routing error.
 
@@ -26,7 +29,7 @@ If an agent is about to launch training on Mac, stop. That is a routing error.
 From Mac:
 
 ```bash
-cd "/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code"
+cd "<named-clean-worktree>"
 git status --short
 git rev-parse HEAD
 ```
@@ -81,7 +84,7 @@ rsync -avP -e "ssh -F /dev/null" \
   --exclude '*.pt' \
   --exclude 'hl_*' \
   --exclude 'run_logs/' \
-  "/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/" \
+  "<named-clean-worktree>/" \
   drtao@172.16.100.2:"$REMOTE_ROOT/code/"
 ```
 
@@ -160,7 +163,7 @@ launch time:
 initial health check:
 ```
 
-For project work, put this into the relevant experiment folder, handover, or memory entry. Do not rely on terminal scrollback.
+For project work, put this in the Experiment/Run record and concise linked Obsidian milestone; use a handover only when the owner card calls for one. Do not rely on terminal scrollback.
 
 Useful remote checks:
 

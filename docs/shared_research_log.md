@@ -1,5 +1,9 @@
 # Shared Research Log
 
+> **Historical ledger.** Preserve this record, but do not append it for a
+> current task unless its owner card explicitly names it. Current M1/M2/M3
+> records use Git/Run evidence and a concise Obsidian update.
+
 **Purpose**: 跨机公共研究纪要。只记录有长期保留价值的 finding、decision、retraction、blocker。
 
 **边界规则（2026-05-05 起生效）**：

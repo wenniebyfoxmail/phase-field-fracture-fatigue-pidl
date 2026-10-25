@@ -20,8 +20,9 @@ mandatory narrative layer, duplicate ledger, or default review loop.
 
 ## Ownership and execution
 
-- One active task has one owner, one named branch, one clean worktree, and one
-  fixed benchmark appropriate to its change.
+- One active task has one owner, one named branch, one clean worktree, one
+  target module (or a declared `docs-only` scope), and one fixed benchmark or
+  direct check appropriate to its change.
 - Use the current owner card as the source of scope and authority. When its
   scope, data, resource boundary, and contract are unchanged, execute routine
   work without asking for a new authority.
