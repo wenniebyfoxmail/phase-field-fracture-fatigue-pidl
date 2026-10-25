@@ -19,6 +19,9 @@ from damage_state_inversion import (  # noqa: E402
     parse_load_displacement_cycles,
     relative_reaction_error,
 )
+from fracture_state.damage_state_inversion import (  # noqa: E402
+    parse_load_displacement_cycles as packaged_parse_load_displacement_cycles,
+)
 from damage_conditioned_equilibrium import build_q4_kinematics  # noqa: E402
 from run_reaction_conditioned_damage_inversion_gate import (  # noqa: E402
     calibrate_geometry,
@@ -37,6 +40,7 @@ from run_historical_damage_assimilation_gate import (  # noqa: E402
 def test_parse_load_displacement_cycles_checks_repeated_step_blocks(
     tmp_path: Path,
 ) -> None:
+    assert parse_load_displacement_cycles is packaged_parse_load_displacement_cycles
     path = tmp_path / "load.out"
     path.write_text(
         "step u_x F_x u_y F_y\n"

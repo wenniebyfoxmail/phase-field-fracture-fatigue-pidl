@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "phase-field-pidl-core"
+name = "phase-field-fracture-components"
 version = "0.1.0"
 description = "Reusable deterministic mechanics kernels for phase-field PIDL workflows"
 requires-python = ">=3.10"
@@ -22,4 +22,4 @@ package-dir = {"" = "source"}
 
 [tool.setuptools.packages.find]
 where = ["source"]
-include = ["pidl_core*"]
+include = ["pidl_core*", "fracture_state*"]
