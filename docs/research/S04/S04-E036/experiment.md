@@ -1,8 +1,16 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-25 20:25 UTC）
+## 实际进展（2026-10-25 20:42 UTC）
 
-**当前控制状态：用户已直接答复新的续传审批“请继续 移除所有limit”。原剩余四项评分及原条件下的一次C0释放恢复授权，累计、传输、回收及每作业墙钟上限取消。原科学阈值、预定迭代/数值停止、共享机器串行和新失败不自动重试保留。pidl_history_audit已接回唯一GPU5执行权；20:26:58 UTC核查无所属进程且GPU5空闲，20:27:09 UTC唯一启动无墙钟续传，20:28:36 UTC全部10段、完整归档及101新/35复用文件核验通过。控制覆盖层已完成直接检查，20:33:02 UTC D3 c83正式评分已唯一启动（supervisor PID3241691、effective_job_wall_seconds=null），其余评分/C0沿原串行链继续。原D3 c1评分已完成，不重跑；旧partial、失败收据和封存payload原字节保留。当前已完成原输入部署并启动D3 c83评分；启动不等于完成或物理接受。**
+**当前状态：原五项正式评分已全部正常结束、回收并确认清理；root核对136文件SHA/bytes全部一致，D4三态348份快照完整评分。用户“请继续 移除所有limit”已落实为累计、传输、回收和作业墙钟限制取消，原科学阈值与数值停止不变。随后原一次C0在创建作业前触发GPU5资源冲突：UUID未变，20:42:39 UTC实际有非本任务PID3260447占用1968 MiB，整卡1978 MiB/60%。C0目录、binder、intent、launch均不存在，没有科学运行。原GPU owner已按新失败首停约定停止全部远端动作，不换卡、不清理他人、不自动重试。旧失败与所有权限收据原字节保留。当前等待针对本次资源冲突的明确许可；只继续本地证据整理。**
+
+新的停止收据 `run_workspace/postprocessing_dispatch_20261024/halted_resource_conflict_20261025.json` SHA `94dec5fa0cf733e26a7e8e26eb7bbcf1f3cd77dc611e44c8986a27571132ed91`，只读核查SHA `8d8674856aafa8680eebd0d5454ed5c806c4149b26843de02f6f34fb301a5a2d`。原同源、同GPU5等待后一次C0接续方案仅本地准备，见 `run_workspace/postprocessing_dispatch_20261024/c0_resource_wait_resume_candidate_20261025/README.md`，proposal SHA `6a1fcad1ba9b2311615eac1aa5c9fe2e7c83da15f8979f40dd7bc611a872c16a`。尚未取得本次新许可前不再SSH或资源轮询。
+
+正式评分完成核验 `analysis/formal_scoring_complete_20261025.json` SHA `43fe8abaf85ad858bb64e789d315e4704b1fa13a3347aee1ab7481b3cb6b2927`。D3两态均零合格配对、aggregate=null；D4评分12个物理首段、3个fit和1个continuation端点均physical=false，c1s4没有合格F1仍不评分。原四态首段物理接受仍0/16，两种“16”分母不同。D3 c1未重跑，全部FEM已终结，不再派发。
+
+D3 c83正式J=.00836105956714/.00930111031788；新GP/能量/反力通道说明P2部分系数误差下降，损伤/梯度/罚能和上下合力不平衡却更大。D4新节点力证据确认c83s2 C+/C0实际屏蔽2636/2813方向，c83s4为5677/5890，承载几乎全部phase KKT平方；这不是场差解释率。c83s4 C0仍有active/history归一RMS约21.91、Ru1.37633及强烈系数不一致，不能只由damage可行或局部饱和解释完整失败。三fit约束罚能.536324/.906954/2.581326，较小J不构成物理解。详见 `analysis/d3_c83_formal_scoring_20261025.md/.json`、`analysis/d4_formal_scoring_20261025.md/.json` 与现有 `analysis/gap_attribution_interim_20261024.md`。
+
+以下保留各阶段真实进展与原授权历史；旧时限和“待执行”文字只描述当时状态，当前控制与完成情况以本节及最新原始收据为准。
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -52,7 +60,7 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 
 本对话15分钟app持久化自动接续的首次创建曾被自动审批拒绝，理由为缺少明确人方许可，并存在已暂停HQ托管；该次未创建。随后用户对本对话、15分钟、静默无变化、报告交付后停止及不恢复跨对话HQ的完整问题，明确回答“允许本对话自动接续”。2026-10-24 00:19 UTC工具已成功创建`pidl-fem` heartbeat，并回读确认ACTIVE、15分钟、目标为本对话`01a15fd3-ed7b-7122-9ef4-eb5846c4a6c8`。现有resident和两机执行者的独占分工不变；自动接续先查原执行者，避免重复调度。此许可不授权失败重试或额外试验，也不恢复HQ托管。该控制层状态不构成任何科学结果。
 
-## D3 c83 输入部署超时后的停止（2026-10-25 16:58 UTC）
+## 历史：D3 c83 输入部署超时后的停止（已被20:25明确许可接续）
 
 已获批的控制字段修复成功启动并完成D3 c1评分；随后D3 c83使用原 `deploy_prepared_stream.py`（SHA79081d365d8d5fbe096df5dad86e15679520da5eab7be7020e5ae74c1d56b0d7）部署冻结输入包时，原subprocess 1200秒防挂触发，local exit1、stdout/stderr为空。原执行者只追加一次紧凑只读核查，未重传或派发。16:58:46 UTC实际确认远端partial为12,320,768 B、SHAe7961db28ebcce95ab1aff1bf21c03b14835aedd4064169a8bde5d5af61df95f；预期完整包94,059,994 B、SHAb9803f12a047a747814bfd9832a1268b98a017579c430f2ad0d2151011de09f5。远端transfer receipt、jobdir、intent、launch均不存在，匹配进程为空，GPU5为4 MiB/0%。这是部署I/O超时，零新增评分计算，不是科学拒绝。
 
@@ -341,7 +349,7 @@ raw单独修复贡献0物理轨迹；共同设置包、耦合/停止包的效应
 
 HQ以原直接人方3小时授权为基础，前瞻允许一次≤300秒快照修复，原截止00:42:35Z不变。正确git参数的隔离快照一次成功（producer8.493秒），10输入SHA与36文件代码包逐项匹配。第一次prepare启动只留下WMI创建收据，wrapper已退出，没有watchdog attempt、MATLAB或build输出。后续只读诊断确认PowerShell Restricted、脚本解析无错误；证据支持脚本入口策略阻断，具体进程异常未捕获。按本次首次控制故障停止条件未重发/改策略，无MATLAB/MEX/FEM/训练。D2仍缺真实同状态证据；[续接范围、完整失败链与下一缺项](STAGE_A_CONTINUATION_20261022.md)。
 
-## D3 c83 续传方案已备妥，待本次明确批准（2026-10-25 17:17 UTC）
+## 历史：17:17续传候选（已由20:25无墙钟许可及实际控制版替代）
 
 [完整恢复方案](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E036/gap_attribution_20261022/run_workspace/postprocessing_dispatch_20261024/c83_resume_candidate_20261025_01/README.md)仅准备同一冻结输入的传输恢复，尚未执行。保留原12,320,768 B部分包，只传剩余81,739,226 B，以10段顺序写入独立attempt；每段1200秒，预检查、传输、重组与原部署核验共用12000秒总上限。完整归档SHA、安全解包及101个新文件/35个原复用证据路径全部通过后，才由原GPU owner串行继续D3 c83、D4 c1s2、D4 c83s2、D4 c83s4评分；D3 c1不重跑。全部原评分完成且清理确认后，才允许此前绑定的一次C0条件释放。新失败即停，原86400秒科学作业防挂不变。
 
