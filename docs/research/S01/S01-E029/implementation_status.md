@@ -1,5 +1,15 @@
 # S01-E029 Taobo GPU5 Linux：整包已批准，资源等待，R001未启动
 
+## 2026-10-25 当前执行入口：任一合格Taobo卡，任务资源上限取消，迁移进行中
+
+用户明确授权重新检查各卡，找到合格卡后自动更新字段并推进原一次R001，保持科学方案且没有资源上限。八卡实查仅GPU5无compute/0%/24077MiB可用，故仍选原GPU5 UUID；CPU2.77%、MemAvailable376528200kB、大盘剩余586518487040bytes。允许别卡仍有任务，不抢占或杀进程。
+
+任务RSS/CUDA/输出/结果包硬上限改为null；墙时仍null。共享主机RAM至少8GiB、磁盘至少32GiB余量及固定输入/下载完整性尺寸防护保留，防止影响其他任务。单线程仅维持原数值复现，不改变模型、科学次数/四臂、容量/弃权/正交集或封存。更宽的资源修改被自动审批拒绝；上述收窄方案获准，原77项固定人工/mock基准通过；未追加科学测试或重开未变审查。
+
+当前源码 `34ec77ef29674622cf4d87bb46912fe4943aea14`，manifest `dc243bbad5ae7a9fc19d3869d990308da57c805fb6968125eeb6295be0aed1ce`，源码包SHA `de5868cfbebcbf609a672dbed77091a811f49909e088e291dc2254666cba369b`。公开指定分支已实际推送且读回一致，GitHub SSH账号wenniebyfoxmail。269源码成员/268绑定在Taobo已接收验证；Windows源ad\xw436已完成509成员私有字节包（595789790bytes，SHA2424ed391fe41ef3d8d61c9c2c32bde0f20f3f2fe50c2219c3ff5a5c687f331a），Mac中转核验通过，正在传至Taobo。初始Windows detached导出进程消失、无部分/结果文件；确认零启动后改为保持连接等待并成功，仅字节导出，不是科学重试。
+
+原一次S01-E029-R001尚未启动；批准对象已按实际commit/hash实例化，不重复请批。后续仅同一链的私有接收、再准入、runtime构建、十phase、固定结果取回验收。保留已签名v4与旧资源等待历史，不倒签。当前保留率/净GT仍null。实时记录：`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E029/execution_R001/taobo_all_gpu_20261025/execution_receipt.json`。
+
 ## 2026-10-24：整包已批准，GPU5资源准入等待，R001未启动
 
 用户已明确“批准，请执行”，本次整包不再待批准。精确Linux v4源码包/268绑定本地核对未变。一次成功只读SSH核实GPUServer8/drtao、三挂载和八卡：GPU5 UUID匹配，但compute PID3290978、利用率100%、空闲3292MiB，不满足无compute/0%/至少8192MiB；其余七卡也均有compute。E029任务根不存在。
