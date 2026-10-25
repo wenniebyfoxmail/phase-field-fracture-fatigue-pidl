@@ -1,3 +1,5 @@
+**Actual outcome:** [repair and fixed benchmark passed;R11 stopped at first physical state](result.md).0/1800qualified labels,0fit,0tests. No active producer;prospective route below is not a completed training claim.
+
 # Original-owner D21 boundary-path repair, 2026-10-25
 
 Mode: same-contract technical repair and continuing scientific validation. Current direct user message “授权” approves the immediately preceding proposed active-face advancement/restart repair. Continue original1800-qualified-label→one-fit→frozen-test task in the same136hosth/12GPUh envelope. R10 first-stop and all consumed costs remain unchanged. No new external review or historical regression.

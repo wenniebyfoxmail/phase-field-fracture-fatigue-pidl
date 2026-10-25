@@ -1,0 +1,122 @@
+{
+  "schema": "d21-boundary-fixed-benchmark-v1",
+  "passed": true,
+  "artifact_id": "5a33cb3d623d10dcf1ef71ebb4213acb72c24e765c9be273f5a38d79334680cd",
+  "source_commit": "9c18a55f99fc9cf3ed7a46433626c143eb2fec91",
+  "source_model": "/mnt/data2/drtao/pidl_archives/pf_hybrid_d21_complete_20261025_r10/train_A/unaccepted_work_points/last_box_model.npz",
+  "source_model_sha256": "b45d893c12a7b9cab869ce272237b2ebc115512fe316e68eca7433b060a6a640",
+  "source_direction_sha256": "9f925d8820e8110bda6656c4c922c9fe966a504e1fef201239fbe97da7781b18",
+  "model_metadata": {
+    "classification": "UNACCEPTED_LINEARIZED_MODEL_NOT_LABEL",
+    "outer": 8,
+    "parent_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+    "load_id": "train_A:c1:s1:0.023999904000000002",
+    "L_upper": 9.557325187260645,
+    "save_scope": "once per outer subproblem, never every matvec",
+    "model_definition": "q(p)=.5||r0+diag(w)Jp||\u00b2; fixed computed r0=fl(w*originalF)"
+  },
+  "shape": [
+    259672,
+    259672
+  ],
+  "nnz": 4865762,
+  "original": {
+    "pred_lower": 1.705477224081298e-10,
+    "pred_upper": 1.7054772246979993e-10,
+    "model_value": 1.4600327929155169e-08,
+    "cauchy_pred_lower": 1.705477224081298e-10,
+    "selection": "certified_projected_Cauchy",
+    "krylov_status": "model_improvement_not_certified",
+    "krylov_iterations": 1,
+    "actual_TR_norm": 2.5397618073442756e-06,
+    "action_count_upper": 35,
+    "subproblem_updates": 3,
+    "wall_seconds": 0.8042622795328498,
+    "feasible": true,
+    "Cauchy_protected": true
+  },
+  "projected": {
+    "pred_lower": 3.339409221590427e-09,
+    "pred_upper": 3.3394092236722613e-09,
+    "model_value": 1.1431466428962791e-08,
+    "cauchy_pred_lower": 1.705477224081298e-10,
+    "selection": "active_face_Krylov_improvement",
+    "krylov_status": "action_reserve",
+    "krylov_iterations": 7,
+    "actual_TR_norm": 6.064141335056781e-05,
+    "action_count_upper": 95,
+    "subproblem_updates": 9,
+    "wall_seconds": 2.787411853671074,
+    "feasible": true,
+    "Cauchy_protected": true
+  },
+  "events": {
+    "original": [
+      {
+        "iteration": 1,
+        "alpha": 7.356878671507521e-19,
+        "alpha_cg": 2.617139064192446,
+        "alpha_bound": 7.356878671507521e-19,
+        "free_components": 218752
+      }
+    ],
+    "projected": [
+      {
+        "iteration": 1,
+        "alpha": 2.617139064192446,
+        "alpha_cg": 2.617139064192446,
+        "alpha_bound": 7.356878671507521e-19,
+        "free_components": 218752
+      },
+      {
+        "iteration": 2,
+        "alpha": 1.1397989901182548,
+        "alpha_cg": 1.1397989901182548,
+        "alpha_bound": 4.247235404892377e-05,
+        "free_components": 245579
+      },
+      {
+        "iteration": 3,
+        "alpha": 1.0090644782014917,
+        "alpha_cg": 1.0090644782014917,
+        "alpha_bound": 1.1594775320721314e-21,
+        "free_components": 250375
+      },
+      {
+        "iteration": 4,
+        "alpha": 0.669307042989203,
+        "alpha_cg": 0.669307042989203,
+        "alpha_bound": 2.3187235431608583e-21,
+        "free_components": 252004
+      },
+      {
+        "iteration": 5,
+        "alpha": 0.6296919030121858,
+        "alpha_cg": 0.6296919030121858,
+        "alpha_bound": 1.4831070538117365e-22,
+        "free_components": 254355
+      },
+      {
+        "iteration": 6,
+        "alpha": 0.5805473243056334,
+        "alpha_cg": 0.5805473243056334,
+        "alpha_bound": 1.0797838248137871e-19,
+        "free_components": 255160
+      },
+      {
+        "iteration": 7,
+        "alpha": 0.5797478169788123,
+        "alpha_cg": 0.5797478169788123,
+        "alpha_bound": 8.505242377038019e-23,
+        "free_components": 256236
+      }
+    ]
+  },
+  "new_FEM_states": 0,
+  "training_updates": 0,
+  "GPU_seconds": 0,
+  "wall_seconds": 4.829803446307778,
+  "cpu_seconds": 12.913525445,
+  "maximum_rss_kib": 525280,
+  "scope": "same frozen originalLS model only; not physical convergence or qualified labels"
+}
