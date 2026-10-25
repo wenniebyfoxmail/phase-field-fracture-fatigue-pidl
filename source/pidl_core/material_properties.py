@@ -19,4 +19,3 @@ class MaterialProperties:
 
     def __call__(self):
         return self.mat_lmbda, self.mat_mu, self.w1, self.l0
-    
