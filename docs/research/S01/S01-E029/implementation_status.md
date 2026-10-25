@@ -1,5 +1,11 @@
 # S01-E029 Taobo GPU5 Linux：整包已批准，资源等待，R001未启动
 
+## 2026-10-25 v6 已批准并实际继续执行
+
+用户本轮明确批准 NVIDIA 区域来源修订、精确 v6 源码传送、指定分支更新和同一次尚未开始科学计算的 R001 继续执行。八卡重新检查，GPU5 为唯一无计算进程的合格卡；启动准入 CPU 2.0%、显存24077MiB、利用率0%。GitHub SSH账号wenniebyfoxmail核实；指定分支已正常前推至 `a99e97d5a2be9c39083d0c557d22c9bf16b21562` 并读回一致。远端269源码文件/268绑定与批准对象核验通过。
+
+实际启动 `2026-10-25T22:33:49.128234+00:00`，PID3506720、birth_ticks598971163；新根 `/mnt/data2/drtao/wennie/S01-E029-R001/mechanical_resume_01`。原停止根/包/claim保留，原509私有输入复用。来源仅新增精确pypi.nvidia.cn，科学和Python程序不变，任务资源硬上限仍null，共享余量准入保留。启动记录不代表环境准备或科学验证完成；当前检测读数仍null。实际状态与历史：`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E029/execution_R001/mechanical_resume_01_20261025/`；固定结果取回对应runs子目录mechanical_resume_01。
+
 ## 2026-10-25 当前：环境停止已归档；修订版待逐次版本批准
 
 原R001环境链止于NVIDIA固定URL向pypi.nvidia.cn跳转的来源检查（82.6秒），无科学前向/拟合、无run/runtime目录，受管进程已清理。停止包10成员已接收验收，保留率/净GT仍null，不当科学失败。源码及509输入已在Taobo，原公开分支已推送34ec77ef。

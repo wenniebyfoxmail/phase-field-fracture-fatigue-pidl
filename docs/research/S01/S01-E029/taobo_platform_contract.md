@@ -45,3 +45,12 @@ producer_taobo.sh清除继承环境并以固定绝对工具路径重新进入干
 本地修订仅增加精确区域来源pypi.nvidia.cn：16个原NVIDIA依赖URL的HEAD都确认同一跳转，2283字节cuda-toolkit metawheel与原冻结SHA完全一致。原42个wheel/Python来源URL、版本、文件SHA均不改，科学和资源修订不改；Python执行源码不改。不依赖“域名看起来相似”接受任意文件，最终仍核原字节SHA。
 
 计划保留原停止目录、源码、claim、日志和包。在同一S01-E029-R001下使用机械修复子目录mechanical_resume_01完成尚未开始的科学运行；所有旧私有输入复用原绝对路径，不再次跨机传送。新源码/源摘要/专属runtime与日志/新approval只在该子目录实例化，避免覆盖旧记录。单纯元数据一致性核验，不重开未变代码/科学审查或追加回归。
+
+
+## 2026-10-25 进程退出竞态修复（本地准备，尚未传送）
+
+mechanical_resume_01运行库构建与版本/设备预检均通过，controller在首个科学请求之前因ProcessLookupError停止；原run仅launch.json，无control/request/worker/模型/预测文件，全部已记录自有PID退出、清理无未决项。原固定停止包1533939bytes、21成员、SHA7d0ddfd63198ea9afa1ec14ad5f417174daae142c2c59c2165d0f658a1bb2870已在Mac接收CRC/清单/SHA核验。
+
+Linux /proc身份读取和发信号遇到退出竞态可产生ESRCH；修复仅将ProcessLookupError同ENOENT归一为既有NoSuchProcess，让原有监督逻辑处理进程消失。权限错误、I/O错误、PID出生标识/UID/命令/cwd校验与科学计数均不放宽。六项针对性mock回归覆盖各读取点、发信号竞态、无关退出进程枚举、权限/I/O、PID复用；不使用真实图像、GT或模型。
+
+新版本拟用mechanical_resume_02新根保留两条旧停止链，复用原私有输入；独立运行库仍按原42依赖身份重新准备，不修改或覆盖已建运行库。旧运行库成功是已成立的环境结果，停止不等于科学失败。继续同一尚未开始科学计算的R001；新版本传送/指定分支更新需按总纲3.1取得批准。无任务资源硬上限、任一合格Taobo卡及封存边界不变。

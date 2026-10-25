@@ -97,9 +97,9 @@
     "docs/research/S01/S01-E029/production_contract.md": "a88620fde14e77804b5d10730dee1d5738f7cfc7533567e53da01e570e44049a",
     "docs/research/S01/S01-E029/run_config.json": "6ca70c927b8be5be0b1d6856eeb320df17c5242b8ffc75a5c74aef901fd34a1b",
     "docs/research/S01/S01-E029/source_manifest.json": "7e4a45c848f6122d4e05a9c2104d485f35fdae9da9a04515208f302aaec3727c",
-    "docs/research/S01/S01-E029/taobo_platform_contract.md": "359879aee9b814c534a0b4d6cdaa4afa88007fe2fb49e925caaa8fb08e3b1e6a",
+    "docs/research/S01/S01-E029/taobo_platform_contract.md": "87cb8059914458ef140514c51329d4919dbddbdaf182788db8589e9cc4d0cf31",
     "docs/research/S01/S01-E029/taobo_private_paths.json": "1311cc0223963578c791026bfa608c7893d4489e3f77580da4461bc4fce52a76",
-    "docs/research/S01/S01-E029/taobo_run_config.json": "81e97c3581ee2f24c93f9c4987ab93339eb5ae9d5e5b3fd06996464b7f00d531",
+    "docs/research/S01/S01-E029/taobo_run_config.json": "2e1e4e68763747e111cb125e5bf0774d8ab9cf4c78dd80383ffc051bcd51c40c",
     "docs/research/S01/S01-E029/taobo_runtime_spec.json": "9c9ea8c890b00cb0f755651769110923e399d7e1141c6a5c5f11e336ef30f9cf",
     "docs/research/S01/S01-E029/taobo_transfer_lock.json": "99759e065801b600d55f0bd4243ecc5c55b16482b2fb19c24024199d063b213f",
     "scripts/pavetrack_box_cv/analyze.py": "aea21fb9d0392da612eefd1c0e0c9013a015147eba9173589c55b698f3d3b371",
@@ -186,7 +186,7 @@
     "scripts/pavetrack_qualified_spatial_selector/e029_phases.py": "a7ab353803b01645dd7fc57461d5b4b24c5d60a67dc121908951005c70eaefc0",
     "scripts/pavetrack_qualified_spatial_selector/e029_runtime_exec.py": "865fd4f7fab3f18fa3d0b67c8ba7850df639ad8bd2aa40fd3b07656ffe073f51",
     "scripts/pavetrack_qualified_spatial_selector/e029_support.py": "25f82e3594969a6433cc68e922876388ec74501bd9eca905f92c1d1e63da9c49",
-    "scripts/pavetrack_qualified_spatial_selector/e029_system_proc.py": "1435a2b809ff5a3f0b03b313fd2322a62bdb0831e21ef539fa850f3108e5294d",
+    "scripts/pavetrack_qualified_spatial_selector/e029_system_proc.py": "75ba76a53d3a6f554de90aec2a0b939205ea43ac5be275e46a304328f18b2fd9",
     "scripts/pavetrack_qualified_spatial_selector/pack.py": "dd69c4f7935ef551fc4282110b552b4c51d72c3401514fc7e39da3a0727e3655",
     "scripts/pavetrack_qualified_spatial_selector/producer.ps1": "b5f890c9b803dba24102afb04e529012e7dc27aad8dfefced27d8c24c7874240",
     "scripts/pavetrack_qualified_spatial_selector/producer_taobo.py": "ebb94665dfe736a0a31c7170438badc5efabbd1a19f139edb136ccfbbfcf9ddb",
@@ -269,6 +269,7 @@
     "scripts/pavetrack_utility_ranking/run.py": "131dc6f9c424267aa042fe3a99eb0a5b437ae718f08aefc7bfdea3e31534fcec",
     "tests/pavetrack_qualified_spatial_selector/test_adapter.py": "90c9f3b60684d962b24f2daee29139232a5657738ca9b8607d8c0fd27ff632b7",
     "tests/pavetrack_qualified_spatial_selector/test_linux.py": "79ea3c035c1a68891bf527eba6f06131274da765c0e6c36387fc1fd9949c93e1",
+    "tests/pavetrack_qualified_spatial_selector/test_proc_race.py": "592679698591a96c68b1f8507d74000de50e1a3cb1a00dedb07f44fe8eb43172",
     "tests/pavetrack_qualified_spatial_selector/test_production.py": "44b67b0848ab8bbe0e1959fbc6d1bd811cb84ea7fc89b338732f592888fbc163"
   }
 }
