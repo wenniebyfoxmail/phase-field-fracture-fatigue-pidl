@@ -1,5 +1,15 @@
 # S01-E029 Taobo GPU5 Linux：整包已批准，资源等待，R001未启动
 
+## 2026-10-25 实际启动：R001已在GPU5运行
+
+509成员私有包已由原Windows字节导出，经Mac校验、中转与Taobo分段前缀续传后完整重组：595789790bytes、SHA2424ed391fe41ef3d8d61c9c2c32bde0f20f3f2fe50c2219c3ff5a5c687f331a，和原Windows收据完全一致。Taobo原接收器完成509成员/CRC/逐项SHA核验，未额外解码GT/RGB/模型。串行/分段传输的退出与部分文件均保留；已知超时后先核前缀再续传，未重发已验证字节或增加科学Run。
+
+在18:41:33 UTC重新准入：GPU5无compute/0%/24077MiB，CPU2.78%。实际detached wrapper PID `2996467`，出生tick `597577573`；源码 `34ec77ef29674622cf4d87bb46912fe4943aea14`、manifest `dc243bbad5ae7a9fc19d3869d990308da57c805fb6968125eeb6295be0aed1ce`，指定公开分支已推送并核对。任务根`/mnt/data2/drtao/wennie/S01-E029-R001`；日志`wrapper-logs`，唯一固定包`S01-E029-R001-fixed-v1.tar.gz`。已创建launch_claim，不能重复启动。
+
+当前阶段为专属运行库构建/同一运行链；科研推理/拟合和最终效用尚待实际进度，保留率/净GT为null。已接好固定成功/停止包的一次自动取回与CRC/清单验收，接收后才做结果解释及原图检查。新确认地点继续封存；科学方案、次数与原容量/弃权不变，任务资源硬上限按用户取消、共享RAM/磁盘余量保留。
+
+实时记录：`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E029/execution_R001/taobo_all_gpu_20261025/execution_receipt.json`；完整启动命令/PID见`actual_operator_launch.json`；接收目录`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E029/runs/S01-E029-R001-Taobo/`。
+
 ## 2026-10-25 当前执行入口：任一合格Taobo卡，任务资源上限取消，迁移进行中
 
 用户明确授权重新检查各卡，找到合格卡后自动更新字段并推进原一次R001，保持科学方案且没有资源上限。八卡实查仅GPU5无compute/0%/24077MiB可用，故仍选原GPU5 UUID；CPU2.77%、MemAvailable376528200kB、大盘剩余586518487040bytes。允许别卡仍有任务，不抢占或杀进程。
