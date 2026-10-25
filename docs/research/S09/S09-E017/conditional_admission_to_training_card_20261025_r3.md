@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E017
 run_id: S09-E017-R001-factorised-head-p0
-status: USER_CONDITIONALLY_AUTHORISED_PENDING_ONE_SHOT_STAGE1
+status: FINAL_PRODUCTION_ADMISSION_REACHED_RETRIEVAL_NOT_YET_AUTHORISED
 date: 2026-10-25
 ---
 
@@ -51,3 +51,19 @@ then permits one final connection and one frozen three-arm run exactly as in
 `final_run_card_20261020.md`: `D_DIRECT`, `F_AMP`, `F_AMP_SHAPE`, 64 updates
 per arm, beta=.25. A detached launch is not production admission or a
 scientific result. Read-only retrieval after launch is a separate decision.
+
+## 2026-10-25 execution result
+
+Stage 1 consumed authority `215c1a5a...c7e60` once and completed in 13.409 s
+with `ADMISSION_ONLY_PLAN_COMPLETED`, no evidence-write errors, no reconnect
+and zero scientific operations. Stage 2 then consumed authority
+`2261c8ae...c62a8` once and completed its local dispatch guard in 11.287 s.
+
+The one final connection reported `FINAL_PRODUCTION_ADMISSION_REACHED`:
+`GPUServer8`, uid 1010, clean control commit, exact archive, the fixed idle GPU
+5 and no blocked production paths were revalidated. The detached producer PID
+was `2731238`; its admission receipt was `ADMISSION_READY`, while its counters
+still showed zero model forwards, optimiser steps and scientific asset reads at
+that observation point. This establishes entry to the frozen scientific path;
+it is not a completion result or a claim about accuracy, physics or fracture
+quality. No third connection or retrieval action was used by this card.
