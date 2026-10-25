@@ -264,7 +264,7 @@ same-account adversary unable to modify files after that verification.
 The attempted package run
 `pf_s04e040_feasible_damage_e15bf802_20261025T162840Z` stopped with exit status
 2 in `s04-e040-pf_s04e040_feasible_damage_e15bf802_20261025T162840Z.service`
-before CUDA/import preflight or any optimizer call. Its task log was
+during CUDA/import preflight, before any optimizer call. Its task log was
 `/mnt/data2/drtao/wennie/pf_s04e040_feasible_damage_e15bf802_20261025T162840Z/producer.log`;
 the recorded exception was `ModuleNotFoundError: No module named 'gmshparser'`.
 The corresponding archive root was absent, and no accepted state or numerical
