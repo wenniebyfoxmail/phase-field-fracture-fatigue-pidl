@@ -1,0 +1,28 @@
+{
+  "status": "DEVELOPMENT_ONLY_REAL_SOURCE_FIELDS_UNBOUND",
+  "alpha": 10.0,
+  "threads": 1,
+  "horizons_cycles": null,
+  "primary_horizon_cycles": null,
+  "phase_tolerance_fraction": null,
+  "sigma_floor_mm": null,
+  "sigma_floor_basis": null,
+  "reference_effect_delta_mm": null,
+  "effect_delta_basis": null,
+  "feature_schema": {
+    "geometry_load_plan_columns": null,
+    "current_response_columns": null,
+    "local_response_columns": null,
+    "units": null
+  },
+  "donor_max_standardized_distance": null,
+  "donor_support_basis": null,
+  "frozen_before_outer_targets": false,
+  "execution_budget": {
+    "total_wall_seconds": null,
+    "max_address_space_bytes": null,
+    "max_source_bytes": null,
+    "max_output_bytes": null
+  },
+  "real_scientific_execution_authorized": false
+}
