@@ -10,12 +10,12 @@ import subprocess
 import sys
 import time
 
-RUN = 'pf_s04e011_uvh_c1_fn776_r6_20261025'
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r6'
+RUN = 'pf_s04e011_uvh_c1_fn776_r7_20261025'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r7'
 ROOT = Path('/mnt/data2/drtao/wennie') / RUN
 OUT = Path('/mnt/data2/drtao/pidl_archives') / RUN
 CODE = ROOT / 'code'
-CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r6.json'
+CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r7.json'
 
 
 def digest(path):
@@ -186,7 +186,7 @@ def main():
     # Binding is reviewed Git content; no alternate contract/path flags.
     contract = json.loads(CONTRACT.read_text())
     if (contract['protocol'] != 'S04-E011-UVH-C1-FN776-v1' or contract['run_id'] != RUN or
-            contract['resource_revision'] != 'GPU7-FN776-shared-r1'):
+            contract['resource_revision'] != 'GPU7-FN776-shared-r2-uvicorn28011'):
         raise SystemExit('contract identity mismatch')
     if OUT.exists() or OUT.is_symlink():
         raise SystemExit('attempt already consumed; no resume/retry')
