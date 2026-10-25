@@ -2,7 +2,7 @@
 
 ## 实际进展（2026-10-25 20:25 UTC）
 
-**当前控制状态：用户已直接答复新的续传审批“请继续 移除所有limit”。原剩余四项评分及原条件下的一次C0释放恢复授权，累计、传输、回收及每作业墙钟上限取消。原科学阈值、预定迭代/数值停止、共享机器串行和新失败不自动重试保留。pidl_history_audit已接回唯一GPU5执行权；正在准备独立无墙钟控制版，随后核查并续传。原D3 c1评分已完成，不重跑；旧partial、失败收据和封存payload原字节保留。尚未把恢复授权或准备完成说成远端已启动。**
+**当前控制状态：用户已直接答复新的续传审批“请继续 移除所有limit”。原剩余四项评分及原条件下的一次C0释放恢复授权，累计、传输、回收及每作业墙钟上限取消。原科学阈值、预定迭代/数值停止、共享机器串行和新失败不自动重试保留。pidl_history_audit已接回唯一GPU5执行权；20:26:58 UTC核查无所属进程且GPU5空闲，20:27:09 UTC唯一启动无墙钟续传，20:28:36 UTC全部10段、完整归档及101新/35复用文件核验通过。控制覆盖层已完成直接检查，20:33:02 UTC D3 c83正式评分已唯一启动（supervisor PID3241691、effective_job_wall_seconds=null），其余评分/C0沿原串行链继续。原D3 c1评分已完成，不重跑；旧partial、失败收据和封存payload原字节保留。当前已完成原输入部署并启动D3 c83评分；启动不等于完成或物理接受。**
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -354,3 +354,9 @@ HQ以原直接人方3小时授权为基础，前瞻允许一次≤300秒快照�
 用户对已展示的D3 c83分段续传、原剩余四评分及一次有条件C0方案直接回复“请继续 移除所有limit”。原始答复、问题ID及精确范围保存于 `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E036/gap_attribution_20261022/run_workspace/postprocessing_dispatch_20261024/user_continuation_no_resource_limits_20261025.json`，SHA `06726bfbe75f29749d8af21a2027aaa690df9fd32e882355e344d2a00c8ff44e`。该批准取代超时收据的等待许可状态；不改写旧失败。累计、传输分段/整体、回收和GPU作业墙钟上限均改为null；连接失败检测仍保留，科学验收阈值、原迭代/数值停止条件和新失败首停不重试不变。无新增FEM或实验，不重新运行D3 c1。
 
 执行由原pidl_history_audit独占。原partial与原archive/manifest不改；独立传输和评分/C0控制覆盖层须明确记录其SHA及实际命令，确保外层监督进程和内层Deadline都不再因elapsed time停止，而非只改文字或将24小时换成大数。constraint_release_design仅完成本地传输控制版；本记录时尚未新增远端动作。授权内的控制修订无需再次请求用户确认。
+
+### 无墙钟控制版与 D3 c83 正式启动（2026-10-25 20:33 UTC）
+
+原归档部署完成收据SHA `db8c283f7891724f5a11ae84ee1f8e39f3b03596c0df4e9fa12c985c192bc67f`。独立控制目录 `run_workspace/postprocessing_dispatch_20261024/no_resource_limits_control_20261025/`；直接检查收据SHA `0c886b2b2776239b7ad2340a1d8ee70cde9fe42a80ddcdb4d2d1326087f9cb86`，覆盖9个控制文件、仅Deadline类/C0 elapsed remaining转换、一次隔离bootstrap控制检查，无NN/native计算。后续D4部署脚本SHA `b4186059a328dcadd0d938006ac681d9f6cd7d4dfae3c9bc7ab13a3552b37f58`也已删除旧1200秒限制。
+
+D3 c83真实启动收据 `run_workspace/postprocessing_dispatch_20261024/dispatch_d3_c83_no_limits_20261025_01/stdout.json` SHA `4fc31fe70eec459a665d9ce0df72a45f37e0f8b6306d7674ed80d9112e73cc5c`，20:33:02 UTC、GPUServer8/GPU5、supervisor PID3241691。152项引用、原训练队列终态清理和D3 c1终态核验通过；有效作业墙钟为null，实际resource override SHA `a125a55fe3a0e50b0c373d5ba8fb4d0061501d74e69b29d12fd3d472a870008e`。历史payload的86400字段仅保留身份，已由本次明确许可覆盖；实际启动命令和控制文件另行绑定。原执行者继续原单次串行链，root没有重复SSH或启动。
