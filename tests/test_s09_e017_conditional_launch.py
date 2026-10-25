@@ -37,6 +37,7 @@ def _admission_evidence(root: Path) -> Path:
         {
             "admission_only_attempt_id": handoff_module.STAGE1_ATTEMPT_ID,
             "candidate_sha256": handoff_module.STAGE1_CANDIDATE_SHA256,
+            "plan_sha256": handoff_module.STAGE1_PLAN_SHA256,
             "approval_status": "APPROVED_FOR_ONE_RESOLVER_AND_ADMISSION_ONLY",
             "allowed_actions": [
                 "STAGE_REVIEWED_ADMISSION_ONLY_HELPER",

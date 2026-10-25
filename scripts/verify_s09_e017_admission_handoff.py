@@ -26,10 +26,10 @@ GUARD_SUCCESS = "ADMISSION_ONLY_PLAN_COMPLETED"
 ARCHIVE_SHA256 = "4ece34be786fc85bb9655c076c13c45d276d08dfde405a8fb1367e4b49ffdd22"
 ARCHIVE_BYTES = 14_359_316
 STAGE1_CANDIDATE_SHA256 = (
-    "152fa2036e90d04d6aa3f7ae15b7f2c9cfebab4dabfd9d3f73be492d6771f702"
+    "c6c9bf73e9a2e9172bf9b42ebbe1ea5502c152cdae1dbc4fa197e515dd6babda"
 )
-STAGE1_PLAN_SHA256 = "df8805680dcf710e65d389165fd317933debcdf449db36436fffb44617e8105e"
-STAGE1_ATTEMPT_ID = "s09e017-admissiononly-20261024-r2"
+STAGE1_PLAN_SHA256 = "7ce0228dd234d3e6f71d4069bfdc98658a0606315911d2995aaaf0b0a615bbc3"
+STAGE1_ATTEMPT_ID = "s09e017-admissiononly-20261025-r3"
 EXPECTED_ADMISSION_ROOT = (
     ROOT
     / "local_archive/experiments/S09-E017/admission_only_attempts"
@@ -63,7 +63,7 @@ def verify_handoff(root: Path) -> dict:
     authority, authority_bytes = strict_json(root / "admission_only_authority.json")
     candidate_path = (
         ROOT / "docs/research/S09/S09-E017/"
-        "s09_e017_admission_only_candidate_20261020.json"
+        "s09_e017_admission_only_candidate_20261025_r3.json"
     )
     candidate, candidate_bytes = strict_json(candidate_path)
     validate_candidate(candidate)
