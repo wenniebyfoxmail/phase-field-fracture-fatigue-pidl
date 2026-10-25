@@ -15,13 +15,10 @@ import subprocess
 import sys
 import time
 
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r5'
-INDEX = 'S04-E011-FN776-r5-A1'
-RUN = 'pf_s04e011_uvh_c1_fn776_r5_20261025'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r6'
+INDEX = 'S04-E011-FN776-r6-A1'
+RUN = 'pf_s04e011_uvh_c1_fn776_r6_20261025'
 CASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs') / RUN / 'authorized_execution'
-CAP = 1024**2
-RECEIPT_RESERVE = 64*1024
-
 
 def stamp():
     return dt.datetime.now(dt.timezone.utc).isoformat()
@@ -38,11 +35,6 @@ def journal(folder, event):
         stream.write(json.dumps(dict(utc=stamp(), **event), allow_nan=False)+'\n')
         stream.flush()
         os.fsync(stream.fileno())
-
-
-def bytes_used(folder):
-    return (sum(p.stat().st_size for p in folder.rglob('*') if p.is_file()) +
-            sum(p.stat().st_size for p in CASE.iterdir() if p.is_file() and p.name!='retrieved.tar'))
 
 
 def interrupt(signum, frame):
@@ -79,8 +71,7 @@ def execute(folder, name, step, number):
     save(folder/(key+'.json'), record)
     child = None
     input_stream = None
-    # A retrieved archive is a duplicate of already-budgeted producer bytes;
-    # it is never a diagnostic stream and is independently size/hash verified.
+    # Retrieved report artifacts are hash/manifest verified without a size ceiling.
     stdout = CASE/step['stdout_artifact'] if 'stdout_artifact' in step else folder/(key+'.stdout')
     stderr = folder/(key+'.stderr')
     try:
@@ -90,8 +81,7 @@ def execute(folder, name, step, number):
             assert len(raw) == item['bytes'] and hashlib.sha256(raw).hexdigest() == item['sha256']
             input_stream = path.open('rb')
         with stdout.open('xb') as out, stderr.open('xb') as err:
-            assert bytes_used(folder) <= CAP-RECEIPT_RESERVE, 'phase output reserve exhausted before spawn'
-            assert time.monotonic()-start < step['timeout_seconds']-4, 'phase time exhausted before spawn'
+            assert time.monotonic()-start < step['timeout_seconds']-4, 'transport stage time exhausted before spawn'
             child = subprocess.Popen(step['argv'], stdin=input_stream or subprocess.DEVNULL,
                                      stdout=out, stderr=err, cwd=step['cwd'],
                                      start_new_session=True)
@@ -99,10 +89,6 @@ def execute(folder, name, step, number):
             journal(folder, dict(event='child_started', step=name, invocation=number,
                                  pid=child.pid, cwd=step['cwd']))
             while child.poll() is None:
-                if bytes_used(folder) > CAP-RECEIPT_RESERVE:
-                    raise RuntimeError('control diagnostic1MiB envelope; terminal/no retry')
-                if stdout.stat().st_size > 100*1024**2:
-                    raise RuntimeError('retrieved artifact exceeds100MiB; terminal/no retry')
                 if time.monotonic()-start >= step['timeout_seconds']-4:
                     raise subprocess.TimeoutExpired(step['argv'], step['timeout_seconds']-4)
                 try:
@@ -110,8 +96,6 @@ def execute(folder, name, step, number):
                 except subprocess.TimeoutExpired:
                     pass  # Poll only, not a retry/reconnect/child re-execution.
         assert child.returncode == 0, 'child exit '+str(child.returncode)
-        assert bytes_used(folder) <= CAP-RECEIPT_RESERVE, 'control diagnostic envelope'
-        assert stdout.stat().st_size <= 100*1024**2, 'retrieved artifact envelope'
         if 'success_status' in step:
             reply = json.loads(stdout.read_text().splitlines()[-1])
             assert reply['status'] == step['success_status'], 'remote admission/status not established'
@@ -161,7 +145,7 @@ def main():
     args = p.parse_args()
     if (not args.execute_approved or args.approval_ref != CARD or args.approval_index != INDEX or
             sys.flags.optimize or sys.platform != 'darwin'):
-        raise SystemExit('exact human-approved r3 plan, Mac control only; preparation never executes')
+        raise SystemExit('exact human-approved r6 plan, Mac control only; preparation never executes')
     raw = args.plan.read_bytes()
     assert hashlib.sha256(raw).hexdigest() == args.plan_sha256
     plan = json.loads(raw)
@@ -195,7 +179,8 @@ def main():
     prior = state.get(args.step)
     assert prior is None or (step.get('repeat_success_only') and prior['status'] == 'completed')
     number = 1 if prior is None else prior['invocation']+1
-    assert number <= step.get('max_invocations',1), 'planned observation count exhausted'
+    if 'max_invocations' in step:
+        assert number <= step['max_invocations'], 'planned observation count exhausted'
     if prior is not None and 'minimum_interval_seconds' in step:
         interval=(dt.datetime.now(dt.timezone.utc)-dt.datetime.fromisoformat(prior['end_utc'])).total_seconds()
         assert interval >= step['minimum_interval_seconds'], 'wait locally for planned observation interval'

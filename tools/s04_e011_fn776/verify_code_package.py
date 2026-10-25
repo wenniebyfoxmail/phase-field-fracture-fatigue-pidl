@@ -101,6 +101,10 @@ def verify(code, expected):
             ast.parse(raw.decode('utf-8'), filename=row['path'])
     worker = next(row for row in rows if row['path'] == 'tools/s04_e011_fn776/worker.py')
     assert worker['blob'] == manifest['locked_science_worker_blob']
+    audit = manifest['runtime_cap_audit']
+    assert audit['modified_worker_blob'] == worker['blob']
+    assert audit['baseline_worker_blob'] == 'adb8c050b5330026cc120f47f14244ab040af028'
+    assert audit['allowed_delta'].startswith('remove self wall/RSS/CUDA/output caps only')
     row_blobs = {row['path']: row['blob'] for row in rows}
     for path, blob in manifest['locked_solver_blobs'].items():
         assert row_blobs[path] == blob, 'reviewed solver blob mismatch: '+path

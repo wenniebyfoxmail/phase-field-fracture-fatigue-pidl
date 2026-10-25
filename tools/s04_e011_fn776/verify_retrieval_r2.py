@@ -4,7 +4,7 @@ import json
 from pathlib import Path, PurePosixPath
 import tarfile
 
-RUN = 'pf_s04e011_uvh_c1_fn776_r5_20261025'
+RUN = 'pf_s04e011_uvh_c1_fn776_r6_20261025'
 CASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs') / RUN / 'authorized_execution'
 
 
@@ -13,7 +13,7 @@ def main():
     manifest=json.loads((folder/'manifest.stdout').read_text().splitlines()[-1])
     assert manifest['status']=='MANIFEST_OK'
     expected={row['path']:row for row in manifest['files']}
-    assert len(expected)==len(manifest['files']) and sum(row['bytes'] for row in expected.values())<100*1024**2
+    assert len(expected)==len(manifest['files'])
     target=CASE/'retrieved'
     target.mkdir(exist_ok=False)
     seen=set()

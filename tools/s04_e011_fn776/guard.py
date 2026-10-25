@@ -10,12 +10,12 @@ import subprocess
 import sys
 import time
 
-RUN = 'pf_s04e011_uvh_c1_fn776_r5_20261025'
-CARD = 'S04-E011-UVH-C1-FN776-CARD-r5'
+RUN = 'pf_s04e011_uvh_c1_fn776_r6_20261025'
+CARD = 'S04-E011-UVH-C1-FN776-CARD-r6'
 ROOT = Path('/mnt/data2/drtao/wennie') / RUN
 OUT = Path('/mnt/data2/drtao/pidl_archives') / RUN
 CODE = ROOT / 'code'
-CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r5.json'
+CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r6.json'
 
 
 def digest(path):
@@ -140,8 +140,6 @@ def gpu_snapshot(contract, worker_pid=None, mode=None):
     # Pin empty/exact-service-set mode; runtime permits only that set plus our worker.
     if mode is not None and observed_mode != mode:
         raise RuntimeError('GPU admission mode changed; stop owned child only')
-    if worker_pid is not None and processes.get(worker_pid, 0) * 1024**2 > contract['budget']['gpu_process_bytes']:
-        raise RuntimeError('sampled worker total CUDA-process memory cap')
     free, utilization = int(free), int(utilization)
     required = policy['minimum_initial_free_MiB'] if worker_pid is None else policy['minimum_runtime_free_MiB']
     if free < required:
@@ -185,7 +183,7 @@ def main():
         raise SystemExit('producer code checkout not clean')
     command([sys.executable, '-B', str(CODE / 'tools/s04_e011_fn776/verify_code_package.py'),
              '--code', str(CODE), '--expected-source', args.expected_source], timeout=30)
-    # Binding is reviewed Git content; no alternate contract/path/budget flags.
+    # Binding is reviewed Git content; no alternate contract/path flags.
     contract = json.loads(CONTRACT.read_text())
     if (contract['protocol'] != 'S04-E011-UVH-C1-FN776-v1' or contract['run_id'] != RUN or
             contract['resource_revision'] != 'GPU7-FN776-shared-r1'):
@@ -219,13 +217,13 @@ def main():
         if i + 1 < contract['resource_policy']['admission_samples']:
             time.sleep(contract['resource_policy']['admission_interval_seconds'])
     mem = dict((r.split(':')[0], int(r.split()[1])) for r in Path('/proc/meminfo').read_text().splitlines())
-    if mem['MemAvailable'] < 16 * 1024 * 1024:
-        raise SystemExit('less than16GiB host RAM available')
+    if mem['MemAvailable'] < contract['resource_policy']['minimum_host_available_kB']:
+        raise SystemExit('host RAM safety margin unavailable')
     if not Path('/mnt/data2').is_mount():
         raise SystemExit('canonical data2 mount unavailable')
     stat = os.statvfs('/mnt/data2')
-    if stat.f_bavail * stat.f_frsize < 5 * 1024**3:
-        raise SystemExit('less than5GiB data2 space')
+    if stat.f_bavail * stat.f_frsize < contract['resource_policy']['minimum_data2_free_bytes']:
+        raise SystemExit('data2 shared-disk safety margin unavailable')
     OUT.mkdir()  # Atomic one-shot claim. No scientific access before this point.
     for name in ('tmp', 'cache'):
         (OUT / name).mkdir()
@@ -243,18 +241,18 @@ def main():
     record = dict(run_id=RUN, status='started', source=args.expected_source,
                   approval_ref=args.approval_ref, start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
                   guard_pid=os.getpid(), host=os.uname().nodename, GPU=7,
-                  output=str(OUT), code=str(CODE), budget=contract['budget'],
+                  output=str(OUT), code=str(CODE), execution_resource_policy=contract['execution_resource_policy'],
                   resource_policy=contract['resource_policy'], admission_mode=admission_mode, admission=admission)
     save(OUT / 'guard_receipt.json', record)
     reason = None
     peak = 0
-    gpu_observations = []
-    next_gpu_check = 0.
+    gpu_monitor = dict(samples=0, minimum_free_MiB=None, maximum_utilization_percent=None, last=None)
+    host_monitor = dict(samples=0, minimum_available_kB=None, minimum_data2_free_bytes=None, last=None)
+    next_safety_check = 0.
     def interrupt(signum, frame):
         raise KeyboardInterrupt('guard received signal ' + str(signum))
     signal.signal(signal.SIGTERM, interrupt)
-    # Includes all producer payload/log/cache/tmp/plot bytes. Reserve1MiB for
-    # terminal receipts and1MiB for unique Mac control diagnostics within100MiB.
+    # Output, RSS and CUDA use are retained only as final telemetry; no self quota is enforced.
     with (OUT / 'worker.log').open('xb') as log:
         record['worker_spawn_requested'] = True
         save(OUT / 'guard_receipt.json', record)
@@ -272,19 +270,29 @@ def main():
             while child.poll() is None:
                 rss = process_tree(child.pid)
                 peak = max(peak, rss)
-                usage = output_bytes()
-                if time.monotonic() >= next_gpu_check:
+                if time.monotonic() >= next_safety_check:
                     try:
-                        gpu_observations.append(gpu_snapshot(contract, child.pid, mode=admission_mode))
+                        snapshot = gpu_snapshot(contract, child.pid, mode=admission_mode)
+                        gpu_monitor['samples'] += 1
+                        gpu_monitor['minimum_free_MiB'] = snapshot['free_MiB'] if gpu_monitor['minimum_free_MiB'] is None else min(gpu_monitor['minimum_free_MiB'], snapshot['free_MiB'])
+                        gpu_monitor['maximum_utilization_percent'] = snapshot['utilization_percent'] if gpu_monitor['maximum_utilization_percent'] is None else max(gpu_monitor['maximum_utilization_percent'], snapshot['utilization_percent'])
+                        gpu_monitor['last'] = snapshot
+                        mem = dict((r.split(':')[0], int(r.split()[1])) for r in Path('/proc/meminfo').read_text().splitlines())
+                        if not Path('/mnt/data2').is_mount():
+                            raise RuntimeError('canonical data2 mount unavailable')
+                        stat = os.statvfs('/mnt/data2')
+                        free_bytes = stat.f_bavail * stat.f_frsize
+                        host_monitor['samples'] += 1
+                        host_monitor['minimum_available_kB'] = mem['MemAvailable'] if host_monitor['minimum_available_kB'] is None else min(host_monitor['minimum_available_kB'], mem['MemAvailable'])
+                        host_monitor['minimum_data2_free_bytes'] = free_bytes if host_monitor['minimum_data2_free_bytes'] is None else min(host_monitor['minimum_data2_free_bytes'], free_bytes)
+                        host_monitor['last'] = dict(MemAvailable_kB=mem['MemAvailable'], data2_free_bytes=free_bytes)
+                        if mem['MemAvailable'] < contract['resource_policy']['minimum_host_available_kB']:
+                            raise RuntimeError('host RAM safety margin unavailable')
+                        if free_bytes < contract['resource_policy']['minimum_data2_free_bytes']:
+                            raise RuntimeError('data2 shared-disk safety margin unavailable')
                     except Exception as error:
-                        reason = 'shared_GPU_monitor: ' + repr(error)
-                    next_gpu_check = time.monotonic() + contract['resource_policy']['runtime_monitor_interval_seconds']
-                if time.monotonic() - start >= contract['budget']['wall_seconds'] - 10:
-                    reason = 'wall_limit'
-                elif rss > contract['budget']['rss_bytes']:
-                    reason = 'sampled_RSS_limit'
-                elif usage > contract['budget']['output_bytes'] - 2*1024**2:
-                    reason = 'output_limit'
+                        reason = 'shared_machine_safety_monitor: ' + repr(error)
+                    next_safety_check = time.monotonic() + contract['resource_policy']['runtime_monitor_interval_seconds']
                 if reason:
                     break
                 time.sleep(.1)
@@ -301,12 +309,12 @@ def main():
                     child.wait(timeout=2)
             child.wait()
             record.update(status='completed' if child.returncode == 0 and not reason else 'stopped_or_failed',
-                          exit_code=child.returncode, first_limit=reason, sampled_peak_RSS=peak,
-                          gpu_observations=gpu_observations,
+                          exit_code=child.returncode, stop_reason=reason, sampled_peak_RSS=peak,
+                          gpu_monitor=gpu_monitor, host_monitor=host_monitor,
                           elapsed_seconds=time.monotonic() - start,
                           sampled_output_bytes=output_bytes(),
                           finish_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
-                          sampling_note='RSS/output nominal100ms between GPU checks; two NVML commands each2s timeout; sampled not OS hard peaks; guard cleanup reserve10s')
+                          sampling_note='RSS/CUDA/output are telemetry only. Runtime checks enforce only GPU/service identity, GPU free margin and shared host/disk safety; two NVML commands use a 2s query timeout.')
             save(OUT / 'guard_receipt.json', record)
     if child.returncode or reason:
         raise SystemExit(1)

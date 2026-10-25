@@ -33,11 +33,11 @@ def build(source, out):
              'tools/s04_e011_fn776/control_r2.py',
              'tools/s04_e011_fn776/remote_control_r2.py', 'tools/s04_e011_fn776/verify_retrieval_r2.py',
              'tools/s04_e011_fn776/build_code_package.py', 'tools/s04_e011_fn776/verify_code_package.py',
-             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r5.json',
+             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776_r6.json',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/inputs_fn776.json',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/protocol_fn776.md',
              'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/mechanics_ast.json',
-             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/deployment_fn776_r5.md'}
+             'docs/research/S04/S04-E011/uv_head_c1_solver_d3_20261019/deployment_fn776_r6.md'}
     rows = []
     local_modules = {}
     for line in cmd(['git', 'ls-tree', '-r', source]).splitlines():
@@ -54,18 +54,22 @@ def build(source, out):
         rows.append(dict(path=path, mode=mode, blob=blob, bytes=size))
     assert exact <= {row['path'] for row in rows}
     worker_blob = cmd(['git', 'rev-parse', source+':tools/s04_e011_fn776/worker.py'])
+    baseline_worker_blob = cmd(['git','rev-parse','f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92:tools/s04_e011_fn776/worker.py'])
     locked_solver_blobs = {}
-    for path in ('tools/s04_e011_fn776/worker.py', 'tools/s04_e011_fn776/square_root.py'):
-        original = cmd(['git','rev-parse','f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92:'+path])
-        assert cmd(['git','rev-parse',source+':'+path]) == original, 'reviewed solver changed: '+path
-        locked_solver_blobs[path] = original
+    path = 'tools/s04_e011_fn776/square_root.py'
+    original = cmd(['git','rev-parse','f1ed1ed969b10637fa774b3a0cc29aa24b2b7f92:'+path])
+    assert cmd(['git','rev-parse',source+':'+path]) == original, 'reviewed solver changed: '+path
+    locked_solver_blobs[path] = original
     mechanics = {}
     for row in rows:
         if row['path'].startswith(('source/', 'SENS_tensile/')):
             original_blob = cmd(['git', 'rev-parse', '3dfef418828e53632b3a5c90521ab8989dbf9673:'+row['path']])
             assert row['blob'] == original_blob, 'frozen mechanics changed: '+row['path']
             mechanics[row['path']] = original_blob
-    manifest = dict(development_source=source, locked_science_worker_blob=worker_blob, locked_solver_blobs=locked_solver_blobs, frozen_mechanics_blobs=mechanics,
+    manifest = dict(development_source=source, locked_science_worker_blob=worker_blob,
+                    runtime_cap_audit=dict(baseline_worker_blob=baseline_worker_blob, modified_worker_blob=worker_blob,
+                                           allowed_delta='remove self wall/RSS/CUDA/output caps only; static_checks.py verifies exact worker text transform'),
+                    locked_solver_blobs=locked_solver_blobs, frozen_mechanics_blobs=mechanics,
                     local_module_catalog=local_modules,
                     import_entrypoints=['tools/s04_e011_fn776/'+name+'.py' for name in
                                         ('worker', 'guard', 'square_root', 'build_code_package', 'verify_code_package', 'static_checks', 'control_r2', 'remote_control_r2', 'verify_retrieval_r2')],
@@ -92,7 +96,6 @@ def build(source, out):
     result = json.loads(cmd([sys.executable, '-B', str(materialized/'tools/s04_e011_fn776/verify_code_package.py'),
                              '--code', str(materialized), '--expected-source', snapshot]))
     raw = bundle.read_bytes()  # Code-only transfer artifact, no scientific array.
-    assert len(raw) < 10*1024**2, 'keep code bundle inside the100MiB overall output envelope'
     receipt = dict(status='self_contained_code_package_verified', development_source=source,
                    producer_source=snapshot, bundle_ref=ref, bundle=str(bundle),
                    bundle_bytes=len(raw), bundle_sha256=hashlib.sha256(raw).hexdigest(),
