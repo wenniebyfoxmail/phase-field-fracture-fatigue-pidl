@@ -20,7 +20,7 @@ from s09_e017_real_adapter import canonical_json  # noqa: E402
 from s09_e018_real_adapter import ARM_ORDER, run_reviewed_producer  # noqa: E402
 
 
-RUN_ID = "S09-E018-R002-amplitude-priority-ab"
+RUN_ID = "S09-E018-R003-amplitude-priority-ab"
 
 
 def _require(condition: bool, message: str) -> None:

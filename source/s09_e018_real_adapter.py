@@ -104,9 +104,17 @@ class E018OptimisationEngine(core.E017OptimisationEngine):
             merged, diagnostics = amplitude_priority_pcgrad_merge(
                 raw, self.scales, seed=self.seed, update=update
             )
+            # The legacy row validator intentionally replays the symmetric
+            # PCGrad projection log.  Preserve that geometry as a distinct
+            # audit record; the protected vector and its own norms are stored
+            # below and are never passed off as the symmetric mean.
+            _unused_symmetric, audit_diagnostics = pcgrad_merge(
+                raw, self.scales, seed=self.seed, update=update
+            )
             strategy = "AMPLITUDE_PRIORITY_PCG"
         else:
             merged, diagnostics = pcgrad_merge(raw, self.scales, seed=self.seed, update=update)
+            audit_diagnostics = diagnostics
             strategy = "SYMMETRIC_PCG"
         self.optimizer.zero_grad(set_to_none=True)
         core._assign_gradient(self.parameters, merged)
@@ -125,7 +133,7 @@ class E018OptimisationEngine(core.E017OptimisationEngine):
             [(after.detach() - prior).reshape(-1) for prior, after in zip(before, self.parameters, strict=True)]
         )
         evidence = core._gradient_evidence(
-            self.arm, update, raw, None, realised, diagnostics
+            self.arm, update, raw, None, realised, audit_diagnostics
         )
         evidence["merge_strategy"] = strategy
         if strategy == "AMPLITUDE_PRIORITY_PCG":
@@ -134,7 +142,11 @@ class E018OptimisationEngine(core.E017OptimisationEngine):
                 priority["merged_dot_scaled_amplitude"] >= -1.0e-12,
                 "protected amplitude descent drift",
             )
-            evidence["amplitude_priority"] = priority
+            evidence["amplitude_priority"] = {
+                **priority,
+                "preclip_norm": diagnostics["preclip_norm"],
+                "postclip_norm": diagnostics["postclip_norm"],
+            }
         values = {name: float(value.detach().cpu()) for name, value in losses.items()}
         _require(all(math.isfinite(value) for value in values.values()), "nonfinite loss")
         return evidence, values

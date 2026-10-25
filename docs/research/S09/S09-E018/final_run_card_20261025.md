@@ -1,16 +1,19 @@
 ---
-run_id: S09-E018-R002-amplitude-priority-ab
+run_id: S09-E018-R003-amplitude-priority-ab
 status: AUTHORISED_FOR_ONE_COMPLETE_RUN
 authority: user instruction "请你推进后计算" on 2026-10-25
 ---
 
-# E018 final run card (r2)
+# E018 final run card (r3)
 
 `R001` stopped before runtime construction, model creation, forward,
 optimisation or an update because its new direct producer omitted the shared
 resource-guard fields.  Its remote control root contains the one-shot failure
-receipt and is not reused.  `R002` fixes only that control binding; data,
-mapping, physics, two conditions and numerical budget below are unchanged.
+receipt and is not reused. `R002` reached the priority arm's first step but
+stopped before committing it because the historical symmetric-PCGrad evidence
+validator was asked to validate the protected vector's norm. R003 records
+symmetric projection geometry and protected-vector diagnostics separately;
+data, mapping, physics, two conditions and numerical budget below are unchanged.
 
 Run one matched two-arm factorised damage-head comparison on Taobo GPU5.
 Both arms consume the frozen E017 packet, B25 checkpoint, 16 exposed

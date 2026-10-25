@@ -5,6 +5,7 @@ import pytest
 import torch
 
 import s09_e017_factorised_pilot as core
+import s09_e018_real_adapter as e018
 
 from s09_e017_factorised_pilot import (
     ACTIVE_GROUPS,
@@ -229,6 +230,34 @@ def test_amplitude_priority_pcgrad_preserves_scaled_amplitude_descent():
     assert record["merge_strategy"] == "AMPLITUDE_PRIORITY_PCG"
     assert record["amplitude_priority"]["merged_dot_scaled_amplitude"] >= 0.0
     assert torch.isfinite(merged).all()
+
+
+def test_e018_priority_engine_keeps_symmetric_geometry_audit_separate():
+    class TinyFactorisedModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.arm = e018.ARM_A_PRIORITY
+            self.vector = torch.nn.Parameter(f64([1.0, -1.0]))
+
+        def trainable_parameters(self):
+            return [self.vector]
+
+    model = TinyFactorisedModel()
+    with e018._e018_runtime_scope():
+        engine = e018.E018OptimisationEngine(model, seed=3)
+        evidence, values = engine.step(
+            1,
+            lambda current: OrderedDict(
+                A=2.0 * current.vector[0],
+                S=-3.0 * current.vector[0] + current.vector[1],
+                R=-2.0 * current.vector[0] + current.vector[1],
+                P=-current.vector[0] - current.vector[1],
+            ),
+        )
+    assert values.keys() == {"A", "S", "R", "P"}
+    assert evidence["merge_strategy"] == "AMPLITUDE_PRIORITY_PCG"
+    assert evidence["amplitude_priority"]["merged_dot_scaled_amplitude"] >= 0.0
+    assert evidence["preclip_norm"] != evidence["amplitude_priority"]["preclip_norm"]
 
 
 def test_gradient_geometry_overflow_fails_closed_before_clipping():

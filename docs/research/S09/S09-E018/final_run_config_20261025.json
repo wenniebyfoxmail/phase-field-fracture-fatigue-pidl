@@ -1,6 +1,6 @@
 {
   "schema_version": "s09-e018-final-run-v1",
-  "run_id": "S09-E018-R002-amplitude-priority-ab",
+  "run_id": "S09-E018-R003-amplitude-priority-ab",
   "status": "AUTHORISED_FOR_ONE_COMPLETE_RUN",
   "execution_authorized": true,
   "arms": {
@@ -36,7 +36,7 @@
     "hostname": "GPUServer8",
     "cuda_visible_devices": "5",
     "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b",
-    "output_root": "/mnt/data2/drtao/wennie/S09-E018-R002-amplitude-priority-ab/run",
+    "output_root": "/mnt/data2/drtao/wennie/S09-E018-R003-amplitude-priority-ab/run",
     "wall_time_cap_seconds": 1800,
     "reserved_memory_cap_bytes": 21474836480
   },
