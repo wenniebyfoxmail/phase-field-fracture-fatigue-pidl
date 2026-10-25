@@ -1,8 +1,8 @@
 # S04-E036 · 循环 PIDL/FEM 离散设置修复与差距归因
 
-## 实际进展（2026-10-24 20:13 UTC）
+## 实际进展（2026-10-25 16:35 UTC）
 
-**当前控制状态：原六作业resident已正常结束，最后c83s4 fit完整终态已回收。首项D3 c1评分在启动前检查发生控制字段KeyError；20:10:17只读确认无launch intent/receipt、无评分进程。五项评分与C0 release全部未执行，旧条件派发已停止，heartbeat不得自动继续；独立本地修复候选已核验，等待用户明确继续授权。原始结果分析和报告整理可以继续。**
+**当前控制状态：用户已直接批准“允许按原范围继续”，授权应用已审阅的作业名兼容修复，继续原五项评分，并在原前置条件全部满足后执行已绑定的一次 C0 条件释放。原 GPU owner `pidl_history_audit` 已接回唯一远端执行权，先核验实际进程、原作业身份和共享资源，再串行派发。第一项 D3 c1 已于 16:36:47 UTC 正常完成、回收并清理，正在推进其余原评分。原启动前失败记录完整保留，不据启动宣称评分完成或科学成功。**
 
 阶段 A 已复用 timing owner 的真实 disabled 双解与四态 116/116 核验；未重跑。原始 P0 已在 Taobo 完成 12 态原 checkpoint/映射零更新重读并完整取回；这不是历史训练时 GPU 场的逐位重现声明。P0–F0 十二态平均 J=0.01389757549。
 
@@ -51,6 +51,22 @@ F1预裂纹y=0的251个固定d=1节点，其相邻v最大变化.05645564发生�
 后处理调度明确由`pidl_history_audit`承接：队列全部正常结束、身份/finished/SHA及进程清理核实后，GPU5串行运行已准备D3 scorer 1000d3c6与D4 scorer 75044464。D4 c1s2用唯一真实matrix+fit+continuation合并inventory，c83两态同样绑定实际完整发布快照；c1s4没有合格F1目标就保持unavailable。队列运行、halt、未知身份或技术失败时不手工越过或重试；root不并行调度GPU。C0条件release的真实失败f64终态及机制条件现已满足，另见下方独立一次决定；必须排在resident和上述五个评分正常终结/清理后，不插入或修改resident。该分工完成已有比较与预声明条件分支。
 
 本对话15分钟app持久化自动接续的首次创建曾被自动审批拒绝，理由为缺少明确人方许可，并存在已暂停HQ托管；该次未创建。随后用户对本对话、15分钟、静默无变化、报告交付后停止及不恢复跨对话HQ的完整问题，明确回答“允许本对话自动接续”。2026-10-24 00:19 UTC工具已成功创建`pidl-fem` heartbeat，并回读确认ACTIVE、15分钟、目标为本对话`01a15fd3-ed7b-7122-9ef4-eb5846c4a6c8`。现有resident和两机执行者的独占分工不变；自动接续先查原执行者，避免重复调度。此许可不授权失败重试或额外试验，也不恢复HQ托管。该控制层状态不构成任何科学结果。
+
+## 修复后第一项正式评分（2026-10-25 16:36 UTC）
+
+D3 c1 正式评分在 16:36:47 UTC 正常 exit0，评分用时9.96893 GPU秒；原执行者已确认所属进程清理。14份回收文件由root按收据逐项复核SHA/bytes，收据 `raw_archive/d3_c1_score_20261025_transport01/retrieval_receipt.json` SHA `ef8a4475369f16339ce90b1180dff1cfc940a7fa055b39ac75b8e5ff5808310b`，完整结果 SHA `6024e0cf5628bd2e1adee23420dab7406fabbaa940c523d996db7ff1b7ba8490`。
+
+首步10个等更新端点中，P1/P2的场差及全部原生GP、能量、反力诊断对象逐项相同，两臂 `unverified_snapshots=[]`。2000更新时J均为 .0009264810995313352，fresh Ru=.002701840872、phase box KKT=.066491995001，仍不可行且物理拒绝。零合格端点配对、总体aggregate=null；评分成功不改变原训练的拒绝状态。c1s2严格参考的同前态敏感性由正式评分再次读取为verified、J=.0004090859383863217，仍是参考变化。汇总 `analysis/d3_c1_formal_scoring_20261025.json` SHA `79f603763b369839719c35aa05a038a3043315ef4c0330eadd1424ba5fc72723`；Mac只校验保存JSON与原文件字节。
+
+## 控制修复后的明确继续授权（2026-10-25 16:35 UTC）
+
+用户对原审批问题直接回答“允许按原范围继续（推荐）”。本次许可精确覆盖：应用已通过本地固定检查的控制字段修复、原五份 prepared 评分按原顺序串行执行，以及原前置条件满足后的已绑定一次 C0 release。原 `halted.json` 及失败请求不改写；其中等待用户授权的控制状态由此次人方批准取代，历史故障事实不变。
+
+独立授权收据 `run_workspace/postprocessing_dispatch_20261024/user_continuation_authorization_20261025.json` SHA `f208a2d69263bbd52130e5ac1ec2df14ebb64dcd13821a508344f9d9248c96bf` 保存完整问题、回答、六项控制来源和五份评分准备包身份。控制器仍绑定候选 SHA `5478fe2d48d51efafd8a910718e7ad8e3ce6536f956f6a442df7676d84ba49b2`，验证收据 SHA `f69770a749b01dabfb22f88da4663a8ab94fc9139ad3816f9ca9c1feb75e6d06`；C0 决定仍绑定 SHA `86b21c306479089d2e2575bd86dd41d9ea6f15071f84e36948e5d5e3094ddc4e`。本次只复核这些保存字节，没有重复本地回归、网络推理或 FEM 装配。
+
+`pidl_history_audit` 继续独占 GPU5 的实时核查、派发和回收；root 只整合记录。新的可归因 attempt 目录保留原失败材料，未知启动先核验，不凭昨日空闲快照判断当前可用。新的技术失败、超时、身份不明或资源冲突仍停止依赖动作，不自动重试；科学代码、目标、阈值和真实 float64 来源不变，fit 权重不进入 physics-only。阶段 A 及已结束 FEM 均不重跑。本节授权与执行准备不构成完成结果。
+
+原 GPU owner 本次先只读确认 122 项已上传引用的 SHA 一致，六个待处理作业均无启动/结果或进程，GPU5 为 4 MiB/0%。修复控制器在 16:36:36.971987 UTC 唯一启动 `d3_c1_scoring_01`，supervisor PID2717414；七个原训练任务的终态、源码和所属进程清理全部通过。实况收据 `run_workspace/postprocessing_dispatch_20261024/dispatch_d3_c1_user_continuation_20261025_01/stdout.json`，root 保存字节核对见 `analysis/scoring_resumption_control_20261025.json`；没有 root 并行 SSH。下一项仍须等待本项终态及清理。
 
 ## c83s4 拟合终态与后处理启动前失败（2026-10-24 19:57–20:10 UTC）
 
