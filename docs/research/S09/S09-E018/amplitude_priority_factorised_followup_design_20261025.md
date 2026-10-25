@@ -113,3 +113,14 @@ paths, and two independently initialised but otherwise matched factorised
 heads.  It will save `d_pre`, FEM/predicted `Delta d`, and FEM/predicted
 `d_post` so the output directly distinguishes a small new increment from a
 vanishing cumulative crack state.
+
+## Execution record
+
+`R001` was deliberately left terminal after its new direct producer failed
+before runtime construction with `KeyError: 'resources'`: its control adapter
+did not supply the pre-existing shared resource guard's paths and limits.  It
+performed zero model forwards, optimisation steps, or updates.  `R002` adds
+only that control binding and retains the frozen scientific card.  At launch it
+passed source-snapshot SHA256, empty output/control paths, GPU5 identity and
+idle check, and wrote the prelaunch receipt.  It is a live computation until a
+completion/failure receipt and registered artifacts are retrieved.
