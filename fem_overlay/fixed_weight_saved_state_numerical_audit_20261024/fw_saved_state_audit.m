@@ -135,8 +135,11 @@ receipt = struct( ...
         "source-to-MEX build equivalence", ...
         "a physical benchmark or independent-test claim"] ...
     );
-writeText(fullfile(audit_root, 'saved_state_audit_receipt.json'), ...
-    jsonencode(receipt, PrettyPrint=true) + newline);
+% jsonencode returns a char vector.  Do not use `+ newline` here: char plus
+% char is element-wise numeric addition in MATLAB, which corrupts every JSON
+% byte.  sprintf creates the one terminal newline without changing JSON text.
+receipt_text = sprintf('%s\n', jsonencode(receipt, PrettyPrint=true));
+writeText(fullfile(audit_root, 'saved_state_audit_receipt.json'), receipt_text);
 end
 
 
@@ -1375,7 +1378,7 @@ end
 
 
 function writeText(path, content)
-fid = fopen(path, 'w');
+fid = fopen(path, 'w', 'n', 'UTF-8');
 if fid < 0
     error('fixed_weight:numerical_audit:OutputWrite', 'Cannot write %s.', path);
 end
