@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "phase-field-fracture-components"
 version = "0.1.0"
-description = "Reusable deterministic mechanics kernels for phase-field PIDL workflows"
+description = "Reusable code components for phase-field fracture workflows"
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
@@ -16,10 +16,13 @@ dependencies = [
 neural = [
     "torch",
 ]
+observation = [
+    "scikit-image",
+]
 
 [tool.setuptools]
 package-dir = {"" = "source"}
 
 [tool.setuptools.packages.find]
 where = ["source"]
-include = ["pidl_core*", "fracture_state*"]
+include = ["pidl_core*", "fracture_observation*", "fracture_state*"]

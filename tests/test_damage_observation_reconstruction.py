@@ -22,6 +22,9 @@ from damage_observation_reconstruction import (
     binary_core_damage,
     notch_connected_core,
 )
+from fracture_observation.damage_observation_reconstruction import (  # noqa: E402
+    at1_profile as packaged_at1_profile,
+)
 from run_damage_observation_equilibrium_gate import (
     build_observation_assimilated_state,
     candidate_damage_fields,
@@ -36,6 +39,7 @@ def line_grid() -> tuple[np.ndarray, np.ndarray]:
 
 
 def test_at1_profile_has_compact_support_and_squared_hat() -> None:
+    assert at1_profile is packaged_at1_profile
     distance = np.array([0.0, 0.01, 0.02, 0.03])
     np.testing.assert_allclose(at1_profile(distance, 0.01), [1.0, 0.25, 0.0, 0.0])
 
