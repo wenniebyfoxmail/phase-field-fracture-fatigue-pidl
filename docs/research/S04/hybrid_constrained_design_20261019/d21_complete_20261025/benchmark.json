@@ -1,0 +1,20 @@
+{
+  "schema": "fixed-task-benchmark-v1",
+  "passed": true,
+  "passed_tests": 16,
+  "wall_seconds": 0.93,
+  "training_updates_on_Mac": 0,
+  "real_FEM_solves_on_Mac": 0,
+  "independent_review_performed": false,
+  "interpreter": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/research/hybrid_implementation_20261019/venv/bin/python",
+  "command": "PYTHONPATH=source:tools python3 -m pytest -q tests/test_hybrid_d21_pipeline.py tests/test_hybrid_producer.py::test_prediction_context_is_the_common_initial_field_not_final_field tests/test_hybrid_producer.py::test_package_hash_tamper_is_rejected tests/test_hybrid_producer.py::test_watchdog_only_stops_its_spawned_group_on_hard_cap tests/test_hybrid_producer.py::test_history_mismatch_blocks_acceleration_even_if_field_and_time_pass",
+  "initial_default_interpreter_attempt": "No pytest; scientific tests not entered; reused original owner test venv",
+  "source_files": {
+    "tools/run_hybrid_producer.py": "2e7b20f0e9c40e6619493211d3e0a50705f35494d8e10b861cdb9f54a8c601f1",
+    "tools/launch_hybrid_detached.py": "9b03d9be2cad151ed608fec0bfd5fc8b351453ec906046c9ca70c59e030721fd",
+    "tools/hybrid_producer_worker.py": "bdcb38636b472e5d5efc2922b025a2da82713bdf9bdd6f32cef9f8f0e70e5c3c",
+    "tools/hybrid_d21_pipeline.py": "e7e33fadac90d7507a1696907c6c9ce7ed14e90f66fca174fcc7c7907534b080",
+    "tests/test_hybrid_d21_pipeline.py": "bc7213d437cc1423f2e0bc40409e30fb4b339324bdbffb3e27e6c5cd75b804e0"
+  },
+  "epoch": 1792946524.177414
+}

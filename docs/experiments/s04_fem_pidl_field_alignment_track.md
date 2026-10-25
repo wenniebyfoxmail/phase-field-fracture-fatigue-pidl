@@ -122,3 +122,8 @@ D20 preparation history (superseded by actual R008 result above): directed binar
 
 
 2026-10-24 training-entry reconciliation: current ownerD21/sourcefee87bac retained, R2 and R3-R008 failed closures live-checked;0complete teacher/0fit, R009 absent. Conservative usable legacy136h balance about129.517hosth/12GPUh unused, not staleR2-only135.773h. Withdraw obsolete plain600s candidate. New labels-mode export and1800→singlefit→tests orchestration required; old reference-only4h card expired/disabled, no new execution. [Current fact/budget/gap/arrangement](../research/S04/hybrid_constrained_design_20261019/training_readiness_20261024.md).
+
+
+### 2026-10-25 D21 complete task authorized: labels → one fit → frozen tests
+
+Current human authority enables fresh R10 on the original owner, not expired R009. Original complete supervisor/worker now export D21 labels and enforce full1800 qualification, exclusive single-fit invocation and checkpoint freeze before all tests. Fixed artificial benchmark16/16 passed; producer inputs/deps and capacity metadata verified. No new scientific result yet. Mechanical admission retries are bounded and charged; technical-code-changing failures stop. D21 numerical policy remains unchanged. [Current executable route, budget and claim](../research/S04/hybrid_constrained_design_20261019/d21_complete_20261025/plan.md).

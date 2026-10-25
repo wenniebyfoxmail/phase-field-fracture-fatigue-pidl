@@ -22,6 +22,10 @@ if __name__ == '__main__':
         cap=int(os.environ['HYBRID_WORKER_AS_BYTES'])
         if cap!=30*2**30:raise RuntimeError('CPU worker AS partition differs')
         resource.setrlimit(resource.RLIMIT_AS,(cap,cap))
+    if 'HYBRID_PHASE_CPU_CORES' in os.environ:
+        cores=int(os.environ['HYBRID_PHASE_CPU_CORES'])
+        if cores not in (4,16):raise RuntimeError('unexpected phase CPU cap')
+        os.sched_setaffinity(0,set(sorted(os.sched_getaffinity(0))[:cores]))
     import ctypes
     import signal
     expected=int(os.environ['HYBRID_SUPERVISOR_PID'])
@@ -71,7 +75,7 @@ def marker(out, **values):
 
 
 def trajectory_storage_check(card,out,archive,headroom=False):
-    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9','hybrid-cpu-trajectory-v10','hybrid-cpu-trajectory-v11','hybrid-cpu-trajectory-v12'):return
+    if card.get('schema')not in ('hybrid-cpu-trajectory-v7','hybrid-cpu-trajectory-v8','hybrid-cpu-trajectory-v9','hybrid-cpu-trajectory-v10','hybrid-cpu-trajectory-v11','hybrid-cpu-trajectory-v12','hybrid-execution-card-v1'):return
     # One scan at step boundaries, not every element/operator call. The live
     # supervisor also scans and final completion has an independent last check.
     from run_hybrid_producer import bytes_under
@@ -379,6 +383,10 @@ def fit(card, inputs, out, archive):
             raise RuntimeError('label trajectory steps missing, duplicated or reordered')
     if len(train_rows)!=1200 or len(validation_rows)!=600:
         raise RuntimeError("whole planned label trajectories required; no partial fit")
+    write_json(phase/'qualified_labels.json',dict(qualified_transitions=1800,train_transitions=1200,
+        validation_transitions=600,state_contract_id=CONTRACT_ID,coupling_policy_id=coupling_identity(card),
+        input_rows_sha256=object_sha(train_rows+validation_rows),test_opened=False,
+        qualification='all ordered states, predecessors, exact arrays, common predictor, certificates and field timing checked'))
     total=np.zeros(len(FEATURES));squares=total.copy();n=0
     for row in train_rows:
         with np.load(archive/row["features_file"],allow_pickle=False) as z:

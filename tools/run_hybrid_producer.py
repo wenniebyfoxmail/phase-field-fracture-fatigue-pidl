@@ -24,9 +24,12 @@ import psutil
 
 from hybrid_inputs import sha256, read_manifest
 from hybrid_producer_common import verify_package, write_json, append_event
+import hybrid_d21_pipeline as d21
 
 
 def require_enabled_execution(card, code_root=None):
+    if d21.is_d21(card):
+        return d21.require_authority(card, code_root or Path(__file__).resolve().parents[1])
     if card.get('execution_enabled') is not True:
         raise RuntimeError('preparation card cannot reserve or spawn a producer')
     reconciliation=card.get('budget_reconciliation',{})
@@ -63,6 +66,8 @@ def require_enabled_execution(card, code_root=None):
 
 
 def validate_card(card):
+    if d21.is_d21(card):
+        return d21.validate(card, Path(__file__).resolve().parents[1])
     from hybrid_state_contract import CONTRACT_ID
     if card.get('state_contract_id') != CONTRACT_ID:
         raise ValueError('accepted-state field timing contract missing/incompatible')
@@ -124,6 +129,8 @@ def execution_specs(card):
 
 def initial_totals(card, job_started, code_root=None):
     """Charge actual admission work to the same study envelope before launch."""
+    if d21.is_d21(card):
+        return d21.initial_totals(card,job_started)
     if card.get('prior_costs'):
         if card.get('pre_execution_cost') is not None:raise RuntimeError('duplicate prior cost mechanisms')
         charges=dict(wall_seconds=0.,cpu_seconds=0.,gpu_seconds=0.,numerical_seconds=0.)
@@ -274,13 +281,13 @@ def supervise(proc,spec,card,runroot,archive,totals,usage=None,guardian=None):
                 if 'resource_owner_pid' in totals:
                     vms=sum(p.memory_info().vms for p in tree)
                     usage.update(aggregate_vms_bytes=vms,resource_scope_pid=root.pid)
-                    if vms>card['budget']['address_space_gib']*2**30:raise RuntimeError('complete owned tree address-space cap')
+                    if vms>card['budget'].get('address_space_gib',float('inf'))*2**30:raise RuntimeError('complete owned tree address-space cap')
                 current_rss_observed=True
                 usage.update(rss_observed=True,rss_sample_count=usage['rss_sample_count']+1,last_rss_sample_monotonic=perf_counter())
             except psutil.NoSuchProcess:rss=0
             peak=max(peak,rss)
             usage.update(**measured_peaks(),storage=storage,last_sample_monotonic=perf_counter())
-            if rss>card['budget']['ram_gib']*2**30:raise RuntimeError('process-tree RAM cap')
+            if rss>spec.get('ram_gib',card['budget']['ram_gib'])*2**30:raise RuntimeError('process-tree RAM cap')
             if spec['gpu'] and elapsed-gpu_last>=5:
                 gpu_peak=max(gpu_peak,gpu_usage(card,{proc.pid,*[p.pid for p in tree]},usage=usage))
                 gpu_last=elapsed
@@ -410,17 +417,19 @@ def main():
     require_enabled_execution(card)
     if not args.execute or args.review is None:raise RuntimeError('explicit execution and exact review required')
     review=read_manifest(args.review)
-    if (review.get('verdict')!='REVIEW_PASS' or review.get('card_sha256')!=sha256(args.card)
+    if d21.is_d21(card):d21.require_benchmark(card,package,review,args.card)
+    elif (review.get('verdict')!='REVIEW_PASS' or review.get('card_sha256')!=sha256(args.card)
             or review.get('artifact_id')!=package['artifact_id']):raise RuntimeError('review does not admit exact card/code')
     runroot=Path(card['run_root']);archive=Path(card['archive_root'])
     if archive.exists():raise FileExistsError('fresh archive required; no automatic retry/resume')
-    host=host_admission(card,runroot,archive)
+    totals=initial_totals(card,job_started,code)
+    host=(d21.admission_retry(lambda:host_admission(card,runroot,archive),card,runroot,totals)
+          if d21.is_d21(card) else host_admission(card,runroot,archive))
     # Matplotlib is imported/rendered in the independently bounded first worker,
     # never in this supervisor's unguarded runtime import loop.
     runtime_expected={k:v for k,v in card['runtime_expected'].items() if k!='matplotlib'}
     runtime={name:getattr(importlib.import_module(name),'__version__','unknown') for name in runtime_expected}
     if runtime!=runtime_expected:raise RuntimeError(f'producer runtime differs: {runtime}')
-    totals=initial_totals(card,job_started,code)
     archive.mkdir(parents=True)
     for d in ['tmp','jitcache','cache','logs']:(runroot/d).mkdir(exist_ok=True)
     write_json(runroot/'launch_receipt.json',dict(pid=os.getpid(),hostname=socket.gethostname(),
@@ -429,16 +438,25 @@ def main():
                                                 runtime=runtime,start_epoch=time()))
     def interrupted(sig,frame):raise RuntimeError(f'supervisor interrupted by signal {sig}')
     signal.signal(signal.SIGTERM,interrupted)
+    totals['resource_owner_pid']=os.getpid()
     status='failed'
     try:
         for spec in execution_specs(card):
-            if spec['gpu']:write_json(runroot/f"gpu_admission_{spec['id']}.json",gpu_admission(card))
+            if spec['gpu']:
+                admitted=(d21.admission_retry(lambda:gpu_admission(card),card,runroot,totals)
+                          if d21.is_d21(card) else gpu_admission(card))
+                write_json(runroot/f"gpu_admission_{spec['id']}.json",admitted)
+            if d21.is_d21(card):d21.admit_phase(spec,archive,runroot)
             env=os.environ.copy()
             env.update(PYTHONPATH=f'{runroot}/deps:{code}/source:{code}/tools',CUDA_VISIBLE_DEVICES=str(card['producer']['gpu_index']) if spec['gpu'] else '',
                        OMP_NUM_THREADS='16',OPENBLAS_NUM_THREADS='16',MKL_NUM_THREADS='16',NUMEXPR_NUM_THREADS='16',
                        TMPDIR=str(runroot/'tmp'),XDG_CACHE_HOME=str(runroot/'cache'),
                        TORCH_EXTENSIONS_DIR=str(runroot/'jitcache'),PIDL_ARCHIVE_DIR=str(archive),
                        MPLBACKEND='Agg',MPLCONFIGDIR=str(runroot/'cache/matplotlib'))
+            if d21.is_d21(card):
+                threads=str(spec.get('cpu_cores',16))
+                env.update(OMP_NUM_THREADS=threads,OPENBLAS_NUM_THREADS=threads,MKL_NUM_THREADS=threads,
+                           NUMEXPR_NUM_THREADS=threads,HYBRID_PHASE_CPU_CORES=threads)
             env['HYBRID_SUPERVISOR_PID']=str(os.getpid())
             cmd=[sys.executable,'-u',str(code/'tools/hybrid_producer_worker.py'),'--card',str(args.card.resolve()),
                  '--phase',spec['id'],'--inputs',str(args.inputs.resolve()),'--out',str(runroot),'--archive',str(archive)]
@@ -477,7 +495,7 @@ def main():
         write_json(runroot/'decision.json',outcome(card,archive,totals));status='succeeded'
     except BaseException as exc:
         write_json(runroot/'failure.json',dict(reason=str(exc),totals=totals,
-                                               rule='no retries/partial fit/threshold relaxation; inspect latest durable versions'))
+                                               rule=('technical code change required: stop; mechanical admission retries charged; never repeat a started fit' if d21.is_d21(card) else 'no retries/partial fit/threshold relaxation; inspect latest durable versions')))
         raise
     finally:
         totals['producer_wall_seconds']=perf_counter()-job_started

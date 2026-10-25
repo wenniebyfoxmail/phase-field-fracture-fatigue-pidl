@@ -1,0 +1,12 @@
+{
+  "schema": "d21-complete-authority-v1",
+  "kind": "direct_user_approval",
+  "date": "2026-10-25",
+  "user_text": "同意按这个安排推进。沿原owner接好D21的labels出口和阶段编排，固定基准通过后执行一次新任务；1800条合格标签齐备就自动进入一次fit，冻结后再做测试。可以自动重试，除非是需要修改技术性代码，也不用为每个机械步骤再问我。",
+  "scope": "one D21 complete3600-state/one-fit synthetic comparison; mechanical retries within cumulative original136hosth/12GPUh",
+  "technical_failure_policy": "stop if a technical code change would be required; retain all costs and outputs",
+  "preparation_start_epoch": 1792945435.823311,
+  "initial_reading_reserve_seconds": 900,
+  "fixed_benchmark": "PYTHONPATH=source:tools python3 -m pytest -q tests/test_hybrid_d21_pipeline.py tests/test_hybrid_producer.py::test_prediction_context_is_the_common_initial_field_not_final_field tests/test_hybrid_producer.py::test_package_hash_tamper_is_rejected tests/test_hybrid_producer.py::test_watchdog_only_stops_its_spawned_group_on_hard_cap tests/test_hybrid_producer.py::test_history_mismatch_blocks_acceleration_even_if_field_and_time_pass",
+  "no_automatic_review": true
+}

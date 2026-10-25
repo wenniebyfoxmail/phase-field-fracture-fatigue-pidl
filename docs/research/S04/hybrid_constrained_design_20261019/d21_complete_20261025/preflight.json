@@ -1,0 +1,103 @@
+{
+  "passed": true,
+  "hostname": "GPUServer8",
+  "account": "drtao",
+  "epoch": 1792946529.5458133,
+  "wall_seconds": 0.15059508103877306,
+  "assets": [
+    {
+      "name": "mesh.npz",
+      "sha256": "ac13f6fd68a77de9f68edf7098c3e17c2acd0eb44a7fa346ec520fc7732887f6",
+      "bytes": 2070965
+    },
+    {
+      "name": "seen_s1.npz",
+      "sha256": "bebb52f97d3f45909ef8eb0bc436257f75bfad4a4576b1bfdec0a98d7336528d",
+      "bytes": 9613954
+    },
+    {
+      "name": "seen_s2.npz",
+      "sha256": "229525d0198c0a5f79ed1f86474234685d9c73cb3c164ebf5360c27384b5ae5e",
+      "bytes": 15877041
+    },
+    {
+      "name": "seen_s3.npz",
+      "sha256": "45fa4cd0e8f007a0dcf6ab061b404ff9497bd00a33dd2c91fb8485fe223cb605",
+      "bytes": 15978260
+    },
+    {
+      "name": "seen_s4.npz",
+      "sha256": "601062ca4337256359c21327994090e7e1c1ea97d0df46589c95fc91fd3c1615",
+      "bytes": 16006042
+    },
+    {
+      "name": "seen_s5.npz",
+      "sha256": "54f2087cbb911cf709912ad731e9cec02417f68242b2507f9cac66294b70c648",
+      "bytes": 16364580
+    },
+    {
+      "name": "state0.npz",
+      "sha256": "9217ebcb4e890f90761c450369787f74679e1d7230764b197f70e7eccf8b1b7a",
+      "bytes": 13145610
+    }
+  ],
+  "R3_status": "failed",
+  "R3_attributable_pids_not_alive": [
+    3631794,
+    3631795,
+    3632262
+  ],
+  "R007_status": "failed",
+  "R007_attributable_pids_not_alive": [
+    48885,
+    48886,
+    48903,
+    48904
+  ],
+  "R009_roots_absent": true,
+  "R008_status": "failed",
+  "R008_attributable_pids_not_alive": [
+    123141,
+    123142,
+    123149,
+    123150
+  ],
+  "R006_status": "failed",
+  "R006_attributable_pids_not_alive": [
+    4058425,
+    4058426,
+    4058433,
+    4058434
+  ],
+  "R5_status": "failed",
+  "R5_attributable_pids_not_alive": [
+    3949659,
+    3949660,
+    3949673,
+    3949674
+  ],
+  "R4_status": "failed",
+  "R4_attributable_pids_not_alive": [
+    3850243,
+    3850244,
+    3850251,
+    3850252
+  ],
+  "capacity": {
+    "available_ram_bytes": 385293504512,
+    "free_disk_bytes": 586500390912,
+    "cpu_affinity_count": 64,
+    "load_average": [
+      1.76611328125,
+      1.8291015625,
+      1.90478515625
+    ]
+  },
+  "inputs_read_only": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/inputs",
+  "deps_read_only": "/mnt/data2/drtao/wennie/pf_hybrid_solver_v6_20261020_r3/deps",
+  "GPU_queries": 0,
+  "scientific_array_decodes": 0,
+  "scientific_imports": 0,
+  "writes": 0,
+  "fresh_root_check_scope": "pf_hybrid_d21_complete_20261025_r10 (adapted R009_roots_absent field from retained read-only preflight)"
+}

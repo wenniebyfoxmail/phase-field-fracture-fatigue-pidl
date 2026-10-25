@@ -1,0 +1,269 @@
+{
+  "schema": "hybrid-execution-card-v1",
+  "run_id": "pf_hybrid_d21_complete_20261025_r10",
+  "run_root": "/mnt/data2/drtao/wennie/pf_hybrid_d21_complete_20261025_r10",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_hybrid_d21_complete_20261025_r10",
+  "producer": {
+    "hostname": "GPUServer8",
+    "account": "drtao",
+    "gpu_index": 5,
+    "gpu_uuid": "GPU-5622bd47-1050-3003-246d-3cabe2b4791b"
+  },
+  "inputs_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c",
+  "state0_id": "fdedddadeb403e3e4316ca8132e4edc87ac22b6755da4af19419d8d428a6c4e1",
+  "base_load_cycle": [
+    0.02999988,
+    0.05999988,
+    0.08999988,
+    0.11999988,
+    0.0
+  ],
+  "displacement_scale": 0.108,
+  "solver": {
+    "force_scale": 1.0,
+    "damage_gradient_scale": 1.0,
+    "force_tolerance": 1e-08,
+    "joint_residual_sum_tolerance": 4e-06,
+    "damage_tolerance": 1e-07,
+    "bound_tolerance": 1e-10,
+    "fatigue_tolerance": 1e-08,
+    "qp_precision": 1e-10,
+    "max_outer": 100,
+    "max_mechanics": 50,
+    "max_qp": 200000,
+    "wall_seconds": 300.0
+  },
+  "training": {
+    "seed": 20261019,
+    "fits": 1,
+    "max_updates": 20000,
+    "wall_seconds": 21600,
+    "learning_rate": 0.001,
+    "validation_every": 1000,
+    "patience": 3,
+    "loss": "mass mean squared damage plus ell^2 GP gradient squared; full graph one transition per update",
+    "initialization": "head weight zero/bias .05; four64 residual message blocks"
+  },
+  "criteria": {
+    "mean_J_max": 0.001,
+    "max_J_max": 0.01,
+    "speed_fraction_min": 0.1,
+    "role": "prospective synthetic single-family online acceleration claim; all physical acceptance and f<1 coverage necessary",
+    "rationale": "accuracy-first 0.1 percent mean normalized field agreement and1percent worst-step cap;10percent time reduction is a practical margin, not a confidence bound; no old criterion changed",
+    "timing_uncertainty": "single matched whole-trajectory timing; no statistical repeatability claim",
+    "history_relative_max": 0.05,
+    "fatigue_absolute_max": 0.01,
+    "reaction_relative_max": 0.01,
+    "scoring_timing": "all reference comparisons are posthoc analysis; excluded from matched online CF/CC/CH and fully charged as study evaluation work"
+  },
+  "budget": {
+    "gpu_hours": 12,
+    "cpu_wall_hours": 136,
+    "cpu_core_hours": 2176,
+    "cpu_cores": 16,
+    "ram_gib": 64,
+    "gpu_vram_gib": 24,
+    "primary_gib": 128,
+    "archive_gib": 128,
+    "free_storage_gib_required": 256,
+    "producer_retries": 3,
+    "training_fits": 1,
+    "numerical_substeps": 3600,
+    "replay_analysis_hours": 4,
+    "termination_reserve_seconds": 45,
+    "proposed_training_gpu_hours": 6,
+    "proposed_hybrid_gpu_hours": 6,
+    "remaining_host_hours_after_all_known_prior_runs": 128.2369057561326
+  },
+  "runtime_expected": {
+    "numpy": "1.24.4",
+    "scipy": "1.15.3",
+    "torch": "2.7.0+cu126",
+    "osqp": "1.0.4",
+    "h5py": "3.13.0",
+    "psutil": "7.0.0",
+    "matplotlib": "3.10.3"
+  },
+  "phases": [
+    {
+      "id": "native_replay",
+      "kind": "replay",
+      "gpu": false,
+      "wall_seconds": 14400,
+      "cpu_cores": 16,
+      "ram_gib": 64
+    },
+    {
+      "id": "train_A",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.8,
+      "role": "labels",
+      "initializer": "previous",
+      "cpu_cores": 4,
+      "ram_gib": 32
+    },
+    {
+      "id": "train_B",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 1.2,
+      "role": "labels",
+      "initializer": "previous",
+      "cpu_cores": 4,
+      "ram_gib": 32
+    },
+    {
+      "id": "validation",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 1.0,
+      "role": "labels",
+      "initializer": "previous",
+      "cpu_cores": 4,
+      "ram_gib": 32
+    },
+    {
+      "id": "training",
+      "kind": "training",
+      "gpu": true,
+      "wall_seconds": 21600,
+      "cpu_cores": 16,
+      "ram_gib": 64
+    },
+    {
+      "id": "test_reference",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_reference",
+      "initializer": "previous",
+      "cpu_cores": 4,
+      "ram_gib": 32
+    },
+    {
+      "id": "test_classical",
+      "kind": "trajectory",
+      "gpu": false,
+      "wall_seconds": 72000,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_candidate",
+      "initializer": "classical",
+      "cpu_cores": 4,
+      "ram_gib": 32
+    },
+    {
+      "id": "test_hybrid",
+      "kind": "trajectory",
+      "gpu": true,
+      "wall_seconds": 21600,
+      "cycles": 120,
+      "amplitude_multiplier": 0.9,
+      "role": "test_candidate",
+      "initializer": "neural",
+      "cpu_cores": 16,
+      "ram_gib": 64
+    },
+    {
+      "id": "analysis",
+      "kind": "analysis",
+      "gpu": false,
+      "wall_seconds": 14400,
+      "cpu_cores": 16,
+      "ram_gib": 64
+    }
+  ],
+  "stopping": "Mechanical admission retries are automatic and charged. Any scientific/worker failure requiring technical code change stops; no repeat of started fit, no partial labels, no threshold relaxation.",
+  "interpretation": "old c1 fields are replay only; state0 is prescribed; newly accepted same-contract trajectory states alone form labels; test opens only after model frozen",
+  "stopping_details": {
+    "substep_solver_deadline_seconds": 300,
+    "supervisor_poll_seconds": 1,
+    "gpu_query_timeout_seconds": 2,
+    "term_then_kill_grace_seconds": 10,
+    "cleanup_reserve_seconds": 45,
+    "meaning": "Original D21300s cooperative step/watchdog;45s phase cleanup reserve. All phases and waits charged to original136h/12GPUh."
+  },
+  "input_identity_revision": "portable fixed-order native Q4 B/det; original scientific state arrays bitwise unchanged, derivation in inputs.json; no threshold change",
+  "execution_enabled": true,
+  "method_revision": {
+    "mechanics": "same hybrid-only warm mechanics workspace and exact-key LU policy in reference/classical/NN phases; caches isolated by phase",
+    "active_set": "no threshold/freeze change; stable-free mask restricts only extrapolation; original full QP can release nodes",
+    "reuse": "fixed geometry/material tensors and CSR scatter; numeric LU only exact CSC/free-DOF identity; no separate SuperLU symbolic reuse claim",
+    "audit": "uncached legacy final mechanical assembly plus unchanged fresh joint residual/KKT and immutable accepted-history map",
+    "durable_observability": "start/end fsync per block, separate Linux pidfd controller and gated worker start; report incomplete work after kill",
+    "matched_quality": "classical and hybrid must BOTH satisfy unchanged quality limits before joint matched-quality acceleration claim",
+    "posthoc": "sealed-state raw/active, energies/trace branches, fronts/support, feasibility/healing, correction/fallback and fixed4/304/599/600 field maps, separate evaluation cost",
+    "coupling": "original owner D21 box_residual_trust active_face_cg; unchanged physical precision, accepted history, original action and update limits,300s per step"
+  },
+  "coupling": {
+    "mode": "box_residual_trust",
+    "depth": 3,
+    "max_proposals": 3,
+    "max_rejections": 3,
+    "merit_factor": 0.5,
+    "coefficient_l1_cap": 5.0,
+    "trust_factor": 2.0,
+    "ridge_relative": 1e-10,
+    "condition_cap": 1000000.0,
+    "mechanics_solver": "recycled_gmres",
+    "backtrack_candidates": 4,
+    "schur_trigger_ratio": 0.9,
+    "schur_restart": 16,
+    "schur_cycles": 3,
+    "schur_action_limit": 64,
+    "schur_relative_tolerance": 0.001,
+    "max_newton_directions": 8,
+    "block_relative_tolerance": 0.001,
+    "trust_trials": 8,
+    "trust_initial_radius": 0.1,
+    "trust_max_radius": 0.25,
+    "trust_min_radius": 1e-08,
+    "subproblem_action_limit": 100,
+    "subproblem_update_limit": 16,
+    "subspace_steps": 2,
+    "box_domain_policy": "representable_inner_binary64_v1",
+    "box_subproblem_solver": "active_face_cg",
+    "krylov_steps": 8
+  },
+  "plotting_admission": {
+    "id": "plotting_admission",
+    "kind": "admission",
+    "gpu": false,
+    "wall_seconds": 120
+  },
+  "dispatch_accounting": {
+    "dispatch_reserve_seconds": 45,
+    "cleanup_reserve_seconds": 45,
+    "kill_after_seconds": 20
+  },
+  "numerical_solver_revision": "d21-active-face-complete-v1",
+  "snapshot_storage": "lossless_npz_deflate1",
+  "state_contract_id": "811881cfc6cf857d918879f114bce153c84a758539ae70d62acf1258ec7bbd12",
+  "authority_binding": {
+    "source": "docs/research/S04/hybrid_constrained_design_20261019/d21_complete_20261025/task_authority.json",
+    "sha256": "aa44f9ee286c0e3728ce1f8ff7c5546924d5c1e8b2893a3b94e29b13ba4fff30"
+  },
+  "prior_budget_binding": {
+    "source": "docs/research/S04/hybrid_constrained_design_20261019/training_readiness_20261024.json",
+    "sha256": "b1f07cfccf238d8af94acf6636d035ea9b4f45ff5882587b414ed4c64ffb03c4"
+  },
+  "retry_policy": {
+    "admission_attempts": 4,
+    "wait_seconds": 30,
+    "technical_code_change": "stop",
+    "repeat_started_fit": false
+  },
+  "preparation_elapsed_at_card_seconds": 1008.4912719726562,
+  "prelaunch_remaining_reserve_seconds": 3600,
+  "prior_charged_host_seconds": 27947.139277922688,
+  "remaining_host_seconds": 461652.8607220773
+}

@@ -11,6 +11,7 @@ from time import time
 from hybrid_inputs import read_manifest,sha256
 from hybrid_producer_common import verify_package,write_json
 from run_hybrid_producer import validate_card, require_enabled_execution
+import hybrid_d21_pipeline as d21
 
 
 def main():
@@ -24,7 +25,8 @@ def main():
     code=Path(__file__).resolve().parents[1];package=read_manifest(args.package)
     verify_package(code,package)
     review=read_manifest(args.review)
-    if (review.get('verdict')!='REVIEW_PASS' or review.get('card_sha256')!=sha256(args.card)
+    if d21.is_d21(card):d21.require_benchmark(card,package,review,args.card)
+    elif (review.get('verdict')!='REVIEW_PASS' or review.get('card_sha256')!=sha256(args.card)
             or review.get('artifact_id')!=package['artifact_id']):raise RuntimeError('exact producer review missing')
     root=Path(card['run_root'])
     if Path(card['archive_root']).exists():raise FileExistsError('archive already exists; inspect, never relaunch')
