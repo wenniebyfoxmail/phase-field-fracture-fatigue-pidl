@@ -2,7 +2,7 @@
   "schema": "q4-inverse-full-path-authority-v1",
   "task_id": "q4_inverse_path_20261026_r1",
   "mode": "scientific_validation",
-  "status": "AUTHORIZED_PREPARING",
+  "status": "AUTHORIZED_WAITING_ARCHIVE_DIRECTORY",
   "execution_authorized": true,
   "execution_enabled": false,
   "authority": {
@@ -103,13 +103,15 @@
     "inputs": "supplied <=11-unknown analytic/manufactured Q4 arrays",
     "expected": "39 checks: prior38 switch/interface checks plus one representative controller end-to-end on synthetic child processes; no local primal solve",
     "prior_independent_result": "38 passed0.31s at156f9924; unchanged result reused until runner integration requires affected benchmark",
-    "new_control_scope": "owned child success/timeout, no next phase on failure, declared phase counts and budget arithmetic"
+    "new_control_scope": "owned child success/timeout, no next phase on failure, declared phase counts and budget arithmetic",
+    "actual_result": "39 passed in0.66s locally; no local primal solve"
   },
   "scientific_execution": {
     "started": false,
     "primal_steps": 0,
     "sensitivity_transitions": 0,
-    "fit_evaluations": 0
+    "fit_evaluations": 0,
+    "proof": "deployment stopped before source extraction/launch; both launch and controller reservation absent on producer"
   },
   "mechanical_checks": [
     {
@@ -128,9 +130,30 @@
       "osqp_system_metadata": null,
       "runtime": "will reuse owner task-local dependency directory; no shared install",
       "scientific_started": false
+    },
+    {
+      "index": 2,
+      "kind": "prelaunch_deployment",
+      "result": "zero_start_permission_failure",
+      "target": "/mnt/data3/drtao/pidl_archives/q4_inverse_path_20261026_r1",
+      "cause": "drtao has no write permission on root-owned /mnt/data3 and no existing project-writable top-level directory was found",
+      "controller_launch_marker_exists": false,
+      "controller_reservation_exists": false,
+      "scientific_started": false,
+      "zero_start_receipt": "/mnt/data2/drtao/wennie/q4_inverse_path_20261026_r1/zero_start_deployment_1.json",
+      "shared_permissions_changed": false
     }
   ],
-  "runtime": null,
+  "runtime": {
+    "python": "3.10.12",
+    "numpy": "1.24.4",
+    "scipy": "1.15.3",
+    "osqp": "1.0.4",
+    "h5py": "3.13.0",
+    "psutil": "7.0.0",
+    "matplotlib": "3.10.3",
+    "status": "observed on designated producer before zero-start archive-directory failure; exact source closure not yet imported remotely"
+  },
   "command": null,
   "updated_utc": "2026-10-26T00:41:33.862652+00:00",
   "runtime_dependencies_root": "/mnt/data2/drtao/wennie/pf_hybrid_full_20261020_r2/deps",
@@ -189,5 +212,18 @@
     "displacement_sensors": "ux/uy at nearest nodes of(.2,.4,.6,.8)^2 relative coordinate grid; deduplicate and exclude prescribed DOFs",
     "selection_uses_future_outputs": false
   },
-  "prepared_inputs_manifest_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c"
+  "prepared_inputs_manifest_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c",
+  "source_commit": "c4a95fde99c3558ab90b14ca152074491e6158d1",
+  "waiting_boundary": {
+    "kind": "administrator-directory operation or a supplied project-writable archive path",
+    "requested_command": "sudo -n install -d -o drtao -m 0700 -- /mnt/data3/drtao/pidl_archives/q4_inverse_path_20261026_r1",
+    "permission": "pending explicit response; not executed",
+    "same_task_id": true,
+    "scientific_authority_consumed": false
+  },
+  "consumption": {
+    "scientific_host_seconds": 0,
+    "scientific_gpu_seconds": 0,
+    "mechanical_remote_seconds": "short prelaunch SSH/import/filesystem operations; exact aggregate not recorded; not asserted zero"
+  }
 }

@@ -23,8 +23,12 @@ owner card is [execution_20261026.json](execution_20261026.json). Preparation,
 compatible runtime/resource admission and bounded deployment are automatic;
 no repeated confirmation of RunID/path/version fields. No material fit,
 training, protected holdout, producer substitution or scientific retry is
-included. Actual numerical execution remains not started until recorded by its
-runner. Earlier preparation-only statements below are historical and are
+included. The current card records AUTHORIZED_WAITING_ARCHIVE_DIRECTORY: two preparation
+checks reached the selected host, but /mnt/data3 is root-owned and no project
+archive directory is writable. No controller/FEM started. One scoped admin
+directory command (or a supplied writable project path) is pending; original
+execution authority and the same task ID remain valid. Fixed benchmark39 passed
+in0.66s. Numerical execution remains not started until recorded by its runner. Earlier preparation-only statements below are historical and are
 superseded only for this validation. The project has moved to
 `/Users/wenxiaofang/0 Research/phase-field-fracture-with-pidl`; archived source
 snapshots and their recorded paths remain preserved.
