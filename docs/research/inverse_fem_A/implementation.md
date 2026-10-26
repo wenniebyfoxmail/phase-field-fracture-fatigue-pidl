@@ -14,6 +14,21 @@ in [offline_completion.md](offline_completion.md); exact corrected code
 ([review_v4.md](review_v4.md)). Statements below about then-missing interfaces
 are historical, not the current implementation inventory.
 
+## Current authority — 2026-10-26
+
+The direct human message “授权” authorizes the previously proposed complete-path
+validation within536 host-hours,16 CPU threads,0 GPU, unchanged inputs/model,
+120s physical-step deadline and first-scientific-failure stop. The effective
+owner card is [execution_20261026.json](execution_20261026.json). Preparation,
+compatible runtime/resource admission and bounded deployment are automatic;
+no repeated confirmation of RunID/path/version fields. No material fit,
+training, protected holdout, producer substitution or scientific retry is
+included. Actual numerical execution remains not started until recorded by its
+runner. Earlier preparation-only statements below are historical and are
+superseded only for this validation. The project has moved to
+`/Users/wenxiaofang/0 Research/phase-field-fracture-with-pidl`; archived source
+snapshots and their recorded paths remain preserved.
+
 ## Current owner entry: bounded authority update, 2026-10-20
 
 **There is no active execution card or issued numerical-run authority for this

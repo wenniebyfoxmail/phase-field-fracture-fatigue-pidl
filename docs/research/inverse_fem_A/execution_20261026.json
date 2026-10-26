@@ -1,0 +1,193 @@
+{
+  "schema": "q4-inverse-full-path-authority-v1",
+  "task_id": "q4_inverse_path_20261026_r1",
+  "mode": "scientific_validation",
+  "status": "AUTHORIZED_PREPARING",
+  "execution_authorized": true,
+  "execution_enabled": false,
+  "authority": {
+    "date": "2026-10-26",
+    "source": "direct human message in owning chat",
+    "text": "授权",
+    "refers_to": "complete-path validation proposal and 536-host-hour envelope; not material fitting",
+    "supersedes": "previous preparation-only/no-new-FEM restriction for this declared validation only"
+  },
+  "goal": "Validate right-direction parameter sensitivities across a complete same-model 600-substep Q4 path",
+  "implementation_commit": "156f9924d2aa5ee4352dbd32cc6ebf839746fb1d",
+  "preparation_head": "351fde42bbf3e346d53d3060d63751a41caf8e7d",
+  "workspace": "/Users/wenxiaofang/0 Research/phase-field-fracture-with-pidl/.codex/worktrees/q4-material-inverse-20261020",
+  "producer": {
+    "ssh_alias": "gpu-taobo",
+    "expected_hostname": "GPUServer8",
+    "account": "drtao",
+    "cpu_threads": 16,
+    "gpu_count": 0
+  },
+  "run_root": "/mnt/data2/drtao/wennie/q4_inverse_path_20261026_r1",
+  "archive_root": "/mnt/data3/drtao/pidl_archives/q4_inverse_path_20261026_r1",
+  "inputs": {
+    "existing_forward_owner": "/Users/wenxiaofang/0 Research/phase-field-fracture-with-pidl/.codex/worktrees/pidl-weight-gradient-fix-20261018",
+    "common_initial": "/Users/wenxiaofang/0 Research/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/common_common_initial.mat",
+    "fixed_initial_policy": "fixed_recovered_profile"
+  },
+  "study": {
+    "cycles": 120,
+    "substeps_per_cycle": 5,
+    "load_cycle": [
+      0.02999988,
+      0.05999988,
+      0.08999988,
+      0.11999988,
+      0.0
+    ],
+    "displacement_scale": 0.108,
+    "primal_paths": 25,
+    "sensitivity_passes": 8,
+    "primal_substep_cap": 15000,
+    "sensitivity_transition_cap": 4800,
+    "relative_directions": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        1
+      ],
+      "(1,-1,1)/sqrt(3)"
+    ],
+    "log_parameter_steps": [
+      0.01,
+      0.001,
+      0.0001
+    ]
+  },
+  "budget": {
+    "host_hours": 536,
+    "allocated_core_hours": 8576,
+    "cpu_threads": 16,
+    "gpu_hours": 0,
+    "rss_gib": 64,
+    "primary_gib": 512,
+    "archive_gib": 512,
+    "free_storage_gib_required": 1024,
+    "audit_hours": 4,
+    "nominal_hours": 20,
+    "perturbed_hours": 480,
+    "directional_hours": 24,
+    "analysis_hours": 4,
+    "supervision_cleanup_hours": 4,
+    "mechanical_rechecks": 2,
+    "mechanical_recheck_seconds": 600,
+    "physical_step_seconds": 120,
+    "directional_step_seconds": 60
+  },
+  "stop": "first unaccepted forward state, unavailable uniqueness evidence, scientific/resource/identity failure stops study; no scientific retry or threshold/load/model/producer/budget change",
+  "forbidden": [
+    "material inversion/optimization",
+    "training",
+    "new/protected holdouts",
+    "other producer",
+    "GPU computation",
+    "resuming another owner failed run"
+  ],
+  "benchmark": {
+    "command": "python -m pytest -q tests/test_q4_inverse_switch.py tests/test_q4_inverse_offline_interfaces.py tests/test_q4_inverse_validation_control.py",
+    "inputs": "supplied <=11-unknown analytic/manufactured Q4 arrays",
+    "expected": "39 checks: prior38 switch/interface checks plus one representative controller end-to-end on synthetic child processes; no local primal solve",
+    "prior_independent_result": "38 passed0.31s at156f9924; unchanged result reused until runner integration requires affected benchmark",
+    "new_control_scope": "owned child success/timeout, no next phase on failure, declared phase counts and budget arithmetic"
+  },
+  "scientific_execution": {
+    "started": false,
+    "primal_steps": 0,
+    "sensitivity_transitions": 0,
+    "fit_evaluations": 0
+  },
+  "mechanical_checks": [
+    {
+      "index": 1,
+      "kind": "read_only_admission",
+      "hostname": "GPUServer8",
+      "cpu_count": 64,
+      "loadavg": [
+        1.91259765625,
+        1.87841796875,
+        1.8994140625
+      ],
+      "available_memory_kib": 376015800,
+      "data2_available_bytes": 568791396352,
+      "data3_available_bytes": 1008192282624,
+      "osqp_system_metadata": null,
+      "runtime": "will reuse owner task-local dependency directory; no shared install",
+      "scientific_started": false
+    }
+  ],
+  "runtime": null,
+  "command": null,
+  "updated_utc": "2026-10-26T00:41:33.862652+00:00",
+  "runtime_dependencies_root": "/mnt/data2/drtao/wennie/pf_hybrid_full_20261020_r2/deps",
+  "prepared_inputs_root": "/mnt/data2/drtao/wennie/pf_hybrid_full_20261020_r2/inputs",
+  "forward_owner_commit": "986c39b8021871244efb4d8d23783170f5b00b69",
+  "solver": {
+    "force_scale": 1.0,
+    "damage_gradient_scale": 1.0,
+    "force_tolerance": 1e-08,
+    "joint_residual_sum_tolerance": 4e-06,
+    "damage_tolerance": 1e-07,
+    "bound_tolerance": 1e-10,
+    "fatigue_tolerance": 1e-08,
+    "qp_precision": 1e-10,
+    "max_outer": 100,
+    "max_mechanics": 50,
+    "max_qp": 200000,
+    "wall_seconds": 120.0
+  },
+  "coupling": {
+    "mode": "projected_anderson",
+    "depth": 3,
+    "max_proposals": 3,
+    "max_rejections": 1,
+    "merit_factor": 0.5,
+    "coefficient_l1_cap": 5.0,
+    "trust_factor": 2.0,
+    "ridge_relative": 1e-10,
+    "condition_cap": 1000000.0
+  },
+  "sensitivity": {
+    "row_scale": 1.0,
+    "column_scale": 1.0,
+    "minimum_scaled_singular_value": 1e-12,
+    "minimum_reciprocal_condition": 1e-12,
+    "minimum_monotonicity": 1e-12,
+    "linear_tolerance": 1e-10,
+    "residual_tolerance": 1e-09,
+    "solution_tolerance": 1e-06,
+    "max_iterations": 20,
+    "max_backtracks": 12,
+    "uniqueness_method": "sparse_ldlt_interval",
+    "chunk_elements": 512,
+    "max_matrix_nnz": 13000000,
+    "max_factor_nnz": 268435456,
+    "max_product_work": 134217728
+  },
+  "initial_audit": {
+    "maximum_absolute_difference": 1e-14,
+    "zero_initial_u_A_q": true,
+    "fatigue_one": true,
+    "fixed_recovery_geometry": true
+  },
+  "observation": {
+    "reaction": "minus bottom-Y fresh internal force sum",
+    "displacement_sensors": "ux/uy at nearest nodes of(.2,.4,.6,.8)^2 relative coordinate grid; deduplicate and exclude prescribed DOFs",
+    "selection_uses_future_outputs": false
+  },
+  "prepared_inputs_manifest_sha256": "51776e2ebb9642a2f6805a87e34842d608f44624b0d0fb06aa4b0792e95f4c1c"
+}
